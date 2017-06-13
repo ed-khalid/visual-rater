@@ -8,6 +8,10 @@ class D3 extends Component {
     constructor(props) {
         super(props)
         this.draw = this.draw.bind(this) 
+        this.state = {
+            width: 500
+            ,height: 500
+        }
     } 
 
     componentDidMount() {
@@ -22,17 +26,43 @@ class D3 extends Component {
         const dataMax = max(this.props.data) 
         const yScale = scaleLinear().domain([0, dataMax]).range([0, this.props.size[1]])
 
-        select(node).selectAll('rect').data(this.props.data).enter().append('rect')
-        select(node).selectAll('rect').data(this.props.data).exit().remove('rect')
-        select(node).selectAll('rect').data(this.props.data).style('fill','#fe9922')
-          .attr('x', (d,i) => i *25)
-          .attr('y', d=> this.props.size[1] - yScale(d))
-          .attr('height', d => yScale(d))
-          .attr('width', 25)
+        const svg = select(node).append('svg')
+          .style('height', this.state.height +'px')
+          .style('width', this.state.width +'px')
+
+        const defs = svg.append('defs')
+        const linearGradient = defs.append('linearGradient')
+          .attr('id','linear-gradient')
+          .attr('x1','0%')
+          .attr('x2','0%')
+          .attr('y1','100%')
+          .attr('y2','0%')
+        linearGradient.append('stop')
+          .attr('offset','0%')
+          .attr('stop-color','black')
+        linearGradient.append('stop')
+          .attr('offset','25%')
+          .attr('stop-color','#ff6666') //red
+        linearGradient.append('stop')
+          .attr('offset','60%')
+          .attr('stop-color','#fed528') //yellow
+        linearGradient.append('stop')
+          .attr('offset','75%')
+          .attr('stop-color','#64db76') //green
+        linearGradient.append('stop')
+          .attr('offset','100%')
+          .attr('stop-color','#11541b') //dark green
+
+        svg.append('rect')
+          .attr('width',20)
+          .attr('height',300)
+          .style('fill','url(#linear-gradient)')
+
+
     }
 
     render() {
-        return <svg ref={node => this.node = node} width ={500} height={500}></svg>
+        return <div id="d3-wrapper" ref={node => this.node = node} width ={500} height={500}></div>
     }
 
 } 
