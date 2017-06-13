@@ -10,7 +10,7 @@ class D3 extends Component {
         this.draw = this.draw.bind(this) 
         this.state = {
             width: 500
-            ,height: 500
+            ,height: 1000
         }
     } 
 
@@ -50,19 +50,20 @@ class D3 extends Component {
           .attr('offset','75%')
           .attr('stop-color','#64db76') //green
         linearGradient.append('stop')
-          .attr('offset','100%')
+          .attr('offset','95%')
           .attr('stop-color','#11541b') //dark green
+        linearGradient.append('stop')
+          .attr('offset','100%')
+          .attr('stop-color','black') //dark green
 
         svg.append('rect')
-          .attr('width',20)
-          .attr('height',300)
+          .attr('width',50)
+          .attr('height',600)
           .style('fill','url(#linear-gradient)')
-
-
     }
 
     render() {
-        return <div id="d3-wrapper" ref={node => this.node = node} width ={500} height={500}></div>
+        return <div id="d3-wrapper" ref={node => this.node = node} width ={600} height={1000}></div>
     }
 
 } 
