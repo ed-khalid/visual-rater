@@ -7,6 +7,7 @@ class App extends Component {
   render() {
     return (
       <div className="App">
+        <h1>Visual Rater</h1>
         <div style={{marginTop:'10px'}}> 
           <D3 data ={[5,10,1,13]} size ={ [500,500] } ></D3>
         </div>
