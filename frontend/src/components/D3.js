@@ -1,8 +1,7 @@
 import React, { Component } from 'react'
 import '../App.css' 
-import { scaleLinear } from 'd3-scale'
-import { max } from 'd3-array'
-import { select } from 'd3-selection'
+import * as d3  from 'd3'
+
 
 class D3 extends Component {
     constructor(props) {
@@ -21,15 +20,34 @@ class D3 extends Component {
        this.draw() 
     }
 
-    draw() {
-        const node = this.node;
-        const dataMax = max(this.props.data) 
-        const yScale = scaleLinear().domain([0, dataMax]).range([0, this.props.size[1]])
 
-        const svg = select(node).append('svg')
+    draw() {
+
+
+        const node = this.node;
+        const dataMax = d3.max(this.props.data) 
+        const yScale = d3.scaleLinear().domain([0, dataMax]).range([0, this.props.size[1]])
+
+        const svg = d3.select(node).append('svg')
           .style('height', this.state.height +'px')
           .style('width', this.state.width +'px')
 
+        const g =  svg.append('g')
+        const rects = [{width: 60, height: 50}]
+
+        //rect
+        g.selectAll('rect').data(rects).enter().append('rect')
+          .attr('width', d => d.width)
+          .attr('height', d=> d.height)
+          .attr('y', 100)
+          .attr('class', 'draggable')
+          .style('fill', 'red')
+          .call(d3.drag()
+                .on("start", this.dragstarted)
+                .on("drag", this.dragged)
+                .on("end", this.dragended));
+
+        //rater
         const defs = svg.append('defs')
         const linearGradient = defs.append('linearGradient')
           .attr('id','linear-gradient')
@@ -59,12 +77,28 @@ class D3 extends Component {
         svg.append('rect')
           .attr('width',50)
           .attr('height',600)
+          .attr('x', 400)
           .style('fill','url(#linear-gradient)')
     }
 
     render() {
         return <div id="d3-wrapper" ref={node => this.node = node} width ={600} height={1000}></div>
     }
+
+    dragstarted(d) {
+          console.log('drag started')
+          d3.select(this).raise().classed("active", true);
+     }
+
+    dragged(d) {
+        console.log('dragging...')
+        d3.select(this).attr("x", d.x = d3.event.x).attr("y", d.y = d3.event.y);
+     }
+
+     dragended(d) {
+        console.log('drag end')
+        d3.select(this).classed("active", false);
+     } 
 
 } 
 

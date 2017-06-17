@@ -6,6 +6,16 @@
   background-color: black;
   color:white;
 }
+.active {
+  stroke: #255;
+  stroke-width: 2px;
+}
+
+.rect {
+  pointer-events: all;
+  stroke: none;
+  stroke-width: 40px;
+}
 
 h1 {
   font-size:9em;
@@ -25,8 +35,8 @@ h1 {
 }
 
 div#d3-wrapper {
-  float:right;
   width: 50%;
+  margin-left: 300px;
 
 }
 
