@@ -32,20 +32,30 @@ class D3 extends Component {
           .style('height', this.state.height +'px')
           .style('width', this.state.width +'px')
 
-        const g =  svg.append('g')
-        const rects = [{width: 60, height: 50}]
+        const rects = [{width: 60, height: 50, x: 60, y:100}]
 
         //rect
-        g.selectAll('rect').data(rects).enter().append('rect')
-          .attr('width', d => d.width)
-          .attr('height', d=> d.height)
-          .attr('y', 100)
-          .attr('class', 'draggable')
-          .style('fill', 'red')
+        const g = svg.selectAll('g').data(rects).enter().append('g')
           .call(d3.drag()
                 .on("start", this.dragstarted)
                 .on("drag", this.dragged)
                 .on("end", this.dragended));
+          g.append('rect')     
+           .attr('width', d => d.width)
+           .attr('height', d=> d.height)
+           .attr('y', d=> d.y )
+           .attr('x', d=> d.x)
+           .attr('class', 'draggable')
+           .style('fill', 'red')
+           g.append('text')
+            .attr('x',  d => d.x+5)
+            .attr('y',  d => d.y+20)
+            .attr('dy', '.35em')
+            .text( d => 'Ahmed' )
+            .style('fill', 'white')
+
+
+
 
         //rater
         const defs = svg.append('defs')
@@ -92,7 +102,8 @@ class D3 extends Component {
 
     dragged(d) {
         console.log('dragging...')
-        d3.select(this).attr("x", d.x = d3.event.x).attr("y", d.y = d3.event.y);
+        d3.select(this).select('rect').attr("x", d.x = d3.event.x).attr("y", d.y = d3.event.y);
+        d3.select(this).select('text').attr("x", d.x = d3.event.x+5).attr("y", d.y = d3.event.y+20);
      }
 
      dragended(d) {
