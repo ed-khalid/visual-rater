@@ -24,6 +24,12 @@ h1 {
   color: white;
 }
 
+div#d3-wrapper {
+  float:right;
+  width: 50%;
+
+}
+
 
 .App-intro {
   font-size: large;
