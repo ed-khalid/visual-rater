@@ -8,11 +8,13 @@ class D3 extends Component {
         super(props)
         this.draw = this.draw.bind(this) 
         this.example = this.example.bind(this) 
+        this.svg;
         this.state = {
             width: 500
             ,height: 1000
         }
     } 
+
 
     componentDidMount() {
         this.draw() 
@@ -30,14 +32,14 @@ class D3 extends Component {
         const dataMax = d3.max(this.props.data) 
         const yScale = d3.scaleLinear().domain([0, dataMax]).range([0, this.props.size[1]])
 
-        const svg = d3.select(node).append('svg')
+        this.svg = d3.select(node).append('svg')
           .style('height', this.state.height +'px')
           .style('width', this.state.width +'px')
 
         const rects = [{width: 60, height: 50, x: 60, y:100}]
 
         //rect
-        const g = svg.selectAll('g').data(rects).enter().append('g')
+        const g = this.svg.selectAll('g').data(rects).enter().append('g')
           .call(d3.drag()
                 .on("start", this.dragstarted)
                 .on("end", this.dragended())
@@ -60,7 +62,7 @@ class D3 extends Component {
 
 
         //rater
-        const defs = svg.append('defs')
+        const defs = this.svg.append('defs')
         const linearGradient = defs.append('linearGradient')
           .attr('id','linear-gradient')
           .attr('x1','0%')
@@ -86,7 +88,7 @@ class D3 extends Component {
           .attr('offset','100%')
           .attr('stop-color','black') //dark green
 
-        svg.append('rect')
+        this.svg.append('rect')
           .attr('width',50)
           .attr('height',600)
           .attr('x', 400)
@@ -122,13 +124,22 @@ class D3 extends Component {
        return function(d) {
         d3.select(this).classed("active", false);
         d3.select('.rater').classed('active', false)
-        if (self.inRater(d))
-        console.log(`x: ${d.x}, y: ${d.y}`)
+        if (self.inRater(d)) self.addLine(d)
        }
      } 
 
      inRater(event) {
        return event.x >= 395 && event.x <= 445; 
+     }
+
+     addLine(d) {
+       this.svg.append('line')
+        .attr('x1', 400)
+        .attr('x2', 450)
+        .attr('y1', d.y)
+        .attr('y2', d.y)
+        .attr('stroke','#ddd')
+        .attr('stroke-width', '3px')
      }
 
 } 
