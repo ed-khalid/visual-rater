@@ -12,6 +12,7 @@ class D3 extends Component {
         this.state = {
             width: 500
             ,height: 1000
+            ,songs: ['Ahmed', 'Khalid', 'Fathi']
         }
     } 
 
@@ -23,8 +24,42 @@ class D3 extends Component {
        this.draw() 
     }
 
-
     example() {}
+
+    drawSongs() {
+        const rectAttr = {width: 60, height: 50, x: 60, y:100}
+        let songAttr = this.state.songs.map( (it,i) => { 
+          let retv = { 
+            songName: it 
+            ,width: rectAttr.width 
+            ,height: rectAttr.height
+            ,x:rectAttr.x  
+            ,y:rectAttr.y+(rectAttr.height*i)+(12*i)
+          }
+          return retv
+        })
+
+        //rect
+        const g = this.svg.selectAll('g').data(songAttr).enter().append('g')
+          .call(d3.drag()
+                .on("start", this.dragstarted)
+                .on("end", this.dragended())
+                .on("drag", this.dragged(this)))
+          g.append('rect')     
+           .attr('width',  d=>d.width)
+           .attr('height', d=>d.height)
+           .attr('y', d =>d.y )
+           .attr('x', d=>d.x)
+           .attr('class', 'draggable')
+           .style('fill', 'red')
+           g.append('text')
+            .attr('x',  d=>d.x+5)
+            .attr('y',  d=>d.y+20)
+            .attr('dy', '.35em')
+            .text( d => d.songName )
+            .style('fill', 'white')
+    }
+
 
     draw() {
 
@@ -36,29 +71,7 @@ class D3 extends Component {
           .style('height', this.state.height +'px')
           .style('width', this.state.width +'px')
 
-        const rects = [{width: 60, height: 50, x: 60, y:100}]
-
-        //rect
-        const g = this.svg.selectAll('g').data(rects).enter().append('g')
-          .call(d3.drag()
-                .on("start", this.dragstarted)
-                .on("end", this.dragended())
-                .on("drag", this.dragged(this)))
-          g.append('rect')     
-           .attr('width', d => d.width)
-           .attr('height', d=> d.height)
-           .attr('y', d=> d.y )
-           .attr('x', d=> d.x)
-           .attr('class', 'draggable')
-           .style('fill', 'red')
-           g.append('text')
-            .attr('x',  d => d.x+5)
-            .attr('y',  d => d.y+20)
-            .attr('dy', '.35em')
-            .text( d => 'Ahmed' )
-            .style('fill', 'white')
-
-
+        this.drawSongs(); 
 
 
         //rater
@@ -133,13 +146,20 @@ class D3 extends Component {
      }
 
      addLine(d) {
-       this.svg.append('line')
+       let g = this.svg.append('g') 
+       g.append('line')
         .attr('x1', 400)
         .attr('x2', 450)
         .attr('y1', d.y)
         .attr('y2', d.y)
         .attr('stroke','#ddd')
         .attr('stroke-width', '3px')
+       g.append('text')
+        .attr('x',  330 )
+        .attr('y',  d.y)
+        .attr('dy', '.35em')
+        .text( d.songName )
+        .style('fill', 'white')
      }
 
 } 
