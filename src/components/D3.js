@@ -7,6 +7,7 @@ class D3 extends Component {
     constructor(props) {
         super(props)
         this.draw = this.draw.bind(this) 
+        this.example = this.example.bind(this) 
         this.state = {
             width: 500
             ,height: 1000
@@ -21,8 +22,9 @@ class D3 extends Component {
     }
 
 
-    draw() {
+    example() {}
 
+    draw() {
 
         const node = this.node;
         const dataMax = d3.max(this.props.data) 
@@ -38,8 +40,8 @@ class D3 extends Component {
         const g = svg.selectAll('g').data(rects).enter().append('g')
           .call(d3.drag()
                 .on("start", this.dragstarted)
-                .on("drag", this.dragged)
-                .on("end", this.dragended));
+                .on("end", this.dragended())
+                .on("drag", this.dragged(this)))
           g.append('rect')     
            .attr('width', d => d.width)
            .attr('height', d=> d.height)
@@ -88,6 +90,7 @@ class D3 extends Component {
           .attr('width',50)
           .attr('height',600)
           .attr('x', 400)
+          .attr('class','rater')
           .style('fill','url(#linear-gradient)')
     }
 
@@ -95,21 +98,38 @@ class D3 extends Component {
         return <div id="d3-wrapper" ref={node => this.node = node} width ={600} height={1000}></div>
     }
 
-    dragstarted(d) {
-          console.log('drag started')
+    dragstarted() {
           d3.select(this).raise().classed("active", true);
      }
 
-    dragged(d) {
-        console.log('dragging...')
+    dragged() {
+      let self = this;
+      return function(d) { 
         d3.select(this).select('rect').attr("x", d.x = d3.event.x).attr("y", d.y = d3.event.y);
         d3.select(this).select('text').attr("x", d.x = d3.event.x+5).attr("y", d.y = d3.event.y+20);
+        if (self.inRater(d3.event)) {
+          console.log('hit')
+          d3.select('.rater').classed('active', true)
+        }
+        else {
+          d3.select('.rater').classed('active', false)
+        }
+      } 
      }
 
-     dragended(d) {
-        console.log('drag end')
+     dragended() {
+       let self = this
+       return function(d) {
         d3.select(this).classed("active", false);
+        d3.select('.rater').classed('active', false)
+        if (self.inRater(d))
+        console.log(`x: ${d.x}, y: ${d.y}`)
+       }
      } 
+
+     inRater(event) {
+       return event.x >= 395 && event.x <= 445; 
+     }
 
 } 
 
