@@ -12,7 +12,9 @@ class D3 extends Component {
         this.state = {
             width: 500
             ,height: 1000
-            ,songs: ['Ahmed', 'Khalid', 'Fathi']
+            ,songs: ['Battery', 'Master of Puppets', 'The Thing That Should Not Be', 'Welcome Home (Sanitarium)'
+            ,'Disposable Heroes', 'Leper Messiah', 'Orion', 'Damage, Inc.'
+            ]
         }
     } 
 
@@ -141,17 +143,34 @@ class D3 extends Component {
        }
      } 
 
+     raterDragStart() {
+          d3.select(this).raise().classed("active", true);
+     }
+     raterDragging() {
+          d3.select(this).select('line').attr('y1', d3.event.y).attr('y2', d3.event.y)
+          d3.select(this).select('text').attr('y', d3.event.y)
+     }
+     raterDragEnd() {
+       d3.select(this).classed('active', false)
+     }
+
      inRater(event) {
        return event.x >= 395 && event.x <= 445; 
      }
 
      addLine(d) {
-       let g = this.svg.append('g') 
+       let g = this.svg.append('g')
+          .call(d3.drag()
+                .on("start", this.raterDragStart)
+                .on("drag", this.raterDragging)
+                .on("end", this.raterDragEnd)
+          )
        g.append('line')
         .attr('x1', 400)
         .attr('x2', 450)
         .attr('y1', d.y)
         .attr('y2', d.y)
+        .attr('class', 'draggable')
         .attr('stroke','#ddd')
         .attr('stroke-width', '3px')
        g.append('text')
