@@ -1,5 +1,6 @@
 import React, { Component } from 'react'
 import '../App.css' 
+import Song from  '../models/song' 
 import * as d3  from 'd3'
 
 
@@ -12,9 +13,6 @@ class D3 extends Component {
         this.state = {
             width: 500
             ,height: 1000
-            ,songs: ['Battery', 'Master of Puppets', 'The Thing That Should Not Be', 'Welcome Home (Sanitarium)'
-            ,'Disposable Heroes', 'Leper Messiah', 'Orion', 'Damage, Inc.'
-            ]
         }
     } 
 
@@ -30,9 +28,10 @@ class D3 extends Component {
 
     drawSongs() {
         const rectAttr = {width: 60, height: 50, x: 60, y:100}
-        let songAttr = this.state.songs.map( (it,i) => { 
+        let songAttr = this.props.songs.map( (it,i) => { 
           let retv = { 
-            songName: it 
+            songName: it.title 
+            ,songScore: it.score
             ,width: rectAttr.width 
             ,height: rectAttr.height
             ,x:rectAttr.x  
@@ -58,7 +57,7 @@ class D3 extends Component {
             .attr('x',  d=>d.x+5)
             .attr('y',  d=>d.y+20)
             .attr('dy', '.35em')
-            .text( d => d.songName )
+            .text( d => d.songName + '(' + d.songScore + ')' )
             .style('fill', 'white')
     }
 
@@ -121,9 +120,9 @@ class D3 extends Component {
 
     dragged() {
       let self = this;
-      return function(d) { 
-        d3.select(this).select('rect').attr("x", d.x = d3.event.x).attr("y", d.y = d3.event.y);
-        d3.select(this).select('text').attr("x", d.x = d3.event.x+5).attr("y", d.y = d3.event.y+20);
+      return function() { 
+        d3.select(this).select('rect').attr("x", d3.event.x).attr("y", d3.event.y);
+        d3.select(this).select('text').attr("x", d3.event.x+5).attr("y", d3.event.y+20);
         if (self.inRater(d3.event)) {
           console.log('hit')
           d3.select('.rater').classed('active', true)
