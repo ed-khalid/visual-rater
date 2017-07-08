@@ -1,16 +1,29 @@
 import React, { Component } from 'react'
 import '../App.css' 
 import Song from  '../models/song' 
+import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux'
+import { TrackLocationActionCreator } from '../actions'
 import * as d3  from 'd3'
 
 
-export default class TrackDisplayer extends Component {
+class TrackDisplayer extends Component {
 
     constructor(props) {
         super(props)
         const mydudes =[]; 
         this.attachDragEvents = this.attachDragEvents.bind(this); 
+        this.dragStarted = false;
     } 
+
+    componentDidMount() {
+        this.attachDragEvents(); 
+    }
+
+    componentDidUpdate() {
+        console.log(this.props); 
+
+    }
 
     calculateY(index) {
         return 100 + (50*index) + (12*index); 
@@ -19,16 +32,11 @@ export default class TrackDisplayer extends Component {
     attachDragEvents() {
          
         d3.select(this.node).selectAll('g').call(d3.drag()
-            .on('start', this.dragStart)
+            .on('start', this.dragStart())
             .on('drag', this.drag)
             .on('end', this.dragEnd)
           )
     }
-
-    componentDidMount() {
-        this.attachDragEvents(); 
-    }
-
 
     render() { return <g ref={node => this.node = node} >
        {this.props.songs.map( (it,i) => { 
@@ -40,7 +48,15 @@ export default class TrackDisplayer extends Component {
     </g>}
 
     dragStart() {
+        let self = this;
+        return function(d) {
           d3.select(this).raise().classed("active", true);
+          try { 
+          self.props.trackDragStart(d3.event)
+        }
+        catch(e) {
+        }
+        }
      }
 
     drag() {
@@ -52,5 +68,11 @@ export default class TrackDisplayer extends Component {
         d3.select(this).classed("active", false);
      } 
 } 
+
+function mapDispatchToProps(dispatch) {
+    return bindActionCreators({ trackDragStart: TrackLocationActionCreator},dispatch )
+}
+
+export default connect(undefined, mapDispatchToProps)(TrackDisplayer)
 
 

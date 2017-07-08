@@ -2,15 +2,19 @@ import React, { Component } from 'react'
 import '../App.css' 
 import Song from  '../models/song' 
 import * as d3  from 'd3'
+import { connect } from 'react-redux'
 
 
-export default class Rater extends Component {
+class Rater extends Component {
     constructor(props) {
         super(props)
     } 
 
-    componentDidMount() {}
-
+    componentDidUpdate(prevProps,nextProps ) {
+        if(this.props.trackLocation) {
+            console.log('Rater is listening')
+        }
+    }
 
     render() {
       return <rect ref={rect => this.rect =rect} width="50" height="600" x="400" className="rater" fill="url(#linear-gradient)"></rect>
@@ -69,3 +73,11 @@ export default class Rater extends Component {
      }
 
 } 
+
+function mapStateToProps(state) {
+    return {
+        trackLocation: state.trackLocation
+    }
+}
+
+export default connect(mapStateToProps)(Rater)

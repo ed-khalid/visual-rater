@@ -2,8 +2,8 @@ import React, { Component } from 'react';
 import logo from './logo.svg';
 import D3 from './components/D3' 
 import Song from './models/song'
-import TrackDisplayer from './components/TrackDisplayer'
-import Rater from './components/Rater'
+import TrackDisplayer from './containers/TrackDisplayer'
+import Rater from './containers/Rater'
 import './App.css';
 import * as d3 from 'd3'
 
