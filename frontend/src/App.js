@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
-import D3 from './components/D3' 
 import Song from './models/song'
 import TrackDisplayer from './containers/TrackDisplayer'
 import Rater from './containers/Rater'

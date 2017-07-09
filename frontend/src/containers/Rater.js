@@ -14,25 +14,17 @@ class Rater extends Component {
     } 
 
     componentDidUpdate() {
-        console.log(this.props);
-    }
-
-    componentWillReceiveProps(props) {
-        if (props.songs.length > this.props.songs.length ) {
-            this.setState({alreadyAddedSong:true}, () => {console.log('done')})
-        }
-        else {
-            this.setState({alreadyAddedSong:false})
-        }
+      let isInBounds = this.inRater(this.props.trackLocationEvent); 
+      if (isInBounds && this.props.trackLocationEvent.type == 'end') {
+          this.props.addSong(this.props.currentSong, this.props.trackLocationEvent.y)
+          this.props.trackLocationEvent.type = undefined; 
+      }
     }
 
 
     render() {
 
       let isInBounds = this.inRater(this.props.trackLocationEvent); 
-      if (isInBounds && this.props.trackLocationEvent.type == 'end' && !this.state.alreadyAddedSong) {
-          this.props.addSong(this.props.currentSong, this.props.trackLocationEvent.y)
-      }
 
       return <g>
                <rect ref={rect => this.rect =rect} 
