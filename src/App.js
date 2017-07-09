@@ -9,19 +9,6 @@ import * as d3 from 'd3'
 
 class App extends Component {
 
-  constructor(props) {
-        super(props); 
-        this.state = {
-            songs: ['Battery', 'Master of Puppets', 'The Thing That Should Not Be', 'Welcome Home (Sanitarium)'
-            ,'Disposable Heroes', 'Leper Messiah', 'Orion', 'Damage, Inc.'
-            ].map(it => new Song(it))
-        }
-  }
-
-   draw() {
-        const node = this.node;
-   }
-
   render() {
     return (
       <div className="App">
@@ -38,8 +25,8 @@ class App extends Component {
                       <stop offset="100%" stopColor="#black"></stop>
                     </linearGradient>
                   </defs>
-              <TrackDisplayer songs={this.state.songs} ></TrackDisplayer> 
               <Rater></Rater> 
+              <TrackDisplayer></TrackDisplayer> 
             </svg>  
         </div>
       </div>
