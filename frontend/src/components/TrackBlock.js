@@ -30,7 +30,7 @@ export default class TrackBlock extends Component {
        {this.props.songs.map( (it,i) => { 
             return <g id={i} key={'track'+it.title}>
                      <rect fill="red" className="draggable" width="60" height="50" x="60" y={this.calculateY(i)} ></rect>
-                     <text fill="white" dy=".35em"  x="65" y={this.calculateY(i)+20}>{it.title + '(' + it.score + ')'}</text>
+                     <text fill="white" dy=".35em"  x="65" y={this.calculateY(i)+20}>{it.title}</text>
                    </g>
         })}
     </g>}

@@ -48,8 +48,11 @@ export default class Rater extends Component {
         }
     }
     dragEnd() {
+        let self = this
         return function(d)  {
           d3.select(this).classed('active', false)
+          let songName = this.textContent;  
+          self.props.updateScore({title:songName}, d3.event.y, true)
         }
     }
 
