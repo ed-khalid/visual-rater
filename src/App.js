@@ -1,10 +1,7 @@
 import React, { Component } from 'react';
-import logo from './logo.svg';
-import Song from './models/song'
-import TrackDisplayer from './containers/TrackDisplayer'
-import Rater from './containers/Rater'
+import TrackBlockContainer from './containers/TrackBlockContainer'
+import RaterContainer from './containers/RaterContainer'
 import './App.css';
-import * as d3 from 'd3'
 
 class App extends Component {
 
@@ -24,8 +21,8 @@ class App extends Component {
                       <stop offset="100%" stopColor="#black"></stop>
                     </linearGradient>
                   </defs>
-              <Rater></Rater> 
-              <TrackDisplayer></TrackDisplayer> 
+              <RaterContainer></RaterContainer> 
+              <TrackBlockContainer></TrackBlockContainer> 
             </svg>  
         </div>
       </div>
