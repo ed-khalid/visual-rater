@@ -10,7 +10,8 @@ class RaterContainer extends Component {
         return <Rater 
                      trackLocationEvent={this.props.trackLocationEvent}   
                      songs={this.props.songs}
-                     currentSong={this.props.currentSong}
+                     newSong={this.props.newSong}
+                     updateScore={this.props.updateScore}
                      inRater= {this.inRater}
                 >
                 </Rater>
@@ -19,7 +20,7 @@ class RaterContainer extends Component {
     componentDidUpdate() {
       let isInBounds = this.inRater(this.props.trackLocationEvent); 
       if (isInBounds && this.props.trackLocationEvent.type === 'end') {
-          this.props.addSong(this.props.currentSong, this.props.trackLocationEvent.y)
+          this.props.addSong(this.props.newSong, this.props.trackLocationEvent.y)
           this.props.trackLocationEvent.type = undefined; 
       }
     }
@@ -33,14 +34,15 @@ function mapStateToProps(state) {
     return {
         trackLocationEvent: state.trackLocation
         ,songs: state.raterSongs
-        ,currentSong: state.currentSong 
+        ,newSong: state.newSong 
+        ,currentSong: state.currentSong
     }
 }
 
 function mapDispatchToProps(dispatch){
     return bindActionCreators({ 
          addSong :    SongActionCreator 
-         ,songAdded : SongActionCreator
+         ,updateScore : SongActionCreator 
     
 },dispatch) 
 }

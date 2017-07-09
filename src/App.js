@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import TrackBlockContainer from './containers/TrackBlockContainer'
 import RaterContainer from './containers/RaterContainer'
-import './App.css';
+import TrackListContainer from './containers/TrackListContainer' 
 
 class App extends Component {
 
@@ -10,6 +10,7 @@ class App extends Component {
       <div className="App">
         <h1 className="tk-arvo">Visual Rater</h1>
         <div style={{marginTop:'10px'}}> 
+          <TrackListContainer></TrackListContainer>
             <svg width="500" height="500">
                 <defs>
                     <linearGradient id="linear-gradient" x1="0%" x2="0%" y1="100%" y2="0%">

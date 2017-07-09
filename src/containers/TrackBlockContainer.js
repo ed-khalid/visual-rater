@@ -18,7 +18,7 @@ class TrackBlockContainer extends Component {
 
 function mapStateToProps(state) {
     return  {
-        songs : state.tracklist
+        songs : state.trackBlocks
     }
 }
 
