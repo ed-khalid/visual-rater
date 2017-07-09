@@ -1,13 +1,9 @@
 import React, { Component } from 'react'
 import '../App.css' 
-import Song from  '../models/song' 
 import * as d3  from 'd3'
-import { connect } from 'react-redux'
-import { bindActionCreators } from 'redux'
-import { SongActionCreator } from '../actions'
 
 
-class Rater extends Component {
+export default class Rater extends Component {
 
     constructor(props) {
         super(props)
@@ -15,20 +11,12 @@ class Rater extends Component {
     } 
 
     componentDidUpdate() {
-      let isInBounds = this.inRater(this.props.trackLocationEvent); 
-      if (isInBounds && this.props.trackLocationEvent.type == 'end') {
-          this.props.addSong(this.props.currentSong, this.props.trackLocationEvent.y)
-          this.props.trackLocationEvent.type = undefined; 
-      }
-      if (this.props.songs.length) {
-          this.attachDragEvents(); 
-      }
+      this.attachDragEvents(); 
     }
-
 
     render() {
 
-      let isInBounds = this.inRater(this.props.trackLocationEvent); 
+      let isInBounds = this.props.inRater(this.props.trackLocationEvent); 
 
       return <g ref={node => this.node= node} >
                <rect 
@@ -64,24 +52,7 @@ class Rater extends Component {
           d3.select(this).classed('active', false)
         }
     }
-    postDragEnd(d) {
-        //if (this.inRater(d)) this.addLine(d); 
-    }
-    informRater(d, type) {
-        if (type == 'hover') {
-            this.highlightRater(this.inRater(d)) 
-        }
-        else if (type =='dragend') {
-          this.postDragEnd(d); 
-        }
-    }
-    highlightRater(val) {
-        d3.select('.rater').classed('active', val)
-    }
 
-    inRater(event) {
-       return event.x >= 340 && event.x <= 450; 
-    }
 
     attachDragEvents() {
         d3.select(this.node).selectAll('g').call(d3.drag()
@@ -93,21 +64,3 @@ class Rater extends Component {
 
 
 } 
-
-function mapStateToProps(state) {
-    return {
-        trackLocationEvent: state.trackLocation
-        ,songs: state.raterSongs
-        ,currentSong: state.currentSong 
-    }
-}
-
-function mapDispatchToProps(dispatch){
-    return bindActionCreators({ 
-         addSong :    SongActionCreator 
-         ,songAdded : SongActionCreator
-    
-},dispatch) 
-}
-
-export default connect(mapStateToProps, mapDispatchToProps)(Rater)

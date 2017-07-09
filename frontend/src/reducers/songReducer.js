@@ -35,7 +35,7 @@ export function tracklistSongReducer(state = trackDisplayerSongs, action) {
     switch(action.type) {
         case ACTIONS.MOVE_SONG_TO_RATER: { 
             let song = action.songInfo 
-            return  state.filter(it => it.title != song.title)
+            return  state.filter(it => it.title !== song.title)
         }   
         default: return state;
     }

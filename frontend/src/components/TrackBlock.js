@@ -1,13 +1,8 @@
 import React, { Component } from 'react'
-import '../App.css' 
-import Song from  '../models/song' 
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux'
-import { CurrentSongActionCreator, TrackLocationActionCreator } from '../actions'
 import * as d3  from 'd3'
 
 
-class TrackDisplayer extends Component {
+export default class TrackBlock extends Component {
 
     constructor(props) {
         super(props)
@@ -44,7 +39,7 @@ class TrackDisplayer extends Component {
         let self = this
         return function(d) {
           d3.select(this).raise().classed("active", true);
-          let index = parseInt(d3.select(this).attr('id'))
+          let index = parseInt(d3.select(this).attr('id'),10)
           self.props.currentSong(self.props.songs[index])
         }
      }
@@ -67,17 +62,7 @@ class TrackDisplayer extends Component {
      } 
 } 
 
-function mapStateToProps(state) {
-    return  {
-        songs : state.tracklist
-    }
-}
 
-function mapDispatchToProps(dispatch) {
-    return bindActionCreators({ currentSong: CurrentSongActionCreator,   
-        trackLocation: TrackLocationActionCreator},dispatch )
-}
 
-export default connect(mapStateToProps, mapDispatchToProps)(TrackDisplayer)
 
 
