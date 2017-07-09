@@ -3,33 +3,65 @@ import '../App.css'
 import Song from  '../models/song' 
 import * as d3  from 'd3'
 import { connect } from 'react-redux'
+import { bindActionCreators } from 'redux'
+import { SongActionCreator } from '../actions'
 
 
 class Rater extends Component {
+
     constructor(props) {
         super(props)
     } 
 
-    componentDidUpdate(prevProps,nextProps ) {
-        if(this.props.trackLocation) {
-            console.log('Rater is listening')
+    componentDidUpdate() {
+        console.log(this.props);
+    }
+
+    componentWillReceiveProps(props) {
+        if (props.songs.length > this.props.songs.length ) {
+            this.setState({alreadyAddedSong:true}, () => {console.log('done')})
+        }
+        else {
+            this.setState({alreadyAddedSong:false})
         }
     }
 
+
     render() {
-      return <rect ref={rect => this.rect =rect} width="50" height="600" x="400" className="rater" fill="url(#linear-gradient)"></rect>
+
+      let isInBounds = this.inRater(this.props.trackLocationEvent); 
+      if (isInBounds && this.props.trackLocationEvent.type == 'end' && !this.state.alreadyAddedSong) {
+          this.props.addSong(this.props.currentSong, this.props.trackLocationEvent.y)
+      }
+
+      return <g>
+               <rect ref={rect => this.rect =rect} 
+                  width="50" 
+                  height="600" 
+                  x="400" 
+                  className={'rater' +( (isInBounds)? ' active':'')} 
+                  fill="url(#linear-gradient)">
+               </rect>
+               {this.props.songs.map(song => {
+                  return <g key={song.title}>
+                       <line x1="400" x2="450" y1={song.y} y2={song.y} stroke="#ddd" strokeWidth="3px"></line> 
+                       <text fill="white" x="330" y={song.y} dy=".35em">{song.title}</text> 
+                   </g>
+               }) }
+             </g>
+
     }
 
     dragStart() {
-          d3.select(this).raise().classed("active", true);
+          d3.select(this).classed("active", true);
     }
-     drag() {
+    drag() {
           d3.select(this).select('line').attr('y1', d3.event.y).attr('y2', d3.event.y)
           d3.select(this).select('text').attr('y', d3.event.y)
-     }
-     dragEnd() {
+    }
+    dragEnd() {
        d3.select(this).classed('active', false)
-     }
+    }
     postDragEnd(d) {
         //if (this.inRater(d)) this.addLine(d); 
     }
@@ -45,39 +77,34 @@ class Rater extends Component {
         d3.select('.rater').classed('active', val)
     }
 
-     inRater(event) {
-       return event.x >= 395 && event.x <= 445; 
-     }
+    inRater(event) {
+       return event.x >= 340 && event.x <= 450; 
+    }
 
-     addLine(d) {
-       let g = this.rect.append('g')
-          .call(d3.drag()
+    attachDragEvents() {
+          d3.drag()
                 .on("start", this.dragStart)
                 .on("drag", this.drag)
                 .on("end", this.dragEnd)
-          )
-       g.append('line')
-        .attr('x1', 400)
-        .attr('x2', 450)
-        .attr('y1', d.y)
-        .attr('y2', d.y)
-        .attr('class', 'draggable')
-        .attr('stroke','#ddd')
-        .attr('stroke-width', '3px')
-       g.append('text')
-        .attr('x',  330 )
-        .attr('y',  d.y)
-        .attr('dy', '.35em')
-        .text( d.songName )
-        .style('fill', 'white')
-     }
+    }
+
 
 } 
 
 function mapStateToProps(state) {
     return {
-        trackLocation: state.trackLocation
+        trackLocationEvent: state.trackLocation
+        ,songs: state.raterSongs
+        ,currentSong: state.currentSong 
     }
 }
 
-export default connect(mapStateToProps)(Rater)
+function mapDispatchToProps(dispatch){
+    return bindActionCreators({ 
+         addSong :    SongActionCreator 
+         ,songAdded : SongActionCreator
+    
+},dispatch) 
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(Rater)
