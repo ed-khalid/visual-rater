@@ -11,9 +11,7 @@ class TrackDisplayer extends Component {
 
     constructor(props) {
         super(props)
-        const mydudes =[]; 
         this.attachDragEvents = this.attachDragEvents.bind(this); 
-        this.dragStarted = false;
     } 
 
     componentDidMount() {

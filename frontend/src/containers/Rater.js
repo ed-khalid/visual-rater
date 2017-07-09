@@ -11,6 +11,7 @@ class Rater extends Component {
 
     constructor(props) {
         super(props)
+        this.attachDragEvents = this.attachDragEvents.bind(this); 
     } 
 
     componentDidUpdate() {
@@ -19,6 +20,9 @@ class Rater extends Component {
           this.props.addSong(this.props.currentSong, this.props.trackLocationEvent.y)
           this.props.trackLocationEvent.type = undefined; 
       }
+      if (this.props.songs.length) {
+          this.attachDragEvents(); 
+      }
     }
 
 
@@ -26,8 +30,8 @@ class Rater extends Component {
 
       let isInBounds = this.inRater(this.props.trackLocationEvent); 
 
-      return <g>
-               <rect ref={rect => this.rect =rect} 
+      return <g ref={node => this.node= node} >
+               <rect 
                   width="50" 
                   height="600" 
                   x="400" 
@@ -45,14 +49,20 @@ class Rater extends Component {
     }
 
     dragStart() {
+        return function(d) { 
           d3.select(this).classed("active", true);
+        }
     }
     drag() {
+        return function (d)  {
           d3.select(this).select('line').attr('y1', d3.event.y).attr('y2', d3.event.y)
           d3.select(this).select('text').attr('y', d3.event.y)
+        }
     }
     dragEnd() {
-       d3.select(this).classed('active', false)
+        return function(d)  {
+          d3.select(this).classed('active', false)
+        }
     }
     postDragEnd(d) {
         //if (this.inRater(d)) this.addLine(d); 
@@ -74,10 +84,11 @@ class Rater extends Component {
     }
 
     attachDragEvents() {
-          d3.drag()
-                .on("start", this.dragStart)
-                .on("drag", this.drag)
-                .on("end", this.dragEnd)
+        d3.select(this.node).selectAll('g').call(d3.drag()
+            .on('start', this.dragStart())
+            .on('drag', this.drag())
+            .on('end', this.dragEnd())
+          )
     }
 
 
