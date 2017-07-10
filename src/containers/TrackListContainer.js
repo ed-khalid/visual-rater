@@ -1,7 +1,5 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux'
-import { CurrentSongActionCreator, TrackLocationActionCreator } from '../actions'
 import TrackList  from '../components/TrackList'
 
 

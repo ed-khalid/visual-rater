@@ -14,25 +14,24 @@ export const initialSongs =
 
 
 
-export function newSongReducer(state = {} ,  action ) {
-
+export function singleSongReducer(state = {} ,  action ) {
     switch(action.type) {
-        case ACTIONS.CURRENTLY_DRAGGED_SONG : return Object.assign({}, state, action.songInfo ) 
+        case ACTIONS.CURRENTLY_DRAGGED_SONG: 
+        case ACTIONS.MOVE_SONG_TO_RATER : return action.songInfo ? Object.assign({}, action.songInfo ) : null; 
         default: return state; 
     }
-
 }
 
-export function raterSongReducer(state =[] , action ) {
+export function raterSongsReducer(state =[] , action ) {
     switch(action.type) {
         case ACTIONS.MOVE_SONG_TO_RATER: return [...state, action.songInfo]
         default: return state;
     }
 }  
 
-export function trackListSongReducer(state = initialSongs, action) {
+export function trackListSongsReducer(state = initialSongs, action) {
     switch(action.type) {
-        case ACTIONS.UPDATE_SCORE: { 
+        case ACTIONS.UPDATE_RATER_SCORE: { 
             let newSong = action.songInfo; 
             return state.map(it => { 
                 if (it.title === newSong.title ) return newSong; 
@@ -43,7 +42,7 @@ export function trackListSongReducer(state = initialSongs, action) {
     }
 }  
 
-export function trackBlockSongReducer(state = initialSongs, action) {
+export function trackBlockSongsReducer(state = initialSongs, action) {
 
     switch(action.type) {
         case ACTIONS.MOVE_SONG_TO_RATER: { 

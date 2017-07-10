@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import TrackBlockContainer from './containers/TrackBlockContainer'
 import RaterContainer from './containers/RaterContainer'
 import TrackListContainer from './containers/TrackListContainer' 
+import './App.css'
 
 class App extends Component {
 
