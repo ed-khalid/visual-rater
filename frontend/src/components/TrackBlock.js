@@ -39,8 +39,6 @@ export default class TrackBlock extends Component {
         let self = this
         return function(d) {
           d3.select(this).raise().classed("active", true);
-          let index = parseInt(d3.select(this).attr('id'),10)
-          self.props.currentSong(self.props.songs[index])
         }
      }
 
@@ -49,7 +47,9 @@ export default class TrackBlock extends Component {
         return function(d) {
             d3.select(this).select('rect').attr("x", d3.event.x).attr("y", d3.event.y);
             d3.select(this).select('text').attr("x", d3.event.x+5).attr("y", d3.event.y+20);
-            self.props.trackLocation(d3.event)
+            let index = parseInt(d3.select(this).attr('id'),10)
+            self.props.trackLocationC(d3.event)
+            self.props.currentlyDraggedSongC(self.props.songs[index])
         }
      }
 
@@ -57,7 +57,9 @@ export default class TrackBlock extends Component {
         let self = this; 
         return function(d) { 
           d3.select(this).classed("active", false);
-          self.props.trackLocation(d3.event)
+          self.props.trackLocationC(d3.event)
+          self.props.currentlyDraggedSongC(null)
+          self.props.trackLocationC(null); 
         }
      } 
 } 

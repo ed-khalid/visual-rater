@@ -1,5 +1,4 @@
 import React, { Component } from 'react'
-import '../App.css' 
 import * as d3  from 'd3'
 
 
@@ -42,17 +41,18 @@ export default class Rater extends Component {
         }
     }
     drag() {
+        let self = this
         return function (d)  {
           d3.select(this).select('line').attr('y1', d3.event.y).attr('y2', d3.event.y)
           d3.select(this).select('text').attr('y', d3.event.y)
+          let songName = this.textContent;  
+          self.props.updateScoreC({title:songName, score:d3.event.y})
         }
     }
     dragEnd() {
         let self = this
         return function(d)  {
           d3.select(this).classed('active', false)
-          let songName = this.textContent;  
-          self.props.updateScore({title:songName}, d3.event.y, true)
         }
     }
 
