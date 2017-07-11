@@ -6,6 +6,13 @@ import Rater from '../components/Rater'
 
 
 class RaterContainer extends Component {
+    constructor(props) {
+        super(props)
+        this.x=600
+        this.y=80
+        this.raterWidth=50
+    }
+
     render() {
         return <Rater 
                      trackLocationEvent={this.props.trackLocationEvent}   
@@ -13,6 +20,9 @@ class RaterContainer extends Component {
                      currentlyDraggedSong={this.props.currentlyDraggedSong}
                      updateScoreC={this.props.updateScoreC}
                      inRater= {this.inRater}
+                     x={this.x}
+                     y={this.y}
+                     raterWidth={this.raterWidth}
                 >
                 </Rater>
     } 
@@ -30,7 +40,7 @@ class RaterContainer extends Component {
 
     inRater(event) {
        if (!event) return false;
-       return event.x >= 340 && event.x <= 450; 
+       return event.x >= this.x && event.x <= this.x+this.raterWidth; 
     }
 } 
 

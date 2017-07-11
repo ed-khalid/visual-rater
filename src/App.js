@@ -10,9 +10,9 @@ class App extends Component {
     return (
       <div className="App">
         <h1 className="tk-arvo">Visual Rater</h1>
-        <div style={{marginTop:'10px'}}> 
+        <div style={{height:'1500px', marginTop:'10px'}}> 
           <TrackListContainer></TrackListContainer>
-            <svg width="500" height="500">
+            <svg width="1000" height="1000">
                 <defs>
                     <linearGradient id="linear-gradient" x1="0%" x2="0%" y1="100%" y2="0%">
                       <stop offset="0%" stopColor="black"></stop>
