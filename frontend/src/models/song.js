@@ -9,4 +9,6 @@ export default class Song {
 
     title;
     score;
+    artist;
+    album;
 }

@@ -1,3 +1,4 @@
+import {currentArtist, currentAlbum } from '../constants/initialState'    
 export const ACTIONS = { 
      TRACK_LOCATION: 'TRACK_LOCATION'
      , CURRENTLY_DRAGGED_SONG: 'CURRENT_SONG'
@@ -28,9 +29,12 @@ export function RaterSongActionCreator(song,isOnRater) {
         type: ACTIONS.MOVE_SONG_TO_RATER
         ,songInfo : { title:song.title, y:song.score }   
     }
-    else return {
-        type: ACTIONS.UPDATE_RATER_SCORE
+    else {
+        song.artist = currentArtist 
+        song.album = currentAlbum 
+        return {type: ACTIONS.UPDATE_RATER_SCORE
         ,songInfo : song 
+        }
     }
 }
 
