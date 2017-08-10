@@ -7,9 +7,6 @@ export default class Rater extends Component {
     constructor(props) {
         super(props)
         this.attachDragEvents = this.attachDragEvents.bind(this); 
-        this.height = 600;
-        let _scale  = d3.scaleLinear().domain([this.props.y, this.props.y+this.height]).range([10,0])
-        this.songScale = (x) => _scale(x).toFixed(2)
     } 
 
     componentDidUpdate() {
@@ -23,7 +20,7 @@ export default class Rater extends Component {
       return <g ref={node => this.node= node} >
                <rect 
                   width={this.props.raterWidth} 
-                  height="600" 
+                  height={this.props.height} 
                   x={this.props.x} 
                   y={this.props.y}
                   className={'rater' +( (isInBounds)? ' active':'')} 
@@ -47,7 +44,7 @@ export default class Rater extends Component {
 
 
     isDragInBounds(y) {
-        return y  >= this.props.y && y <= this.props.y + this.height; 
+        return y  >= this.props.y && y <= this.props.y + this.props.height; 
     }
 
     drag() {
@@ -59,7 +56,7 @@ export default class Rater extends Component {
           d3.select(this).select('line').attr('y1', d3.event.y).attr('y2', d3.event.y)
           d3.select(this).select('text').attr('y', d3.event.y)
           let songName = this.textContent;  
-          self.props.updateScoreC({title:songName, score:self.songScale(d3.event.y)})
+          self.props.updateScoreC({title:songName, score:self.props.songScale(d3.event.y)})
         }
     }
     dragEnd() {

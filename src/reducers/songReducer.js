@@ -1,18 +1,6 @@
 import { ACTIONS } from '../actions'
 import  Song from '../models/song'
-
-export const initialSongs =  
-  ['Battery'
-  ,'Master of Puppets'
-  ,'The Thing That Should Not Be'
-  ,'Welcome Home (Sanitarium)'
-  ,'Disposable Heroes'
-  ,'Leper Messiah'
-  ,'Orion'
-  ,'Damage, Inc.'
-  ].map(it => new Song(it))
-
-
+import { initialSongs }  from '../constants/initialState'
 
 export function singleSongReducer(state = {} ,  action ) {
     switch(action.type) {
@@ -32,7 +20,7 @@ export function raterSongsReducer(state =[] , action ) {
 export function trackListSongsReducer(state = initialSongs, action) {
     switch(action.type) {
         case ACTIONS.UPDATE_RATER_SCORE: { 
-            let newSong = action.songInfo; 
+            let newSong = action.songInfo 
             return state.map(it => { 
                 if (it.title === newSong.title ) return newSong; 
                 return it; 

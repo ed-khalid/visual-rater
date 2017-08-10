@@ -3,6 +3,7 @@ import { connect } from 'react-redux'
 import { bindActionCreators } from 'redux'
 import { RaterSongActionCreator } from '../actions'
 import Rater from '../components/Rater' 
+import * as d3  from 'd3'
 
 
 class RaterContainer extends Component {
@@ -11,6 +12,9 @@ class RaterContainer extends Component {
         this.x=600
         this.y=80
         this.raterWidth=50
+        this.height = 600;
+        let _scale  = d3.scaleLinear().domain([this.y, this.y+this.height]).range([10,0])
+        this.songScale = (x) => _scale(x).toFixed(2)
     }
 
     render() {
@@ -22,6 +26,8 @@ class RaterContainer extends Component {
                      inRater= {this.inRater}
                      x={this.x}
                      y={this.y}
+                     height={this.height}
+                     songScale={this.songScale}
                      raterWidth={this.raterWidth}
                 >
                 </Rater>
@@ -33,7 +39,7 @@ class RaterContainer extends Component {
           let song = this.props.currentlyDraggedSong
           song.score = this.props.trackLocationEvent.y 
           this.props.addSongC(song); 
-          this.props.updateScoreC(song)
+          this.props.updateScoreC({title:song.title,score:this.songScale(song.score)})
           this.props.trackLocationEvent.type = null; 
       }
     }
