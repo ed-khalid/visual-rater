@@ -6,6 +6,7 @@ defmodule VisualRaterWeb.Router do
   end
 
   scope "/api", VisualRaterWeb do
+    resources "/artists", ArtistController, except: [:new, :edit]
     pipe_through :api
   end
 end

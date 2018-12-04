@@ -10,10 +10,10 @@ config :visual_rater,
   ecto_repos: [VisualRater.Repo]
 
 # Configures the endpoint
-config :visual_rater, VisualRater.Endpoint,
+config :visual_rater, VisualRaterWeb.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "FuXUg9e3VDyFXJkSS6KefcmlXX69Kxf/6Qdpy8ST/zNw2+faqW1fl68FhT7D08OM",
-  render_errors: [view: VisualRater.ErrorView, accepts: ~w(json)],
+  render_errors: [view: VisualRaterWeb.ErrorView, accepts: ~w(json)],
   pubsub: [name: VisualRater.PubSub,
            adapter: Phoenix.PubSub.PG2]
 

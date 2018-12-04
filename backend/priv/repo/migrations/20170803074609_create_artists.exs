@@ -1,9 +1,10 @@
-defmodule VisualRater.Repo.Migrations.CreateArtist do
+defmodule VisualRater.Repo.Migrations.CreateArtists do
   use Ecto.Migration
 
   def change do
     create table(:artists) do
       add :name, :string
+
       timestamps()
     end
 
