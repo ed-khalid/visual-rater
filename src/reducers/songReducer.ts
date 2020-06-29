@@ -1,8 +1,7 @@
 import { ACTIONS } from '../actions'
-import  Song from '../models/song'
 import { initialSongs }  from '../constants/initialState'
 
-export function singleSongReducer(state = {} ,  action ) {
+export function singleSongReducer(state = {} ,  action:any ) {
     switch(action.type) {
         case ACTIONS.CURRENTLY_DRAGGED_SONG: 
         case ACTIONS.MOVE_SONG_TO_RATER : return action.songInfo ? Object.assign({}, action.songInfo ) : null; 
@@ -10,15 +9,17 @@ export function singleSongReducer(state = {} ,  action ) {
     }
 }
 
-export function raterSongsReducer(state =[] , action ) {
+export function raterSongsReducer(state =[] , action:any ) {
     switch(action.type) {
         case ACTIONS.MOVE_SONG_TO_RATER: return [...state, action.songInfo]
         default: return state;
     }
 }  
 
-export function trackListSongsReducer(state = initialSongs, action) {
+export function songsReducer(state = initialSongs, action:any) {
+
     switch(action.type) {
+
         case ACTIONS.UPDATE_RATER_SCORE: { 
             let newSong = action.songInfo 
             return state.map(it => { 
@@ -26,11 +27,12 @@ export function trackListSongsReducer(state = initialSongs, action) {
                 return it; 
             })  
         }   
+
         default: return state;
     }
 }  
 
-export function trackBlockSongsReducer(state = initialSongs, action) {
+export function trackBlockSongsReducer(state = initialSongs, action:any) {
 
     switch(action.type) {
         case ACTIONS.MOVE_SONG_TO_RATER: { 

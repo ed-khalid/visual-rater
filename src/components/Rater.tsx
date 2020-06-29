@@ -1,10 +1,23 @@
-import React, { Component } from 'react'
+import { Component } from 'react'
 import * as d3  from 'd3'
+import React from 'react';
+import { BaseRaterProps } from '../containers/RaterContainer';
 
+export interface RaterProps extends BaseRaterProps {
+    raterWidth:number;
+    inRater:Function;
+    songs:any;
+    songScale:any;
+    height:number;
+    x:number;
+    y:number;
+}
 
-export default class Rater extends Component {
+export default class Rater extends Component<RaterProps, {}> {
 
-    constructor(props) {
+     node:any;
+
+    constructor(props: RaterProps) {
         super(props)
         this.attachDragEvents = this.attachDragEvents.bind(this); 
     } 
@@ -26,7 +39,7 @@ export default class Rater extends Component {
                   className={'rater' +( (isInBounds)? ' active':'')} 
                   fill="url(#linear-gradient)">
                </rect>
-               {this.props.songs.map(song => {
+               {this.props.songs.map((song:any) => {
                   return <g key={song.title}>
                        <line x1={this.props.x} x2={this.props.x+this.props.raterWidth} y1={song.y} y2={song.y} stroke="#ddd" strokeWidth="3px"></line> 
                        <text fill="white" x={this.props.x-70}  y={song.y} dy=".35em">{song.title}</text> 
@@ -36,44 +49,42 @@ export default class Rater extends Component {
 
     }
 
-    dragStart() {
-        return function(d) { 
-          d3.select(this).classed("active", true);
+    dragStart()  {
+        return function(g:SVGElement, _this:any) { 
+          d3.select(_this).classed("active", true);
         }
     }
 
 
-    isDragInBounds(y) {
+    isDragInBounds(y:number) {
         return y  >= this.props.y && y <= this.props.y + this.props.height; 
     }
 
     drag() {
         let self = this
-        return function (d)  {
+        return function (_:SVGElement, _this:any)  {
           if (!self.isDragInBounds(d3.event.y)) {
               return;
           }
-          d3.select(this).select('line').attr('y1', d3.event.y).attr('y2', d3.event.y)
-          d3.select(this).select('text').attr('y', d3.event.y)
-          let songName = this.textContent;  
+          d3.select(_this).select('line').attr('y1', d3.event.y).attr('y2', d3.event.y)
+          d3.select(_this).select('text').attr('y', d3.event.y)
+          let songName = _this.textContent;  
           self.props.updateScoreC({title:songName, score:self.props.songScale(d3.event.y)})
         }
     }
     dragEnd() {
-        let self = this
-        return function(d)  {
-          d3.select(this).classed('active', false)
+        return function(_:SVGElement, _this:any)  {
+          d3.select(_this).classed('active', false)
         }
     }
 
 
     attachDragEvents() {
-        d3.select(this.node).selectAll('g').call(d3.drag()
+        d3.select(this.node).selectAll<SVGElement, any>('g').call(d3.drag<SVGElement, any>()
             .on('start', this.dragStart())
             .on('drag', this.drag())
             .on('end', this.dragEnd())
-          )
+          );
     }
-
 
 } 

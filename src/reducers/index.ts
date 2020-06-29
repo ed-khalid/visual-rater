@@ -1,13 +1,12 @@
 import { combineReducers } from 'redux'
-import  TrackLocationReducer  from './trackReducer'
-import  { raterSongsReducer, trackListSongsReducer, singleSongReducer, trackBlockSongsReducer  }    from './songReducer'
+import TrackLocationReducer  from './trackReducer'
+import { raterSongsReducer, songsReducer, singleSongReducer, trackBlockSongsReducer  }    from './songReducer'
 
 const rootReducer = combineReducers({
 
     trackLocation:  TrackLocationReducer
-
     ,trackBlocks: trackBlockSongsReducer  
-    ,trackList : trackListSongsReducer 
+    ,songs : songsReducer 
     ,raterSongs: raterSongsReducer 
     ,currentlyDraggedSong: singleSongReducer
 })
