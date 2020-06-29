@@ -4,21 +4,41 @@
   "author": "Ed Khalid",
   "private": true,
   "dependencies": {
+    "@types/d3": "^5.7.2",
+    "@types/jest": "^23.3.14",
+    "@types/node": "^10.17.26",
+    "@types/react": "^16.9.41",
+    "@types/react-dom": "^16.9.8",
+    "@types/react-redux": "^7.1.9",
+    "@types/superagent": "3.8.4",
     "d3": "4.9.1",
     "react": "^15.6.1",
     "react-dom": "^15.6.1",
     "react-redux": "5.0.5",
     "react-router": "4.1.1",
-    "redux": "3.7.1",
-    "superagent": "*"
+    "redux": "4.0.5",
+    "superagent": "^4.0.0",
+    "typescript": "^3.9.5"
   },
   "devDependencies": {
-    "react-scripts": "1.0.7"
+    "react-scripts": "3.4.1"
   },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
 }

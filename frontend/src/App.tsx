@@ -3,6 +3,7 @@ import TrackBlockContainer from './containers/TrackBlockContainer'
 import RaterContainer from './containers/RaterContainer'
 import TrackListContainer from './containers/TrackListContainer' 
 import './App.css'
+import { initialSongs } from './constants/initialState';
 
 class App extends Component {
 
@@ -23,7 +24,16 @@ class App extends Component {
                       <stop offset="100%" stopColor="#black"></stop>
                     </linearGradient>
                   </defs>
-              <RaterContainer></RaterContainer> 
+              <RaterContainer 
+                trackLocationEvent = { {x:0, y:0, type:null} } 
+                songs = { initialSongs }
+                songScale = { null }
+                addSongC = { () => {} }
+                updateScoreC = { () => {}  }
+                x = {0}
+                y = {0}
+                currentlyDraggedSong = { null }
+              ></RaterContainer> 
               <TrackBlockContainer></TrackBlockContainer> 
             </svg>  
         </div>
