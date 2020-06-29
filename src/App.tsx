@@ -4,6 +4,7 @@ import RaterContainer from './containers/RaterContainer'
 import TrackListContainer from './containers/TrackListContainer' 
 import './App.css'
 import { initialSongs } from './constants/initialState';
+import UnratedContainer from './containers/UnratedContainer';
 
 class App extends Component {
 
@@ -13,6 +14,7 @@ class App extends Component {
         <h1 className="tk-arvo">Visual Rater</h1>
         <div style={{height:'1500px', marginTop:'10px'}}> 
           <TrackListContainer></TrackListContainer>
+          <UnratedContainer items={[]}></UnratedContainer>
             <svg width="1000" height="1000">
                 <defs>
                     <linearGradient id="linear-gradient" x1="0%" x2="0%" y1="100%" y2="0%">
@@ -34,7 +36,6 @@ class App extends Component {
                 y = {0}
                 currentlyDraggedSong = { null }
               ></RaterContainer> 
-              <TrackBlockContainer></TrackBlockContainer> 
             </svg>  
         </div>
       </div>
