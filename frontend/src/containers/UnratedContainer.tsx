@@ -1,11 +1,7 @@
 import React from "react";
 import { Unrated } from "../components/Unrated";
-import { connect } from "react-redux";
-import { Item } from "../models/item";
+import { Item } from "../models/Item";
 
-const UnratedContainer = ({items}:{items:Item[]}) => (
+export const UnratedContainer = ({items}:{items:Item[]}) => (
     <Unrated items={items} ></Unrated>
 );
-
-export default connect(UnratedContainer);
-      
