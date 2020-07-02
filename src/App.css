@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css?family=Abril+Fatface');
+
 .App {
   text-align: center;
   background-color: #282c34;
@@ -15,12 +17,27 @@
   }
 }
 
+
+.presection {
+  margin-top: 15vh;
+  margin-right : 15vh;
+  height: 20vh;
+}
+.section {
+  border: 1px solid white;
+  height: 50vh;
+  width: 50vh;
+}
+
+.section.right {
+  position: relative;
+}
 .main {
   background-color: #282c34;
   min-height: 100vh;
   display: flex;
-  flex-direction: column;
-  align-items: center;
+  margin-top: 6vh;  
+  flex-direction: row;
   justify-content: center;
   font-size: calc(10px + 2vmin);
   color: white;
@@ -28,6 +45,7 @@
 
 header {
   font-size: 10em;
+  font-family: 'Abril Fatface', serif;
 }
 
 .App-link {
