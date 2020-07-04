@@ -7,8 +7,6 @@ interface Props {
     items: Item[];
 }
 
-
-
 export const Rater:React.FunctionComponent<Props> = (props) => {
 
     const  [ratedItems, updateRatedItems] = useState<Item[]>([]);
@@ -16,8 +14,9 @@ export const Rater:React.FunctionComponent<Props> = (props) => {
     const onDrop = (evt:DragEvent<HTMLDivElement>) => {
         const text = evt.dataTransfer.getData('text/plain');   
         const item = props.items.find(it => it.name === text);
+        // this could happen because anything might be dropped here
         if (item === undefined) {
-            throw new TypeError('Could not find a matching item');
+            return;
         }
         updateRatedItems([...ratedItems, item]); 
         const newItems = props.items.filter(it => it.name !== text); 
@@ -30,6 +29,7 @@ export const Rater:React.FunctionComponent<Props> = (props) => {
     return (
       <div className="rater" onDrop={onDrop} onDragOver={onDragover}>
           <ul>
+              <svg></svg>
               {ratedItems.map(it => <li key={it.name}>{it.name}</li> )}
           </ul>
       </div>
