@@ -1,5 +1,5 @@
 import { Item } from "../models/Item";
-import React, { DragEvent } from "react";
+import React, { DragEvent, useState } from "react";
 import './Unrated.css';
 
 
@@ -10,6 +10,7 @@ interface Props {
 export const Unrated:React.FunctionComponent<Props> = ({items}:{items:Item[]}) => {
     const dragStart = (evt:DragEvent<HTMLDivElement>) => {
         let element = evt.target as HTMLDivElement; 
+        evt.dataTransfer.setData('text/plain', element.innerText);
             requestAnimationFrame( () => {
                 if (element != null) {
                   element.classList.add('hide');
@@ -28,4 +29,3 @@ export const Unrated:React.FunctionComponent<Props> = ({items}:{items:Item[]}) =
         </ol>
     );
 };
-
