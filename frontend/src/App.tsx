@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import './App.css';
 import { Unrated } from './components/Unrated';
 import { initialModel } from './models/initialModel';
@@ -6,19 +6,21 @@ import { UnratedNav } from './components/UnratedNav';
 import { Rater } from './components/Rater';
 
 function App() {
+
+  const [items, updateItems] = useState(initialModel);  
   return (
     <div className="App">
       <header>VisRater</header>
       <div className="main">
         <div className="presection">
-          { initialModel.length > 8 && 
+          { items.length > 8 && 
           <UnratedNav></UnratedNav> }
         </div>
         <div className="section left">
-          <Unrated items={initialModel}> </Unrated>
+          <Unrated items={items}> </Unrated>
         </div> 
         <div className="section right">
-          <Rater></Rater>
+          <Rater items={items} onAddItem={updateItems}></Rater>
         </div>
       </div>
     </div>
