@@ -1,10 +1,12 @@
 import { Item } from "../models/Item";
 import { Position } from "../models/Position";
-import React, {  useState, useEffect, useContext, Dispatch, SetStateAction } from "react";
+import React, {  useState, useEffect, Dispatch, SetStateAction } from "react";
 import './Unrated.css';
 import { select } from 'd3-selection';
 import { drag } from 'd3-drag';
 import { event as d3Event } from 'd3'
+import { RatedItem } from "../models/RatedItem";
+import { Scaler } from "../functions/scale";
 
 
 interface Props {
@@ -12,16 +14,18 @@ interface Props {
     ratedItems:Item[];
     onDrag:Dispatch<SetStateAction<Item>>;
     onRater:Dispatch<SetStateAction<boolean>>;
-    updateItems: Dispatch<SetStateAction<Item[]>>[];
+    updateItems:any[];
+    scaler:Scaler;
 }
 
-export const Unrated:React.FunctionComponent<Props> = ({unratedItems,ratedItems,onDrag,onRater, updateItems}:Props) => {
+export const Unrated:React.FunctionComponent<Props> = ({unratedItems,ratedItems,onDrag,onRater, updateItems, scaler}:Props) => {
 
     const [g,updateG] = useState<SVGElement|null>(null); 
 
     useEffect(() => {
         attachDragEvents();
     })
+
 
     let dragOriginalPos:{rect:Position, text:Position} = {
         rect : {
@@ -45,7 +49,7 @@ export const Unrated:React.FunctionComponent<Props> = ({unratedItems,ratedItems,
     } 
     
     const calculateY = (index:number) => 100 + (50*index) + (12*index); 
-    const aboveRater = (x:number) =>  x > 574 && x < 590;  
+    const aboveRater = (x:number) =>  x > 490 && x < 510;  
 
     const dragStart = function(datum:any, i:number, nodeList:ArrayLike<SVGElement>) {
           onDrag(unratedItems[i]);
@@ -74,7 +78,8 @@ export const Unrated:React.FunctionComponent<Props> = ({unratedItems,ratedItems,
 
     const dragInProgress = (datum:SVGRectElement, i:number, nodes:ArrayLike<SVGElement>) => {
             const g = nodes[i];  
-            select(g).select('rect')
+            const rect = select(g).select('rect')
+                  rect
                      .attr("x", d3Event.x + dragDelta.rect.x )
                      .attr("y", d3Event.y + dragDelta.rect.y)
                      .attr("width", 5)
@@ -84,30 +89,34 @@ export const Unrated:React.FunctionComponent<Props> = ({unratedItems,ratedItems,
                      ;
             const text = select(g).select('text'); 
             text.attr("x", d3Event.x + dragDelta.text.x).attr("y", d3Event.y+dragDelta.text.y);
-            aboveRater(Number(text.attr("x"))) ? onRater(true): onRater(false); 
+            console.log(`x: ${rect.attr('x')} y: ${rect.attr('y')}`)
+            aboveRater(Number(rect.attr("x"))) ? onRater(true): onRater(false); 
     }
 
     const dragEnd = (datum:SVGRectElement, i:number, nodes:ArrayLike<SVGElement>) => { 
           const d = nodes[i]; 
           onRater(false);
           const text = select(d).select('text'); 
-          if (aboveRater(Number(text.attr('x')))) {
+          const rect = select(d).select('rect'); 
+          if (aboveRater(Number(rect.attr('x')))) {
               const item = unratedItems[i];  
               const updateUnrated = updateItems[0]; 
               const updateRated = updateItems[1]; 
               const newUnrated = unratedItems.filter(it => it !==  item );  
-              console.log(newUnrated);
+              const yPosition = Number(rect.attr('y'));    
+              console.log('yPosition',yPosition);
+              const score = scaler.toScore(yPosition);   
+              console.log('score', score);
               updateUnrated(newUnrated);  
-              updateRated([...ratedItems, item]);
+              updateRated([...ratedItems, new RatedItem(score,item.name)]);
           } else {
             text
               .attr('x', dragOriginalPos.text.x)
               .attr('y', dragOriginalPos.text.y)
               .classed("active", false)
               ;
-            const  rect = select(d).select('rect');
-                rect
-                     .attr('x', dragOriginalPos.rect.x)
+              rect
+                    .attr('x', dragOriginalPos.rect.x)
                     .attr('y', dragOriginalPos.rect.y)
                     .attr("width", "15%")
                     .attr("height",50)
