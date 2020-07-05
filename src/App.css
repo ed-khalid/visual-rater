@@ -6,6 +6,10 @@
   min-height: 100vh;
 }
 
+svg {
+  width: 90%; 
+  height: 700px; 
+}
 .App-logo {
   height: 40vmin;
   pointer-events: none;
@@ -17,21 +21,6 @@
   }
 }
 
-
-.presection {
-  margin-top: 15vh;
-  margin-right : 15vh;
-  height: 20vh;
-}
-.section {
-  border: 1px solid white;
-  height: 50vh;
-  width: 50vh;
-}
-
-.section.right {
-  position: relative;
-}
 .main {
   background-color: #282c34;
   min-height: 100vh;
