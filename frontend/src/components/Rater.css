@@ -1,4 +1,7 @@
 
+.hide {
+    visibility: hidden;
+}
 
 div.rater {
     width: 100%;
