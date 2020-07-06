@@ -11,8 +11,8 @@ import { Scaler } from "../functions/scale";
 
 interface Props {
     unratedItems:Item[];
-    ratedItems:Item[];
-    onDrag:Dispatch<SetStateAction<Item>>;
+    ratedItems:RatedItem[];
+    onDrag:Dispatch<SetStateAction<Item|undefined>>;
     onRater:Dispatch<SetStateAction<boolean>>;
     updateItems:any[];
     scaler:Scaler;
@@ -108,7 +108,7 @@ export const Unrated:React.FunctionComponent<Props> = ({unratedItems,ratedItems,
               const score = scaler.toScore(yPosition);   
               console.log('score', score);
               updateUnrated(newUnrated);  
-              updateRated([...ratedItems, new RatedItem(score,item.name)]);
+              updateRated([...ratedItems, new RatedItem(item, score)]);
           } else {
             text
               .attr('x', dragOriginalPos.text.x)

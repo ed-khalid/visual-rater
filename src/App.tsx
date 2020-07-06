@@ -8,8 +8,9 @@ import { Item } from './models/Item';
 import { RatedItem } from './models/RatedItem';
 import { Position} from './models/Position';
 import { Scaler } from './functions/scale';
+import { Song, Artist } from './models/music';
 
-const newRatedItem = new RatedItem(70,"Hello");  
+const newRatedItem = new RatedItem(new Song(0,0,'Hello',new Artist(0, 'Saadoon Jabir')), 70); 
 
 type AppState = {
   unratedItems:Item[];
