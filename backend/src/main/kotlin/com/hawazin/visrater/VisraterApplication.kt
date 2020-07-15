@@ -13,6 +13,7 @@ import org.springframework.context.annotation.Bean
 @SpringBootApplication
 @EnableConfigurationProperties(SpotifyConfiguration::class)
 class VisraterApplication {
+
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {

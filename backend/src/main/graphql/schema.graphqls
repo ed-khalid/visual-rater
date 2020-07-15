@@ -1,0 +1,12 @@
+
+schema {
+  query: Query
+}
+
+type Query {
+    search: Search
+}
+
+type Search {
+
+}
