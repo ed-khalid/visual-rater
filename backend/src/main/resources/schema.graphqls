@@ -1,0 +1,39 @@
+
+schema {
+  query: Query
+}
+
+type Query {
+    search(filter:SearchResultType): [SearchResult]
+}
+
+interface SearchResult {
+    name:String!
+    id:String!
+    type:SearchResultType!
+}
+
+enum SearchResultType {
+    ALBUM,ARTIST
+}
+
+#type AlbumSearchResult implements SearchResult {
+#    name:String!
+#    id:String!
+#    type:SearchResultType!
+#    images:[String]
+#}
+#
+#type ArtistSearchResult implements SearchResult {
+#    name:String!
+#    id:String!
+#    type:SearchResultType!
+#    images:[String]
+#}
+#
+#type TrackSearchResult implements  SearchResult {
+#    name:String!
+#    number:Int!
+#    id:String!
+#    type:SearchResultType!
+#}
