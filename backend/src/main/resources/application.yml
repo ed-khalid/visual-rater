@@ -22,7 +22,7 @@ graphql:
 altair:
   enabled: true
   cdn:
-    enabled: false
+    enabled: true
 graphiql:
   enabled: true
   cdn:
@@ -31,11 +31,11 @@ graphiql:
 voyager:
   enabled: true
   cdn:
-    enabled: false
+    enabled: true
 graphql.playground:
   enabled: true
   cdn:
-    enabled: false
+    enabled: true
 spotify:
   client:
     id: 793c68b38b06461d8127f90148edc66a
