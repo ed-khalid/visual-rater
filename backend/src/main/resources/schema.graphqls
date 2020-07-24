@@ -4,7 +4,7 @@ schema {
 }
 
 type Query {
-    search(filter:SearchResultType): [SearchResult]
+    artist(name:String) : [ArtistSearchResult]
 }
 
 interface SearchResult {
@@ -28,7 +28,13 @@ type ArtistSearchResult implements SearchResult {
     name:String!
     id:String!
     type:SearchResultType!
-    images:[String]
+    images:[Image]
+}
+
+type Image {
+    width:Int
+    height:Int
+    url:String
 }
 
 type TrackSearchResult implements  SearchResult {

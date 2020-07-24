@@ -1,0 +1,18 @@
+{
+  "properties": [
+    {
+      "name": "spotify.client.id",
+      "type": "java.lang.String",
+      "description": "Description for spotify.client.id."
+    },
+    {
+      "name": "spotify.client.secret",
+      "type": "java.lang.String",
+      "description": "Description for spotify.client.secret."
+    },
+    {
+      "name": "spotify.accounts",
+      "type": "java.lang.String",
+      "description": "Description for spotify.accounts."
+    }
+  ] }

@@ -2,8 +2,8 @@ package com.hawazin.visrater.graphql
 
 import com.hawazin.visrater.graphql.models.Album
 import com.hawazin.visrater.graphql.models.Artist
-import com.hawazin.visrater.graphql.models.SearchResult
 import com.hawazin.visrater.graphql.models.SearchResultType
+import com.hawazin.visrater.musicapi.SpotifyApi
 import graphql.schema.GraphQLSchema
 import graphql.schema.TypeResolver
 import graphql.schema.idl.RuntimeWiring
@@ -15,7 +15,7 @@ import org.springframework.util.ResourceUtils
 import java.io.File
 
 @Configuration
-class GraphQLConfiguration {
+class GraphQLConfiguration(private val spotifyService:SpotifyApi) {
     @Bean
     fun schema(): GraphQLSchema {
         val parser = SchemaParser()
@@ -26,20 +26,19 @@ class GraphQLConfiguration {
         val wiring = buildRunTimeWiring(typeResolver)
         return generator.makeExecutableSchema(typeRegistry, wiring)
     }
-}
-fun loadSchema(): File = ResourceUtils.getFile("classpath:schema.graphqls")
 
-fun buildRunTimeWiring(searchResultResolver: TypeResolver): RuntimeWiring {
-    return RuntimeWiring.newRuntimeWiring()
-            .type("Query"
-            ) {
-                it.dataFetcher("search") { _  -> searchResolver()}
-            }
-            .type("SearchResult") {
-                it.typeResolver(searchResultResolver)
-            }
-            .build()
-}
+    fun buildRunTimeWiring(searchResultResolver: TypeResolver): RuntimeWiring {
+        return RuntimeWiring.newRuntimeWiring()
+                .type("Query"
+                ) {
+                    it.dataFetcher("artist") { _  -> spotifyService.searchArtist("Metallica") }
+                }
+                .type("SearchResult") {
+                    it.typeResolver(searchResultResolver)
+                }
+                .build()
+    }
+fun loadSchema(): File = ResourceUtils.getFile("classpath:schema.graphqls")
 
 fun searchResultResolver() : TypeResolver = TypeResolver {
     when (it.getObject() as Any) {
@@ -55,10 +54,11 @@ fun searchResultResolver() : TypeResolver = TypeResolver {
     }
 }
 
-fun searchResolver() : Array<SearchResult>   {
+fun artistResolver() : Array<Artist>   {
     return arrayOf(Artist("Saadi El Hilli", 1.toString(), SearchResultType.ARTIST))
 }
 
+}
 
 
 
