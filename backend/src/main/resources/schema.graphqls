@@ -4,42 +4,30 @@ schema {
 }
 
 type Query {
-    artist(name:String) : [ArtistSearchResult]
+    artist(name:String) : [SearchResult!]
+    album(artistId:String!, pageNumber:Int): QueryResponse!
 }
 
-interface SearchResult {
+type QueryResponse {
+    results:  [SearchResult!]
+    pageNumber: Int
+}
+
+
+type SearchResult {
     name:String!
     id:String!
-    type:SearchResultType!
-}
-
-enum SearchResultType {
-    ALBUM,ARTIST
-}
-
-type AlbumSearchResult implements SearchResult {
-    name:String!
-    id:String!
-    type:SearchResultType!
-    images:[String]
-}
-
-type ArtistSearchResult implements SearchResult {
-    name:String!
-    id:String!
-    type:SearchResultType!
-    images:[Image]
+    images:[Image!]
 }
 
 type Image {
-    width:Int
-    height:Int
-    url:String
+    width:Int!
+    height:Int!
+    url:String!
 }
 
-type TrackSearchResult implements  SearchResult {
+type TrackSearchResult {
     name:String!
     number:Int!
     id:String!
-    type:SearchResultType!
 }

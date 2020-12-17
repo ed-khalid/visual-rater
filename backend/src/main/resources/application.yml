@@ -16,11 +16,12 @@ management:
 graphql:
   servlet:
     actuator-metrics: true
+    corsEnabled: true
   playground:
     cdn:
       version: latest
 altair:
-  enabled: true
+  enabled: false
   cdn:
     enabled: true
 graphiql:
@@ -29,13 +30,18 @@ graphiql:
     enabled: true
     version: 0.17.5
 voyager:
-  enabled: true
+  enabled: false
   cdn:
     enabled: true
 graphql.playground:
-  enabled: true
+  enabled: false
   cdn:
     enabled: true
+logging:
+  level:
+    root: ERROR
+    org.spingframework.web: ERROR
+    com.hawazin.visrater: DEBUG
 spotify:
   client:
     id: 793c68b38b06461d8127f90148edc66a
