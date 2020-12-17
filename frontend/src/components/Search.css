@@ -1,5 +1,5 @@
 div.wrapper {
-    margin-left: 9em;
+    margin-left: 1em;
     border: 1px solid white;
     border-radius: 5px;
     font-size: 10px;
@@ -13,6 +13,7 @@ input {
     width: 40%;
     background-color: #282c34;
     border: 1px solid white;
+    font-family: sans-serif;
     color: white;
 }
 img {
@@ -36,6 +37,17 @@ div#album-result {
     margin-left: 1em;
     height: 100%;
 }
+div#album-result ul  {
+    list-style: none;
+}   
+div#album-result ul li  {
+    cursor: pointer;
+}   
+div#album-result div#navigation div {
+    cursor: pointer;
+}   
+
+
 div#artist-result {
     cursor: pointer;
 }
@@ -48,13 +60,12 @@ div#artist-result:hover {
     display: grid;
 }
 #search {
-    grid-template-columns: 1fr 1fr;    
     grid-template-columns: 1fr 2fr;    
     grid-template-areas: 
     'search albums'
-    'artist albums';
+    '. albums';
 }
-#search-input {
+#artist-col {
     grid-area: search; 
 }
 #artist-result {
