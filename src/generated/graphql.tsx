@@ -21,7 +21,7 @@ export type Image = {
 
 export type Query = {
   __typename?: 'Query';
-  artist?: Maybe<Array<SearchResult>>;
+  artist: Array<SearchResult>;
   album: QueryResponse;
 };
 
@@ -38,7 +38,7 @@ export type QueryAlbumArgs = {
 
 export type QueryResponse = {
   __typename?: 'QueryResponse';
-  results?: Maybe<Array<SearchResult>>;
+  results: Array<SearchResult>;
   pageNumber?: Maybe<Scalars['Int']>;
 };
 
@@ -67,14 +67,14 @@ export type SearchAlbumsByArtistQuery = (
   & { album: (
     { __typename?: 'QueryResponse' }
     & Pick<QueryResponse, 'pageNumber'>
-    & { results?: Maybe<Array<(
+    & { results: Array<(
       { __typename?: 'SearchResult' }
       & Pick<SearchResult, 'id' | 'name'>
-      & { images?: Maybe<Array<(
+      & { images: Array<(
         { __typename?: 'Image' }
         & Pick<Image, 'width' | 'height' | 'url'>
-      )>> }
-    )>> }
+      )> }
+    )> }
   ) }
 );
 
@@ -85,14 +85,14 @@ export type SearchByArtistQueryVariables = Exact<{
 
 export type SearchByArtistQuery = (
   { __typename?: 'Query' }
-  & { artist?: Maybe<Array<(
+  & { artist: Array<(
     { __typename?: 'SearchResult' }
     & Pick<SearchResult, 'id' | 'name'>
-    & { images?: Maybe<Array<(
+    & { images: Array<(
       { __typename?: 'Image' }
       & Pick<Image, 'width' | 'height' | 'url'>
-    )>> }
-  )>> }
+    )> }
+  )> }
 );
 
 

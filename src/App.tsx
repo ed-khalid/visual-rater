@@ -47,14 +47,14 @@ function App() {
   return (
     <div className="App">
       <header>VisRater</header>
-      <div className="main">
+      <div className="main grid">
         <div id="search-wrapper">
           <Search></Search>
           { appState.unratedItems.length > 8 && 
           <UnratedNav></UnratedNav> }
         </div>
         <div id="svg">
-          <svg viewBox="0 0 1000 740">
+          <svg width="300px" height="150px" preserveAspectRatio="xMidYMid meet" viewBox="0 0 80 80">
             <Unrated 
                     unratedItems={appState.unratedItems} 
                     ratedItems={appState.ratedItems} 
