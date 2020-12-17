@@ -1,0 +1,66 @@
+div.wrapper {
+    margin-left: 9em;
+    border: 1px solid white;
+    border-radius: 5px;
+    font-size: 10px;
+    height: 12em;
+    width: 20em;
+}
+div.title {
+    width: 5em;
+}
+input {
+    width: 40%;
+    background-color: #282c34;
+    border: 1px solid white;
+    color: white;
+}
+img {
+    width: 11em;
+    height: 11em;
+    border-radius:47px;
+}
+div.result {
+    margin-top: 1em;
+    height: 14em;  
+}
+div.result-row {
+    margin: 0;
+}
+div.result-row img:hover {
+    box-shadow: 3px 3px 3px rgb(255, 255, 255);
+    transition: ease-in-out 0.2s;
+}
+div#album-result {
+    margin-top:0;
+    margin-left: 1em;
+    height: 100%;
+}
+div#artist-result {
+    cursor: pointer;
+}
+div#artist-result:hover {
+    background-color: rgb(5, 78, 17);
+    transition: ease-in-out 0.2s;
+}
+
+.grid {
+    display: grid;
+}
+#search {
+    grid-template-columns: 1fr 1fr;    
+    grid-template-columns: 1fr 2fr;    
+    grid-template-areas: 
+    'search albums'
+    'artist albums';
+}
+#search-input {
+    grid-area: search; 
+}
+#artist-result {
+    grid-area: artist; 
+}
+#album-result {
+    grid-area: albums; 
+}
+

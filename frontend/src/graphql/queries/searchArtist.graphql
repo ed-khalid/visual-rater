@@ -1,0 +1,11 @@
+query SearchByArtist($name:String){
+  artist(name: $name) {
+    id 
+    name 
+    images {
+      width
+      height
+      url
+    }
+  }
+}
