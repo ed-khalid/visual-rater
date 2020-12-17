@@ -9,6 +9,7 @@ import { RatedItem } from './models/RatedItem';
 import { Position} from './models/Position';
 import { Scaler } from './functions/scale';
 import { Song, Artist } from './models/music';
+import { Search } from './components/Search';
 
 const newRatedItem = new RatedItem(new Song(0,0,'Hello',new Artist(0, 'Saadoon Jabir')), 70); 
 
@@ -47,30 +48,32 @@ function App() {
     <div className="App">
       <header>VisRater</header>
       <div className="main">
-        <div
-        >
+        <div id="search-wrapper">
+          <Search></Search>
           { appState.unratedItems.length > 8 && 
           <UnratedNav></UnratedNav> }
         </div>
-        <svg viewBox="0 0 1000 740">
-          <Unrated 
-                   unratedItems={appState.unratedItems} 
-                   ratedItems={appState.ratedItems} 
-                   onDrag={updateDraggedItem}
-                   onRater={updateDraggedItemIsAboveRater}
-                   updateItems={[updateUnratedItems, updateRatedItems]} 
-                   scaler={scaler}
-          > 
-          </Unrated>
-          <Rater 
-                 highlight={appState.draggedItemIsAboveRater} 
-                 position={appState.rater.position}
-                 ratedItems={appState.ratedItems}  
-                 updateRatedItems={updateRatedItems}
-                 scaler={scaler}
-          >
-           </Rater>
-        </svg>
+        <div id="svg">
+          <svg viewBox="0 0 1000 740">
+            <Unrated 
+                    unratedItems={appState.unratedItems} 
+                    ratedItems={appState.ratedItems} 
+                    onDrag={updateDraggedItem}
+                    onRater={updateDraggedItemIsAboveRater}
+                    updateItems={[updateUnratedItems, updateRatedItems]} 
+                    scaler={scaler}
+            > 
+            </Unrated>
+            <Rater 
+                  highlight={appState.draggedItemIsAboveRater} 
+                  position={appState.rater.position}
+                  ratedItems={appState.ratedItems}  
+                  updateRatedItems={updateRatedItems}
+                  scaler={scaler}
+            >
+            </Rater>
+          </svg>
+        </div>
       </div>
     </div>
   );
