@@ -69,9 +69,8 @@ export const Search = () => {
 export const SearchAlbumsForArtist  = ({ onSelectAlbum, artist}:{onSelectAlbum:(album:SearchResult) => void, artist:SearchResult}) => {
         let [pageNumber, setPageNumber] = useState<number>(0); 
         const { loading, data, error }  = useSearchAlbumsByArtistQuery({variables: { artistId: artist.id, pageNumber }})
-
+        console.log(data);
         const offset = (shouldIncrement:boolean) => {
-            console.log(pageNumber);
             if (shouldIncrement) {
                 setPageNumber(pageNumber+1);
             } else {
@@ -79,19 +78,20 @@ export const SearchAlbumsForArtist  = ({ onSelectAlbum, artist}:{onSelectAlbum:(
             }
         } 
 
-        return <div>
-            <ul>
-                {data?.album?.results?.map(album => 
-                  <li onClick={() => onSelectAlbum(album) }  key={album.id} >
-                        <img src={album.images[0].url} />
-                        <div>{album.name}</div>
-                  </li>
-                )}
-            </ul>
-            <div id="navigation">
-                <div onClick={() => offset(false)}> &lt;</div>
-                <div onClick={() => offset(true)}>&gt;</div>
-            </div>
+        return <div id="album-nav-grid">
+                <ul>
+                    
+                    {data?.album?.results?.map(album => 
+                    <li onClick={() => onSelectAlbum(album) }  key={album.id} >
+                            <img src={album.images[2].url} />
+                            <span>{album.name}</span>
+                    </li>
+                    )}
+                </ul>
+                <nav id="album-navbar" className="grid">
+                    <div onClick={() => { offset(false) } } className="nav-arrow">&lt;</div>
+                    <div onClick={() => { offset(true) }} className="nav-arrow">&gt;</div>
+                </nav>
         </div>
 }
 

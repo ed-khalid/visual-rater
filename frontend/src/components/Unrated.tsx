@@ -48,7 +48,7 @@ export const Unrated:React.FunctionComponent<Props> = ({unratedItems,ratedItems,
         }
     } 
     
-    const calculateY = (index:number) => 100 + (50*index) + (12*index); 
+    const calculateY = (index:number) => 10 + (50*index) + (12*index); 
     const aboveRater = (x:number) =>  x > 490 && x < 510;  
 
     const dragStart = function(datum:any, i:number, nodeList:ArrayLike<SVGElement>) {
@@ -141,8 +141,8 @@ export const Unrated:React.FunctionComponent<Props> = ({unratedItems,ratedItems,
         <g ref={node => updateG(node)} >
        {unratedItems.map( (it,i) => { 
             return <g id={i+''} key={'track'+it.name}>
-                     <rect cursor="move" rx="5" ry="5" stroke="white" fill="#000" fillOpacity="0.0" className="draggable" width="15%" height="50" x="60" y={calculateY(i)} ></rect>
-                     <text fontSize="10" fontSizeAdjust="2" cursor="move" textAnchor="middle" fill="white" dy=".35em"  x="135" y={calculateY(i)+25}>{it.name}</text>
+                     <rect cursor="move" rx="5" ry="5" stroke="white" fill="#000" fillOpacity="0.0" className="draggable" width="15%" height="50" x="10" y={calculateY(i)} ></rect>
+                     <text fontSize="8" fontSizeAdjust="2" cursor="move" textAnchor="middle" fill="white" dy=".35em"  x="70" y={calculateY(i)+25}>{it.name}</text>
                    </g>
         })}
     </g>
