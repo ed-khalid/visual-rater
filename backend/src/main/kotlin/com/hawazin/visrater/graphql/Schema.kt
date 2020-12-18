@@ -31,8 +31,11 @@ class GraphQLConfiguration(private val spotifyService:SpotifyApi) {
                         spotifyService.searchArtist(env.arguments["name"] as String)
                     }
                     it.dataFetcher("album") { env ->
-                        spotifyService.searchAlbumsForArtist(env.arguments["artistId"] as String,  (env.arguments["pageNumber"] as Int?)
+                        spotifyService.getAlbumsForArtist(env.arguments["artistId"] as String,  (env.arguments["pageNumber"] as Int?)
                             ?: 0)
+                    }
+                    it.dataFetcher("track") { env ->
+                        spotifyService.getTracksForAlbum(env.arguments["albumId"] as String)
                     }
                 }
 //                .type("SearchResult") {

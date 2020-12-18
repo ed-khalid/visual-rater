@@ -7,6 +7,7 @@ import com.hawazin.visrater.graphql.SpotifyGraphQLError
 import com.hawazin.visrater.graphql.models.Album
 import com.hawazin.visrater.graphql.models.Artist
 import com.hawazin.visrater.graphql.models.QueryResponse
+import com.hawazin.visrater.graphql.models.Track
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
@@ -65,7 +66,7 @@ class SpotifyApi(private val configuration: SpotifyConfiguration) {
         return response.artists.items
     }
 
-    fun searchAlbumsForArtist(artistId:String, _offset:Int) : QueryResponse {
+    fun getAlbumsForArtist(artistId:String, _offset:Int) : QueryResponse {
         if (_offset  < 0) {
             throw SpotifyGraphQLError("Album Page Number must be positive")
         }
@@ -75,8 +76,14 @@ class SpotifyApi(private val configuration: SpotifyConfiguration) {
          results = response.items
             , pageNumber =  _offset)
     }
+
+    fun getTracksForAlbum(albumId:String) : List<Track> {
+        val response = makeCall { api().getForObject<TrackList>("/albums/{albumId}/tracks", albumId) }
+        return response.items
+    }
 }
 
 data class AlbumList(val items:List<Album>)
 data class ArtistListResponse(val artists:ArtistList)
 data class ArtistList(val items:List<Artist>)
+data class TrackList(val items:List<Track>)
