@@ -24,11 +24,12 @@ header {
   background-color: #282c34;
   font-size: 16px;
   color: white;
-  grid-template-columns: 21% 78% ;
+  grid-template-columns: 1fr 8fr ;
+  height: 447px;
 }
 svg {
-  width: 100%;
-  height: auto; 
+  margin-left: 10px; 
+  width: 790px;
+  height: 447px; 
+  border: 1px solid white;
 }
-
-

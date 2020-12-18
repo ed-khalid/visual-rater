@@ -1,13 +1,13 @@
 div.wrapper {
-    margin-left: 1em;
+    margin-left: 10px;
     border: 1px solid white;
     border-radius: 5px;
     font-size: 10px;
-    height: 12em;
-    width: 20em;
+    height: 140px;
+    width: 200px;
 }
 div.title {
-    width: 5em;
+    width: 50px;
 }
 input {
     width: 40%;
@@ -17,13 +17,13 @@ input {
     color: white;
 }
 img {
-    width: 11em;
-    height: 11em;
+    width: 110px;
+    height: 110px;
     border-radius:47px;
 }
 div.result {
-    margin-top: 1em;
-    height: 14em;  
+    margin-top: 10px;
+    height: 140px;  
 }
 div.result-row {
     margin: 0;
@@ -34,19 +34,47 @@ div.result-row img:hover {
 }
 div#album-result {
     margin-top:0;
-    margin-left: 1em;
-    height: 100%;
+    margin-left: 10px;
+    height: 447px;
+    display: block;
 }
 div#album-result ul  {
+    margin: 1px;
     list-style: none;
+    padding-inline-start: 0;
+    height:396px;
 }   
 div#album-result ul li  {
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid white;
 }   
-div#album-result div#navigation div {
+div#album-result ul li:last-child  {
+    border-bottom:unset;
+}   
+div#album-result ul li img  {
+    width: 32px;
+    height: 32px;
+    border-radius:unset;
+}   
+div.nav-arrow {
     cursor: pointer;
+    font-size: 40px; 
+    font-weight: 800;
+    text-align:center;
+    height: 50px;
 }   
-
+nav#album-navbar {
+    border-top: 1px solid white;
+    grid-template-columns:1fr 1fr;
+}
+div.nav-arrow:first-child {
+    cursor: pointer;
+    font-size: 40px; 
+    font-weight: 800;
+    border-right: 1px solid white;
+}   
 
 div#artist-result {
     cursor: pointer;

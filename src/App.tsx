@@ -51,29 +51,28 @@ function App() {
         <div id="search-wrapper">
           <Search></Search>
           { appState.unratedItems.length > 8 && 
-          <UnratedNav></UnratedNav> }
+          <UnratedNav></UnratedNav> 
+          }
         </div>
-        <div id="svg">
-          <svg width="300px" height="150px" preserveAspectRatio="xMidYMid meet" viewBox="0 0 80 80">
-            <Unrated 
-                    unratedItems={appState.unratedItems} 
-                    ratedItems={appState.ratedItems} 
-                    onDrag={updateDraggedItem}
-                    onRater={updateDraggedItemIsAboveRater}
-                    updateItems={[updateUnratedItems, updateRatedItems]} 
-                    scaler={scaler}
-            > 
-            </Unrated>
-            <Rater 
-                  highlight={appState.draggedItemIsAboveRater} 
-                  position={appState.rater.position}
-                  ratedItems={appState.ratedItems}  
-                  updateRatedItems={updateRatedItems}
+        <svg id="trackRater" viewBox="0 0 790 447">
+          <Unrated 
+                  unratedItems={appState.unratedItems} 
+                  ratedItems={appState.ratedItems} 
+                  onDrag={updateDraggedItem}
+                  onRater={updateDraggedItemIsAboveRater}
+                  updateItems={[updateUnratedItems, updateRatedItems]} 
                   scaler={scaler}
-            >
-            </Rater>
-          </svg>
-        </div>
+          > 
+          </Unrated>
+          <Rater 
+                highlight={appState.draggedItemIsAboveRater} 
+                position={appState.rater.position}
+                ratedItems={appState.ratedItems}  
+                updateRatedItems={updateRatedItems}
+                scaler={scaler}
+          >
+          </Rater>
+        </svg>
       </div>
     </div>
   );
