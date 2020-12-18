@@ -7,7 +7,6 @@ import com.hawazin.visrater.graphql.SpotifyGraphQLError
 import com.hawazin.visrater.graphql.models.Album
 import com.hawazin.visrater.graphql.models.Artist
 import com.hawazin.visrater.graphql.models.QueryResponse
-import org.slf4j.LoggerFactory
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
@@ -17,7 +16,6 @@ import org.springframework.util.LinkedMultiValueMap
 import org.springframework.web.client.HttpClientErrorException
 import org.springframework.web.client.RestTemplate
 import org.springframework.web.client.getForObject
-import java.lang.IllegalArgumentException
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 data class SpotifyAuthToken(@JsonProperty("access_token") val accessToken:String?, @JsonProperty("expires_in") val expiresIn:Int?)
@@ -69,13 +67,13 @@ class SpotifyApi(private val configuration: SpotifyConfiguration) {
 
     fun searchAlbumsForArtist(artistId:String, _offset:Int) : QueryResponse {
         if (_offset  < 0) {
-            throw SpotifyGraphQLError("Album Page Number cannot be negative")
+            throw SpotifyGraphQLError("Album Page Number must be positive")
         }
-        val offset = if (_offset != 0 ) _offset-1 else _offset
-        val response = makeCall { api().getForObject<AlbumList>("/artists/{artistId}/albums?limit=20&county=US&include_groups=album&offset={offset}", artistId, offset) }
+        val offset = _offset*12
+        val response = makeCall { api().getForObject<AlbumList>("/artists/{artistId}/albums?limit=12&county=US&include_groups=album&offset={offset}", artistId, offset) }
         return QueryResponse(
-         results = response.items.distinctBy { it.name.replace("\\s", "").toLowerCase() }
-            , pageNumber =  offset+1)
+         results = response.items
+            , pageNumber =  _offset)
     }
 }
 
