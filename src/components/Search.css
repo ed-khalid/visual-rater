@@ -43,12 +43,14 @@ div#album-result ul  {
     list-style: none;
     padding-inline-start: 0;
     height:396px;
+    overflow:hidden;
 }   
 div#album-result ul li  {
     cursor: pointer;
     display: flex;
     align-items: center;
     border-bottom: 1px solid white;
+    overflow:hidden;
 }   
 div#album-result ul li:last-child  {
     border-bottom:unset;

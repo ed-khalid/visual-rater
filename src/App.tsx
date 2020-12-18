@@ -11,7 +11,7 @@ import { Scaler } from './functions/scale';
 import { Song, Artist } from './models/music';
 import { Search } from './components/Search';
 
-const newRatedItem = new RatedItem(new Song(0,0,'Hello',new Artist(0, 'Saadoon Jabir')), 70); 
+const newRatedItem = new RatedItem(new Song(0+'',0,'Hello',new Artist(0+'', 'Saadoon Jabir')), 70); 
 
 type AppState = {
   unratedItems:Item[];
@@ -42,6 +42,8 @@ function App() {
     draggedItemIsAboveRater
   }
 
+
+
   const scaler = new Scaler(appState.rater.position.y);   
 
   return (
@@ -49,7 +51,7 @@ function App() {
       <header>VisRater</header>
       <div className="main grid">
         <div id="search-wrapper">
-          <Search></Search>
+          <Search setUnrated={updateUnratedItems}></Search>
           { appState.unratedItems.length > 8 && 
           <UnratedNav></UnratedNav> 
           }

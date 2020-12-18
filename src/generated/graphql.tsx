@@ -23,6 +23,7 @@ export type Query = {
   __typename?: 'Query';
   artist: Array<SearchResult>;
   album: QueryResponse;
+  track: Array<TrackSearchResult>;
 };
 
 
@@ -34,6 +35,11 @@ export type QueryArtistArgs = {
 export type QueryAlbumArgs = {
   artistId: Scalars['String'];
   pageNumber?: Maybe<Scalars['Int']>;
+};
+
+
+export type QueryTrackArgs = {
+  albumId: Scalars['String'];
 };
 
 export type QueryResponse = {
@@ -53,8 +59,22 @@ export type TrackSearchResult = {
   __typename?: 'TrackSearchResult';
   name: Scalars['String'];
   number: Scalars['Int'];
+  discNumber: Scalars['Int'];
   id: Scalars['String'];
 };
+
+export type GetTracksForAlbumQueryVariables = Exact<{
+  albumId: Scalars['String'];
+}>;
+
+
+export type GetTracksForAlbumQuery = (
+  { __typename?: 'Query' }
+  & { track: Array<(
+    { __typename?: 'TrackSearchResult' }
+    & Pick<TrackSearchResult, 'id' | 'name' | 'number' | 'discNumber'>
+  )> }
+);
 
 export type SearchAlbumsByArtistQueryVariables = Exact<{
   artistId: Scalars['String'];
@@ -96,6 +116,42 @@ export type SearchByArtistQuery = (
 );
 
 
+export const GetTracksForAlbumDocument = gql`
+    query GetTracksForAlbum($albumId: String!) {
+  track(albumId: $albumId) {
+    id
+    name
+    number
+    discNumber
+  }
+}
+    `;
+
+/**
+ * __useGetTracksForAlbumQuery__
+ *
+ * To run a query within a React component, call `useGetTracksForAlbumQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetTracksForAlbumQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetTracksForAlbumQuery({
+ *   variables: {
+ *      albumId: // value for 'albumId'
+ *   },
+ * });
+ */
+export function useGetTracksForAlbumQuery(baseOptions?: ApolloReactHooks.QueryHookOptions<GetTracksForAlbumQuery, GetTracksForAlbumQueryVariables>) {
+        return ApolloReactHooks.useQuery<GetTracksForAlbumQuery, GetTracksForAlbumQueryVariables>(GetTracksForAlbumDocument, baseOptions);
+      }
+export function useGetTracksForAlbumLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetTracksForAlbumQuery, GetTracksForAlbumQueryVariables>) {
+          return ApolloReactHooks.useLazyQuery<GetTracksForAlbumQuery, GetTracksForAlbumQueryVariables>(GetTracksForAlbumDocument, baseOptions);
+        }
+export type GetTracksForAlbumQueryHookResult = ReturnType<typeof useGetTracksForAlbumQuery>;
+export type GetTracksForAlbumLazyQueryHookResult = ReturnType<typeof useGetTracksForAlbumLazyQuery>;
+export type GetTracksForAlbumQueryResult = ApolloReactCommon.QueryResult<GetTracksForAlbumQuery, GetTracksForAlbumQueryVariables>;
 export const SearchAlbumsByArtistDocument = gql`
     query SearchAlbumsByArtist($artistId: String!, $pageNumber: Int) {
   album(artistId: $artistId, pageNumber: $pageNumber) {
