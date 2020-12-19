@@ -24,7 +24,7 @@ type AppState = {
 } 
 
 function App() {
-  const [unratedItems, updateUnratedItems] = useState(initialModel);  
+  const [unratedItems, updateUnratedItems] = useState([]);  
   const [ratedItems, updateRatedItems] = useState<RatedItem[]>([newRatedItem]); 
   const [draggedItem, updateDraggedItem] = useState<Item|undefined>(undefined); 
   const [draggedItemIsAboveRater, updateDraggedItemIsAboveRater] = useState(false); 
@@ -41,8 +41,6 @@ function App() {
     draggedItem,  
     draggedItemIsAboveRater
   }
-
-
 
   const scaler = new Scaler(appState.rater.position.y);   
 
