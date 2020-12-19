@@ -1,25 +1,27 @@
 DROP TABLE IF EXISTS artists CASCADE ;
 
 CREATE TABLE artists(
-    id serial primary key ,
+    id uuid primary key ,
+    vendor_id varchar(100) NOT NULL,
     name varchar(100) NOT NULL
 );
 
 DROP TABLE IF EXISTS albums CASCADE ;
 CREATE TABLE albums(
-    id serial primary key ,
+    id uuid primary key ,
     name varchar(250) NOT NULL,
     year INTEGER NOT NULL,
-    cover
-    artist_id INTEGER references artists(id)
+    artist_id uuid references artists(id),
+    vendor_id varchar(100) NOT NULL
 );
 
 DROP TABLE IF EXISTS songs CASCADE;
 CREATE TABLE songs(
-    id serial primary key,
+    id uuid primary key,
     name varchar(250) NOT NULL,
-    artist_id INTEGER references artists(id),
-    album_id INTEGER references albums(id),
+    artist_id uuid references artists(id),
+    album_id uuid references albums(id),
+    vendor_id varchar(100) NOT NULL,
     score FLOAT
 );
 

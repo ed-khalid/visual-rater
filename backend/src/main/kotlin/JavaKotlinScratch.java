@@ -1,5 +1,3 @@
-package com.hawazin.visrater.musicapi;
-
 import graphql.TypeResolutionEnvironment;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.TypeResolver;

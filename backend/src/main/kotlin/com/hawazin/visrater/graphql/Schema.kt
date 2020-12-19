@@ -1,6 +1,6 @@
 package com.hawazin.visrater.graphql
 
-import com.hawazin.visrater.musicapi.SpotifyApi
+import com.hawazin.visrater.external.SpotifyApi
 import graphql.schema.GraphQLSchema
 import graphql.schema.idl.RuntimeWiring
 import graphql.schema.idl.SchemaGenerator

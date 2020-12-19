@@ -1,4 +1,4 @@
-package com.hawazin.visrater.musicapi
+package com.hawazin.visrater.external
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty

@@ -1,4 +1,4 @@
-package com.hawazin.visrater.musicapi
+package com.hawazin.visrater.external
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.ConstructorBinding
