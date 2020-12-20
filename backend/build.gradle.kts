@@ -25,17 +25,14 @@ repositories {
 
 dependencies {
     implementation("com.graphql-java-kickstart:graphql-spring-boot-starter:7.0.1")
-    // to embed Altair tool
-    runtimeOnly ("com.graphql-java-kickstart:altair-spring-boot-starter:7.0.1")
     // to embed GraphiQL tool
     runtimeOnly ("com.graphql-java-kickstart:graphiql-spring-boot-starter:7.0.1")
-    // to embed Voyager tool
-    runtimeOnly ("com.graphql-java-kickstart:voyager-spring-boot-starter:7.0.1")
 
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin:2.11.+")
 
     runtimeOnly("org.postgresql:postgresql")
 
@@ -44,6 +41,7 @@ dependencies {
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     annotationProcessor("org.projectlombok:lombok")
 
+    testRuntimeOnly("com.h2database:h2")
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
     }

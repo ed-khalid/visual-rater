@@ -1,29 +1,4 @@
 schema {
-  query: Query
-}
-
-type Query {
-    artist(name:String) : [SearchResult!]!
-    album(artistId:String!, pageNumber:Int): QueryResponse!
-    track(albumId:String!): [TrackSearchResult!]!
-}
-type QueryResponse {
-    results:  [SearchResult!]!
-    pageNumber: Int
-}
-type SearchResult {
-    name:String!
-    id:String!
-    images:[Image!]!
-}
-type Image {
-    width:Int!
-    height:Int!
-    url:String!
-}
-type TrackSearchResult {
-    name:String!
-    number:Int!
-    discNumber:Int!
-    id:String!
+  query: Query,
+  mutation: Mutation
 }

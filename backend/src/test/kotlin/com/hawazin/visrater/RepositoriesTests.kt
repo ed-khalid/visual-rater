@@ -1,20 +1,19 @@
 package com.hawazin.visrater
 
-import com.hawazin.visrater.music.db.Artist
-import com.hawazin.visrater.music.db.ArtistRepository
+import com.hawazin.visrater.music.db.*
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager
-import org.springframework.boot.test.context.SpringBootTest
 import java.util.*
 
 
 @DataJpaTest
 class RepositoriesTests @Autowired constructor(
     val entityManager:TestEntityManager,
-    val artistRepo: ArtistRepository
+    val artistRepo:ArtistRepository,
+    val songRepo:SongRepository
 ) {
 
     @Test
@@ -24,5 +23,20 @@ class RepositoriesTests @Autowired constructor(
         entityManager.flush()
         val found = artistRepo.findByName("Metallica")
         assertThat(found).isEqualTo(artist)
+    }
+
+    @Test
+    fun  `When Persisting Song, Album, Artist Then They All Get Saved`() {
+        val artist = Artist(UUID.randomUUID(),"random-vendor-id", "Britney Spears")
+        val album = Album(UUID.randomUUID(),"random-vendor-album-id","Baby One More Time", 1975 ,artist)
+        val song = Song(UUID.randomUUID(),"vendor-song-id","Stronger", album, artist, 7.3 )
+        entityManager.persist(artist)
+        entityManager.persist(album)
+        entityManager.persist(song)
+        entityManager.flush()
+        val metallica = artistRepo.findByName("Metallica")
+        assertThat(metallica).isNull()
+        var foundSong = songRepo.findByName("Stronger")
+        assertThat(foundSong).isEqualTo(song)
     }
 }

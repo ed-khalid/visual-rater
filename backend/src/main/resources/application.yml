@@ -1,7 +1,8 @@
 
 spring:
   jpa:
-    database: postgresql
+    hibernate:
+      ddl-auto: create
   datasource:
     url: "jdbc:postgresql://localhost:5432/visual_rater"
     username: visual_rater
@@ -26,23 +27,11 @@ graphql:
   playground:
     cdn:
       version: latest
-altair:
-  enabled: false
-  cdn:
-    enabled: true
 graphiql:
   enabled: true
   cdn:
     enabled: true
     version: 0.17.5
-voyager:
-  enabled: false
-  cdn:
-    enabled: true
-graphql.playground:
-  enabled: false
-  cdn:
-    enabled: true
 logging:
   level:
     root: ERROR

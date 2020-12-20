@@ -18,7 +18,7 @@ class Album(
     @Id var id:UUID,
     var vendorId:String,
     var name:String,
-    var year:Date,
+    var year:Int,
     @ManyToOne var artist:Artist
 )
 
