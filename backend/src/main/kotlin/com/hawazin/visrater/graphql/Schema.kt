@@ -1,7 +1,4 @@
 package com.hawazin.visrater.graphql
-
-import com.fasterxml.jackson.databind.json.JsonMapper
-import com.fasterxml.jackson.module.kotlin.KotlinModule
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.hawazin.visrater.external.SpotifyApi
 import com.hawazin.visrater.graphql.models.SongInput

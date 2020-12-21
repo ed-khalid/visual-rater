@@ -10,9 +10,10 @@ interface ArtistRepository: CrudRepository<Artist, UUID>   {
 }
 
 interface AlbumRepository: CrudRepository<Album, UUID> {
-
+    fun findByVendorId(vendorId:String): Album?
 }
 
 interface SongRepository:CrudRepository<Song,UUID> {
     fun findByName(name:String) : Song?
+   fun findByVendorId(vendorId:String): Song?
 }
