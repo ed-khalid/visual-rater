@@ -1,0 +1,7 @@
+mutation CreateSong($song:SongInput){
+  CreateSong(song:$song) {
+      id 
+      name
+      score
+  }
+}
