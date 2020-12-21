@@ -96,8 +96,8 @@ export const SearchAlbumsForArtist  = ({ onSelectAlbum, artist}:{onSelectAlbum:(
                     )}
                 </ul>
                 <nav id="album-navbar" className="grid">
-                    <div onClick={() => { offset(false) } } className="nav-arrow">&lt;</div>
-                    <div onClick={() => { offset(true) }} className="nav-arrow">&gt;</div>
+                    <div onClick={() => { offset(false) }}   className="nav-arrow">&lt;</div>
+                    <div onClick={() => { offset(true)  }}   className="nav-arrow">&gt;</div>
                 </nav>
         </div>
 }

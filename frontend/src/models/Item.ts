@@ -7,3 +7,7 @@ export abstract class Item {
 
     }
 }
+
+export enum ItemType {
+    MUSIC
+}

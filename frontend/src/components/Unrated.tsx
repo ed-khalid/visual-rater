@@ -1,4 +1,4 @@
-import { Item } from "../models/Item";
+import { Item, ItemType } from "../models/Item";
 import { Position } from "../models/Position";
 import React, {  useState, useEffect, Dispatch, SetStateAction } from "react";
 import './Unrated.css';
@@ -16,9 +16,10 @@ interface Props {
     onRater:Dispatch<SetStateAction<boolean>>;
     updateItems:any[];
     scaler:Scaler;
+    itemType:ItemType;
 }
 
-export const Unrated:React.FunctionComponent<Props> = ({unratedItems,ratedItems,onDrag,onRater, updateItems, scaler}:Props) => {
+export const Unrated:React.FunctionComponent<Props> = ({unratedItems,ratedItems,onDrag,onRater, updateItems, scaler,itemType}:Props) => {
 
     const [g,updateG] = useState<SVGElement|null>(null); 
 
@@ -104,9 +105,7 @@ export const Unrated:React.FunctionComponent<Props> = ({unratedItems,ratedItems,
               const updateRated = updateItems[1]; 
               const newUnrated = unratedItems.filter(it => it !==  item );  
               const yPosition = Number(rect.attr('y'));    
-              console.log('yPosition',yPosition);
               const score = scaler.toScore(yPosition);   
-              console.log('score', score);
               updateUnrated(newUnrated);  
               updateRated([...ratedItems, new RatedItem(item, score)]);
           } else {

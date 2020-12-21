@@ -12,11 +12,47 @@ export type Scalars = {
   Float: number;
 };
 
+export type Album = {
+  __typename?: 'Album';
+  id: Scalars['String'];
+  name: Scalars['String'];
+  year?: Maybe<Scalars['Int']>;
+  songs?: Maybe<Array<Maybe<Song>>>;
+};
+
+export type AlbumInput = {
+  id: Scalars['String'];
+  name: Scalars['String'];
+  year?: Maybe<Scalars['Int']>;
+};
+
+export type Artist = {
+  __typename?: 'Artist';
+  id: Scalars['String'];
+  name: Scalars['String'];
+  albums?: Maybe<Array<Maybe<Album>>>;
+};
+
+export type ArtistInput = {
+  id: Scalars['String'];
+  name: Scalars['String'];
+};
+
 export type Image = {
   __typename?: 'Image';
   width: Scalars['Int'];
   height: Scalars['Int'];
   url: Scalars['String'];
+};
+
+export type Mutation = {
+  __typename?: 'Mutation';
+  CreateSong?: Maybe<Song>;
+};
+
+
+export type MutationCreateSongArgs = {
+  song?: Maybe<SongInput>;
 };
 
 export type Query = {
@@ -55,6 +91,23 @@ export type SearchResult = {
   images: Array<Image>;
 };
 
+export type Song = {
+  __typename?: 'Song';
+  id: Scalars['String'];
+  score: Scalars['Float'];
+  name: Scalars['String'];
+  number?: Maybe<Scalars['Int']>;
+};
+
+export type SongInput = {
+  id: Scalars['String'];
+  score: Scalars['Float'];
+  name: Scalars['String'];
+  number?: Maybe<Scalars['Int']>;
+  album?: Maybe<AlbumInput>;
+  artist?: Maybe<ArtistInput>;
+};
+
 export type TrackSearchResult = {
   __typename?: 'TrackSearchResult';
   name: Scalars['String'];
@@ -62,6 +115,19 @@ export type TrackSearchResult = {
   discNumber: Scalars['Int'];
   id: Scalars['String'];
 };
+
+export type CreateSongMutationVariables = Exact<{
+  song?: Maybe<SongInput>;
+}>;
+
+
+export type CreateSongMutation = (
+  { __typename?: 'Mutation' }
+  & { CreateSong?: Maybe<(
+    { __typename?: 'Song' }
+    & Pick<Song, 'id' | 'name' | 'score'>
+  )> }
+);
 
 export type GetTracksForAlbumQueryVariables = Exact<{
   albumId: Scalars['String'];
@@ -116,6 +182,40 @@ export type SearchByArtistQuery = (
 );
 
 
+export const CreateSongDocument = gql`
+    mutation CreateSong($song: SongInput) {
+  CreateSong(song: $song) {
+    id
+    name
+    score
+  }
+}
+    `;
+export type CreateSongMutationFn = ApolloReactCommon.MutationFunction<CreateSongMutation, CreateSongMutationVariables>;
+
+/**
+ * __useCreateSongMutation__
+ *
+ * To run a mutation, you first call `useCreateSongMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateSongMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createSongMutation, { data, loading, error }] = useCreateSongMutation({
+ *   variables: {
+ *      song: // value for 'song'
+ *   },
+ * });
+ */
+export function useCreateSongMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<CreateSongMutation, CreateSongMutationVariables>) {
+        return ApolloReactHooks.useMutation<CreateSongMutation, CreateSongMutationVariables>(CreateSongDocument, baseOptions);
+      }
+export type CreateSongMutationHookResult = ReturnType<typeof useCreateSongMutation>;
+export type CreateSongMutationResult = ApolloReactCommon.MutationResult<CreateSongMutation>;
+export type CreateSongMutationOptions = ApolloReactCommon.BaseMutationOptions<CreateSongMutation, CreateSongMutationVariables>;
 export const GetTracksForAlbumDocument = gql`
     query GetTracksForAlbum($albumId: String!) {
   track(albumId: $albumId) {

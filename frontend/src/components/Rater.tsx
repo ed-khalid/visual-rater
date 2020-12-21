@@ -6,6 +6,8 @@ import { Position } from '../models/Position';
 import { RatedItem } from "../models/RatedItem";
 import { event as d3Event } from 'd3';
 import { Scaler } from "../functions/scale";
+import { Song, useCreateSongMutation } from "../generated/graphql";
+import { ItemType } from "../models/Item";
 
 interface Props {
     position:Position;
@@ -13,11 +15,13 @@ interface Props {
     ratedItems: RatedItem[];
     updateRatedItems:Dispatch<SetStateAction<RatedItem[]>>;
     scaler:Scaler;
+    itemType:ItemType;
 }
 
-export const Rater:React.FunctionComponent<Props> = ({position, highlight, ratedItems, updateRatedItems, scaler}) => {
+export const Rater:React.FunctionComponent<Props> = ({position, highlight, ratedItems, updateRatedItems, scaler, itemType}) => {
 
     const [g, updateG] = useState<SVGElement|null>(null);
+    const [createUpdateSong, mutationStatus  ]  = useCreateSongMutation();
     const raterWidth = 20; 
 
     const isDragInBounds = (_y:number) => {
@@ -49,6 +53,12 @@ export const Rater:React.FunctionComponent<Props> = ({position, highlight, rated
         const item = ratedItems[i];    
         item.score = score; 
         const _r = ratedItems.filter(_item => _item !== item);
+        const song:Song = {
+            id: item.item.id
+            ,score: item.score 
+            ,name: item.item.name
+        } 
+        createUpdateSong({variables: {song }})
         updateRatedItems( [..._r, item] )
         select(g).classed('active', false);
     }   

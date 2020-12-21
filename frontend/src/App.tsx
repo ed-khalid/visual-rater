@@ -1,17 +1,13 @@
 import React, { useState } from 'react';
 import './App.css';
 import { Unrated } from './components/Unrated';
-import { initialModel } from './models/initialModel';
 import { UnratedNav } from './components/UnratedNav';
 import { Rater } from './components/Rater';
-import { Item } from './models/Item';
+import { Item, ItemType } from './models/Item';
 import { RatedItem } from './models/RatedItem';
 import { Position} from './models/Position';
 import { Scaler } from './functions/scale';
-import { Song, Artist } from './models/music';
 import { Search } from './components/Search';
-
-const newRatedItem = new RatedItem(new Song(0+'',0,'Hello',new Artist(0+'', 'Saadoon Jabir')), 70); 
 
 type AppState = {
   unratedItems:Item[];
@@ -21,11 +17,12 @@ type AppState = {
   }
   draggedItem?:Item|undefined;
   draggedItemIsAboveRater:boolean;
+  itemType:ItemType
 } 
 
 function App() {
   const [unratedItems, updateUnratedItems] = useState([]);  
-  const [ratedItems, updateRatedItems] = useState<RatedItem[]>([newRatedItem]); 
+  const [ratedItems, updateRatedItems] = useState<RatedItem[]>([]); 
   const [draggedItem, updateDraggedItem] = useState<Item|undefined>(undefined); 
   const [draggedItemIsAboveRater, updateDraggedItemIsAboveRater] = useState(false); 
 
@@ -39,7 +36,8 @@ function App() {
       }
     },
     draggedItem,  
-    draggedItemIsAboveRater
+    draggedItemIsAboveRater,
+    itemType : ItemType.MUSIC  
   }
 
   const scaler = new Scaler(appState.rater.position.y);   
@@ -62,6 +60,7 @@ function App() {
                   onRater={updateDraggedItemIsAboveRater}
                   updateItems={[updateUnratedItems, updateRatedItems]} 
                   scaler={scaler}
+                  itemType={appState.itemType}
           > 
           </Unrated>
           <Rater 
@@ -70,6 +69,7 @@ function App() {
                 ratedItems={appState.ratedItems}  
                 updateRatedItems={updateRatedItems}
                 scaler={scaler}
+                itemType={appState.itemType}
           >
           </Rater>
         </svg>
