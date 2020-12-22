@@ -16,7 +16,7 @@ export type Album = {
   __typename?: 'Album';
   id: Scalars['String'];
   name: Scalars['String'];
-  year?: Maybe<Scalars['Int']>;
+  year?: Maybe<Scalars['String']>;
   songs?: Maybe<Array<Maybe<Song>>>;
 };
 
@@ -24,6 +24,14 @@ export type AlbumInput = {
   id: Scalars['String'];
   name: Scalars['String'];
   year?: Maybe<Scalars['Int']>;
+};
+
+export type AlbumSearchResult = {
+  __typename?: 'AlbumSearchResult';
+  id: Scalars['String'];
+  name: Scalars['String'];
+  images: Array<Image>;
+  year?: Maybe<Scalars['String']>;
 };
 
 export type Artist = {
@@ -55,32 +63,37 @@ export type MutationCreateSongArgs = {
   song?: Maybe<SongInput>;
 };
 
-export type PaginatedSearchResult = {
-  __typename?: 'PaginatedSearchResult';
-  results: Array<SearchResult>;
-  pageNumber?: Maybe<Scalars['Int']>;
+export type PaginatedAlbumResult = {
+  __typename?: 'PaginatedAlbumResult';
+  results: Array<AlbumSearchResult>;
+  pageNumber: Scalars['Int'];
 };
 
 export type Query = {
   __typename?: 'Query';
+  search?: Maybe<SearchQuery>;
+};
+
+export type SearchQuery = {
+  __typename?: 'SearchQuery';
   artists: Array<SearchResult>;
-  albums: PaginatedSearchResult;
+  albums: PaginatedAlbumResult;
   tracks: Array<TrackSearchResult>;
 };
 
 
-export type QueryArtistsArgs = {
+export type SearchQueryArtistsArgs = {
   name?: Maybe<Scalars['String']>;
 };
 
 
-export type QueryAlbumsArgs = {
+export type SearchQueryAlbumsArgs = {
   artistId: Scalars['String'];
   pageNumber?: Maybe<Scalars['Int']>;
 };
 
 
-export type QueryTracksArgs = {
+export type SearchQueryTracksArgs = {
   albumId: Scalars['String'];
 };
 
@@ -136,9 +149,12 @@ export type GetTracksForAlbumQueryVariables = Exact<{
 
 export type GetTracksForAlbumQuery = (
   { __typename?: 'Query' }
-  & { tracks: Array<(
-    { __typename?: 'TrackSearchResult' }
-    & Pick<TrackSearchResult, 'id' | 'name' | 'trackNumber' | 'discNumber'>
+  & { search?: Maybe<(
+    { __typename?: 'SearchQuery' }
+    & { tracks: Array<(
+      { __typename?: 'TrackSearchResult' }
+      & Pick<TrackSearchResult, 'id' | 'name' | 'trackNumber' | 'discNumber'>
+    )> }
   )> }
 );
 
@@ -150,18 +166,21 @@ export type SearchAlbumsByArtistQueryVariables = Exact<{
 
 export type SearchAlbumsByArtistQuery = (
   { __typename?: 'Query' }
-  & { albums: (
-    { __typename?: 'PaginatedSearchResult' }
-    & Pick<PaginatedSearchResult, 'pageNumber'>
-    & { results: Array<(
-      { __typename?: 'SearchResult' }
-      & Pick<SearchResult, 'id' | 'name'>
-      & { images: Array<(
-        { __typename?: 'Image' }
-        & Pick<Image, 'width' | 'height' | 'url'>
+  & { search?: Maybe<(
+    { __typename?: 'SearchQuery' }
+    & { albums: (
+      { __typename?: 'PaginatedAlbumResult' }
+      & Pick<PaginatedAlbumResult, 'pageNumber'>
+      & { results: Array<(
+        { __typename?: 'AlbumSearchResult' }
+        & Pick<AlbumSearchResult, 'id' | 'name'>
+        & { images: Array<(
+          { __typename?: 'Image' }
+          & Pick<Image, 'width' | 'height' | 'url'>
+        )> }
       )> }
-    )> }
-  ) }
+    ) }
+  )> }
 );
 
 export type SearchByArtistQueryVariables = Exact<{
@@ -171,12 +190,15 @@ export type SearchByArtistQueryVariables = Exact<{
 
 export type SearchByArtistQuery = (
   { __typename?: 'Query' }
-  & { artists: Array<(
-    { __typename?: 'SearchResult' }
-    & Pick<SearchResult, 'id' | 'name'>
-    & { images: Array<(
-      { __typename?: 'Image' }
-      & Pick<Image, 'width' | 'height' | 'url'>
+  & { search?: Maybe<(
+    { __typename?: 'SearchQuery' }
+    & { artists: Array<(
+      { __typename?: 'SearchResult' }
+      & Pick<SearchResult, 'id' | 'name'>
+      & { images: Array<(
+        { __typename?: 'Image' }
+        & Pick<Image, 'width' | 'height' | 'url'>
+      )> }
     )> }
   )> }
 );
@@ -218,11 +240,13 @@ export type CreateSongMutationResult = ApolloReactCommon.MutationResult<CreateSo
 export type CreateSongMutationOptions = ApolloReactCommon.BaseMutationOptions<CreateSongMutation, CreateSongMutationVariables>;
 export const GetTracksForAlbumDocument = gql`
     query GetTracksForAlbum($albumId: String!) {
-  tracks(albumId: $albumId) {
-    id
-    name
-    trackNumber
-    discNumber
+  search {
+    tracks(albumId: $albumId) {
+      id
+      name
+      trackNumber
+      discNumber
+    }
   }
 }
     `;
@@ -254,17 +278,19 @@ export type GetTracksForAlbumLazyQueryHookResult = ReturnType<typeof useGetTrack
 export type GetTracksForAlbumQueryResult = ApolloReactCommon.QueryResult<GetTracksForAlbumQuery, GetTracksForAlbumQueryVariables>;
 export const SearchAlbumsByArtistDocument = gql`
     query SearchAlbumsByArtist($artistId: String!, $pageNumber: Int) {
-  albums(artistId: $artistId, pageNumber: $pageNumber) {
-    results {
-      id
-      name
-      images {
-        width
-        height
-        url
+  search {
+    albums(artistId: $artistId, pageNumber: $pageNumber) {
+      results {
+        id
+        name
+        images {
+          width
+          height
+          url
+        }
       }
+      pageNumber
     }
-    pageNumber
   }
 }
     `;
@@ -297,13 +323,15 @@ export type SearchAlbumsByArtistLazyQueryHookResult = ReturnType<typeof useSearc
 export type SearchAlbumsByArtistQueryResult = ApolloReactCommon.QueryResult<SearchAlbumsByArtistQuery, SearchAlbumsByArtistQueryVariables>;
 export const SearchByArtistDocument = gql`
     query SearchByArtist($name: String) {
-  artists(name: $name) {
-    id
-    name
-    images {
-      width
-      height
-      url
+  search {
+    artists(name: $name) {
+      id
+      name
+      images {
+        width
+        height
+        url
+      }
     }
   }
 }

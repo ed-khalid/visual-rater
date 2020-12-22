@@ -1,14 +1,16 @@
 query SearchAlbumsByArtist($artistId:String!, $pageNumber:Int) {
-  albums(artistId: $artistId, pageNumber: $pageNumber) {
-    results {
-      id
-      name
-      images {
-        width
-        height
-        url
+  search {
+    albums(artistId: $artistId, pageNumber: $pageNumber) {
+      results {
+        id
+        name
+        images {
+          width
+          height
+          url
+        }
       }
+      pageNumber
     }
-    pageNumber
   }
 }

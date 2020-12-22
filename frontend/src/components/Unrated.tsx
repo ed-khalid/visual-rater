@@ -7,6 +7,9 @@ import { drag } from 'd3-drag';
 import { event as d3Event } from 'd3'
 import { RatedItem } from "../models/RatedItem";
 import { Scaler } from "../functions/scale";
+import { SongInput, useCreateSongMutation } from "../generated/graphql";
+import { mapper } from "../functions/mapper";
+import { Song } from "../models/music/Song";
 
 
 interface Props {
@@ -22,6 +25,7 @@ interface Props {
 export const Unrated:React.FunctionComponent<Props> = ({unratedItems,ratedItems,onDrag,onRater, updateItems, scaler,itemType}:Props) => {
 
     const [g,updateG] = useState<SVGElement|null>(null); 
+    const [createUpdateSong, mutationStatus  ]  = useCreateSongMutation();
 
     useEffect(() => {
         attachDragEvents();
@@ -106,8 +110,14 @@ export const Unrated:React.FunctionComponent<Props> = ({unratedItems,ratedItems,
               const newUnrated = unratedItems.filter(it => it !==  item );  
               const yPosition = Number(rect.attr('y'));    
               const score = scaler.toScore(yPosition);   
+              const ratedItem = new RatedItem(item, score); 
               updateUnrated(newUnrated);  
-              updateRated([...ratedItems, new RatedItem(item, score)]);
+                switch(itemType) {
+                    case ItemType.MUSIC :
+                    const songInput:SongInput = mapper.songToSongInput(ratedItem.item as Song, ratedItem.score)
+                    createUpdateSong({variables: {song: songInput }})
+                }
+              updateRated([...ratedItems, ratedItem ]);
           } else {
             text
               .attr('x', dragOriginalPos.text.x)
