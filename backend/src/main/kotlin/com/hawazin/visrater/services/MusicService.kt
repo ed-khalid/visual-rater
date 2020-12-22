@@ -9,6 +9,12 @@ import java.util.*
 @Service
 class MusicService(private val songRepo:SongRepository , private val albumRepo: AlbumRepository, private val artistRepo:ArtistRepository) {
 
+
+    fun readAllSongs() : Iterable<Song>
+    {
+        return songRepo.findAll()
+    }
+
     fun createSong(spotifySong:SongInput) : Song
     {
         var artist:Artist = spotifySong.artist.let { Artist(id = UUID.randomUUID(), name= it.name, vendorId = it.id  )   }

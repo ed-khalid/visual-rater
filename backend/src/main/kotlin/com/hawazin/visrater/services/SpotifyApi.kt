@@ -3,10 +3,10 @@ package com.hawazin.visrater.services
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
 import com.hawazin.visrater.graphql.SpotifyGraphQLError
-import com.hawazin.visrater.graphql.models.Album
-import com.hawazin.visrater.graphql.models.Artist
-import com.hawazin.visrater.graphql.models.PaginatedSearchResult
-import com.hawazin.visrater.graphql.models.Track
+import com.hawazin.visrater.models.graphql.Album
+import com.hawazin.visrater.models.graphql.Artist
+import com.hawazin.visrater.models.graphql.PaginatedSearchResult
+import com.hawazin.visrater.models.graphql.Track
 import com.hawazin.visrater.configurations.SpotifyConfiguration
 import com.hawazin.visrater.graphql.CustomRestTemplateCustomizer
 import org.springframework.boot.web.client.RestTemplateBuilder

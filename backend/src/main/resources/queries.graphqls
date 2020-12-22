@@ -1,12 +1,26 @@
+
 type Query {
+    search: SearchQuery
+    items(type:ItemType): [Item!]!
+}
+
+interface Item {
+    id:String!
+    name:String!
+    score:Float!
+}
+
+enum ItemType {
+    MUSIC
+}
+
+type SearchQuery {
     artists(name:String) : [SearchResult!]!
     albums(artistId:String!, pageNumber:Int): PaginatedAlbumResult!
     tracks(albumId:String!): [TrackSearchResult!]!
 }
-
-
 type PaginatedAlbumResult {
-    results:  [Album!]!
+    results:  [AlbumSearchResult!]!
     pageNumber: Int!
 }
 type SearchResult {
@@ -14,7 +28,10 @@ type SearchResult {
     id:String!
     images:[Image!]!
 }
-type AlbumSearchResult implements SearchResult {
+type AlbumSearchResult {
+    id:String!
+    name:String!
+    images:[Image!]!
     year: String
 }
 type Image {

@@ -11,12 +11,15 @@ input SongInput {
     artist:ArtistInput
 }
 
-type Song {
+type Song implements Item {
     id:String!
     score:Float!
     name: String!
+    artist:Artist!
     number:Int
+    album:Album
 }
+
 type Album {
     id: String!
     name: String!
