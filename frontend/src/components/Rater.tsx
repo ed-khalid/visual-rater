@@ -6,8 +6,10 @@ import { Position } from '../models/Position';
 import { RatedItem } from "../models/RatedItem";
 import { event as d3Event } from 'd3';
 import { Scaler } from "../functions/scale";
-import { Song, useCreateSongMutation } from "../generated/graphql";
+import { SongInput, useCreateSongMutation } from "../generated/graphql";
 import { ItemType } from "../models/Item";
+import { mapper } from "../functions/mapper";
+import { Song } from "../models/music/Song";
 
 interface Props {
     position:Position;
@@ -53,12 +55,11 @@ export const Rater:React.FunctionComponent<Props> = ({position, highlight, rated
         const item = ratedItems[i];    
         item.score = score; 
         const _r = ratedItems.filter(_item => _item !== item);
-        const song:Song = {
-            id: item.item.id
-            ,score: item.score 
-            ,name: item.item.name
-        } 
-        createUpdateSong({variables: {song }})
+        switch(itemType) {
+            case ItemType.MUSIC :
+             const songInput:SongInput = mapper.songToSongInput(item.item as Song, item.score)
+             createUpdateSong({variables: {song: songInput }})
+        }
         updateRatedItems( [..._r, item] )
         select(g).classed('active', false);
     }   

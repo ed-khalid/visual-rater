@@ -1,5 +1,5 @@
 query SearchByArtist($name:String){
-  artist(name: $name) {
+  artists(name: $name) {
     id 
     name 
     images {
