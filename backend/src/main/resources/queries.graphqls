@@ -1,17 +1,21 @@
 type Query {
-    artist(name:String) : [SearchResult!]!
-    album(artistId:String!, pageNumber:Int): QueryResponse!
-    track(albumId:String!): [TrackSearchResult!]!
+    artists(name:String) : [SearchResult!]!
+    albums(artistId:String!, pageNumber:Int): PaginatedAlbumResult!
+    tracks(albumId:String!): [TrackSearchResult!]!
 }
 
-type QueryResponse {
-    results:  [SearchResult!]!
-    pageNumber: Int
+
+type PaginatedAlbumResult {
+    results:  [Album!]!
+    pageNumber: Int!
 }
 type SearchResult {
     name:String!
     id:String!
     images:[Image!]!
+}
+type AlbumSearchResult implements SearchResult {
+    year: String
 }
 type Image {
     width:Int!
@@ -20,7 +24,7 @@ type Image {
 }
 type TrackSearchResult {
     name:String!
-    number:Int!
+    trackNumber:Int!
     discNumber:Int!
     id:String!
 }

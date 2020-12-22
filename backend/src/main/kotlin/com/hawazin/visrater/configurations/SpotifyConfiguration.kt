@@ -1,4 +1,4 @@
-package com.hawazin.visrater.external
+package com.hawazin.visrater.configurations
 
 import org.springframework.boot.context.properties.ConfigurationProperties
 import org.springframework.boot.context.properties.ConstructorBinding
@@ -7,7 +7,7 @@ import org.springframework.boot.context.properties.ConstructorBinding
 @ConstructorBinding
 @ConfigurationProperties(prefix="spotify")
 data class SpotifyConfiguration (
-        val accounts:String, val api:String, val client:SpotifyClientConfiguration
+        val accounts:String, val api:String, val client: SpotifyClientConfiguration
 ) {
 
     data class SpotifyClientConfiguration(val id:String, val secret:String)

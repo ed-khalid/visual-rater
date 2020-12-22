@@ -1,13 +1,14 @@
-package com.hawazin.visrater.external
+package com.hawazin.visrater.services
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.hawazin.visrater.CustomRestTemplateCustomizer
 import com.hawazin.visrater.graphql.SpotifyGraphQLError
 import com.hawazin.visrater.graphql.models.Album
 import com.hawazin.visrater.graphql.models.Artist
-import com.hawazin.visrater.graphql.models.QueryResponse
+import com.hawazin.visrater.graphql.models.PaginatedSearchResult
 import com.hawazin.visrater.graphql.models.Track
+import com.hawazin.visrater.configurations.SpotifyConfiguration
+import com.hawazin.visrater.graphql.CustomRestTemplateCustomizer
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
@@ -66,13 +67,13 @@ class SpotifyApi(private val configuration: SpotifyConfiguration) {
         return response.artists.items
     }
 
-    fun getAlbumsForArtist(artistId:String, _offset:Int) : QueryResponse {
+    fun getAlbumsForArtist(artistId:String, _offset:Int) : PaginatedSearchResult {
         if (_offset  < 0) {
             throw SpotifyGraphQLError("Album Page Number must be positive")
         }
         val offset = _offset*12
         val response = makeCall { api().getForObject<AlbumList>("/artists/{artistId}/albums?limit=12&county=US&include_groups=album&offset={offset}", artistId, offset) }
-        return QueryResponse(
+        return PaginatedSearchResult(
          results = response.items
             , pageNumber =  _offset)
     }

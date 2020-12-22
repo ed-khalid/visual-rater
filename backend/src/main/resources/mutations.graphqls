@@ -6,7 +6,7 @@ input SongInput {
     id:String!
     score:Float!
     name: String!
-    number:Int
+    trackNumber:Int
     album: AlbumInput
     artist:ArtistInput
 }
@@ -20,7 +20,7 @@ type Song {
 type Album {
     id: String!
     name: String!
-    year: Int
+    year: String
     songs:[Song]
 }
 type Artist {

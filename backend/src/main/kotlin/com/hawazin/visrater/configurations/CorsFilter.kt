@@ -1,4 +1,4 @@
-package com.hawazin.visrater
+package com.hawazin.visrater.configurations
 
 import org.springframework.context.annotation.Configuration
 import javax.servlet.Filter

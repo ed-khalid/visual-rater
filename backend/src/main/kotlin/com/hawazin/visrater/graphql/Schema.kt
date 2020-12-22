@@ -1,8 +1,8 @@
 package com.hawazin.visrater.graphql
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.hawazin.visrater.external.SpotifyApi
 import com.hawazin.visrater.graphql.models.SongInput
-import com.hawazin.visrater.music.MusicService
+import com.hawazin.visrater.services.MusicService
+import com.hawazin.visrater.services.SpotifyApi
 import graphql.schema.GraphQLSchema
 import graphql.schema.idl.RuntimeWiring
 import graphql.schema.idl.SchemaGenerator
@@ -14,7 +14,7 @@ import org.springframework.util.ResourceUtils
 import java.io.File
 
 @Configuration
-class GraphQLConfiguration(private val spotifyService:SpotifyApi, private val musicService:MusicService ) {
+class GraphQLConfiguration(private val spotifyService: SpotifyApi, private val musicService: MusicService) {
 
     private final val objectMapper = jacksonObjectMapper()
 
@@ -39,14 +39,14 @@ class GraphQLConfiguration(private val spotifyService:SpotifyApi, private val mu
             }
                 .type("Query"
                 ) {
-                    it.dataFetcher("artist") { env ->
+                    it.dataFetcher("artists") { env ->
                         spotifyService.searchArtist(env.arguments["name"] as String)
                     }
-                    it.dataFetcher("album") { env ->
+                    it.dataFetcher("albums") { env ->
                         spotifyService.getAlbumsForArtist(env.arguments["artistId"] as String,  (env.arguments["pageNumber"] as Int?)
                             ?: 0)
                     }
-                    it.dataFetcher("track") { env ->
+                    it.dataFetcher("tracks") { env ->
                         spotifyService.getTracksForAlbum(env.arguments["albumId"] as String)
                     }
                 }

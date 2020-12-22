@@ -1,7 +1,7 @@
-package com.hawazin.visrater.music
+package com.hawazin.visrater.services
 
 import com.hawazin.visrater.graphql.models.SongInput
-import com.hawazin.visrater.music.db.*
+import com.hawazin.visrater.models.db.*
 import org.springframework.stereotype.Service
 import java.util.*
 

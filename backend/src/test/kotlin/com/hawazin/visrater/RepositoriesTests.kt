@@ -1,6 +1,8 @@
 package com.hawazin.visrater
 
-import com.hawazin.visrater.music.db.*
+import com.hawazin.visrater.models.db.*
+import com.hawazin.visrater.services.ArtistRepository
+import com.hawazin.visrater.services.SongRepository
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
@@ -12,8 +14,8 @@ import java.util.*
 @DataJpaTest
 class RepositoriesTests @Autowired constructor(
     val entityManager:TestEntityManager,
-    val artistRepo:ArtistRepository,
-    val songRepo:SongRepository
+    val artistRepo: ArtistRepository,
+    val songRepo: SongRepository
 ) {
 
     @Test

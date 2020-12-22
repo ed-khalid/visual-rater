@@ -1,4 +1,4 @@
-package com.hawazin.visrater.music.db
+package com.hawazin.visrater.models.db
 
 import java.util.*
 import javax.persistence.Entity

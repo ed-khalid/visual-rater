@@ -1,6 +1,6 @@
 package com.hawazin.visrater
 
-import com.hawazin.visrater.external.SpotifyConfiguration
+import com.hawazin.visrater.configurations.SpotifyConfiguration
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.runApplication

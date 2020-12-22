@@ -1,5 +1,8 @@
-package com.hawazin.visrater.music.db
+package com.hawazin.visrater.services
 
+import com.hawazin.visrater.models.db.Album
+import com.hawazin.visrater.models.db.Artist
+import com.hawazin.visrater.models.db.Song
 import org.springframework.data.repository.CrudRepository
 import java.util.*
 
