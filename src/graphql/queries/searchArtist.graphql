@@ -1,11 +1,13 @@
 query SearchByArtist($name:String){
-  artists(name: $name) {
-    id 
-    name 
-    images {
-      width
-      height
-      url
+  search {
+    artists(name: $name) {
+      id 
+      name 
+      images {
+        width
+        height
+        url
+      }
     }
   }
 }
