@@ -1,7 +1,7 @@
 import React, { ChangeEvent, useEffect, useState } from "react"
 import './Search.css'
 import { useSearchByArtistQuery, useSearchAlbumsByArtistQuery , SearchResult, useGetTracksForAlbumLazyQuery } from '../generated/graphql'; 
-import { ItemMapper } from "../models/mappers/item.mapper";
+import { Song } from "../models/music/Song";
 
 export const Search = ({setUnrated}:{setUnrated:any}) => {
 
@@ -11,11 +11,10 @@ export const Search = ({setUnrated}:{setUnrated:any}) => {
   const [getTracks, {data} ] = useGetTracksForAlbumLazyQuery();  
 
     useEffect(() => {
-        if (data?.track && chosenAlbum && chosenArtist) {
-            const items = ItemMapper.convert(data.track,chosenAlbum,chosenArtist)
-            setUnrated(items)
-        }
-    }, [data])
+        if (data?.tracks && chosenAlbum && chosenArtist) {
+            const unratedSongs:Song[] = data.tracks.map(track => new Song(track.id, track.trackNumber, track.name, chosenArtist, chosenAlbum))
+            setUnrated(unratedSongs)
+        }}, [data])
 
     const handleArtist = (evt:ChangeEvent<HTMLInputElement>) => {
         const val = evt.target.value; 
@@ -88,7 +87,7 @@ export const SearchAlbumsForArtist  = ({ onSelectAlbum, artist}:{onSelectAlbum:(
 
         return <div id="album-nav-grid">
                 <ul>
-                    {data?.album?.results?.map(album => 
+                    {data?.albums?.results?.map(album => 
                     <li onClick={() => onSelectAlbum(album) }  key={album.id} >
                             <img alt="" src={album.images[2].url} />
                             <span>{album.name}</span>
@@ -106,8 +105,8 @@ export const SearchQuery =  ({onSelectArtist, artist}:{onSelectArtist: (artist:S
     const { loading, error, data  } = useSearchByArtistQuery({ variables: { name:  artist}})
     if (loading) return <p>Loading...</p> 
     if (error) return <p>Error! </p>
-    if (data && data.artist) {
-        const mostPopular = data.artist[0];  
+    if (data && data.artists) {
+        const mostPopular = data.artists[0];  
         let image;
         if (mostPopular && mostPopular.images) {
             image = mostPopular.images[2]; 

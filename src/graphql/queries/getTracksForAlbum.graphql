@@ -1,8 +1,8 @@
 query GetTracksForAlbum($albumId:String!) {
-  track(albumId: $albumId) {
+  tracks(albumId: $albumId) {
       id
       name
-      number
+      trackNumber
       discNumber
     }
 }

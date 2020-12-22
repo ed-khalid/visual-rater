@@ -1,5 +1,5 @@
 query SearchAlbumsByArtist($artistId:String!, $pageNumber:Int) {
-  album(artistId: $artistId, pageNumber: $pageNumber) {
+  albums(artistId: $artistId, pageNumber: $pageNumber) {
     results {
       id
       name

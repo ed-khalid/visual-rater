@@ -1,10 +1,10 @@
+import { SearchResult } from "../../generated/graphql";
 import { Item } from "../Item";
-import { Artist,Album } from '.';
 
 export class Song extends Item {
 
-    constructor(public id:string, public trackNumber:number, public name:string, public artist:Artist, public album?:Album) {
-        super(id,name, (album)? album.id : artist.id )
+    constructor(public id:string, public trackNumber:number, public name:string, public artist:SearchResult, public album?:SearchResult) {
+        super(id,name )
     }
 
 } 
