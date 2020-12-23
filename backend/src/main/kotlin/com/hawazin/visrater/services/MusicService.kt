@@ -12,7 +12,8 @@ class MusicService(private val songRepo:SongRepository , private val albumRepo: 
 
     fun readAllSongs() : Iterable<Song>
     {
-        return songRepo.findAll()
+        val songs = songRepo.findAll()
+        return songs
     }
 
     fun createSong(spotifySong:SongInput) : Song
