@@ -103,8 +103,6 @@ export const Rater:React.FunctionComponent<Props> = ({position, highlight, rated
                             <text cursor="move" fontSize="10" fontSizeAdjust="2" fill="white" x={position.x - 70} y={scaler.toPosition(rItem.score)} dy=".35em">{rItem.item.name}</text>
                             <text id="score" cursor="move" fontSize="10" fontSizeAdjust="2" fill="white" x={position.x + 70} y={scaler.toPosition(rItem.score)} dy=".35em">{rItem.score.toFixed(2)}</text>
                           </g>
-
-
                           </g>
                       </g>) }
                   </g> 

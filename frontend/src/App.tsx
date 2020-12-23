@@ -8,6 +8,7 @@ import { RatedItem } from './models/RatedItem';
 import { Position} from './models/Position';
 import { Scaler } from './functions/scale';
 import { Search } from './components/Search';
+import { useGetItemsQuery } from './generated/graphql';
 
 type AppState = {
   unratedItems:Item[];
@@ -22,9 +23,20 @@ type AppState = {
 
 function App() {
   const [unratedItems, updateUnratedItems] = useState([]);  
-  const [ratedItems, updateRatedItems] = useState<RatedItem[]>([]); 
+  const [ratedItems, setRatedItems] = useState<RatedItem[]>([]); 
   const [draggedItem, updateDraggedItem] = useState<Item|undefined>(undefined); 
   const [draggedItemIsAboveRater, updateDraggedItemIsAboveRater] = useState(false); 
+  const { error, data } =  useGetItemsQuery();
+  if (error) {
+    console.log(error);
+  }
+  else  {
+    if (data) {
+      setRatedItems(data.items.map(it => new RatedItem({ id: it.id, name: it.name },it.score)));
+    }
+  }
+
+  
 
   const appState:AppState = {
     unratedItems,
@@ -58,7 +70,7 @@ function App() {
                   ratedItems={appState.ratedItems} 
                   onDrag={updateDraggedItem}
                   onRater={updateDraggedItemIsAboveRater}
-                  updateItems={[updateUnratedItems, updateRatedItems]} 
+                  updateItems={[updateUnratedItems, setRatedItems]} 
                   scaler={scaler}
                   itemType={appState.itemType}
           > 
@@ -67,7 +79,7 @@ function App() {
                 highlight={appState.draggedItemIsAboveRater} 
                 position={appState.rater.position}
                 ratedItems={appState.ratedItems}  
-                updateRatedItems={updateRatedItems}
+                updateRatedItems={setRatedItems}
                 scaler={scaler}
                 itemType={appState.itemType}
           >
