@@ -1,0 +1,7 @@
+query GetItems {
+  items(type: MUSIC) {
+    id
+    name
+    score 
+  }
+}
