@@ -53,6 +53,16 @@ export type Image = {
   url: Scalars['String'];
 };
 
+export type Item = {
+  id: Scalars['String'];
+  name: Scalars['String'];
+  score: Scalars['Float'];
+};
+
+export enum ItemType {
+  Music = 'MUSIC'
+}
+
 export type Mutation = {
   __typename?: 'Mutation';
   CreateSong?: Maybe<Song>;
@@ -72,6 +82,12 @@ export type PaginatedAlbumResult = {
 export type Query = {
   __typename?: 'Query';
   search?: Maybe<SearchQuery>;
+  items: Array<Item>;
+};
+
+
+export type QueryItemsArgs = {
+  type?: Maybe<ItemType>;
 };
 
 export type SearchQuery = {
@@ -104,12 +120,14 @@ export type SearchResult = {
   images: Array<Image>;
 };
 
-export type Song = {
+export type Song = Item & {
   __typename?: 'Song';
   id: Scalars['String'];
   score: Scalars['Float'];
   name: Scalars['String'];
+  artist: Artist;
   number?: Maybe<Scalars['Int']>;
+  album?: Maybe<Album>;
 };
 
 export type SongInput = {
@@ -137,6 +155,17 @@ export type CreateSongMutationVariables = Exact<{
 export type CreateSongMutation = (
   { __typename?: 'Mutation' }
   & { CreateSong?: Maybe<(
+    { __typename?: 'Song' }
+    & Pick<Song, 'id' | 'name' | 'score'>
+  )> }
+);
+
+export type GetItemsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetItemsQuery = (
+  { __typename?: 'Query' }
+  & { items: Array<(
     { __typename?: 'Song' }
     & Pick<Song, 'id' | 'name' | 'score'>
   )> }
@@ -238,6 +267,40 @@ export function useCreateSongMutation(baseOptions?: ApolloReactHooks.MutationHoo
 export type CreateSongMutationHookResult = ReturnType<typeof useCreateSongMutation>;
 export type CreateSongMutationResult = ApolloReactCommon.MutationResult<CreateSongMutation>;
 export type CreateSongMutationOptions = ApolloReactCommon.BaseMutationOptions<CreateSongMutation, CreateSongMutationVariables>;
+export const GetItemsDocument = gql`
+    query GetItems {
+  items(type: MUSIC) {
+    id
+    name
+    score
+  }
+}
+    `;
+
+/**
+ * __useGetItemsQuery__
+ *
+ * To run a query within a React component, call `useGetItemsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetItemsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetItemsQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGetItemsQuery(baseOptions?: ApolloReactHooks.QueryHookOptions<GetItemsQuery, GetItemsQueryVariables>) {
+        return ApolloReactHooks.useQuery<GetItemsQuery, GetItemsQueryVariables>(GetItemsDocument, baseOptions);
+      }
+export function useGetItemsLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetItemsQuery, GetItemsQueryVariables>) {
+          return ApolloReactHooks.useLazyQuery<GetItemsQuery, GetItemsQueryVariables>(GetItemsDocument, baseOptions);
+        }
+export type GetItemsQueryHookResult = ReturnType<typeof useGetItemsQuery>;
+export type GetItemsLazyQueryHookResult = ReturnType<typeof useGetItemsLazyQuery>;
+export type GetItemsQueryResult = ApolloReactCommon.QueryResult<GetItemsQuery, GetItemsQueryVariables>;
 export const GetTracksForAlbumDocument = gql`
     query GetTracksForAlbum($albumId: String!) {
   search {
