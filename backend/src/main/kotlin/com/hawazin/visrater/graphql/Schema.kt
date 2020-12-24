@@ -15,6 +15,7 @@ import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 import org.springframework.util.ResourceUtils
 import java.io.File
+import java.util.*
 
 @Configuration
 class GraphQLConfiguration(private val spotifyService: SpotifyApi, private val musicService: MusicService) {
@@ -52,6 +53,18 @@ class GraphQLConfiguration(private val spotifyService: SpotifyApi, private val m
                         }
                     }
                 }
+                it.dataFetcher("song") { env ->
+                    try {
+                        val songId = env.arguments["id"] as String?
+                        val uuid = UUID.fromString(songId)
+                        val song = musicService.readSong(id = uuid)
+                        return@dataFetcher if (song.isEmpty) null else song
+                    }
+                    catch (_:IllegalArgumentException)
+                    {
+                        throw VisRaterGraphQLError("Invalid ID")
+                    }
+                }
             }
             .type("SearchQuery")
             {
@@ -72,9 +85,10 @@ class GraphQLConfiguration(private val spotifyService: SpotifyApi, private val m
              .build()
     }
     fun loadSchemaFiles(): Array<File> = arrayOf(
-            ResourceUtils.getFile("classpath:schema.graphqls"),
+            ResourceUtils.getFile("classpath:basicTypes.graphqls"),
             ResourceUtils.getFile("classpath:queries.graphqls"),
-            ResourceUtils.getFile("classpath:mutations.graphqls")
+            ResourceUtils.getFile("classpath:mutations.graphqls"),
+            ResourceUtils.getFile("classpath:schema.graphqls")
         )
     fun itemResolver(): TypeResolver = TypeResolver  {
         when(enumValueOf<ItemType>(it.arguments["type"] as String)) {

@@ -9,17 +9,13 @@ import java.util.*
 @Service
 class MusicService(private val songRepo:SongRepository , private val albumRepo: AlbumRepository, private val artistRepo:ArtistRepository) {
 
-
-    fun readAllSongs() : Iterable<Song>
-    {
-        val songs = songRepo.findAll()
-        return songs
-    }
+    fun readAllSongs() : Iterable<Song> = songRepo.findAll()
+    fun readSong(id:UUID) : Optional<Song> = songRepo.findById(id)
 
     fun createSong(spotifySong:SongInput) : Song
     {
-        var artist:Artist = spotifySong.artist.let { Artist(id = UUID.randomUUID(), name= it.name, vendorId = it.id  )   }
-        var album:Album   = spotifySong.album.let  { Album(id = UUID.randomUUID(), vendorId =  it.id, name = it.name, year= it.year, artist = artist) }
+        var artist:Artist = spotifySong.artist.let { Artist(id = UUID.randomUUID(), name= it.name, vendorId = it.id , thumbnail = it.thumbnail    )   }
+        var album:Album   = spotifySong.album.let  { Album(id = UUID.randomUUID(), vendorId =  it.id, name = it.name, year= it.year, artist = artist, thumbnail = it.thumbnail) }
 
         val existingArtist  = artistRepo.findByVendorId(artist.vendorId)
         if (existingArtist != null) {
@@ -33,7 +29,7 @@ class MusicService(private val songRepo:SongRepository , private val albumRepo: 
         } else {
             albumRepo.save(album)
         }
-        var song:Song  = spotifySong.let { Song( id = UUID.randomUUID(),  vendorId = it.id, name = it.name, album = album, artist = artist, score = it.score) }
+        var song:Song  = spotifySong.let { Song( id = UUID.randomUUID(),  vendorId = it.id, name = it.name, album = album, artist = artist, score = it.score  ) }
         val existingSong = songRepo.findByVendorId(song.vendorId)
         if (existingSong != null) {
             song.id = existingSong.id

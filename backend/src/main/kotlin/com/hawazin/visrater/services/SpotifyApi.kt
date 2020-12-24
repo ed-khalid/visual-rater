@@ -2,7 +2,7 @@ package com.hawazin.visrater.services
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.hawazin.visrater.graphql.SpotifyGraphQLError
+import com.hawazin.visrater.graphql.VisRaterGraphQLError
 import com.hawazin.visrater.models.graphql.Album
 import com.hawazin.visrater.models.graphql.Artist
 import com.hawazin.visrater.models.graphql.PaginatedSearchResult
@@ -69,7 +69,7 @@ class SpotifyApi(private val configuration: SpotifyConfiguration) {
 
     fun getAlbumsForArtist(artistId:String, _offset:Int) : PaginatedSearchResult {
         if (_offset  < 0) {
-            throw SpotifyGraphQLError("Album Page Number must be positive")
+            throw VisRaterGraphQLError("Album Page Number must be positive")
         }
         val offset = _offset*12
         val response = makeCall { api().getForObject<AlbumList>("/artists/{artistId}/albums?limit=12&county=US&include_groups=album&offset={offset}", artistId, offset) }

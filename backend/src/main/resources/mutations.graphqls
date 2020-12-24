@@ -1,43 +1,22 @@
 type Mutation {
     CreateSong(song:SongInput) : Song
 }
-
 input SongInput {
     id:String!
     score:Float!
     name: String!
-    trackNumber:Int
+    number:Int
     album: AlbumInput
     artist:ArtistInput
 }
-
-type Song implements Item {
-    id:String!
-    score:Float!
-    name: String!
-    artist:Artist!
-    number:Int
-    album:Album
-}
-
-type Album {
-    id: String!
-    name: String!
-    year: String
-    songs:[Song]
-}
-type Artist {
-    id: String!
-    name:String!
-    albums:[Album]
-}
-
 input ArtistInput {
     id: String!
     name:String!
+    thumbnail:String
 }
 input AlbumInput {
     id: String!
     name: String!
+    thumbnail:String
     year: Int
 }

@@ -1,0 +1,33 @@
+interface Item {
+id:String!
+name:String!
+score:Float!
+}
+
+enum ItemType {
+MUSIC
+}
+
+type Song implements Item {
+    id:String!
+    score:Float!
+    name: String!
+    artist:Artist!
+    number:Int
+    discNumber:Int
+    album:Album
+}
+
+type Album {
+    id: String!
+    name: String!
+    year: String
+    thumbnail: String
+    songs:[Song]
+}
+type Artist {
+    id: String!
+    name:String!
+    thumbnail: String
+    albums:[Album]
+}

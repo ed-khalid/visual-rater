@@ -10,7 +10,8 @@ import javax.persistence.ManyToOne
 class Artist(
     @Id var id: UUID,
     var vendorId:String,
-    var name:String
+    var name:String,
+    var thumbnail:String?
 )
 
 @Entity
@@ -18,6 +19,7 @@ class Album(
     @Id var id:UUID,
     var vendorId:String,
     var name:String,
+    var thumbnail:String?,
     var year:Int,
     @ManyToOne var artist:Artist
 )
