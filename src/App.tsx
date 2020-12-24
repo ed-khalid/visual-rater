@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.css';
 import { Unrated } from './components/Unrated';
 import { UnratedNav } from './components/UnratedNav';
@@ -26,15 +26,17 @@ function App() {
   const [ratedItems, setRatedItems] = useState<RatedItem[]>([]); 
   const [draggedItem, updateDraggedItem] = useState<Item|undefined>(undefined); 
   const [draggedItemIsAboveRater, updateDraggedItemIsAboveRater] = useState(false); 
-  const { error, data } =  useGetItemsQuery();
-  if (error) {
-    console.log(error);
-  }
-  else  {
-    if (data) {
-      setRatedItems(data.items.map(it => new RatedItem({ id: it.id, name: it.name },it.score)));
+  const items =  useGetItemsQuery();
+  useEffect(() => {
+    if (items.error) {
+      console.log(items.error);
     }
-  }
+    else  {
+      if (items.data && items.data.items) {
+        setRatedItems(items.data.items.map(it => new RatedItem({ id: it.id, name: it.name },it.score)));
+      }
+    }
+  } , [items.data, items.error])
 
   
 

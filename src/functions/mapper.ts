@@ -1,24 +1,48 @@
-import { SongInput } from "../generated/graphql";
+import { Album, AlbumSearchResult, Artist, ArtistSearchResult, SongInput } from "../generated/graphql";
 import { Song } from "../models/music/Song";
 
 export const mapper = {
 
-    songToSongInput : (song:Song, score:number):SongInput => {
-        // copy over identical props
+    searchResultToResult:<T extends Album|Artist>(searchResult:AlbumSearchResult|ArtistSearchResult) : T   => {
+        return {
+            id: searchResult.id
+            ,name: searchResult.name
+            ,thumbnail: searchResult.images[2].url
+        } as T
+    } ,
+    songUpdateToSong: (songUpdate:any, song:Song):Song  => {
+        return {
+            id: song.id 
+            ,name: song.name
+            ,data: {
+                number: song.data.number,
+                artist: {
+                    id: songUpdate.artist.id 
+                    ,name: songUpdate.artist.name
+                } 
+                ,album: {
+                    id: songUpdate.album.id 
+                    ,name: songUpdate.album.name
+                }
+
+            } 
+        }
+    },
+    songToSongInput : (song:Song):SongInput => {
         const songInput:SongInput = {
             id: song.id
             ,name: song.name
-            ,trackNumber: song.trackNumber
-            ,score
+            ,number: song.data?.number
+            ,score: song.score as number
             ,artist : {
-                id: song.artist.id
-                ,name: song.artist.name
+                id: song.data.artist.id
+                ,name: song.data.artist.name
             }
         } 
-        if (song.album) {
+        if (song.data.album) {
             songInput.album = {
-                id: song.album?.id
-                ,name: song.album?.name
+                id: song.data.album?.id
+                ,name: song.data.album?.name
             } 
         }
         return songInput
