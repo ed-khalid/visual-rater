@@ -1,4 +1,4 @@
-import React, { useState, SetStateAction, Dispatch } from "react";
+import React, { useState, SetStateAction, Dispatch, useEffect } from "react";
 import './Rater.css';
 import { drag } from 'd3-drag';
 import { select } from 'd3-selection';
@@ -6,7 +6,7 @@ import { Position } from '../models/Position';
 import { RatedItem } from "../models/RatedItem";
 import { event as d3Event } from 'd3';
 import { Scaler } from "../functions/scale";
-import { SongInput, useCreateSongMutation } from "../generated/graphql";
+import { SongInput, useCreateSongMutation, useGetSongLazyQuery } from "../generated/graphql";
 import { ItemType } from "../models/Item";
 import { mapper } from "../functions/mapper";
 import { Song } from "../models/music/Song";
@@ -23,19 +23,45 @@ interface Props {
 export const Rater:React.FunctionComponent<Props> = ({position, highlight, ratedItems, updateRatedItems, scaler, itemType}) => {
 
     const [g, updateG] = useState<SVGElement|null>(null);
-    const [createUpdateSong, mutationStatus  ]  = useCreateSongMutation();
+    const [createUpdateSong]  = useCreateSongMutation();
+    const [getSong, { data }] = useGetSongLazyQuery(); 
+    const [currentItem, setCurrentItem] = useState<RatedItem|null>();  
     const raterWidth = 20; 
+
+    useEffect(() => {
+        if (data && currentItem && data.song && data.song.id == currentItem.id) {
+            const newCurrentItem = mapper.songUpdateToSong(data.song, currentItem as Song)
+            setCurrentItem(newCurrentItem as RatedItem);
+            const songInput:SongInput = mapper.songToSongInput(currentItem as Song)
+            createUpdateSong({variables: {song: songInput }})
+            setCurrentItem(null)
+        }
+    }, [data])
+    useEffect(() => {
+        switch(itemType) {
+            case ItemType.MUSIC :
+            if (currentItem) {
+                if (!currentItem.data) {
+                        getSong({ variables: { id: currentItem.id  }} )
+                    }
+                }
+                else {
+                    setCurrentItem(null)
+                }
+            } 
+    }, [currentItem])
 
     const isDragInBounds = (_y:number) => {
         return _y  >= 5  && _y <= 734; 
     }
 
     const dragStart = (d:any, i:number, nodeList:ArrayLike<SVGElement> ) => {
+
         const g = nodeList[i];
-        
         const parentG = select<any,any>(g.parentNode);
         parentG.select('g.closeButton').classed('hide', true);
         select(g).classed('active', true);
+        const item = ratedItems[i]; 
     }   
     const dragInProgress = (d:any, i:number, nodeList:ArrayLike<SVGElement> ) => {
           if (!isDragInBounds(d3Event.y)) {
@@ -46,7 +72,9 @@ export const Rater:React.FunctionComponent<Props> = ({position, highlight, rated
           select(g).selectAll('text').attr('y', d3Event.y)
           select(g).selectAll('text#score').text(scaler.toScore(d3Event.y).toFixed(2));
     }
+
     const dragEnd = (d:any, i:number, nodeList:ArrayLike<SVGElement> ) => {
+
         const g = nodeList[i];
         const parentG = select<any,any>(g.parentNode);
         parentG.select('g.closeButton').classed('hide', false);
@@ -55,13 +83,10 @@ export const Rater:React.FunctionComponent<Props> = ({position, highlight, rated
         const item = ratedItems[i];    
         item.score = score; 
         const _r = ratedItems.filter(_item => _item !== item);
-        switch(itemType) {
-            case ItemType.MUSIC :
-             const songInput:SongInput = mapper.songToSongInput(item.item as Song, item.score)
-             createUpdateSong({variables: {song: songInput }})
-        }
+        setCurrentItem(item);
         updateRatedItems( [..._r, item] )
         select(g).classed('active', false);
+
     }   
 
 
@@ -78,7 +103,7 @@ export const Rater:React.FunctionComponent<Props> = ({position, highlight, rated
                   <g ref= {node => updateG(node)}>
                       <line id="rater" x1={position.x} y1={0} x2={position.x} y2={position.y} stroke={highlight? "#c234" :"#fff"}>
                       </line>
-                      { ratedItems.map(rItem => <g key={rItem.item.name}>
+                      { ratedItems.map(rItem => <g key={rItem.name}>
                           <g className="item">
                           <g className="closeButton" cursor="pointer" pointerEvents="stroke">
                               <line 
@@ -100,7 +125,7 @@ export const Rater:React.FunctionComponent<Props> = ({position, highlight, rated
                           </g>
                           <g className="draggable"> 
                             <line id="itemLine" cursor="move" x1={position.x - raterWidth/2} x2={position.x + raterWidth/2} y1={scaler.toPosition(rItem.score)} y2={scaler.toPosition(rItem.score)} stroke="#ddd"></line>
-                            <text cursor="move" fontSize="10" fontSizeAdjust="2" fill="white" x={position.x - 70} y={scaler.toPosition(rItem.score)} dy=".35em">{rItem.item.name}</text>
+                            <text cursor="move" fontSize="10" fontSizeAdjust="2" fill="white" x={position.x - 70} y={scaler.toPosition(rItem.score)} dy=".35em">{rItem.name}</text>
                             <text id="score" cursor="move" fontSize="10" fontSizeAdjust="2" fill="white" x={position.x + 70} y={scaler.toPosition(rItem.score)} dy=".35em">{rItem.score.toFixed(2)}</text>
                           </g>
                           </g>

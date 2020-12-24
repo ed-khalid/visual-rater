@@ -1,20 +1,23 @@
 import React, { ChangeEvent, useEffect, useState } from "react"
 import './Search.css'
-import { useSearchByArtistQuery, useSearchAlbumsByArtistQuery , SearchResult, useGetTracksForAlbumLazyQuery, AlbumSearchResult } from '../generated/graphql'; 
+import { useSearchByArtistQuery, useSearchAlbumsByArtistQuery , useGetTracksForAlbumLazyQuery, AlbumSearchResult, ArtistSearchResult, Album, Artist } from '../generated/graphql'; 
 import { Song } from "../models/music/Song";
+import { mapper } from "../functions/mapper";
 
 export const Search = ({setUnrated}:{setUnrated:any}) => {
 
   const [artistName, setArtistName] = useState<string|null>(null);   
-  const [chosenArtist, setChosenArtist] = useState<SearchResult|null>(null); 
+  const [chosenArtist, setChosenArtist] = useState<ArtistSearchResult|null>(null); 
   const [chosenAlbum, setChosenAlbum] = useState<AlbumSearchResult|null>(null); 
-  const [getTracks, {data} ] = useGetTracksForAlbumLazyQuery();  
+  const [getTracks, tracks ] = useGetTracksForAlbumLazyQuery();  
 
     useEffect(() => {
-        if (data?.search?.tracks && chosenAlbum && chosenArtist) {
-            const unratedSongs:Song[] = data.search.tracks.map(track => new Song(track.id, track.trackNumber, track.name, chosenArtist, chosenAlbum))
+        if (tracks.data?.search?.tracks && chosenAlbum && chosenArtist) {
+            const album = mapper.searchResultToResult<Album>(chosenAlbum)
+            const artist = mapper.searchResultToResult<Artist>(chosenArtist)
+            const unratedSongs:Song[] = tracks.data.search.tracks.map(track => new Song(track.id, track.name, artist , album, track.trackNumber))
             setUnrated(unratedSongs)
-        }}, [data])
+        }}, [tracks.data])
 
     const handleArtist = (evt:ChangeEvent<HTMLInputElement>) => {
         const val = evt.target.value; 
@@ -27,7 +30,7 @@ export const Search = ({setUnrated}:{setUnrated:any}) => {
             setChosenAlbum(null);
         }
     }
-    const showAlbums = (artist:SearchResult) => {
+    const showAlbums = (artist:ArtistSearchResult) => {
         setChosenArtist(artist);
     }
     const showTracks =  (album:AlbumSearchResult) => {
@@ -74,7 +77,7 @@ export const Search = ({setUnrated}:{setUnrated:any}) => {
     )
 }  
 
-export const SearchAlbumsForArtist  = ({ onSelectAlbum, artist}:{onSelectAlbum:(album:AlbumSearchResult) => void, artist:SearchResult}) => {
+export const SearchAlbumsForArtist  = ({ onSelectAlbum, artist}:{onSelectAlbum:(album:AlbumSearchResult) => void, artist:ArtistSearchResult}) => {
         let [pageNumber, setPageNumber] = useState<number>(0); 
         const { data }  = useSearchAlbumsByArtistQuery({variables: { artistId: artist.id, pageNumber }})
         const offset = (shouldIncrement:boolean) => {
@@ -101,7 +104,7 @@ export const SearchAlbumsForArtist  = ({ onSelectAlbum, artist}:{onSelectAlbum:(
         </div>
 }
 
-export const SearchQuery =  ({onSelectArtist, artist}:{onSelectArtist: (artist:SearchResult) => void, artist:string}) => {
+export const SearchQuery =  ({onSelectArtist, artist}:{onSelectArtist: (artist:ArtistSearchResult) => void, artist:string}) => {
     const { loading, error, data  } = useSearchByArtistQuery({ variables: { name:  artist}})
     if (loading) return <p>Loading...</p> 
     if (error) return <p>Error! </p>

@@ -1,10 +1,8 @@
 import { Item } from './Item';
 
-export class RatedItem {
-
-    public constructor(public item:Item, public score:number) {
-
+export class RatedItem extends Item {
+    public constructor(item:Item, public score:number) {
+        super(item.id, item.name, item.data);
     }
-
 } 
 

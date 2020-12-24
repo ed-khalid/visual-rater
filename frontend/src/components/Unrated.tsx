@@ -25,7 +25,7 @@ interface Props {
 export const Unrated:React.FunctionComponent<Props> = ({unratedItems,ratedItems,onDrag,onRater, updateItems, scaler,itemType}:Props) => {
 
     const [g,updateG] = useState<SVGElement|null>(null); 
-    const [createUpdateSong, mutationStatus  ]  = useCreateSongMutation();
+    const [createUpdateSong]  = useCreateSongMutation();
 
     useEffect(() => {
         attachDragEvents();
@@ -114,7 +114,7 @@ export const Unrated:React.FunctionComponent<Props> = ({unratedItems,ratedItems,
               updateUnrated(newUnrated);  
                 switch(itemType) {
                     case ItemType.MUSIC :
-                    const songInput:SongInput = mapper.songToSongInput(ratedItem.item as Song, ratedItem.score)
+                    const songInput:SongInput = mapper.songToSongInput(ratedItem as Song)
                     createUpdateSong({variables: {song: songInput }})
                 }
               updateRated([...ratedItems, ratedItem ]);

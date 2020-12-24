@@ -17,12 +17,14 @@ export type Album = {
   id: Scalars['String'];
   name: Scalars['String'];
   year?: Maybe<Scalars['String']>;
+  thumbnail?: Maybe<Scalars['String']>;
   songs?: Maybe<Array<Maybe<Song>>>;
 };
 
 export type AlbumInput = {
   id: Scalars['String'];
   name: Scalars['String'];
+  thumbnail?: Maybe<Scalars['String']>;
   year?: Maybe<Scalars['Int']>;
 };
 
@@ -38,12 +40,21 @@ export type Artist = {
   __typename?: 'Artist';
   id: Scalars['String'];
   name: Scalars['String'];
+  thumbnail?: Maybe<Scalars['String']>;
   albums?: Maybe<Array<Maybe<Album>>>;
 };
 
 export type ArtistInput = {
   id: Scalars['String'];
   name: Scalars['String'];
+  thumbnail?: Maybe<Scalars['String']>;
+};
+
+export type ArtistSearchResult = {
+  __typename?: 'ArtistSearchResult';
+  name: Scalars['String'];
+  id: Scalars['String'];
+  images: Array<Image>;
 };
 
 export type Image = {
@@ -82,7 +93,8 @@ export type PaginatedAlbumResult = {
 export type Query = {
   __typename?: 'Query';
   search?: Maybe<SearchQuery>;
-  items: Array<Item>;
+  items?: Maybe<Array<Item>>;
+  song?: Maybe<Song>;
 };
 
 
@@ -90,9 +102,14 @@ export type QueryItemsArgs = {
   type?: Maybe<ItemType>;
 };
 
+
+export type QuerySongArgs = {
+  id: Scalars['String'];
+};
+
 export type SearchQuery = {
   __typename?: 'SearchQuery';
-  artists: Array<SearchResult>;
+  artists: Array<ArtistSearchResult>;
   albums: PaginatedAlbumResult;
   tracks: Array<TrackSearchResult>;
 };
@@ -113,13 +130,6 @@ export type SearchQueryTracksArgs = {
   albumId: Scalars['String'];
 };
 
-export type SearchResult = {
-  __typename?: 'SearchResult';
-  name: Scalars['String'];
-  id: Scalars['String'];
-  images: Array<Image>;
-};
-
 export type Song = Item & {
   __typename?: 'Song';
   id: Scalars['String'];
@@ -127,6 +137,7 @@ export type Song = Item & {
   name: Scalars['String'];
   artist: Artist;
   number?: Maybe<Scalars['Int']>;
+  discNumber?: Maybe<Scalars['Int']>;
   album?: Maybe<Album>;
 };
 
@@ -134,7 +145,7 @@ export type SongInput = {
   id: Scalars['String'];
   score: Scalars['Float'];
   name: Scalars['String'];
-  trackNumber?: Maybe<Scalars['Int']>;
+  number?: Maybe<Scalars['Int']>;
   album?: Maybe<AlbumInput>;
   artist?: Maybe<ArtistInput>;
 };
@@ -165,9 +176,29 @@ export type GetItemsQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type GetItemsQuery = (
   { __typename?: 'Query' }
-  & { items: Array<(
+  & { items?: Maybe<Array<(
     { __typename?: 'Song' }
     & Pick<Song, 'id' | 'name' | 'score'>
+  )>> }
+);
+
+export type GetSongQueryVariables = Exact<{
+  id: Scalars['String'];
+}>;
+
+
+export type GetSongQuery = (
+  { __typename?: 'Query' }
+  & { song?: Maybe<(
+    { __typename?: 'Song' }
+    & Pick<Song, 'id'>
+    & { artist: (
+      { __typename?: 'Artist' }
+      & Pick<Artist, 'id' | 'name' | 'thumbnail'>
+    ), album?: Maybe<(
+      { __typename?: 'Album' }
+      & Pick<Album, 'id' | 'name' | 'thumbnail'>
+    )> }
   )> }
 );
 
@@ -222,8 +253,8 @@ export type SearchByArtistQuery = (
   & { search?: Maybe<(
     { __typename?: 'SearchQuery' }
     & { artists: Array<(
-      { __typename?: 'SearchResult' }
-      & Pick<SearchResult, 'id' | 'name'>
+      { __typename?: 'ArtistSearchResult' }
+      & Pick<ArtistSearchResult, 'id' | 'name'>
       & { images: Array<(
         { __typename?: 'Image' }
         & Pick<Image, 'width' | 'height' | 'url'>
@@ -301,6 +332,49 @@ export function useGetItemsLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHoo
 export type GetItemsQueryHookResult = ReturnType<typeof useGetItemsQuery>;
 export type GetItemsLazyQueryHookResult = ReturnType<typeof useGetItemsLazyQuery>;
 export type GetItemsQueryResult = ApolloReactCommon.QueryResult<GetItemsQuery, GetItemsQueryVariables>;
+export const GetSongDocument = gql`
+    query GetSong($id: String!) {
+  song(id: $id) {
+    id
+    artist {
+      id
+      name
+      thumbnail
+    }
+    album {
+      id
+      name
+      thumbnail
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetSongQuery__
+ *
+ * To run a query within a React component, call `useGetSongQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetSongQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetSongQuery({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useGetSongQuery(baseOptions?: ApolloReactHooks.QueryHookOptions<GetSongQuery, GetSongQueryVariables>) {
+        return ApolloReactHooks.useQuery<GetSongQuery, GetSongQueryVariables>(GetSongDocument, baseOptions);
+      }
+export function useGetSongLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetSongQuery, GetSongQueryVariables>) {
+          return ApolloReactHooks.useLazyQuery<GetSongQuery, GetSongQueryVariables>(GetSongDocument, baseOptions);
+        }
+export type GetSongQueryHookResult = ReturnType<typeof useGetSongQuery>;
+export type GetSongLazyQueryHookResult = ReturnType<typeof useGetSongLazyQuery>;
+export type GetSongQueryResult = ApolloReactCommon.QueryResult<GetSongQuery, GetSongQueryVariables>;
 export const GetTracksForAlbumDocument = gql`
     query GetTracksForAlbum($albumId: String!) {
   search {
