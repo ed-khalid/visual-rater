@@ -1,8 +1,15 @@
 type Mutation {
-    CreateSong(song:SongInput) : Song
+    CreateSong(song:NewSongInput) : Song
+    UpdateSong(song:SongInput) : Song
 }
+
 input SongInput {
     id:String!
+    score:Float!
+}
+
+input NewSongInput {
+    vendorId:String
     score:Float!
     name: String!
     number:Int
@@ -10,12 +17,12 @@ input SongInput {
     artist:ArtistInput
 }
 input ArtistInput {
-    id: String!
+    vendorId: String
     name:String!
     thumbnail:String
 }
 input AlbumInput {
-    id: String!
+    vendorId: String
     name: String!
     thumbnail:String
     year: Int

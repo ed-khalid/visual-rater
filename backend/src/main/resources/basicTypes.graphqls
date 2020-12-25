@@ -10,6 +10,7 @@ MUSIC
 
 type Song implements Item {
     id:String!
+    vendorId:String
     score:Float!
     name: String!
     artist:Artist!
@@ -20,13 +21,15 @@ type Song implements Item {
 
 type Album {
     id: String!
+    vendorId:String
     name: String!
-    year: String
+    year: Int
     thumbnail: String
     songs:[Song]
 }
 type Artist {
     id: String!
+    vendorId:String
     name:String!
     thumbnail: String
     albums:[Album]

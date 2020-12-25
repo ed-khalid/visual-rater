@@ -1,5 +1,6 @@
 package com.hawazin.visrater.graphql
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.hawazin.visrater.graphql.models.NewSongInput
 import com.hawazin.visrater.graphql.models.SongInput
 import com.hawazin.visrater.models.graphql.ItemType
 import com.hawazin.visrater.models.graphql.ItemType.MUSIC
@@ -35,9 +36,14 @@ class GraphQLConfiguration(private val spotifyService: SpotifyApi, private val m
         return RuntimeWiring.newRuntimeWiring()
             .type("Mutation")
             {
-                it.dataFetcher("CreateSong") { env ->
+                it.dataFetcher("UpdateSong") {  env ->
                     val raw = env.arguments["song"]
                     val songInput = objectMapper.convertValue(raw, SongInput::class.java)
+                    musicService.updateSong(songInput)
+                }
+                it.dataFetcher("CreateSong") { env ->
+                    val raw = env.arguments["song"]
+                    val songInput = objectMapper.convertValue(raw, NewSongInput::class.java)
                     musicService.createSong(songInput)
                 }
             }

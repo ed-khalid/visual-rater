@@ -1,5 +1,5 @@
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hawazin.visrater.graphql.models.SongInput;
+import com.hawazin.visrater.graphql.models.NewSongInput;
 import graphql.TypeResolutionEnvironment;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.TypeResolver;
@@ -10,7 +10,7 @@ public class JavaKotlinScratch {
 
 
     private void convert() {
-        objectMapper.convertValue(new Object(), SongInput.class);
+        objectMapper.convertValue(new Object(), NewSongInput.class);
     }
 
     public void doSomething()  {
