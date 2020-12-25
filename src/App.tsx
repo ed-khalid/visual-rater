@@ -38,8 +38,6 @@ function App() {
     }
   } , [items.data, items.error])
 
-  
-
   const appState:AppState = {
     unratedItems,
     ratedItems,

@@ -1,4 +1,4 @@
-mutation CreateSong($song:SongInput){
+mutation CreateSong($song:NewSongInput){
   CreateSong(song:$song) {
       id 
       name

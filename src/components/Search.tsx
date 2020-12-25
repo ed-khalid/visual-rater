@@ -1,8 +1,8 @@
 import React, { ChangeEvent, useEffect, useState } from "react"
 import './Search.css'
-import { useSearchByArtistQuery, useSearchAlbumsByArtistQuery , useGetTracksForAlbumLazyQuery, AlbumSearchResult, ArtistSearchResult, Album, Artist } from '../generated/graphql'; 
-import { Song } from "../models/music/Song";
+import { useSearchByArtistQuery, useSearchAlbumsByArtistQuery , useGetTracksForAlbumLazyQuery, AlbumSearchResult, ArtistSearchResult, Album, Artist, useUpdateSongMutation, Song } from '../generated/graphql'; 
 import { mapper } from "../functions/mapper";
+import { NewSong } from "../models/music/Song";
 
 export const Search = ({setUnrated}:{setUnrated:any}) => {
 
@@ -15,7 +15,7 @@ export const Search = ({setUnrated}:{setUnrated:any}) => {
         if (tracks.data?.search?.tracks && chosenAlbum && chosenArtist) {
             const album = mapper.searchResultToResult<Album>(chosenAlbum)
             const artist = mapper.searchResultToResult<Artist>(chosenArtist)
-            const unratedSongs:Song[] = tracks.data.search.tracks.map(track => new Song(track.id, track.name, artist , album, track.trackNumber))
+            const unratedSongs:NewSong[] = tracks.data.search.tracks.map(track =>({ vendorId:track.id, name:track.name, artist , album, number:track.trackNumber}))
             setUnrated(unratedSongs)
         }}, [tracks.data])
 

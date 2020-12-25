@@ -7,9 +7,8 @@ import { drag } from 'd3-drag';
 import { event as d3Event } from 'd3'
 import { RatedItem } from "../models/RatedItem";
 import { Scaler } from "../functions/scale";
-import { SongInput, useCreateSongMutation } from "../generated/graphql";
-import { mapper } from "../functions/mapper";
-import { Song } from "../models/music/Song";
+import { useCreateSongMutation } from "../generated/graphql";
+import { NewSong } from "../models/music/Song";
 
 
 interface Props {
@@ -25,11 +24,21 @@ interface Props {
 export const Unrated:React.FunctionComponent<Props> = ({unratedItems,ratedItems,onDrag,onRater, updateItems, scaler,itemType}:Props) => {
 
     const [g,updateG] = useState<SVGElement|null>(null); 
-    const [createUpdateSong]  = useCreateSongMutation();
+    const [createSong, createSongResult ]  = useCreateSongMutation();
 
     useEffect(() => {
         attachDragEvents();
     })
+    useEffect(() => {
+        if (createSongResult.data) {
+            const newSong = createSongResult.data.CreateSong  
+            if (newSong) {
+              const ratedItem = new RatedItem({id: newSong.id, name: newSong.name }, newSong.score); 
+              const updateRated = updateItems[1]; 
+              updateRated([...ratedItems, ratedItem ]);
+            }
+        }
+    }, [createSongResult.data])
 
 
     let dragOriginalPos:{rect:Position, text:Position} = {
@@ -106,18 +115,15 @@ export const Unrated:React.FunctionComponent<Props> = ({unratedItems,ratedItems,
           if (aboveRater(Number(rect.attr('x')))) {
               const item = unratedItems[i];  
               const updateUnrated = updateItems[0]; 
-              const updateRated = updateItems[1]; 
               const newUnrated = unratedItems.filter(it => it !==  item );  
               const yPosition = Number(rect.attr('y'));    
               const score = scaler.toScore(yPosition);   
-              const ratedItem = new RatedItem(item, score); 
               updateUnrated(newUnrated);  
                 switch(itemType) {
                     case ItemType.MUSIC :
-                    const songInput:SongInput = mapper.songToSongInput(ratedItem as Song)
-                    createUpdateSong({variables: {song: songInput }})
+                    const asNewSong = item as NewSong   
+                    createSong({variables: {song: { vendorId: asNewSong.vendorId, score, name: asNewSong.name , album: asNewSong.album, artist: asNewSong.artist   }  }})
                 }
-              updateRated([...ratedItems, ratedItem ]);
           } else {
             text
               .attr('x', dragOriginalPos.text.x)
