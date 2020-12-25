@@ -6,10 +6,8 @@ import { Position } from '../models/Position';
 import { RatedItem } from "../models/RatedItem";
 import { event as d3Event } from 'd3';
 import { Scaler } from "../functions/scale";
-import { SongInput, useCreateSongMutation, useGetSongLazyQuery } from "../generated/graphql";
+import {  Song, useGetSongLazyQuery, useUpdateSongMutation } from "../generated/graphql";
 import { ItemType } from "../models/Item";
-import { mapper } from "../functions/mapper";
-import { Song } from "../models/music/Song";
 
 interface Props {
     position:Position;
@@ -23,32 +21,40 @@ interface Props {
 export const Rater:React.FunctionComponent<Props> = ({position, highlight, ratedItems, updateRatedItems, scaler, itemType}) => {
 
     const [g, updateG] = useState<SVGElement|null>(null);
-    const [createUpdateSong]  = useCreateSongMutation();
-    const [getSong, { data }] = useGetSongLazyQuery(); 
+    const [updateSong]  = useUpdateSongMutation();
+    const [getFullSongInfo, { data }] = useGetSongLazyQuery(); 
     const [currentItem, setCurrentItem] = useState<RatedItem|null>();  
     const raterWidth = 20; 
 
     useEffect(() => {
         if (data && currentItem && data.song && data.song.id == currentItem.id) {
-            const newCurrentItem = mapper.songUpdateToSong(data.song, currentItem as Song)
-            setCurrentItem(newCurrentItem as RatedItem);
-            const songInput:SongInput = mapper.songToSongInput(currentItem as Song)
-            createUpdateSong({variables: {song: songInput }})
-            setCurrentItem(null)
+            const song = currentItem as Song 
+            song.artist = data.song.artist
+            if (data.song.album) {
+                song.album = {
+                        id : data.song.album?.id
+                        ,name:  data.song.album?.name
+                }
+            }
+            setCurrentItem(Object.assign({},currentItem));
         }
     }, [data])
     useEffect(() => {
         switch(itemType) {
             case ItemType.MUSIC :
+            const asSong = currentItem as Song; 
             if (currentItem) {
-                if (!currentItem.data) {
-                        getSong({ variables: { id: currentItem.id  }} )
-                    }
+                // we are updating an existing song, get data and then call the update   
+                if (currentItem.id && !asSong.artist) {
+                    getFullSongInfo({ variables: { id: currentItem.id  }} )
                 }
+                // song info ready, plow ahead
                 else {
+                    updateSong({variables: {song:  { id : currentItem.id, score: currentItem.score  } }})
                     setCurrentItem(null)
                 }
-            } 
+           } 
+        }
     }, [currentItem])
 
     const isDragInBounds = (_y:number) => {

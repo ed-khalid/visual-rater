@@ -1,19 +1,5 @@
-import { Album, Artist } from "../../generated/graphql";
-import { Item, ItemData } from "../Item";
+import { AlbumInput, ArtistInput, Song } from "../../generated/graphql";
 
-export class Song extends Item {
-
-    public data:SongData;
-
-    constructor(public id:string, public name:string, artist:Artist, album?:Album, number?:number, public score?:number) {
-        super(id,name, {number,artist,album} )
-        this.data = {number,artist,album};
-    }
-
-} 
-
-export interface SongData extends ItemData {
-    number?:number;  
-    artist:Artist;
-    album?:Album;
-}    
+type Optional<T, K extends keyof T> = Omit<T, K> & Partial<T>;
+export type NewSong = Optional<Song, "id"|"score"|"album"|"__typename"> & { album?: AlbumInput, artist:ArtistInput }     
+export type FullSong = Song & { album?: AlbumInput, artist:ArtistInput }  

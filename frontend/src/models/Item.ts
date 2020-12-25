@@ -1,12 +1,8 @@
 export abstract class Item {
 
-    constructor(public id:string, public name:string, public data?:ItemData) {
+    constructor(public id:string, public name:string) {
 
     }
-}
-
-export interface ItemData {
-
 }
 
 export enum ItemType {

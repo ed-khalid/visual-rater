@@ -15,14 +15,15 @@ export type Scalars = {
 export type Album = {
   __typename?: 'Album';
   id: Scalars['String'];
+  vendorId?: Maybe<Scalars['String']>;
   name: Scalars['String'];
-  year?: Maybe<Scalars['String']>;
+  year?: Maybe<Scalars['Int']>;
   thumbnail?: Maybe<Scalars['String']>;
   songs?: Maybe<Array<Maybe<Song>>>;
 };
 
 export type AlbumInput = {
-  id: Scalars['String'];
+  vendorId?: Maybe<Scalars['String']>;
   name: Scalars['String'];
   thumbnail?: Maybe<Scalars['String']>;
   year?: Maybe<Scalars['Int']>;
@@ -39,13 +40,14 @@ export type AlbumSearchResult = {
 export type Artist = {
   __typename?: 'Artist';
   id: Scalars['String'];
+  vendorId?: Maybe<Scalars['String']>;
   name: Scalars['String'];
   thumbnail?: Maybe<Scalars['String']>;
   albums?: Maybe<Array<Maybe<Album>>>;
 };
 
 export type ArtistInput = {
-  id: Scalars['String'];
+  vendorId?: Maybe<Scalars['String']>;
   name: Scalars['String'];
   thumbnail?: Maybe<Scalars['String']>;
 };
@@ -77,11 +79,26 @@ export enum ItemType {
 export type Mutation = {
   __typename?: 'Mutation';
   CreateSong?: Maybe<Song>;
+  UpdateSong?: Maybe<Song>;
 };
 
 
 export type MutationCreateSongArgs = {
+  song?: Maybe<NewSongInput>;
+};
+
+
+export type MutationUpdateSongArgs = {
   song?: Maybe<SongInput>;
+};
+
+export type NewSongInput = {
+  vendorId?: Maybe<Scalars['String']>;
+  score: Scalars['Float'];
+  name: Scalars['String'];
+  number?: Maybe<Scalars['Int']>;
+  album?: Maybe<AlbumInput>;
+  artist?: Maybe<ArtistInput>;
 };
 
 export type PaginatedAlbumResult = {
@@ -133,6 +150,7 @@ export type SearchQueryTracksArgs = {
 export type Song = Item & {
   __typename?: 'Song';
   id: Scalars['String'];
+  vendorId?: Maybe<Scalars['String']>;
   score: Scalars['Float'];
   name: Scalars['String'];
   artist: Artist;
@@ -144,10 +162,6 @@ export type Song = Item & {
 export type SongInput = {
   id: Scalars['String'];
   score: Scalars['Float'];
-  name: Scalars['String'];
-  number?: Maybe<Scalars['Int']>;
-  album?: Maybe<AlbumInput>;
-  artist?: Maybe<ArtistInput>;
 };
 
 export type TrackSearchResult = {
@@ -159,13 +173,26 @@ export type TrackSearchResult = {
 };
 
 export type CreateSongMutationVariables = Exact<{
-  song?: Maybe<SongInput>;
+  song?: Maybe<NewSongInput>;
 }>;
 
 
 export type CreateSongMutation = (
   { __typename?: 'Mutation' }
   & { CreateSong?: Maybe<(
+    { __typename?: 'Song' }
+    & Pick<Song, 'id' | 'name' | 'score'>
+  )> }
+);
+
+export type UpdateSongMutationVariables = Exact<{
+  song?: Maybe<SongInput>;
+}>;
+
+
+export type UpdateSongMutation = (
+  { __typename?: 'Mutation' }
+  & { UpdateSong?: Maybe<(
     { __typename?: 'Song' }
     & Pick<Song, 'id' | 'name' | 'score'>
   )> }
@@ -265,7 +292,7 @@ export type SearchByArtistQuery = (
 
 
 export const CreateSongDocument = gql`
-    mutation CreateSong($song: SongInput) {
+    mutation CreateSong($song: NewSongInput) {
   CreateSong(song: $song) {
     id
     name
@@ -298,6 +325,40 @@ export function useCreateSongMutation(baseOptions?: ApolloReactHooks.MutationHoo
 export type CreateSongMutationHookResult = ReturnType<typeof useCreateSongMutation>;
 export type CreateSongMutationResult = ApolloReactCommon.MutationResult<CreateSongMutation>;
 export type CreateSongMutationOptions = ApolloReactCommon.BaseMutationOptions<CreateSongMutation, CreateSongMutationVariables>;
+export const UpdateSongDocument = gql`
+    mutation UpdateSong($song: SongInput) {
+  UpdateSong(song: $song) {
+    id
+    name
+    score
+  }
+}
+    `;
+export type UpdateSongMutationFn = ApolloReactCommon.MutationFunction<UpdateSongMutation, UpdateSongMutationVariables>;
+
+/**
+ * __useUpdateSongMutation__
+ *
+ * To run a mutation, you first call `useUpdateSongMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateSongMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateSongMutation, { data, loading, error }] = useUpdateSongMutation({
+ *   variables: {
+ *      song: // value for 'song'
+ *   },
+ * });
+ */
+export function useUpdateSongMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<UpdateSongMutation, UpdateSongMutationVariables>) {
+        return ApolloReactHooks.useMutation<UpdateSongMutation, UpdateSongMutationVariables>(UpdateSongDocument, baseOptions);
+      }
+export type UpdateSongMutationHookResult = ReturnType<typeof useUpdateSongMutation>;
+export type UpdateSongMutationResult = ApolloReactCommon.MutationResult<UpdateSongMutation>;
+export type UpdateSongMutationOptions = ApolloReactCommon.BaseMutationOptions<UpdateSongMutation, UpdateSongMutationVariables>;
 export const GetItemsDocument = gql`
     query GetItems {
   items(type: MUSIC) {
