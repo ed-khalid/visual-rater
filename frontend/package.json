@@ -3,12 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@apollo/client": "3.0.2",
+    "d3": "5.16.0",
+    "graphql": "15.3.0",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-scripts": "3.4.1",
-    "@apollo/client": "3.0.2",
-    "graphql": "15.3.0",
-    "d3": "5.16.0",
     "typescript": "^3.7.5"
   },
   "devDependencies": {

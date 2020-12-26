@@ -6,7 +6,7 @@ import { Position } from '../models/Position';
 import { RatedItem } from "../models/RatedItem";
 import { event as d3Event } from 'd3';
 import { Scaler } from "../functions/scale";
-import {  Song, useGetSongLazyQuery, useUpdateSongMutation } from "../generated/graphql";
+import {  Song, useDeleteSongMutation, useGetSongLazyQuery, useUpdateSongMutation } from "../generated/graphql";
 import { ItemType } from "../models/Item";
 
 interface Props {
@@ -23,11 +23,12 @@ export const Rater:React.FunctionComponent<Props> = ({position, highlight, rated
     const [g, updateG] = useState<SVGElement|null>(null);
     const [updateSong]  = useUpdateSongMutation();
     const [getFullSongInfo, { data }] = useGetSongLazyQuery(); 
+    const [deleteSong] = useDeleteSongMutation()  
     const [currentItem, setCurrentItem] = useState<RatedItem|null>();  
     const raterWidth = 20; 
 
     useEffect(() => {
-        if (data && currentItem && data.song && data.song.id == currentItem.id) {
+        if (data && currentItem && data.song && data.song.id === currentItem.id) {
             const song = currentItem as Song 
             song.artist = data.song.artist
             if (data.song.album) {
@@ -55,7 +56,7 @@ export const Rater:React.FunctionComponent<Props> = ({position, highlight, rated
                 }
            } 
         }
-    }, [currentItem])
+    }, [currentItem, itemType])
 
     const isDragInBounds = (_y:number) => {
         return _y  >= 5  && _y <= 734; 
@@ -67,7 +68,6 @@ export const Rater:React.FunctionComponent<Props> = ({position, highlight, rated
         const parentG = select<any,any>(g.parentNode);
         parentG.select('g.closeButton').classed('hide', true);
         select(g).classed('active', true);
-        const item = ratedItems[i]; 
     }   
     const dragInProgress = (d:any, i:number, nodeList:ArrayLike<SVGElement> ) => {
           if (!isDragInBounds(d3Event.y)) {
@@ -95,6 +95,12 @@ export const Rater:React.FunctionComponent<Props> = ({position, highlight, rated
 
     }   
 
+    const removeItem = (rItem: RatedItem) => {
+        deleteSong({ variables : { songId:  rItem.id}})
+        const _r  =  ratedItems.filter(_item => _item !== rItem);
+        updateRatedItems([..._r])
+    } 
+
 
     const attachDragEvents = () => {
         select(g).selectAll<SVGElement,any>('g.draggable').call(drag<SVGElement,any>()
@@ -111,7 +117,7 @@ export const Rater:React.FunctionComponent<Props> = ({position, highlight, rated
                       </line>
                       { ratedItems.map(rItem => <g key={rItem.name}>
                           <g className="item">
-                          <g className="closeButton" cursor="pointer" pointerEvents="stroke">
+                          <g onClick={() => removeItem(rItem)} className="closeButton" cursor="pointer" pointerEvents="stroke">
                               <line 
                                         x1={position.x-(raterWidth/2)-95} 
                                         y1={scaler.toPosition(rItem.score)-3}
