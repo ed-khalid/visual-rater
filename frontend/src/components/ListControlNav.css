@@ -1,9 +1,18 @@
-div.list-control-nav span {
+div.list-control {
+    font-size:14px;
+}
+div.list-control-nav svg {
     cursor: pointer;
     margin: 2px;
-}
-div.list-control-nav span:hover {
-    cursor: pointer;
     color: grey; 
+}
+div.list-control-nav svg:hover {
+    cursor: pointer;
+    color: white; 
+    transition: 0.3s ease-in-out;
+}
+div.list-control-nav svg.selected {
+    cursor: pointer;
+    color: white; 
     transition: 0.3s ease-in-out;
 }

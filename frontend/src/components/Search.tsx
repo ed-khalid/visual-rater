@@ -1,19 +1,19 @@
 import React, { ChangeEvent, useEffect, useState } from "react"
 import './Search.css'
-import { useSearchByArtistQuery, useGetTracksForAlbumLazyQuery, AlbumSearchResult, ArtistSearchResult, Album, Artist } from '../generated/graphql'; 
+import { useSearchByArtistQuery, useGetTracksForAlbumLazyQuery, AlbumSearchResult, ArtistSearchResult } from '../generated/graphql'; 
 import { NewSong } from "../models/music/Song";
 import { ListControlNav } from "./ListControlNav";
 
-export const Search = ({setUnrated}:{setUnrated:any}) => {
+export const Search = ({chosenAlbum,setChosenAlbum,setUnrated}:{chosenAlbum:AlbumSearchResult|null, setChosenAlbum:(album:AlbumSearchResult|null) => void, setUnrated:any}) => {
 
   const [artistName, setArtistName] = useState<string|null>(null);   
   const [chosenArtist, setChosenArtist] = useState<ArtistSearchResult|null>(null); 
-  const [chosenAlbum, setChosenAlbum] = useState<AlbumSearchResult|null>(null); 
   const [getTracks, tracks ] = useGetTracksForAlbumLazyQuery();  
 
     useEffect(() => {
         if (tracks.data?.search?.tracks && chosenAlbum && chosenArtist) {
-            const unratedSongs:NewSong[] = tracks.data.search.tracks.map(track =>({ vendorId:track.vendorId, name:track.name, artist:chosenArtist , album:chosenAlbum, number:track.trackNumber}))
+            let { albums, ...artistWithoutAlbums } = chosenArtist  
+            const unratedSongs:NewSong[] = tracks.data.search.tracks.map(track =>({ vendorId:track.vendorId, name:track.name, artist:artistWithoutAlbums , album:chosenAlbum, number:track.trackNumber}))
             setUnrated(unratedSongs)
         }}, [tracks.data])
 
@@ -41,7 +41,6 @@ export const Search = ({setUnrated}:{setUnrated:any}) => {
                 <div id="search-input" className="wrapper">
                     <div className="flex">
                         <div id="search-field" className="flex-row">
-                            <div className="title">Artist</div>
                             <input type="text" onChange={handleArtist}></input>
                         </div> 
                     </div>
@@ -56,15 +55,9 @@ export const Search = ({setUnrated}:{setUnrated:any}) => {
 }  
 
 export const SearchQuery =  ({artist, selectArtist, chosenAlbum, selectAlbum}:{artist:string,chosenAlbum:AlbumSearchResult|null, selectArtist:(artist:ArtistSearchResult) => void, selectAlbum:(album:AlbumSearchResult)=> void}) => {
-    const ALBUMS_PER_PAGE = 16;   
+    const ALBUMS_PER_PAGE = 8;   
     const { loading, error, data  } = useSearchByArtistQuery({ variables: { name:  artist}})
     const [pageNumber,setPageNumber] = useState<number>(1);   
-    const massage = (albumName:string) => {
-        if (albumName.length < 17) {
-            return albumName;  
-        }
-        return albumName.slice(0,17) + "..."
-    } 
     let numberOfPages = 0; 
     if (loading) return <p>Loading...</p> 
     if (error) return <p>Error! </p>
@@ -73,20 +66,23 @@ export const SearchQuery =  ({artist, selectArtist, chosenAlbum, selectAlbum}:{a
         selectArtist(artist)
         numberOfPages = (artist.albums) ? Math.ceil((artist.albums.length/ ALBUMS_PER_PAGE)) : 0; 
         const thumbnail = artist.thumbnail || ''  
+        const artistDivStyle = {
+            "backgroundImage" : `url(${thumbnail})`,
+            "backgroundSize" : "100% 100%" 
+        }    
         return (
             <div>
-                <div id="artist" className="wrapper result" >
-                    <img alt="" src={thumbnail}></img>
-                    <div key={"artist" + artist.vendorId}>{artist.name}</div>
-                </div>
-                <div id="albums" className="wrapper result grid">
-                        {artist.albums?.slice(ALBUMS_PER_PAGE *(pageNumber-1), Math.min(pageNumber *(ALBUMS_PER_PAGE), artist.albums?.length) ).map(album => 
-                        <div onClick={() => selectAlbum(album) } className={"album-result " + ((chosenAlbum === album) ? "selected" : "")   } key={album.vendorId}>
-                            <img alt={album.name} src={album.thumbnail} />
-                            <div className="album-title" >{massage(album.name)}</div>
-                        </div>
-                        )}
-                        {}
+                <div id="artist" className="wrapper result" style={artistDivStyle}>
+                    {/* <img id="artist-pic" alt="" src={thumbnail}></img> */}
+                    <div id="artist-title" className="font-title" key={"artist" + artist.vendorId}>{artist.name}</div>
+                    <div id="albums" className="grid" >
+                            {artist.albums?.slice(ALBUMS_PER_PAGE *(pageNumber-1), Math.min(pageNumber *(ALBUMS_PER_PAGE), artist.albums?.length) ).map(album => 
+                            <div onClick={() => selectAlbum(album) } className={"album-result " + ((chosenAlbum === album) ? "selected" : "")   } key={album.vendorId}>
+                                <img alt={album.name} src={album.thumbnail} />
+                            </div>
+                            )}
+                            {}
+                    </div>
                 </div>
                 <ListControlNav setPageNumber={setPageNumber} numberOfPages={numberOfPages}></ListControlNav>
             </div>

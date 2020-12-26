@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import  './ListControlNav.css';
-
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faCircle, faDotCircle } from '@fortawesome/free-solid-svg-icons'
 
 
 export const ListControlNav =  ({setPageNumber, numberOfPages}:{setPageNumber:any, numberOfPages:number})  => {
-  const [clickedNavButtonIndex, setClickedNavButtonIndex] = useState<number|null>(0);  
+  const [clickedNavButtonIndex, setClickedNavButtonIndex] = useState<number|null>(1);  
   const handleNavButtonClick = (i:number) => {
       setClickedNavButtonIndex(i);
       setPageNumber(i)
@@ -13,11 +14,11 @@ export const ListControlNav =  ({setPageNumber, numberOfPages}:{setPageNumber:an
   const navButtons = []  
   if (numberOfPages > 1 ) {
     for (let i= 1 ;  i <= numberOfPages ; i++) {
-        navButtons.push(<span key={i} onClick={() => handleNavButtonClick(i)} className={(clickedNavButtonIndex === i )? "selected" : ""}>O</span>)
+        navButtons.push(<FontAwesomeIcon size="xs" icon={(clickedNavButtonIndex === i )?faDotCircle:faCircle} key={i} onClick={() => handleNavButtonClick(i)} className={(clickedNavButtonIndex === i )? "selected" : ""}/>)
     }
     return <div className="list-control-nav">
                 {navButtons}
-        </div>
+           </div>
   }
   return <div></div>
 }

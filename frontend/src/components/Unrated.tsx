@@ -31,23 +31,20 @@ export const Unrated:React.FunctionComponent<Props> = ({unratedItems,pageSize, p
         let offset = pageSize -1
         // default
         let start = 0; 
-        let end = Math.min(offset,unratedItems.length-1)
+        let end = Math.min(offset,unratedItems.length)
         if (pageNumber > 1) {
             start = offset * (pageNumber-1)
-            end =  Math.min(offset * (pageNumber-1) * 2, unratedItems.length-1)
+            end =  Math.min(offset * (pageNumber-1) * 2, unratedItems.length)
         }
         return unratedItems.slice(start,end); 
     }    
     useEffect(() => {
-        if (g == null) {
-            return;
-        }
         select(g).selectAll<SVGElement,any>('g').call(drag<any,any>()
             .on('start', dragStart)
             .on('drag', dragInProgress)
             .on('end', dragEnd)
           )
-    }, [g])
+    })
     useEffect(() => {
         if (createSongResult.data) {
             const newSong = createSongResult.data.CreateSong  
@@ -81,7 +78,7 @@ export const Unrated:React.FunctionComponent<Props> = ({unratedItems,pageSize, p
         }
     } 
     
-    const calculateY = (index:number) => 10 + (50*index) + (12*index); 
+    const calculateY = (index:number) =>  1 + (50*index) + (12*index); 
     const aboveRater = (x:number) =>  x > 490 && x < 510;  
 
     const dragStart = function(datum:any, i:number, nodeList:ArrayLike<SVGElement>) {
