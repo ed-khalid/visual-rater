@@ -8,14 +8,12 @@ enum class ItemType {
 
 interface SearchResult  {
     val name:String
-    val id:String
+    val vendorId:String
 }
-data class Artist(override val id:String, override val name:String, val images: Array<Image> = emptyArray()) :
+data class Artist(override val vendorId:String, override val name:String, val thumbnail:String?, val albums:List<Album>) :
     SearchResult
-data class Album(override val id:String, override val name:String, val images:Array<Image> = emptyArray(), @JsonAlias("release_date") val year:String ) :
+data class Album(override val vendorId:String, override val name:String, val thumbnail:String? , val year:Int ) :
     SearchResult
-data class Track(override val id:String,@JsonAlias("disc_number") val discNumber:String, override val name:String, @JsonAlias("track_number")val trackNumber:Int) :
+data class Track(@JsonAlias("id")override val vendorId:String,@JsonAlias("disc_number") val discNumber:String, override val name:String, @JsonAlias("track_number")val trackNumber:Int) :
     SearchResult
-data class PaginatedSearchResult(val results:List<SearchResult>, val pageNumber:Int)
-data class Image(val height:Int, val width:Int, val url:String)
 

@@ -46,6 +46,10 @@ class GraphQLConfiguration(private val spotifyService: SpotifyApi, private val m
                     val songInput = objectMapper.convertValue(raw, NewSongInput::class.java)
                     musicService.createSong(songInput)
                 }
+                it.dataFetcher("DeleteSong") { env ->
+                    val id = env.arguments["songId"] as String
+                    musicService.deleteSongById(UUID.fromString(id))
+                }
             }
             .type("Query")
             {
@@ -76,10 +80,6 @@ class GraphQLConfiguration(private val spotifyService: SpotifyApi, private val m
             {
                 it.dataFetcher("artists") { env ->
                     spotifyService.searchArtist(env.arguments["name"] as String)
-                }
-                it.dataFetcher("albums") { env ->
-                    spotifyService.getAlbumsForArtist(env.arguments["artistId"] as String,  (env.arguments["pageNumber"] as Int?)
-                        ?: 0)
                 }
                 it.dataFetcher("tracks") { env ->
                     spotifyService.getTracksForAlbum(env.arguments["albumId"] as String)

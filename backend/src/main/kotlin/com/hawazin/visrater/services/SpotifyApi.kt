@@ -2,13 +2,11 @@ package com.hawazin.visrater.services
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.hawazin.visrater.graphql.VisRaterGraphQLError
-import com.hawazin.visrater.models.graphql.Album
 import com.hawazin.visrater.models.graphql.Artist
-import com.hawazin.visrater.models.graphql.PaginatedSearchResult
 import com.hawazin.visrater.models.graphql.Track
 import com.hawazin.visrater.configurations.SpotifyConfiguration
 import com.hawazin.visrater.graphql.CustomRestTemplateCustomizer
+import com.hawazin.visrater.models.graphql.Album
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
@@ -62,29 +60,43 @@ class SpotifyApi(private val configuration: SpotifyConfiguration) {
         return accountsTemplate.postForObject<SpotifyAuthToken>("/api/token", request, SpotifyAuthToken::class.java)
     }
 
-    fun searchArtist(name:String) :List<Artist> {
-        val response = makeCall { api().getForObject<ArtistListResponse>("/search?q={name}&type=artist", name) }
-        return response.artists.items
+    fun searchArtist(name:String) :Artist {
+        val response = makeCall { api().getForObject<SpotifyArtistListResponse>("/search?q={name}&type=artist", name) }
+        val artist = response.artists.items[0]
+        val albums = getAlbumsForArtist(artist.id)
+        return Artist(vendorId = artist.id, name= artist.name, thumbnail = artist.images[2].url, albums = albums )
     }
 
-    fun getAlbumsForArtist(artistId:String, _offset:Int) : PaginatedSearchResult {
-        if (_offset  < 0) {
-            throw VisRaterGraphQLError("Album Page Number must be positive")
+    // let's forget about the offset for now
+    fun getAlbumsForArtist(artistId: String, _offset: Int = 0): List<Album> {
+        val response = makeCall {
+            api().getForObject<SpotifyAlbumList>(
+                "/artists/{artistId}/albums?limit=50&county=US&include_groups=album",
+                artistId
+            )
         }
-        val offset = _offset*12
-        val response = makeCall { api().getForObject<AlbumList>("/artists/{artistId}/albums?limit=12&county=US&include_groups=album&offset={offset}", artistId, offset) }
-        return PaginatedSearchResult(
-         results = response.items
-            , pageNumber =  _offset)
+        fun dateParser (date:String) : Int {
+            val dateArr =  date.split("-")
+            return dateArr[0].toInt()
+        }
+
+        return response.items.distinctBy { album -> album.name }
+            .map { Album(vendorId = it.id, name = it.name, thumbnail = it.images[2].url, year = dateParser(it.release_date)) }
+            .sortedBy { it.year  }
+
     }
 
     fun getTracksForAlbum(albumId:String) : List<Track> {
-        val response = makeCall { api().getForObject<TrackList>("/albums/{albumId}/tracks", albumId) }
+        val response = makeCall { api().getForObject<SpotifyTrackList>("/albums/{albumId}/tracks", albumId) }
         return response.items
     }
 }
 
-data class AlbumList(val items:List<Album>)
-data class ArtistListResponse(val artists:ArtistList)
-data class ArtistList(val items:List<Artist>)
-data class TrackList(val items:List<Track>)
+// Spotify Models
+data class SpotifyArtistListResponse(val artists:SpotifyArtistList)
+data class SpotifyArtist(val id:String, val name:String, val images:Array<SpotifyImage>)
+data class SpotifyArtistList(val items:List<SpotifyArtist>)
+data class SpotifyAlbum(val id:String, val name:String, val images:Array<SpotifyImage>, val release_date:String)
+data class SpotifyAlbumList(val items:List<SpotifyAlbum>)
+data class SpotifyImage(val url:String, val width:Int, val height:Int)
+data class SpotifyTrackList(val items:List<Track>)

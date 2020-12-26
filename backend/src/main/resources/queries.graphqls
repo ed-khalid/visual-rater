@@ -6,33 +6,26 @@ type Query {
 }
 
 type SearchQuery {
-    artists(name:String) : [ArtistSearchResult!]!
-    albums(artistId:String!, pageNumber:Int): PaginatedAlbumResult!
+    artists(name:String) : ArtistSearchResult!
     tracks(albumId:String!): [TrackSearchResult!]!
 }
-type PaginatedAlbumResult {
-    results:  [AlbumSearchResult!]!
-    pageNumber: Int!
-}
+
 type ArtistSearchResult {
     name:String!
-    id:String!
-    images:[Image!]!
+    vendorId:String!
+    thumbnail:String
+    albums:[AlbumSearchResult!]
 }
 type AlbumSearchResult {
-    id:String!
+    vendorId:String!
     name:String!
-    images:[Image!]!
-    year: String
+    thumbnail:String!
+    year: Int
 }
-type Image {
-    width:Int!
-    height:Int!
-    url:String!
-}
+
 type TrackSearchResult {
     name:String!
     trackNumber:Int!
     discNumber:Int!
-    id:String!
+    vendorId:String!
 }

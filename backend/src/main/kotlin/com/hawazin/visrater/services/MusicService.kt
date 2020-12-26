@@ -4,7 +4,6 @@ import com.hawazin.visrater.graphql.models.NewSongInput
 import com.hawazin.visrater.graphql.models.SongInput
 import com.hawazin.visrater.models.db.*
 import org.springframework.stereotype.Service
-import org.springframework.web.client.HttpClientErrorException
 import java.util.*
 
 
@@ -13,6 +12,11 @@ class MusicService(private val songRepo:SongRepository , private val albumRepo: 
 
     fun readAllSongs() : Iterable<Song> = songRepo.findAll()
     fun readSong(id:UUID) : Optional<Song> = songRepo.findById(id)
+    fun deleteSongById(id:UUID) : Boolean
+    {
+        songRepo.deleteById(id)
+        return true
+    }
 
     fun updateSong(songInput: SongInput) : Song
     {
