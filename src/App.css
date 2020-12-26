@@ -1,7 +1,15 @@
 @import url('https://fonts.googleapis.com/css?family=Abril+Fatface');
 * {
+  font-family: 'Raleway', sans-serif;
+}
+
+.font-title {
   font-family: 'Abril Fatface', serif;
 }
+.font-normal {
+  font-family: 'Raleway', sans-serif;
+}
+
 .grid {
   display:grid;
 }

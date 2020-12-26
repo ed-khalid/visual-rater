@@ -7,11 +7,12 @@ import { Item, ItemType } from './models/Item';
 import { RatedItem } from './models/RatedItem';
 import { Scaler } from './functions/scale';
 import { Search } from './components/Search';
-import { useGetItemsQuery } from './generated/graphql';
+import { AlbumSearchResult, useGetItemsQuery } from './generated/graphql';
+import { SpotifyPlayer } from './components/SpotifyPlayer';
 
 
 function App() {
-  const UNRATED_ITEMS_PAGE_SIZE = 8
+  const UNRATED_ITEMS_PAGE_SIZE = 11
   const ITEM_TYPE = ItemType.MUSIC
   const rater = {
       position : {
@@ -22,6 +23,7 @@ function App() {
   const [unratedItems, updateUnratedItems] = useState([])  
   const [ratedItems, setRatedItems] = useState<RatedItem[]>([]) 
   const [, updateDraggedItem] = useState<Item|undefined>(undefined) 
+  const [chosenAlbum, setChosenAlbum] = useState<AlbumSearchResult|null>(null); 
   const [draggedItemIsAboveRater, updateDraggedItemIsAboveRater] = useState(false)
   const [unratedPageNumber, setUnratedPageNumber] = useState<number>(1) 
   const items =  useGetItemsQuery()
@@ -40,16 +42,17 @@ function App() {
 
   return (
     <div className="App">
-      <header>VisRater</header>
+      <header className="font-title">VisRater</header>
       <div className="main grid">
         <div></div> 
         <div id="top-controls">
           { unratedItems.length > UNRATED_ITEMS_PAGE_SIZE && 
-            <ListControlNav setPageNumber={setUnratedPageNumber} numberOfPages={unratedItems.length/UNRATED_ITEMS_PAGE_SIZE}  ></ListControlNav> 
+            <ListControlNav setPageNumber={setUnratedPageNumber} numberOfPages={Math.ceil(unratedItems.length/UNRATED_ITEMS_PAGE_SIZE)}  ></ListControlNav> 
           }
         </div>
         <div id="search-wrapper">
-          <Search setUnrated={updateUnratedItems}></Search>
+          <Search chosenAlbum={chosenAlbum} setChosenAlbum={setChosenAlbum} setUnrated={updateUnratedItems}></Search>
+          <SpotifyPlayer albumId={chosenAlbum?.vendorId}></SpotifyPlayer>
         </div>
         <svg id="trackRater" viewBox="0 0 790 652">
           <Unrated 
