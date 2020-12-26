@@ -1,0 +1,9 @@
+div.list-control-nav span {
+    cursor: pointer;
+    margin: 2px;
+}
+div.list-control-nav span:hover {
+    cursor: pointer;
+    color: grey; 
+    transition: 0.3s ease-in-out;
+}

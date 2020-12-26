@@ -1,35 +1,33 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
 import { Unrated } from './components/Unrated';
-import { UnratedNav } from './components/UnratedNav';
+import { ListControlNav } from './components/ListControlNav';
 import { Rater } from './components/Rater';
 import { Item, ItemType } from './models/Item';
 import { RatedItem } from './models/RatedItem';
-import { Position} from './models/Position';
 import { Scaler } from './functions/scale';
 import { Search } from './components/Search';
 import { useGetItemsQuery } from './generated/graphql';
 
-type AppState = {
-  unratedItems:Item[];
-  ratedItems:RatedItem[];
-  rater : {
-    position: Position 
-  }
-  draggedItem?:Item|undefined;
-  draggedItemIsAboveRater:boolean;
-  itemType:ItemType
-} 
 
 function App() {
-  const [unratedItems, updateUnratedItems] = useState([]);  
-  const [ratedItems, setRatedItems] = useState<RatedItem[]>([]); 
-  const [draggedItem, updateDraggedItem] = useState<Item|undefined>(undefined); 
-  const [draggedItemIsAboveRater, updateDraggedItemIsAboveRater] = useState(false); 
-  const items =  useGetItemsQuery();
+  const UNRATED_ITEMS_PAGE_SIZE = 8
+  const ITEM_TYPE = ItemType.MUSIC
+  const rater = {
+      position : {
+        x: 500,
+        y: 1000
+      }
+  }
+  const [unratedItems, updateUnratedItems] = useState([])  
+  const [ratedItems, setRatedItems] = useState<RatedItem[]>([]) 
+  const [, updateDraggedItem] = useState<Item|undefined>(undefined) 
+  const [draggedItemIsAboveRater, updateDraggedItemIsAboveRater] = useState(false)
+  const [unratedPageNumber, setUnratedPageNumber] = useState<number>(1) 
+  const items =  useGetItemsQuery()
   useEffect(() => {
     if (items.error) {
-      console.log(items.error);
+      console.log(items.error)
     }
     else  {
       if (items.data && items.data.items) {
@@ -38,50 +36,41 @@ function App() {
     }
   } , [items.data, items.error])
 
-  const appState:AppState = {
-    unratedItems,
-    ratedItems,
-    rater: {
-      position : {
-        x: 500,
-        y: 1000
-      }
-    },
-    draggedItem,  
-    draggedItemIsAboveRater,
-    itemType : ItemType.MUSIC  
-  }
-
-  const scaler = new Scaler(appState.rater.position.y);   
+  const scaler = new Scaler(rater.position.y);   
 
   return (
     <div className="App">
       <header>VisRater</header>
       <div className="main grid">
-        <div id="search-wrapper">
-          <Search setUnrated={updateUnratedItems}></Search>
-          { appState.unratedItems.length > 8 && 
-          <UnratedNav></UnratedNav> 
+        <div></div> 
+        <div id="top-controls">
+          { unratedItems.length > UNRATED_ITEMS_PAGE_SIZE && 
+            <ListControlNav setPageNumber={setUnratedPageNumber} numberOfPages={unratedItems.length/UNRATED_ITEMS_PAGE_SIZE}  ></ListControlNav> 
           }
         </div>
-        <svg id="trackRater" viewBox="0 0 790 447">
+        <div id="search-wrapper">
+          <Search setUnrated={updateUnratedItems}></Search>
+        </div>
+        <svg id="trackRater" viewBox="0 0 790 652">
           <Unrated 
-                  unratedItems={appState.unratedItems} 
-                  ratedItems={appState.ratedItems} 
+                  unratedItems={unratedItems} 
+                  ratedItems={ratedItems} 
                   onDrag={updateDraggedItem}
                   onRater={updateDraggedItemIsAboveRater}
                   updateItems={[updateUnratedItems, setRatedItems]} 
+                  pageNumber={unratedPageNumber}  
+                  pageSize = {UNRATED_ITEMS_PAGE_SIZE}
                   scaler={scaler}
-                  itemType={appState.itemType}
+                  itemType={ITEM_TYPE}
           > 
           </Unrated>
           <Rater 
-                highlight={appState.draggedItemIsAboveRater} 
-                position={appState.rater.position}
-                ratedItems={appState.ratedItems}  
+                highlight={draggedItemIsAboveRater} 
+                position={rater.position}
+                ratedItems={ratedItems}  
                 updateRatedItems={setRatedItems}
                 scaler={scaler}
-                itemType={appState.itemType}
+                itemType={ITEM_TYPE}
           >
           </Rater>
         </svg>

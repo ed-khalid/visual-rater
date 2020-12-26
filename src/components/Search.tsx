@@ -1,8 +1,8 @@
 import React, { ChangeEvent, useEffect, useState } from "react"
 import './Search.css'
-import { useSearchByArtistQuery, useSearchAlbumsByArtistQuery , useGetTracksForAlbumLazyQuery, AlbumSearchResult, ArtistSearchResult, Album, Artist, useUpdateSongMutation, Song } from '../generated/graphql'; 
-import { mapper } from "../functions/mapper";
+import { useSearchByArtistQuery, useGetTracksForAlbumLazyQuery, AlbumSearchResult, ArtistSearchResult, Album, Artist } from '../generated/graphql'; 
 import { NewSong } from "../models/music/Song";
+import { ListControlNav } from "./ListControlNav";
 
 export const Search = ({setUnrated}:{setUnrated:any}) => {
 
@@ -13,9 +13,7 @@ export const Search = ({setUnrated}:{setUnrated:any}) => {
 
     useEffect(() => {
         if (tracks.data?.search?.tracks && chosenAlbum && chosenArtist) {
-            const album = mapper.searchResultToResult<Album>(chosenAlbum)
-            const artist = mapper.searchResultToResult<Artist>(chosenArtist)
-            const unratedSongs:NewSong[] = tracks.data.search.tracks.map(track =>({ vendorId:track.id, name:track.name, artist , album, number:track.trackNumber}))
+            const unratedSongs:NewSong[] = tracks.data.search.tracks.map(track =>({ vendorId:track.vendorId, name:track.name, artist:chosenArtist , album:chosenAlbum, number:track.trackNumber}))
             setUnrated(unratedSongs)
         }}, [tracks.data])
 
@@ -28,14 +26,13 @@ export const Search = ({setUnrated}:{setUnrated:any}) => {
             setArtistName(null);
             setChosenArtist(null);
             setChosenAlbum(null);
+            setUnrated([])
         }
-    }
-    const showAlbums = (artist:ArtistSearchResult) => {
-        setChosenArtist(artist);
     }
     const showTracks =  (album:AlbumSearchResult) => {
         setChosenAlbum(album);
-        getTracks({ variables: { albumId: album.id  } })
+        console.log('firing tracks')
+        getTracks({ variables: { albumId: album.vendorId  } })
     }
 
     return (
@@ -43,7 +40,7 @@ export const Search = ({setUnrated}:{setUnrated:any}) => {
             <div id="artist-col">
                 <div id="search-input" className="wrapper">
                     <div className="flex">
-                        <div id="artist" className="flex-row">
+                        <div id="search-field" className="flex-row">
                             <div className="title">Artist</div>
                             <input type="text" onChange={handleArtist}></input>
                         </div> 
@@ -51,73 +48,49 @@ export const Search = ({setUnrated}:{setUnrated:any}) => {
                 </div>
                 {
                 artistName && (artistName.length) > 2 && 
-                    <div id="artist-result" className="wrapper result">
-                        <SearchQuery onSelectArtist={showAlbums} artist={artistName}></SearchQuery>
-                    </div>
-                }
-                {
-                    chosenAlbum && 
-                    <div>
-                    <div id="chosen-album" className="wrapper result">
-                        <div className="result-row">
-                            <img alt="" src={chosenAlbum.images[0].url} />
-                            <div>{chosenAlbum.name}</div>
-                        </div>
-                    </div>
-                    </div>
+                     <SearchQuery artist={artistName} chosenAlbum={chosenAlbum} selectArtist={setChosenArtist} selectAlbum={showTracks}></SearchQuery>
                 }
             </div> 
-
-            { chosenArtist && !chosenAlbum && 
-            <div id="album-result" className="wrapper result">
-                <SearchAlbumsForArtist onSelectAlbum={showTracks} artist={chosenArtist} ></SearchAlbumsForArtist>
-            </div>
-            }
         </div>
     )
 }  
 
-export const SearchAlbumsForArtist  = ({ onSelectAlbum, artist}:{onSelectAlbum:(album:AlbumSearchResult) => void, artist:ArtistSearchResult}) => {
-        let [pageNumber, setPageNumber] = useState<number>(0); 
-        const { data }  = useSearchAlbumsByArtistQuery({variables: { artistId: artist.id, pageNumber }})
-        const offset = (shouldIncrement:boolean) => {
-            if (shouldIncrement) {
-                setPageNumber(pageNumber+1);
-            } else {
-                setPageNumber(pageNumber-1);
-            }
-        } 
-
-        return <div id="album-nav-grid">
-                <ul>
-                    {data?.search?.albums?.results?.map(album => 
-                    <li onClick={() => onSelectAlbum(album) }  key={album.id} >
-                            <img alt="" src={album.images[2].url} />
-                            <span>{album.name}</span>
-                    </li>
-                    )}
-                </ul>
-                <nav id="album-navbar" className="grid">
-                    <div onClick={() => { offset(false) }}   className="nav-arrow">&lt;</div>
-                    <div onClick={() => { offset(true)  }}   className="nav-arrow">&gt;</div>
-                </nav>
-        </div>
-}
-
-export const SearchQuery =  ({onSelectArtist, artist}:{onSelectArtist: (artist:ArtistSearchResult) => void, artist:string}) => {
+export const SearchQuery =  ({artist, selectArtist, chosenAlbum, selectAlbum}:{artist:string,chosenAlbum:AlbumSearchResult|null, selectArtist:(artist:ArtistSearchResult) => void, selectAlbum:(album:AlbumSearchResult)=> void}) => {
+    const ALBUMS_PER_PAGE = 16;   
     const { loading, error, data  } = useSearchByArtistQuery({ variables: { name:  artist}})
+    const [pageNumber,setPageNumber] = useState<number>(1);   
+    const massage = (albumName:string) => {
+        if (albumName.length < 17) {
+            return albumName;  
+        }
+        return albumName.slice(0,17) + "..."
+    } 
+    let numberOfPages = 0; 
     if (loading) return <p>Loading...</p> 
     if (error) return <p>Error! </p>
     if (data && data.search?.artists) {
-        const mostPopular = data.search?.artists[0];  
-        let image;
-        if (mostPopular && mostPopular.images) {
-            image = mostPopular.images[2]; 
-        }
-        return (<div onClick={() => onSelectArtist(mostPopular)} className="result-row" >
-            <img alt="" src={image?.url}></img>
-            <div key={"artist" + mostPopular?.id}>{mostPopular?.name}</div>
-        </div>)
+        const artist = data.search.artists 
+        selectArtist(artist)
+        numberOfPages = (artist.albums) ? Math.ceil((artist.albums.length/ ALBUMS_PER_PAGE)) : 0; 
+        const thumbnail = artist.thumbnail || ''  
+        return (
+            <div>
+                <div id="artist" className="wrapper result" >
+                    <img alt="" src={thumbnail}></img>
+                    <div key={"artist" + artist.vendorId}>{artist.name}</div>
+                </div>
+                <div id="albums" className="wrapper result grid">
+                        {artist.albums?.slice(ALBUMS_PER_PAGE *(pageNumber-1), Math.min(pageNumber *(ALBUMS_PER_PAGE), artist.albums?.length) ).map(album => 
+                        <div onClick={() => selectAlbum(album) } className={"album-result " + ((chosenAlbum === album) ? "selected" : "")   } key={album.vendorId}>
+                            <img alt={album.name} src={album.thumbnail} />
+                            <div className="album-title" >{massage(album.name)}</div>
+                        </div>
+                        )}
+                        {}
+                </div>
+                <ListControlNav setPageNumber={setPageNumber} numberOfPages={numberOfPages}></ListControlNav>
+            </div>
+        )
     }
     return <div></div>
 

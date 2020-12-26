@@ -1,0 +1,3 @@
+mutation DeleteSong($songId:String!){
+  DeleteSong(songId:$songId) 
+}

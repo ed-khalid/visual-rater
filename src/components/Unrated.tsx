@@ -17,18 +17,37 @@ interface Props {
     onDrag:Dispatch<SetStateAction<Item|undefined>>;
     onRater:Dispatch<SetStateAction<boolean>>;
     updateItems:any[];
+    pageSize:number;
+    pageNumber:number;
     scaler:Scaler;
     itemType:ItemType;
 }
 
-export const Unrated:React.FunctionComponent<Props> = ({unratedItems,ratedItems,onDrag,onRater, updateItems, scaler,itemType}:Props) => {
+export const Unrated:React.FunctionComponent<Props> = ({unratedItems,pageSize, pageNumber, ratedItems,onDrag,onRater, updateItems, scaler,itemType}:Props) => {
 
     const [g,updateG] = useState<SVGElement|null>(null); 
     const [createSong, createSongResult ]  = useCreateSongMutation();
-
+    const determineItemsToDisplay = (unratedItems:Item[]) => {
+        let offset = pageSize -1
+        // default
+        let start = 0; 
+        let end = Math.min(offset,unratedItems.length-1)
+        if (pageNumber > 1) {
+            start = offset * (pageNumber-1)
+            end =  Math.min(offset * (pageNumber-1) * 2, unratedItems.length-1)
+        }
+        return unratedItems.slice(start,end); 
+    }    
     useEffect(() => {
-        attachDragEvents();
-    })
+        if (g == null) {
+            return;
+        }
+        select(g).selectAll<SVGElement,any>('g').call(drag<any,any>()
+            .on('start', dragStart)
+            .on('drag', dragInProgress)
+            .on('end', dragEnd)
+          )
+    }, [g])
     useEffect(() => {
         if (createSongResult.data) {
             const newSong = createSongResult.data.CreateSong  
@@ -121,7 +140,7 @@ export const Unrated:React.FunctionComponent<Props> = ({unratedItems,ratedItems,
               updateUnrated(newUnrated);  
                 switch(itemType) {
                     case ItemType.MUSIC :
-                    const asNewSong = item as NewSong   
+                    const asNewSong = item as unknown as NewSong   
                     createSong({variables: {song: { vendorId: asNewSong.vendorId, score, name: asNewSong.name , album: asNewSong.album, artist: asNewSong.artist   }  }})
                 }
           } else {
@@ -141,20 +160,9 @@ export const Unrated:React.FunctionComponent<Props> = ({unratedItems,ratedItems,
           }
     } 
 
-    const attachDragEvents = () => {
-        if (g == null) {
-            return;
-        }
-        select(g).selectAll<SVGElement,any>('g').call(drag<any,any>()
-            .on('start', dragStart)
-            .on('drag', dragInProgress)
-            .on('end', dragEnd)
-          )
-    }
-
     return(
         <g ref={node => updateG(node)} >
-       {unratedItems.map( (it,i) => { 
+       {determineItemsToDisplay(unratedItems).map( (it,i) => { 
             return <g id={i+''} key={'track'+it.name}>
                      <rect cursor="move" rx="5" ry="5" stroke="white" fill="#000" fillOpacity="0.0" className="draggable" width="15%" height="50" x="10" y={calculateY(i)} ></rect>
                      <text fontSize="8" fontSizeAdjust="2" cursor="move" textAnchor="middle" fill="white" dy=".35em"  x="70" y={calculateY(i)+25}>{it.name}</text>

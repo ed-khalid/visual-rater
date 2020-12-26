@@ -25,11 +25,15 @@ header {
   font-size: 16px;
   color: white;
   grid-template-columns: 1fr 8fr ;
-  height: 447px;
+  grid-template-rows: 20px;
+  height: 100vh;
+}
+div.main.grid div#top-controls div.list-control-nav {
+  float: left;
+  margin-left: 60px; 
 }
 svg {
   margin-left: 10px; 
   width: 790px;
-  height: 447px; 
-  border: 1px solid white;
+  height: 652px; 
 }

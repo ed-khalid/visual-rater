@@ -28,80 +28,36 @@ div.result {
 div.result-row {
     margin: 0;
 }
-div.result-row img:hover {
-    box-shadow: 3px 3px 3px rgb(255, 255, 255);
+div#artist:hover {
     transition: ease-in-out 0.2s;
 }
-div#album-result {
-    margin-top:0;
-    margin-left: 10px;
-    height: 447px;
-    display: block;
-}
-div#album-result ul  {
-    margin: 1px;
-    list-style: none;
-    padding-inline-start: 0;
-    height:396px;
-    overflow:hidden;
-}   
-div#album-result ul li  {
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    border-bottom: 1px solid white;
-    overflow:hidden;
-}   
-div#album-result ul li:last-child  {
-    border-bottom:unset;
-}   
-div#album-result ul li img  {
-    width: 32px;
-    height: 32px;
-    border-radius:unset;
-}   
-div.nav-arrow {
-    cursor: pointer;
-    font-size: 40px; 
-    font-weight: 800;
-    text-align:center;
-    height: 50px;
-}   
-nav#album-navbar {
-    border-top: 1px solid white;
-    grid-template-columns:1fr 1fr;
-}
-div.nav-arrow:first-child {
-    cursor: pointer;
-    font-size: 40px; 
-    font-weight: 800;
-    border-right: 1px solid white;
-}   
-
-div#artist-result {
-    cursor: pointer;
-}
-div#artist-result:hover {
-    background-color: rgb(5, 78, 17);
-    transition: ease-in-out 0.2s;
-}
-
 .grid {
     display: grid;
 }
-#search {
-    grid-template-columns: 1fr 2fr;    
-    grid-template-areas: 
-    'search albums'
-    '. albums';
+div#albums {
+    width: 194px;
+    padding: 6px;
+    padding-right: 0px;
+    grid-template-columns: repeat(4, 45px);
+    grid-template-rows: repeat(auto-fit, 70px);
+    max-height:60vh;
+    overflow:hidden;
+    gap: 3px;
+    height: 313px;
 }
-#artist-col {
-    grid-area: search; 
+div.album-result {
+    width:100%;
+    height:70%;
+    cursor: pointer;
 }
-#artist-result {
-    grid-area: artist; 
+div.album-result.selected {
+    background: yellow;
 }
-#album-result {
-    grid-area: albums; 
+div.album-result img {
+    width: inherit;
+    height:inherit;
+    border-radius: unset;
 }
-
+div.album-result .album-title {
+    font-size: 6px;
+}
