@@ -7,13 +7,14 @@ import { drag } from 'd3-drag';
 import { event as d3Event } from 'd3'
 import { RatedItem } from "../models/RatedItem";
 import { Scaler } from "../functions/scale";
-import { useCreateSongMutation } from "../generated/graphql";
+import { Song, useCreateSongMutation } from "../generated/graphql";
 import { NewSong } from "../models/music/Song";
 
 
 interface Props {
     unratedItems:Item[];
     ratedItems:RatedItem[];
+    raterPosition:Position
     onDrag:Dispatch<SetStateAction<Item|undefined>>;
     onRater:Dispatch<SetStateAction<boolean>>;
     updateItems:any[];
@@ -23,7 +24,7 @@ interface Props {
     itemType:ItemType;
 }
 
-export const Unrated:React.FunctionComponent<Props> = ({unratedItems,pageSize, pageNumber, ratedItems,onDrag,onRater, updateItems, scaler,itemType}:Props) => {
+export const Unrated:React.FunctionComponent<Props> = ({unratedItems,raterPosition,pageSize, pageNumber, ratedItems,onDrag,onRater, updateItems, scaler,itemType}:Props) => {
 
     const [g,updateG] = useState<SVGElement|null>(null); 
     const [createSong, createSongResult ]  = useCreateSongMutation();
@@ -57,50 +58,67 @@ export const Unrated:React.FunctionComponent<Props> = ({unratedItems,pageSize, p
     }, [createSongResult.data])
 
 
-    let dragOriginalPos:{rect:Position, text:Position} = {
+    let dragOriginalPos:{rect:Position, title:Position, trackNumber: Position} = {
         rect : {
             x:0
             ,y:0
         }
-        ,text: {
+        ,title: {
+            x:0
+            ,y:0
+        }
+        ,trackNumber : {
             x:0
             ,y:0
         }
     };
-    let dragDelta:{rect:Position,text:Position}= {
+    let dragDelta:{rect:Position,title:Position, trackNumber:Position}= {
         rect: {
             x:0 
             ,y:0
         }
-        ,text: {
+        ,title: {
+            x:0 
+            ,y:0
+        }
+        ,trackNumber: {
             x:0 
             ,y:0
         }
     } 
     
     const calculateY = (index:number) =>  1 + (50*index) + (12*index); 
-    const aboveRater = (x:number) =>  x > 490 && x < 510;  
+    const aboveRater = (x:number) =>  x > raterPosition.x-10 && x < raterPosition.x+10;  
 
     const dragStart = function(datum:any, i:number, nodeList:ArrayLike<SVGElement>) {
           onDrag(unratedItems[i]);
           const g = nodeList[i];  
           const d3Rect = select(g).select('rect');  
-          const d3Text = select(g).select('text');
+          const d3Title = select(g).select('text#title');
+          const d3TrackNumber = select(g).select('text#trackNumber');
           dragOriginalPos.rect = {
               x: Number(d3Rect.attr('x')),
               y: Number(d3Rect.attr('y'))
           }
-          dragOriginalPos.text = {
-              x: Number(d3Text.attr('x')),
-              y: Number(d3Text.attr('y'))
+          dragOriginalPos.title = {
+              x: Number(d3Title.attr('x')),
+              y: Number(d3Title.attr('y'))
+          }
+          dragOriginalPos.trackNumber = {
+              x: Number(d3TrackNumber.attr('x')),
+              y: Number(d3TrackNumber.attr('y'))
           }
           dragDelta.rect = {
               x : Number(d3Rect.attr('x')) - d3Event.x,
               y : Number(d3Rect.attr('y')) - d3Event.y  
           }
-          dragDelta.text = {
-              x : Number(d3Text.attr('x')) - d3Event.x,
-              y : Number(d3Text.attr('y')) - d3Event.y  
+          dragDelta.title = {
+              x : Number(d3Title.attr('x')) - d3Event.x,
+              y : Number(d3Title.attr('y')) - d3Event.y  
+          }
+          dragDelta.trackNumber = {
+              x : Number(d3TrackNumber.attr('x')) - d3Event.x,
+              y : Number(d3TrackNumber.attr('y')) - d3Event.y  
           }
           d3Rect.raise().classed("active", true);
     }
@@ -117,16 +135,18 @@ export const Unrated:React.FunctionComponent<Props> = ({unratedItems,pageSize, p
                      .attr("rx",10)
                      .attr("ry",10)
                      ;
-            const text = select(g).select('text'); 
-            text.attr("x", d3Event.x + dragDelta.text.x).attr("y", d3Event.y+dragDelta.text.y);
-            console.log(`x: ${rect.attr('x')} y: ${rect.attr('y')}`)
+            const title = select(g).selectAll('text#title'); 
+            const number = select(g).selectAll('text#trackNumber'); 
+            title.attr("x", d3Event.x + dragDelta.title.x).attr("y", d3Event.y+dragDelta.title.y);
+            number.attr("x", d3Event.x + dragDelta.trackNumber.x).attr("y", d3Event.y+dragDelta.trackNumber.y);
             aboveRater(Number(rect.attr("x"))) ? onRater(true): onRater(false); 
     }
 
     const dragEnd = (datum:SVGRectElement, i:number, nodes:ArrayLike<SVGElement>) => { 
           const d = nodes[i]; 
           onRater(false);
-          const text = select(d).select('text'); 
+          const title = select(d).selectAll('text#title'); 
+          const trackNumber = select(d).selectAll('text#trackNumber'); 
           const rect = select(d).select('rect'); 
           if (aboveRater(Number(rect.attr('x')))) {
               const item = unratedItems[i];  
@@ -141,9 +161,14 @@ export const Unrated:React.FunctionComponent<Props> = ({unratedItems,pageSize, p
                     createSong({variables: {song: { vendorId: asNewSong.vendorId, score, name: asNewSong.name , album: asNewSong.album, artist: asNewSong.artist   }  }})
                 }
           } else {
-            text
-              .attr('x', dragOriginalPos.text.x)
-              .attr('y', dragOriginalPos.text.y)
+            title
+              .attr('x', dragOriginalPos.title.x)
+              .attr('y', dragOriginalPos.title.y)
+              .classed("active", false)
+              ;
+            trackNumber
+              .attr('x', dragOriginalPos.trackNumber.x)
+              .attr('y', dragOriginalPos.trackNumber.y)
               .classed("active", false)
               ;
               rect
@@ -156,13 +181,20 @@ export const Unrated:React.FunctionComponent<Props> = ({unratedItems,pageSize, p
                     .classed("active", false);
           }
     } 
+    const wrap = (title:string) : string => {
+        if (title.length > 23 ) {
+            return title.slice(0,20) + '...'
+        }
+        return title
+    }
 
     return(
         <g ref={node => updateG(node)} >
        {determineItemsToDisplay(unratedItems).map( (it,i) => { 
-            return <g id={i+''} key={'track'+it.name}>
+            return <g id={i+''} key={'track'+it.id}>
                      <rect cursor="move" rx="5" ry="5" stroke="white" fill="#000" fillOpacity="0.0" className="draggable" width="15%" height="50" x="10" y={calculateY(i)} ></rect>
-                     <text fontSize="8" fontSizeAdjust="2" cursor="move" textAnchor="middle" fill="white" dy=".35em"  x="70" y={calculateY(i)+25}>{it.name}</text>
+                     <text id="trackNumber" fontSize="50" fontSizeAdjust="2" cursor="move" textAnchor="middle" fill="#ddd" fillOpacity="0.3" dy=".35em"  x="40" y={calculateY(i)+25}>{(it as Song).number}</text>
+                     <text id="title" fontSize="8" fontSizeAdjust="2" cursor="move" textAnchor="middle" fill="white" dy=".35em"  x="70" y={calculateY(i)+25}>{wrap(it.name)}</text>
                    </g>
         })}
     </g>

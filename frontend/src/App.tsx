@@ -16,7 +16,7 @@ function App() {
   const ITEM_TYPE = ItemType.MUSIC
   const rater = {
       position : {
-        x: 500,
+        x: 300,
         y: 1000
       }
   }
@@ -52,7 +52,7 @@ function App() {
         </div>
         <div id="search-wrapper">
           <Search chosenAlbum={chosenAlbum} setChosenAlbum={setChosenAlbum} setUnrated={updateUnratedItems}></Search>
-          <SpotifyPlayer albumId={chosenAlbum?.vendorId}></SpotifyPlayer>
+          <SpotifyPlayer albumId={chosenAlbum?.id}></SpotifyPlayer>
         </div>
         <svg id="trackRater" viewBox="0 0 790 652">
           <Unrated 
@@ -60,6 +60,7 @@ function App() {
                   ratedItems={ratedItems} 
                   onDrag={updateDraggedItem}
                   onRater={updateDraggedItemIsAboveRater}
+                  raterPosition={rater.position}
                   updateItems={[updateUnratedItems, setRatedItems]} 
                   pageNumber={unratedPageNumber}  
                   pageSize = {UNRATED_ITEMS_PAGE_SIZE}
