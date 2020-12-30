@@ -31,7 +31,7 @@ export type AlbumInput = {
 
 export type AlbumSearchResult = {
   __typename?: 'AlbumSearchResult';
-  vendorId: Scalars['String'];
+  id: Scalars['String'];
   name: Scalars['String'];
   thumbnail: Scalars['String'];
   year?: Maybe<Scalars['Int']>;
@@ -55,7 +55,7 @@ export type ArtistInput = {
 export type ArtistSearchResult = {
   __typename?: 'ArtistSearchResult';
   name: Scalars['String'];
-  vendorId: Scalars['String'];
+  id: Scalars['String'];
   thumbnail?: Maybe<Scalars['String']>;
   albums?: Maybe<Array<AlbumSearchResult>>;
 };
@@ -153,10 +153,10 @@ export type SongInput = {
 
 export type TrackSearchResult = {
   __typename?: 'TrackSearchResult';
+  id: Scalars['String'];
   name: Scalars['String'];
   trackNumber: Scalars['Int'];
   discNumber: Scalars['Int'];
-  vendorId: Scalars['String'];
 };
 
 export type CreateSongMutationVariables = Exact<{
@@ -237,7 +237,7 @@ export type GetTracksForAlbumQuery = (
     { __typename?: 'SearchQuery' }
     & { tracks: Array<(
       { __typename?: 'TrackSearchResult' }
-      & Pick<TrackSearchResult, 'vendorId' | 'name' | 'trackNumber' | 'discNumber'>
+      & Pick<TrackSearchResult, 'id' | 'name' | 'trackNumber' | 'discNumber'>
     )> }
   )> }
 );
@@ -253,10 +253,10 @@ export type SearchByArtistQuery = (
     { __typename?: 'SearchQuery' }
     & { artists: (
       { __typename?: 'ArtistSearchResult' }
-      & Pick<ArtistSearchResult, 'name' | 'vendorId' | 'thumbnail'>
+      & Pick<ArtistSearchResult, 'name' | 'id' | 'thumbnail'>
       & { albums?: Maybe<Array<(
         { __typename?: 'AlbumSearchResult' }
-        & Pick<AlbumSearchResult, 'vendorId' | 'name' | 'year' | 'thumbnail'>
+        & Pick<AlbumSearchResult, 'id' | 'name' | 'year' | 'thumbnail'>
       )>> }
     ) }
   )> }
@@ -442,7 +442,7 @@ export const GetTracksForAlbumDocument = gql`
     query GetTracksForAlbum($albumId: String!) {
   search {
     tracks(albumId: $albumId) {
-      vendorId
+      id
       name
       trackNumber
       discNumber
@@ -481,10 +481,10 @@ export const SearchByArtistDocument = gql`
   search {
     artists(name: $name) {
       name
-      vendorId
+      id
       thumbnail
       albums {
-        vendorId
+        id
         name
         year
         thumbnail

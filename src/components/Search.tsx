@@ -13,7 +13,7 @@ export const Search = ({chosenAlbum,setChosenAlbum,setUnrated}:{chosenAlbum:Albu
     useEffect(() => {
         if (tracks.data?.search?.tracks && chosenAlbum && chosenArtist) {
             let { albums, ...artistWithoutAlbums } = chosenArtist  
-            const unratedSongs:NewSong[] = tracks.data.search.tracks.map(track =>({ vendorId:track.vendorId, name:track.name, artist:artistWithoutAlbums , album:chosenAlbum, number:track.trackNumber}))
+            const unratedSongs:NewSong[] = tracks.data.search.tracks.map(track =>({ id:track.id, vendorId:track.id, name:track.name, artist:artistWithoutAlbums , album:chosenAlbum, number:track.trackNumber}))
             setUnrated(unratedSongs)
         }}, [tracks.data])
 
@@ -32,7 +32,7 @@ export const Search = ({chosenAlbum,setChosenAlbum,setUnrated}:{chosenAlbum:Albu
     const showTracks =  (album:AlbumSearchResult) => {
         setChosenAlbum(album);
         console.log('firing tracks')
-        getTracks({ variables: { albumId: album.vendorId  } })
+        getTracks({ variables: { albumId: album.id  } })
     }
 
     return (
@@ -58,12 +58,19 @@ export const SearchQuery =  ({artist, selectArtist, chosenAlbum, selectAlbum}:{a
     const ALBUMS_PER_PAGE = 8;   
     const { loading, error, data  } = useSearchByArtistQuery({ variables: { name:  artist}})
     const [pageNumber,setPageNumber] = useState<number>(1);   
+
+    useEffect(() => {
+        if (data &&  data.search?.artists) {
+          const artist = data.search.artists 
+          selectArtist(artist)
+        }
+    }, [data])
+
     let numberOfPages = 0; 
     if (loading) return <p>Loading...</p> 
     if (error) return <p>Error! </p>
     if (data && data.search?.artists) {
         const artist = data.search.artists 
-        selectArtist(artist)
         numberOfPages = (artist.albums) ? Math.ceil((artist.albums.length/ ALBUMS_PER_PAGE)) : 0; 
         const thumbnail = artist.thumbnail || ''  
         const artistDivStyle = {
@@ -73,15 +80,13 @@ export const SearchQuery =  ({artist, selectArtist, chosenAlbum, selectAlbum}:{a
         return (
             <div>
                 <div id="artist" className="wrapper result" style={artistDivStyle}>
-                    {/* <img id="artist-pic" alt="" src={thumbnail}></img> */}
-                    <div id="artist-title" className="font-title" key={"artist" + artist.vendorId}>{artist.name}</div>
+                    <div id="artist-title" className="font-title" key={"artist" + artist.id}>{artist.name}</div>
                     <div id="albums" className="grid" >
                             {artist.albums?.slice(ALBUMS_PER_PAGE *(pageNumber-1), Math.min(pageNumber *(ALBUMS_PER_PAGE), artist.albums?.length) ).map(album => 
-                            <div onClick={() => selectAlbum(album) } className={"album-result " + ((chosenAlbum === album) ? "selected" : "")   } key={album.vendorId}>
+                            <div onClick={() => selectAlbum(album) } className={"album-result " + ((chosenAlbum === album) ? "selected" : "")   } key={album.id}>
                                 <img alt={album.name} src={album.thumbnail} />
                             </div>
                             )}
-                            {}
                     </div>
                 </div>
                 <ListControlNav setPageNumber={setPageNumber} numberOfPages={numberOfPages}></ListControlNav>

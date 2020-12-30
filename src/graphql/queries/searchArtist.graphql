@@ -2,10 +2,10 @@ query SearchByArtist($name:String){
   search {
     artists(name:$name) {
       name
-      vendorId
+      id
       thumbnail
       albums {
-        vendorId 
+        id 
         name
         year
         thumbnail
