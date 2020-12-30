@@ -1,39 +1,34 @@
-import React, { ChangeEvent, useEffect, useState } from "react"
+import React, { ChangeEvent, Dispatch, SetStateAction, useEffect, useState } from "react"
 import './Search.css'
-import { useSearchByArtistQuery, useGetTracksForAlbumLazyQuery, AlbumSearchResult, ArtistSearchResult } from '../generated/graphql'; 
-import { NewSong } from "../models/music/Song";
+import { useSearchByArtistQuery, AlbumSearchResult, ArtistSearchResult } from '../generated/graphql'; 
 import { ListControlNav } from "./ListControlNav";
 
-export const Search = ({chosenAlbum,setChosenAlbum,setUnrated}:{chosenAlbum:AlbumSearchResult|null, setChosenAlbum:(album:AlbumSearchResult|null) => void, setUnrated:any}) => {
+interface SearchProps {
+    setDraggedAlbum:Dispatch<SetStateAction<AlbumSearchResult|undefined>>
+    chosenAlbum:AlbumSearchResult|undefined
+    setChosenAlbum:(album:AlbumSearchResult|undefined) => void
+    setChosenArtist:Dispatch<SetStateAction<ArtistSearchResult|undefined>>
+    setUnrated:any
+}
 
-  const [artistName, setArtistName] = useState<string|null>(null);   
-  const [chosenArtist, setChosenArtist] = useState<ArtistSearchResult|null>(null); 
-  const [getTracks, tracks ] = useGetTracksForAlbumLazyQuery();  
 
-    useEffect(() => {
-        if (tracks.data?.search?.tracks && chosenAlbum && chosenArtist) {
-            let { albums, ...artistWithoutAlbums } = chosenArtist  
-            const unratedSongs:NewSong[] = tracks.data.search.tracks.map(track =>({ id:track.id, vendorId:track.id, name:track.name, artist:artistWithoutAlbums , album:chosenAlbum, number:track.trackNumber}))
-            setUnrated(unratedSongs)
-        }}, [tracks.data])
 
-    const handleArtist = (evt:ChangeEvent<HTMLInputElement>) => {
+export const Search = (props:SearchProps) => {
+
+  const [artistName, setArtistName] = useState<string|undefined>(undefined);   
+
+  const handleArtist = (evt:ChangeEvent<HTMLInputElement>) => {
         const val = evt.target.value; 
         if (val.length > 2) {
             setArtistName(val);
         }
         if (val.length === 0) {
-            setArtistName(null);
-            setChosenArtist(null);
-            setChosenAlbum(null);
-            setUnrated([])
+            setArtistName(undefined);
+            props.setChosenArtist(undefined);
+            props.setChosenAlbum(undefined);
+            props.setUnrated([])
         }
-    }
-    const showTracks =  (album:AlbumSearchResult) => {
-        setChosenAlbum(album);
-        console.log('firing tracks')
-        getTracks({ variables: { albumId: album.id  } })
-    }
+  }
 
     return (
         <div id="search" className="grid">
@@ -47,24 +42,37 @@ export const Search = ({chosenAlbum,setChosenAlbum,setUnrated}:{chosenAlbum:Albu
                 </div>
                 {
                 artistName && (artistName.length) > 2 && 
-                     <SearchQuery artist={artistName} chosenAlbum={chosenAlbum} selectArtist={setChosenArtist} selectAlbum={showTracks}></SearchQuery>
+                     <SearchQuery artistName={artistName} setDraggedAlbum={props.setDraggedAlbum} chosenAlbum={props.chosenAlbum} setChosenArtist={props.setChosenArtist} setChosenAlbum={props.setChosenAlbum}></SearchQuery>
                 }
             </div> 
         </div>
     )
 }  
 
-export const SearchQuery =  ({artist, selectArtist, chosenAlbum, selectAlbum}:{artist:string,chosenAlbum:AlbumSearchResult|null, selectArtist:(artist:ArtistSearchResult) => void, selectAlbum:(album:AlbumSearchResult)=> void}) => {
+interface SearchQueryProps {
+    setDraggedAlbum:Dispatch<SetStateAction<AlbumSearchResult|undefined>>
+    chosenAlbum:AlbumSearchResult|undefined
+    artistName:string
+    setChosenAlbum:(album:AlbumSearchResult|undefined) => void
+    setChosenArtist:Dispatch<SetStateAction<ArtistSearchResult|undefined>>
+} 
+
+export const SearchQuery =  ({artistName , setChosenArtist, chosenAlbum, setChosenAlbum}:SearchQueryProps) => {
     const ALBUMS_PER_PAGE = 8;   
-    const { loading, error, data  } = useSearchByArtistQuery({ variables: { name:  artist}})
+    const { loading, error, data  } = useSearchByArtistQuery({ variables: { name:  artistName}})
     const [pageNumber,setPageNumber] = useState<number>(1);   
 
     useEffect(() => {
         if (data &&  data.search?.artists) {
           const artist = data.search.artists 
-          selectArtist(artist)
+          setChosenArtist(artist)
         }
     }, [data])
+
+    const handleAlbumDrag = (album:AlbumSearchResult) => {
+        setChosenAlbum(album)
+    }
+
 
     let numberOfPages = 0; 
     if (loading) return <p>Loading...</p> 
@@ -83,7 +91,7 @@ export const SearchQuery =  ({artist, selectArtist, chosenAlbum, selectAlbum}:{a
                     <div id="artist-title" className="font-title" key={"artist" + artist.id}>{artist.name}</div>
                     <div id="albums" className="grid" >
                             {artist.albums?.slice(ALBUMS_PER_PAGE *(pageNumber-1), Math.min(pageNumber *(ALBUMS_PER_PAGE), artist.albums?.length) ).map(album => 
-                            <div onClick={() => selectAlbum(album) } className={"album-result " + ((chosenAlbum === album) ? "selected" : "")   } key={album.id}>
+                            <div onDrag={() => handleAlbumDrag(album)} onClick={() => setChosenAlbum(album) } className={"album-result " + ((chosenAlbum === album) ? "selected" : "")   } key={album.id}>
                                 <img alt={album.name} src={album.thumbnail} />
                             </div>
                             )}

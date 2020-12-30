@@ -7,12 +7,13 @@ import { Item, ItemType } from './models/Item';
 import { RatedItem } from './models/RatedItem';
 import { Scaler } from './functions/scale';
 import { Search } from './components/Search';
-import { AlbumSearchResult, useGetItemsQuery } from './generated/graphql';
+import { AlbumSearchResult, ArtistSearchResult, useGetItemsQuery, useGetTracksForAlbumLazyQuery } from './generated/graphql';
 import { SpotifyPlayer } from './components/SpotifyPlayer';
+import { NewSong } from './models/music/Song';
 
 
 function App() {
-  const UNRATED_ITEMS_PAGE_SIZE = 11
+  const UNRATED_ITEMS_PAGE_SIZE = 15
   const ITEM_TYPE = ItemType.MUSIC
   const rater = {
       position : {
@@ -20,13 +21,28 @@ function App() {
         y: 1000
       }
   }
-  const [unratedItems, updateUnratedItems] = useState([])  
+  const [unratedItems, updateUnratedItems] = useState<Item[]>([])  
   const [ratedItems, setRatedItems] = useState<RatedItem[]>([]) 
   const [, updateDraggedItem] = useState<Item|undefined>(undefined) 
-  const [chosenAlbum, setChosenAlbum] = useState<AlbumSearchResult|null>(null); 
+  const [chosenAlbum, setChosenAlbum] = useState<AlbumSearchResult|undefined>(undefined); 
   const [draggedItemIsAboveRater, updateDraggedItemIsAboveRater] = useState(false)
   const [unratedPageNumber, setUnratedPageNumber] = useState<number>(1) 
+  const [draggedAlbum, setDraggedAlbum] = useState<AlbumSearchResult|undefined>(undefined) 
+  const [getTracks, tracks ] = useGetTracksForAlbumLazyQuery();  
+  const [chosenArtist, setChosenArtist] = useState<ArtistSearchResult|undefined>(undefined); 
   const items =  useGetItemsQuery()
+
+  useEffect(() => {
+    if (chosenAlbum) {
+      getTracks({ variables: { albumId: chosenAlbum.id} })
+    }
+  }, [chosenAlbum])
+  useEffect(() => {
+      if (tracks.data?.search?.tracks && chosenAlbum && chosenArtist) {
+          let { albums, ...artistWithoutAlbums } = chosenArtist  
+          const unratedSongs:NewSong[] = tracks.data.search.tracks.map(track =>({ id:track.id, vendorId:track.id, name:track.name, artist:artistWithoutAlbums , album:chosenAlbum, number:track.trackNumber}))
+          updateUnratedItems(unratedSongs)
+  }}, [tracks.data])
   useEffect(() => {
     if (items.error) {
       console.log(items.error)
@@ -39,6 +55,15 @@ function App() {
   } , [items.data, items.error])
 
   const scaler = new Scaler(rater.position.y);   
+  const handleAlbumDragOver = (e:any) => {
+    e.preventDefault()
+  }
+  const handleAlbumDrop = (e:React.DragEvent<SVGSVGElement>) => {
+    if (draggedAlbum) {
+      setChosenAlbum(draggedAlbum)
+      setDraggedAlbum(undefined)
+    }
+  }
 
   return (
     <div className="App">
@@ -51,10 +76,16 @@ function App() {
           }
         </div>
         <div id="search-wrapper">
-          <Search chosenAlbum={chosenAlbum} setChosenAlbum={setChosenAlbum} setUnrated={updateUnratedItems}></Search>
+          <Search 
+             chosenAlbum={chosenAlbum} 
+             setChosenAlbum={setChosenAlbum} 
+             setChosenArtist={setChosenArtist}
+             setDraggedAlbum={setDraggedAlbum}
+             setUnrated={updateUnratedItems}
+          />
           <SpotifyPlayer albumId={chosenAlbum?.id}></SpotifyPlayer>
         </div>
-        <svg id="trackRater" viewBox="0 0 790 652">
+        <svg onDragOver={(e) => handleAlbumDragOver(e)} onDrop={(e) => handleAlbumDrop(e) } id="trackRater" viewBox="0 0 790 900">
           <Unrated 
                   unratedItems={unratedItems} 
                   ratedItems={ratedItems} 
