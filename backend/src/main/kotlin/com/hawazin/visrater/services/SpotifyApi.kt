@@ -64,7 +64,7 @@ class SpotifyApi(private val configuration: SpotifyConfiguration) {
         val response = makeCall { api().getForObject<SpotifyArtistListResponse>("/search?q={name}&type=artist", name) }
         val artist = response.artists.items[0]
         val albums = getAlbumsForArtist(artist.id)
-        return Artist(vendorId = artist.id, name= artist.name, thumbnail = artist.images[2].url, albums = albums )
+        return Artist(id = artist.id, name= artist.name, thumbnail = artist.images[1].url, albums = albums )
     }
 
     // let's forget about the offset for now
@@ -81,7 +81,7 @@ class SpotifyApi(private val configuration: SpotifyConfiguration) {
         }
 
         return response.items.distinctBy { album -> album.name }
-            .map { Album(vendorId = it.id, name = it.name, thumbnail = it.images[2].url, year = dateParser(it.release_date)) }
+            .map { Album(id = it.id, name = it.name, thumbnail = it.images[2].url, year = dateParser(it.release_date)) }
             .sortedBy { it.year  }
 
     }

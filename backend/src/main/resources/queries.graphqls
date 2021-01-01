@@ -12,20 +12,20 @@ type SearchQuery {
 
 type ArtistSearchResult {
     name:String!
-    vendorId:String!
+    id:String!
     thumbnail:String
     albums:[AlbumSearchResult!]
 }
 type AlbumSearchResult {
-    vendorId:String!
+    id:String!
     name:String!
     thumbnail:String!
     year: Int
 }
 
 type TrackSearchResult {
+    id:String!
     name:String!
     trackNumber:Int!
     discNumber:Int!
-    vendorId:String!
 }
