@@ -7,7 +7,7 @@ import { drag } from 'd3-drag';
 import { event as d3Event } from 'd3'
 import { RatedItem } from "../models/RatedItem";
 import { Scaler } from "../functions/scale";
-import { CreateSongMutationVariables, NewSongInput, Song, useCreateSongMutation } from "../generated/graphql";
+import { NewSongInput, Song, useCreateSongMutation } from "../generated/graphql";
 import { NewSong } from "../models/music/Song";
 
 
@@ -177,7 +177,6 @@ export const Unrated:React.FunctionComponent<Props> = ({unratedItems, raterPosit
     const putSongOnRater = (item:Item, score:number) => {
               const updateUnrated = updateItems[0]; 
               const newUnrated = unratedItems.filter(it => it !==  item );  
-              debugger;
               updateUnrated(newUnrated);  
               switch(itemType) {
                     case ItemType.MUSIC :

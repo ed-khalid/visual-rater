@@ -1,5 +1,26 @@
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Tiers 
+Perfect     [5]
+Masterpiece [4.75]
+Excellent   [4.5] 
+Very Good   [4.25]
+Good        [4]
+Decent      [3.75]
+Ok          [3.5]
+Passable    [3.25]
+Average     [3]
+Meh         [2.75]
+Boring      [2.5]
+Lame        [2.25]
+Poor        [2]
+Weak        [1.75]
+Bad         [1.5]
+Very Bad    [1.25]
+Terrible    [1]
+
+
+
 ## Available Scripts
 
 In the project directory, you can run:

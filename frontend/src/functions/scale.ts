@@ -4,15 +4,39 @@ import { scaleLinear, ScaleLinear } from 'd3-scale';
 
 export class Scaler {
 
-    constructor(domainEnd:number) 
+    private score = {
+        start: 0
+        ,end: 5
+    }     
+    private line  = {
+        start: 5
+        ,end: -1 
+    } 
+
+
+    constructor(yEnd:number) 
     {
-        this.positionToScore = scaleLinear().domain([10, 734]).range([100,0]).clamp(true); 
-        this.scoreToPosition = scaleLinear().domain([100,0]).range([10,734]).clamp(true);
+        this.line.end = yEnd - 5  
+        this.scale = scaleLinear().domain([this.score.start,this.score.end])
+                                            .range([this.line.end,this.line.start])
     }
 
-    private positionToScore:ScaleLinear<number,number>;
-    private scoreToPosition:ScaleLinear<number,number>;
+    public scale:ScaleLinear<number,number>;
 
-    public toScore     = (yPosition:number) => this.positionToScore(yPosition); 
-    public toPosition  = (score:number) =>     this.scoreToPosition(score); 
+    public toScore     = (yPosition:number) => this.scale.invert(yPosition) 
+    public toPosition  = (score:number) => { 
+        const val  = this.scale(score)
+        return val
+    }
+
+      public get yScale () {
+          return this.scale
+      } 
+      public set yScale(newScale:ScaleLinear<number,number>) {
+          this.scale = newScale 
+      }
+      public rescale(newScale:ScaleLinear<number,number>) {
+          this.scale = newScale
+          return this
+      }
 }  

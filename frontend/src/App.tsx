@@ -18,7 +18,7 @@ function App() {
   const rater = {
       position : {
         x: 300,
-        y: 1000
+        y: 905
       }
   }
   const [unratedItems, updateUnratedItems] = useState<Item[]>([])  
@@ -29,6 +29,7 @@ function App() {
   const [unratedPageNumber, setUnratedPageNumber] = useState<number>(1) 
   const [draggedAlbum, setDraggedAlbum] = useState<AlbumSearchResult|undefined>(undefined) 
   const [getTracks, tracks ] = useGetTracksForAlbumLazyQuery();  
+  const [scaler, setScaler] = useState<Scaler>(new Scaler(rater.position.y))
   const [chosenArtist, setChosenArtist] = useState<ArtistSearchResult|undefined>(undefined); 
   const items =  useGetItemsQuery()
 
@@ -54,7 +55,6 @@ function App() {
     }
   } , [items.data, items.error])
 
-  const scaler = new Scaler(rater.position.y);   
   const handleAlbumDragOver = (e:any) => {
     e.preventDefault()
   }
@@ -85,7 +85,7 @@ function App() {
           />
           <SpotifyPlayer albumId={chosenAlbum?.id}></SpotifyPlayer>
         </div>
-        <svg onDragOver={(e) => handleAlbumDragOver(e)} onDrop={(e) => handleAlbumDrop(e) } id="trackRater" viewBox="0 0 790 900">
+        <svg onDragOver={(e) => handleAlbumDragOver(e)} onDrop={(e) => handleAlbumDrop(e) } id="trackRater" viewBox="0 0 790 950">
           <Unrated 
                   unratedItems={unratedItems} 
                   ratedItems={ratedItems} 
@@ -105,6 +105,7 @@ function App() {
                 ratedItems={ratedItems}  
                 updateRatedItems={setRatedItems}
                 scaler={scaler}
+                setScaler={setScaler}
                 itemType={ITEM_TYPE}
           >
           </Rater>
