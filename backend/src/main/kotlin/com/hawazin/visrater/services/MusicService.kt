@@ -10,8 +10,8 @@ import java.util.*
 @Service
 class MusicService(private val songRepo:SongRepository , private val albumRepo: AlbumRepository, private val artistRepo:ArtistRepository) {
 
-    fun readAllSongs() : Iterable<Song> = songRepo.findAll()
-    fun readSong(id:UUID) : Optional<Song> = songRepo.findById(id)
+    fun readArtists() : Iterable<Artist> = artistRepo.findAll()
+    fun readAlbumsForArtist(artist:Artist) : Iterable<Album> = albumRepo.findByArtistId(artist.id)
     fun deleteSongById(id:UUID) : Boolean
     {
         songRepo.deleteById(id)
@@ -49,7 +49,7 @@ class MusicService(private val songRepo:SongRepository , private val albumRepo: 
                 }
             }
         }
-        var song:Song  = spotifySong.let { Song( id =  UUID.randomUUID(),  vendorId = it.vendorId, name = it.name, album = album, artist = artist, score = it.score  ) }
+        var song:Song  = spotifySong.let { Song( id =  UUID.randomUUID(),  vendorId = it.vendorId, name = it.name, album = album, artist = artist, score = it.score, number= it.number, discNumber = it.discNumber   ) }
         songRepo.save(song)
         return song
     }

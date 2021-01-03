@@ -1,10 +1,7 @@
 package com.hawazin.visrater.models.db
 
-import org.hibernate.annotations.DynamicUpdate
 import java.util.*
-import javax.persistence.Entity
-import javax.persistence.Id
-import javax.persistence.ManyToOne
+import javax.persistence.*
 
 
 @Entity
@@ -12,7 +9,8 @@ class Artist(
     @Id var id: UUID,
     var vendorId:String?,
     var name:String,
-    var thumbnail:String?
+    var thumbnail:String?,
+    @OneToMany(mappedBy = "artist", cascade = arrayOf(CascadeType.REMOVE)) var albums:MutableList<Album>? = null
 )
 
 @Entity
@@ -22,16 +20,18 @@ class Album(
     var name:String,
     var thumbnail:String?,
     var year:Int,
-    @ManyToOne var artist:Artist
+    @ManyToOne @JoinColumn(name="artist_id") var artist:Artist,
+    @OneToMany(mappedBy="album", cascade = arrayOf(CascadeType.REMOVE) ) var songs:MutableList<Song>? = null
 )
 
 @Entity
-@DynamicUpdate
 class Song(
     @Id var id:UUID,
     var vendorId:String? = null,
     var name:String? = null,
-    @ManyToOne var album:Album? =null,
-    @ManyToOne var artist:Artist? = null,
+    var number:Int,
+    var discNumber:Int,
+    @ManyToOne @JoinColumn(name="album_id") var album:Album? =null,
+    @ManyToOne @JoinColumn(name="artist_id") var artist:Artist? = null,
     var score:Double
 )

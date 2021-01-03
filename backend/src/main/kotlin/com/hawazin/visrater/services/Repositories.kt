@@ -14,6 +14,7 @@ interface ArtistRepository: CrudRepository<Artist, UUID>   {
 
 interface AlbumRepository: CrudRepository<Album, UUID> {
     fun findByVendorId(vendorId:String): Album?
+    fun findByArtistId(artistId: UUID) : List<Album>
 }
 
 interface SongRepository:CrudRepository<Song,UUID> {

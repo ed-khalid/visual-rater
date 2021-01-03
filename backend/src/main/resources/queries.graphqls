@@ -1,8 +1,7 @@
 
 type Query {
     search: SearchQuery
-    items(type:ItemType): [Item!]
-    song(id:String!) : Song
+    artists: [Artist!]
 }
 
 type SearchQuery {
