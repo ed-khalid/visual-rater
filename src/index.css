@@ -9,10 +9,9 @@ body {
 
 .flex {
   display: flex;
-  flex-direction: column;
 }
-.flex-row {
-  flex-direction:row;
+.flex-column {
+  flex-direction:column;
   display: flex;
 }
 

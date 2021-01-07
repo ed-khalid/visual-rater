@@ -16,26 +16,21 @@
 }
 .App {
   text-align: center;
-  background-color: #282c34;
+  background-color: #e9dfdf;
+  color: #000; 
   min-width: fit-content;
   min-height: 100vh;
-}
-.App-link {
-  color: #61dafb;
 }
 
 header {
   font-size: 10em;
-  color: white; 
 }
 .main {
   position: relative;
-  background-color: #282c34;
   font-size: 16px;
-  color: white;
-  grid-template-columns: 1fr 8fr ;
+  margin: 0 5px;
+  grid-template-columns: 1fr 2fr 3fr;
   grid-template-rows: 20px;
-  height: 100vh;
 }
 div.main.grid div#top-controls div.list-control-nav {
   float: left;
