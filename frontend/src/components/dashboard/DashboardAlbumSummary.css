@@ -1,0 +1,66 @@
+
+
+div.dashboard-album-header {
+    margin: 14px;
+    border-bottom: 1px solid #000;
+    padding-bottom: 3px;
+}
+div.dashboard-album-title-wrapper {
+    margin: auto;
+    text-align:left;
+    font-size: 18px;
+}
+div.dashboard-album-title {
+}
+div.dashboard-album-thumbnail {
+    height: 100px;
+    width: 100px;
+    border: 1px solid #000; 
+}
+div.dashboard-album-thumbnail img {
+    height: 100%;
+    width: 100%;
+}
+
+table {
+    margin: auto;
+    border-collapse: collapse;
+    width: 95%;
+}
+tr td {
+    border-bottom: 1px solid #000;
+}
+tbody tr:last-child td {
+    border-bottom:none;
+}
+td.header-cell {
+    cursor: pointer;
+    background-color: #000;
+    border-left: 1px solid;
+    border-color: #3d3d3d;
+    color: #a79a9a; 
+}
+td.number-cell {
+    width: 5%;
+}
+td.name-cell {
+    width: 70%;
+}
+td.score-cell {
+    width: 25%;
+}
+td.score-cell div.flex input {
+    width: 30px;
+    margin: auto;
+    border: none;
+    outline: none;
+    text-align:center;
+    background: #e9dfdf; 
+}
+
+
+div.dashboard-album-summary {
+    border: 1px solid #3d3d3d;
+    flex-grow: 1;
+    margin-top: 5px;
+}

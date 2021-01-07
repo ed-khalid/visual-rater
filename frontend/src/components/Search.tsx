@@ -34,11 +34,7 @@ export const Search = (props:SearchProps) => {
         <div id="search" className="grid">
             <div id="artist-col">
                 <div id="search-input" className="wrapper">
-                    <div className="flex">
-                        <div id="search-field" className="flex-row">
-                            <input type="text" onChange={handleArtist}></input>
-                        </div> 
-                    </div>
+                        <input type="text" onChange={handleArtist}></input>
                 </div>
                 {
                 artistName && (artistName.length) > 2 && 

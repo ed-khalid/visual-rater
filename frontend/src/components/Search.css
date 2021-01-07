@@ -1,6 +1,6 @@
 div.wrapper {
     margin-left: 10px;
-    border: 1px solid white;
+    border: 1px solid #3d3d3d;
     border-radius: 5px;
     font-size: 10px;
     height: 140px;
@@ -9,16 +9,15 @@ div.wrapper {
 div.title {
     width: 50px;
 }
-input {
-    width: 100%;
+div#search-input input {
+    width: 97%;
     height:134px;
     border: none;
+    background-color:inherit;
     border-color:transparent;
     outline:none;
-    background-color: #282c34;
     font-size:50px;
     font-family: sans-serif;
-    color: white;
 }
 div.result {
     margin-top: 10px;
@@ -60,7 +59,7 @@ div.album-result {
     cursor: pointer;
 }
 div.album-result.selected {
-    border: 1px solid white;
+    border: 1px solid #3d3d3d;
 }
 div.album-result img {
     width: inherit;

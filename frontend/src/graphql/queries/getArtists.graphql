@@ -1,0 +1,19 @@
+
+query getArtists {
+  artists {
+    id
+    vendorId
+    name 
+    thumbnail
+    albums {
+      id
+      name
+      year
+      thumbnail
+      vendorId
+      songs {
+        ...SongFields
+      }
+    }
+  }
+}

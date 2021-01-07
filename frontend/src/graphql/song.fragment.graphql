@@ -1,0 +1,9 @@
+
+fragment SongFields on Song {
+    id
+    vendorId
+    name
+    number
+    discNumber
+    score
+}  

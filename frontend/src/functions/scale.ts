@@ -1,5 +1,6 @@
 
 import { scaleLinear, ScaleLinear } from 'd3-scale';
+import { AppConstants } from '../App';
 
 
 export class Scaler {
@@ -10,33 +11,27 @@ export class Scaler {
     }     
     private line  = {
         start: 5
-        ,end: -1 
+        ,end: AppConstants.rater.position.y 
     } 
-
-
-    constructor(yEnd:number) 
-    {
-        this.line.end = yEnd - 5  
-        this.scale = scaleLinear().domain([this.score.start,this.score.end])
-                                            .range([this.line.end,this.line.start])
+    public scale:ScaleLinear<number,number>;
+    public get yScale() { 
+        return this.scale
+    }
+    public set yScale(newScale:ScaleLinear<number,number>) {
+        this.scale = newScale 
     }
 
-    public scale:ScaleLinear<number,number>;
+    constructor(newScale?:ScaleLinear<number,number>) 
+    {
+        this.scale = newScale || this.createDefaultScale()
+    }
+
+    private createDefaultScale() {
+        return scaleLinear().domain([this.score.start,this.score.end])
+                            .range([this.line.end,this.line.start])
+    }  
 
     public toScore     = (yPosition:number) => this.scale.invert(yPosition) 
-    public toPosition  = (score:number) => { 
-        const val  = this.scale(score)
-        return val
-    }
+    public toPosition  = (score:number) => this.scale(score) 
 
-      public get yScale () {
-          return this.scale
-      } 
-      public set yScale(newScale:ScaleLinear<number,number>) {
-          this.scale = newScale 
-      }
-      public rescale(newScale:ScaleLinear<number,number>) {
-          this.scale = newScale
-          return this
-      }
 }  

@@ -2,25 +2,28 @@ import React, { useEffect, useState } from 'react';
 import './App.css';
 import { Unrated } from './components/Unrated';
 import { ListControlNav } from './components/ListControlNav';
-import { Rater } from './components/Rater';
+import { Rater } from './components/rater/Rater';
 import { Item, ItemType } from './models/Item';
 import { RatedItem } from './models/RatedItem';
 import { Scaler } from './functions/scale';
 import { Search } from './components/Search';
-import { AlbumSearchResult, ArtistSearchResult, useGetItemsQuery, useGetTracksForAlbumLazyQuery } from './generated/graphql';
+import { AlbumSearchResult, Artist, ArtistSearchResult, Song, useGetArtistsQuery , useGetTracksForAlbumLazyQuery } from './generated/graphql';
 import { SpotifyPlayer } from './components/SpotifyPlayer';
 import { NewSong } from './models/music/Song';
+import { Dashboard } from './components/dashboard/Dashboard';
 
-
-function App() {
-  const UNRATED_ITEMS_PAGE_SIZE = 15
-  const ITEM_TYPE = ItemType.MUSIC
-  const rater = {
+export const AppConstants = {
+  rater : {
       position : {
         x: 300,
         y: 905
       }
   }
+}
+
+function App() {
+  const UNRATED_ITEMS_PAGE_SIZE = 15
+  const ITEM_TYPE = ItemType.MUSIC
   const [unratedItems, updateUnratedItems] = useState<Item[]>([])  
   const [ratedItems, setRatedItems] = useState<RatedItem[]>([]) 
   const [, updateDraggedItem] = useState<Item|undefined>(undefined) 
@@ -29,9 +32,10 @@ function App() {
   const [unratedPageNumber, setUnratedPageNumber] = useState<number>(1) 
   const [draggedAlbum, setDraggedAlbum] = useState<AlbumSearchResult|undefined>(undefined) 
   const [getTracks, tracks ] = useGetTracksForAlbumLazyQuery();  
-  const [scaler, setScaler] = useState<Scaler>(new Scaler(rater.position.y))
+  const [scaler, setScaler] = useState<Scaler>(new Scaler())
   const [chosenArtist, setChosenArtist] = useState<ArtistSearchResult|undefined>(undefined); 
-  const items =  useGetItemsQuery()
+  const [artists, setArtists] = useState<Artist[]>([]) 
+  const artistsFull =  useGetArtistsQuery()
 
   useEffect(() => {
     if (chosenAlbum) {
@@ -41,19 +45,35 @@ function App() {
   useEffect(() => {
       if (tracks.data?.search?.tracks && chosenAlbum && chosenArtist) {
           let { albums, ...artistWithoutAlbums } = chosenArtist  
-          const unratedSongs:NewSong[] = tracks.data.search.tracks.map(track =>({ id:track.id, vendorId:track.id, name:track.name, artist:artistWithoutAlbums , album:chosenAlbum, number:track.trackNumber}))
+          let unratedSongs:NewSong[] = tracks.data.search.tracks.map(track =>({ id:track.id, vendorId:track.id, name:track.name, artist:artistWithoutAlbums , album:chosenAlbum, number:track.trackNumber, discNumber: track.discNumber}))
+          unratedSongs = unratedSongs.filter(it => !ratedItems.find(rIt => ((rIt as Song).vendorId === it.id)))
           updateUnratedItems(unratedSongs)
   }}, [tracks.data])
   useEffect(() => {
-    if (items.error) {
-      console.log(items.error)
+    if (artistsFull.error) {
+      console.log(artistsFull.error)
     }
     else  {
-      if (items.data && items.data.items) {
-        setRatedItems(items.data.items.map(it => new RatedItem({ id: it.id, name: it.name },it.score)));
+      if (artistsFull.data && artistsFull.data.artists) {
+        setArtists(artistsFull.data.artists)
+        const songs:Song[] = artistsFull.data.artists.reduce((curr:Song[],it) => {
+          if (it.albums) {
+            it.albums.forEach(album => {
+              if (album && album.songs) {
+                album.songs.forEach(song => {
+                  if (song) {
+                    curr.push( { ...song, artist: it  })
+                  }
+                })
+              }
+            })
+          }
+          return curr
+        },[])
+        setRatedItems(songs.map(it => new RatedItem({ id: it.id, vendorId:it.vendorId, name: it.name },it.score)));
       }
     }
-  } , [items.data, items.error])
+  } , [artistsFull.data, artistsFull.error])
 
   const handleAlbumDragOver = (e:any) => {
     e.preventDefault()
@@ -69,12 +89,13 @@ function App() {
     <div className="App">
       <header className="font-title">VisRater</header>
       <div className="main grid">
-        <div></div> 
+        <div className="empty-cell"></div> 
         <div id="top-controls">
           { unratedItems.length > UNRATED_ITEMS_PAGE_SIZE && 
             <ListControlNav setPageNumber={setUnratedPageNumber} numberOfPages={Math.ceil(unratedItems.length/UNRATED_ITEMS_PAGE_SIZE)}  ></ListControlNav> 
           }
         </div>
+        <div className="empty-cell"></div> 
         <div id="search-wrapper">
           <Search 
              chosenAlbum={chosenAlbum} 
@@ -91,7 +112,6 @@ function App() {
                   ratedItems={ratedItems} 
                   onDrag={updateDraggedItem}
                   onRater={updateDraggedItemIsAboveRater}
-                  raterPosition={rater.position}
                   updateItems={[updateUnratedItems, setRatedItems]} 
                   pageNumber={unratedPageNumber}  
                   pageSize = {UNRATED_ITEMS_PAGE_SIZE}
@@ -101,7 +121,6 @@ function App() {
           </Unrated>
           <Rater 
                 highlight={draggedItemIsAboveRater} 
-                position={rater.position}
                 ratedItems={ratedItems}  
                 updateRatedItems={setRatedItems}
                 scaler={scaler}
@@ -110,6 +129,7 @@ function App() {
           >
           </Rater>
         </svg>
+        <Dashboard artists={artists} />
       </div>
     </div>
   );

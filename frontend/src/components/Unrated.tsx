@@ -7,14 +7,14 @@ import { drag } from 'd3-drag';
 import { event as d3Event } from 'd3'
 import { RatedItem } from "../models/RatedItem";
 import { Scaler } from "../functions/scale";
-import { NewSongInput, Song, useCreateSongMutation } from "../generated/graphql";
+import { GetArtistsDocument, NewSongInput, Song, useCreateSongMutation } from "../generated/graphql";
 import { NewSong } from "../models/music/Song";
+import { AppConstants } from "../App";
 
 
 interface Props {
     unratedItems:Item[];
     ratedItems:RatedItem[];
-    raterPosition:Position
     onDrag:Dispatch<SetStateAction<Item|undefined>>;
     onRater:Dispatch<SetStateAction<boolean>>;
     updateItems:any[];
@@ -24,7 +24,10 @@ interface Props {
     itemType:ItemType;
 }
 
-export const Unrated:React.FunctionComponent<Props> = ({unratedItems, raterPosition,pageSize, pageNumber, ratedItems,onDrag,onRater, updateItems, scaler,itemType}:Props) => {
+export const Unrated:React.FunctionComponent<Props> = ({unratedItems, pageSize, pageNumber, ratedItems,onDrag,onRater, updateItems, scaler,itemType}:Props) => {
+
+
+    const raterPosition = AppConstants.rater.position
 
     const [g,updateG] = useState<SVGElement|null>(null); 
     const [createSong, createSongResult ]  = useCreateSongMutation();
@@ -184,6 +187,8 @@ export const Unrated:React.FunctionComponent<Props> = ({unratedItems, raterPosit
                     const song:NewSongInput = {
                             vendorId: asNewSong.vendorId,
                             score,
+                            number: asNewSong.number,
+                            discNumber: asNewSong.discNumber,
                             name: asNewSong.name,
                             artist:  {
                                 vendorId: asNewSong.artist.id,
@@ -199,9 +204,13 @@ export const Unrated:React.FunctionComponent<Props> = ({unratedItems, raterPosit
                             year: asNewSong.album.year
                         }
                     }
-                    createSong({variables: { song }})
-              }
-    }
+                    createSong(
+                        {
+                            variables: { song }, 
+                            refetchQueries: [{query: GetArtistsDocument }] 
+                        }
+                    )
+    }}
     const wrap = (title:string) : string => {
         if (title.length > 23 ) {
             return title.slice(0,20) + '...'
@@ -212,10 +221,10 @@ export const Unrated:React.FunctionComponent<Props> = ({unratedItems, raterPosit
     return(
         <g ref={node => updateG(node)} >
        {determineItemsToDisplay(unratedItems).map( (it,i) => { 
-            return <g onDoubleClick={()=> putSongOnRater(it, 50) } id={i+''} key={'track'+it.id}>
-                     <rect cursor="move" rx="5" ry="5" stroke="white" fill="#000" fillOpacity="0.0" className="draggable" width="15%" height="50" x="10" y={calculateY(i)} ></rect>
-                     <text id="trackNumber" fontSize="50" fontSizeAdjust="2" cursor="move" textAnchor="middle" fill="#ddd" fillOpacity="0.3" dy=".35em"  x="40" y={calculateY(i)+25}>{(it as Song).number}</text>
-                     <text id="title" fontSize="8" fontSizeAdjust="2" cursor="move" textAnchor="middle" fill="white" dy=".35em"  x="70" y={calculateY(i)+25}>{wrap(it.name)}</text>
+            return <g onDoubleClick={()=> putSongOnRater(it, 3) } id={i+''} key={'track'+it.id}>
+                     <rect cursor="move" rx="5" ry="5" stroke="#3d3d3d" fill="#000" fillOpacity="0.0" className="draggable" width="15%" height="50" x="10" y={calculateY(i)} ></rect>
+                     <text id="trackNumber" fontSize="50" fontSizeAdjust="2" cursor="move" textAnchor="middle" fill="#3d3d3d" fillOpacity="0.3" dy=".35em"  x="40" y={calculateY(i)+25}>{(it as Song).number}</text>
+                     <text id="title" fontSize="8" fontSizeAdjust="2" cursor="move" textAnchor="middle" fill="#3d3d3d" dy=".35em"  x="70" y={calculateY(i)+25}>{wrap(it.name)}</text>
                    </g>
         })}
     </g>

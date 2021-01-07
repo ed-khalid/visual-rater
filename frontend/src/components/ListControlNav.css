@@ -4,15 +4,15 @@ div.list-control {
 div.list-control-nav svg {
     cursor: pointer;
     margin: 2px;
-    color: grey; 
+    color:  #ddd;
 }
 div.list-control-nav svg:hover {
     cursor: pointer;
-    color: white; 
+    color: #000;
     transition: 0.3s ease-in-out;
 }
 div.list-control-nav svg.selected {
     cursor: pointer;
-    color: white; 
+    color: #000; 
     transition: 0.3s ease-in-out;
 }

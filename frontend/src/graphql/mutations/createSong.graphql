@@ -1,7 +1,5 @@
 mutation CreateSong($song:NewSongInput){
   CreateSong(song:$song) {
-      id 
-      name
-      score
+    ...SongFields
   }
 }
