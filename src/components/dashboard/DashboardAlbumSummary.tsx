@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Album, Song, SongInput, useUpdateSongMutation } from "../../generated/graphql";
-import * as colorthief  from 'colorthief';
 import './DashboardAlbumSummary.css'
-
 
 interface Props {
     album:Album;
@@ -11,8 +9,6 @@ interface Props {
 
 
 export const DashboardAlbumSummary =  ({artistName, album}:Props) => {
-
-    colorthief.getColor()
 
     enum SORT_TYPE { NUMBER, NAME, SCORE}    
     enum SORT_DIRECTION {  ASC, DESC }    
@@ -61,9 +57,14 @@ export const DashboardAlbumSummary =  ({artistName, album}:Props) => {
         setSongs(sortedSongs)
     }
     const updateScore = (newValue:string, _song:Song) => {
-        console.log(_song)
+        const score = Number(newValue)
+        if (Number.isNaN(score)) {
+            console.log('not a number')
+            return;
+        }
+        
         const song:SongInput = {
-            score: Number(newValue)
+            score 
             ,id: _song.id
         }
         updateSong({ variables: { song }})
@@ -101,7 +102,7 @@ export const DashboardAlbumSummary =  ({artistName, album}:Props) => {
                     <td className="name-cell">{song.name}</td>
                     <td className="score-cell">
                         <div className="flex">
-                          <input type="number" value={song.score} onChange={(e)=> updateScore(e.target.value, song)  }/>
+                          <input type="text" value={song.score.toFixed(2)} onChange={(e)=> updateScore(e.target.value, song)  }/>
                         </div>
                     </td>
                 </tr>)}
