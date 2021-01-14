@@ -50,7 +50,7 @@ td.score-cell {
     width: 25%;
 }
 td.score-cell div.flex input {
-    width: 30px;
+    width: 40px;
     margin: auto;
     border: none;
     outline: none;
