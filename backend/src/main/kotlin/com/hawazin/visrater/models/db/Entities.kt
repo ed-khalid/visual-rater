@@ -21,7 +21,9 @@ class Album(
     var thumbnail:String?,
     var year:Int,
     @ManyToOne @JoinColumn(name="artist_id") var artist:Artist,
-    @OneToMany(mappedBy="album", cascade = arrayOf(CascadeType.REMOVE) ) var songs:MutableList<Song>? = null
+    @OneToMany(mappedBy="album", cascade = arrayOf(CascadeType.REMOVE) )
+    @OrderBy("number ASC")
+    var songs:MutableList<Song>? = null
 )
 
 @Entity

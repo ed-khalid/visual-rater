@@ -22,7 +22,7 @@ data class SpotifyAuthToken(@JsonProperty("access_token") val accessToken:String
 
 
 @Service
-class SpotifyApi(private val configuration: SpotifyConfiguration) {
+class SpotifyApi(private val configuration: SpotifyConfiguration, val imageService: ImageService ) {
 
     private var token:SpotifyAuthToken? = null
     private val accountsTemplate: RestTemplate = RestTemplateBuilder()
@@ -79,8 +79,16 @@ class SpotifyApi(private val configuration: SpotifyConfiguration) {
             val dateArr =  date.split("-")
             return dateArr[0].toInt()
         }
+        var imageUrls = response.items.map {
+            ImageSimilarityRequest(
+                id = it.id,
+                imageUrl = it.images[2].url
+            )
+        }.toTypedArray()
+        val similarityArray = imageService.groupSimilarAlbums(imageUrls)
+        val albums = imageService.removeDuplicates(similarityArray, response.items)
 
-        return response.items.distinctBy { album -> album.name }
+        return albums.distinctBy { album -> album.name }
             .map { Album(id = it.id, name = it.name, thumbnail = it.images[2].url, year = dateParser(it.release_date)) }
             .sortedBy { it.year  }
 

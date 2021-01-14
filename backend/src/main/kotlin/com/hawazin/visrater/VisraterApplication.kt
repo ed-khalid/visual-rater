@@ -1,5 +1,6 @@
 package com.hawazin.visrater
 
+import com.hawazin.visrater.configurations.ImageServiceConfiguration
 import com.hawazin.visrater.configurations.SpotifyConfiguration
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.context.properties.EnableConfigurationProperties
@@ -7,7 +8,7 @@ import org.springframework.boot.runApplication
 
 
 @SpringBootApplication
-@EnableConfigurationProperties(SpotifyConfiguration::class)
+@EnableConfigurationProperties(SpotifyConfiguration::class,ImageServiceConfiguration::class)
 class VisraterApplication {
 
     companion object {

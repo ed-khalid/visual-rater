@@ -14,8 +14,8 @@ type Song implements Item {
     score:Float!
     name: String!
     artist:Artist!
-    number:Int
-    discNumber:Int
+    number:Int!
+    discNumber:Int!
     album:Album
 }
 
@@ -25,7 +25,7 @@ type Album {
     name: String!
     year: Int
     thumbnail: String
-    songs:[Song]
+    songs:[Song!]!
 }
 type Artist {
     id: String!
