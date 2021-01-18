@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { Dispatch, SetStateAction, useEffect, useState } from "react"
 import './Dashboard.css'
 import { Album, Artist, Maybe } from "../../generated/graphql"
 import { DashboardArtist } from "./ArtistDashboard"
@@ -6,32 +6,30 @@ import { DashboardAlbumSummary } from "./DashboardAlbumSummary"
 
 interface Props {
     artists:Artist[]
+    openAlbumInSearch: Dispatch<SetStateAction<{album:Album,artist:Artist}|undefined>>
 }
 
+export const Dashboard = ({artists, openAlbumInSearch}:Props) => {
 
-export const Dashboard = ({artists}:Props) => {
-
-    const [chosenAlbum,setChosenAlbum] = useState<Album>()
-    const [chosenArtist,setChosenArtist] = useState<Artist>()
+    const [dashboardAlbum,setDashboardAlbum] = useState<Album>()
+    const [dashboardArtist,setDashboardArtist] = useState<Artist>()
 
     useEffect(() => {
-        console.log('artists changed', artists)
-        const hasChosenAlbum = (it:Maybe<Album>) => it?.id === chosenAlbum?.id    
+        const hasChosenAlbum = (it:Maybe<Album>) => it?.id === dashboardAlbum?.id    
         const chosenAlbumUpdated = artists.find(it => it.albums?.find(hasChosenAlbum))?.albums?.find(hasChosenAlbum)
         if (chosenAlbumUpdated) {
-            setChosenAlbum(chosenAlbumUpdated)
+            setDashboardAlbum(chosenAlbumUpdated)
         }
-    }, [artists])
+    }, [artists, dashboardAlbum])
 
     const setAlbum =  (album:Album, artist:Artist) => {
-        setChosenAlbum(album)
-        setChosenArtist(artist)
+        setDashboardAlbum(album)
+        setDashboardArtist(artist)
     } 
-
 
     return <div id="dashboard" className="flex-column">
         {artists.map(artist =>  <DashboardArtist key={artist.id} onAlbumSelect={setAlbum} artist={artist} />)}
-        {chosenAlbum && <DashboardAlbumSummary artistName={chosenArtist?.name} album={chosenAlbum} />}
+        {dashboardArtist && dashboardAlbum && <DashboardAlbumSummary openAlbumInSearch={() => openAlbumInSearch({album:dashboardAlbum,artist:dashboardArtist})} artistName={dashboardArtist.name} album={dashboardAlbum} />}
     </div>
 
 }

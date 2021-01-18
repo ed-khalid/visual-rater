@@ -1,6 +1,6 @@
-query SearchByArtist($name:String){
+query GetSearchArtistById($vendorId:String){
   search {
-    artist(name:$name) {
+    artist(vendorId:$vendorId) {
       name
       id
       thumbnail

@@ -1,24 +1,23 @@
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useState } from "react";
 import { Album, Song, SongInput, useUpdateSongMutation } from "../../generated/graphql";
+import { faEye } from '@fortawesome/free-solid-svg-icons';
 import './DashboardAlbumSummary.css'
 
 interface Props {
     album:Album;
     artistName:string|undefined;
+    openAlbumInSearch:() => void;
 }
 
 
-export const DashboardAlbumSummary =  ({artistName, album}:Props) => {
+export const DashboardAlbumSummary =  ({artistName, album, openAlbumInSearch }:Props) => {
 
     enum SORT_TYPE { NUMBER, NAME, SCORE}    
     enum SORT_DIRECTION {  ASC, DESC }    
 
     const [updateSong] = useUpdateSongMutation()
-
-    useEffect(() => {
-        setSongs(album.songs)
-    }, [album])
-
+    const [albumRating, setAlbumRating] = useState<number>(0);
     const [songs, setSongs] = useState<Song[]>(album.songs)    
     const [sortDirections, setSortDirections] = useState<{[key:string]:SORT_DIRECTION}>({
         "name": SORT_DIRECTION.ASC,
@@ -26,11 +25,28 @@ export const DashboardAlbumSummary =  ({artistName, album}:Props) => {
         "score": SORT_DIRECTION.ASC,
     })    
 
+    useEffect(() => {
+        setSongs(album.songs)
+    }, [album])
+
+    useEffect(() => {
+        calculateAlbumRating(songs)
+    }, [songs])
+
+    const calculateAlbumRating =  (songs:Song[]) => {
+        const scores = songs.reduce((curr,it) => curr + it.score, 0)
+        setAlbumRating(scores/songs.length)
+    }
+
+
+
     const sortBy = (sortType:SORT_TYPE ) => {
 
         const sortedSongs = [...songs] 
+        const sortDir = sortDirections[sortType.toString().toLowerCase()]
+        sortDirections[sortType.toString().toLowerCase()] = (sortDir === SORT_DIRECTION.ASC) ? SORT_DIRECTION.DESC : SORT_DIRECTION.ASC   
+        setSortDirections({...sortDirections})
         const sort = (a:any, b:any, prop:string):number => {
-            const sortDir = sortDirections[prop]
             let retv:number = 2;  
             if (a[prop] === b[prop]) {
                 retv = 0;
@@ -40,8 +56,6 @@ export const DashboardAlbumSummary =  ({artistName, album}:Props) => {
             } else {
                 retv = (sortDir === SORT_DIRECTION.ASC) ? -1: 1  
             }
-            sortDirections[prop] = (sortDir === SORT_DIRECTION.ASC) ? SORT_DIRECTION.DESC : SORT_DIRECTION.ASC   
-            setSortDirections({...sortDirections})
             return retv
         } 
 
@@ -56,8 +70,7 @@ export const DashboardAlbumSummary =  ({artistName, album}:Props) => {
         }
         setSongs(sortedSongs)
     }
-    const updateScore = (newValue:string, _song:Song) => {
-        const score = Number(newValue)
+    const updateScore = (score:number, _song:Song) => {
         if (Number.isNaN(score)) {
             console.log('not a number')
             return;
@@ -70,11 +83,14 @@ export const DashboardAlbumSummary =  ({artistName, album}:Props) => {
         updateSong({ variables: { song }})
     }
 
-    return <div className="dashboard-album-summary">
+    return <div className="dashboard-album-summary flex-column">
         <div className="dashboard-album-header flex">
           <div className="dashboard-album-thumbnail">
               <img src={album.thumbnail || undefined} alt={album.name}/>
           </div>
+          {!album.isComplete && <div id="dashboard-search">
+              <FontAwesomeIcon onClick={openAlbumInSearch} icon={faEye} ></FontAwesomeIcon> 
+          </div>}
           <div className="dashboard-album-title-wrapper">
               <div>
                   {artistName}
@@ -101,12 +117,21 @@ export const DashboardAlbumSummary =  ({artistName, album}:Props) => {
                     <td className="number-cell">{song.number}</td>
                     <td className="name-cell">{song.name}</td>
                     <td className="score-cell">
-                        <div className="flex">
-                          <input type="text" value={song.score.toFixed(2)} onChange={(e)=> updateScore(e.target.value, song)  }/>
+                        <div>
+                          <input type="text" value={song.score.toFixed(2)} onChange={(e)=> updateScore(Number(e.target.value), song)  }/>
+                          <div id="score-shortcut-wrapper" className="flex">
+                              <div className="score-shortcut plus-minus" onClick={() => updateScore(song.score - 0.25, song) }>-</div>
+                              {[1,2,3,4,5].map(it => <div className="score-shortcut" key={"score-"+it} onClick={() => updateScore(it, song)}>{it}</div> )}
+                              <div className="score-shortcut plus-minus" onClick={() => updateScore(song.score + 0.25, song) }>+</div>
+                          </div>
                         </div>
                     </td>
                 </tr>)}
             </tbody>
         </table>
+        <div id="album-rating" className="flex">
+            <div id="album-rating-title" className="font-title">Score</div>
+            <div id ="album-score">{albumRating}</div>
+        </div>
     </div>
 }

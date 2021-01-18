@@ -10,7 +10,10 @@ div.dashboard-album-title-wrapper {
     text-align:left;
     font-size: 18px;
 }
-div.dashboard-album-title {
+
+div#dashboard-search {
+    font-size: 83px;
+    cursor: pointer;
 }
 div.dashboard-album-thumbnail {
     height: 100px;
@@ -23,9 +26,10 @@ div.dashboard-album-thumbnail img {
 }
 
 table {
-    margin: auto;
+    margin: 0 auto;
     border-collapse: collapse;
     width: 95%;
+    flex-grow: 1;
 }
 tr td {
     border-bottom: 1px solid #000;
@@ -49,7 +53,7 @@ td.name-cell {
 td.score-cell {
     width: 25%;
 }
-td.score-cell div.flex input {
+td.score-cell div input {
     width: 40px;
     margin: auto;
     border: none;
@@ -57,10 +61,32 @@ td.score-cell div.flex input {
     text-align:center;
     background: #e9dfdf; 
 }
+div#score-shortcut-wrapper {
+    display:flex;
+    justify-content: center;
+}
+div.score-shortcut {
+    cursor: pointer;
+    background: #000;
+    color: #fff;
+    border-radius:24px;
+    margin: 1px;
+    font-size: 8px;
+    width: 10px;
+    height:10px;
+}
+div.score-shortcut.plus-minus {
+    background: rgb(246, 171, 157);
+}
 
 
 div.dashboard-album-summary {
     border: 1px solid #3d3d3d;
     flex-grow: 1;
     margin-top: 5px;
+}
+
+div#album-rating {
+    margin: 5px;
+    border: 1px solid #3d3d3d;
 }
