@@ -60,6 +60,12 @@ class SpotifyApi(private val configuration: SpotifyConfiguration, val imageServi
         return accountsTemplate.postForObject<SpotifyAuthToken>("/api/token", request, SpotifyAuthToken::class.java)
     }
 
+    fun getArtistById(id:String): Artist {
+        val artist = makeCall { api().getForObject<SpotifyArtist>("/artists/{id}", id) }
+        val albums = getAlbumsForArtist(artist.id)
+        return Artist(id = artist.id, name = artist.name, thumbnail = artist.images[1].url, albums = albums)
+    }
+
     fun searchArtist(name:String) :Artist {
         val response = makeCall { api().getForObject<SpotifyArtistListResponse>("/search?q={name}&type=artist", name) }
         val artist = response.artists.items[0]
@@ -95,7 +101,7 @@ class SpotifyApi(private val configuration: SpotifyConfiguration, val imageServi
     }
 
     fun getTracksForAlbum(albumId:String) : List<Track> {
-        val response = makeCall { api().getForObject<SpotifyTrackList>("/albums/{albumId}/tracks", albumId) }
+        val response = makeCall { api().getForObject<SpotifyTrackList>("/albums/{albumId}/tracks&limit=50", albumId) }
         return response.items
     }
 }

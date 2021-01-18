@@ -3,7 +3,9 @@ package com.hawazin.visrater.services
 import com.hawazin.visrater.graphql.models.NewSongInput
 import com.hawazin.visrater.graphql.models.SongInput
 import com.hawazin.visrater.models.db.*
+import org.hibernate.annotations.NotFound
 import org.springframework.stereotype.Service
+import org.springframework.web.client.HttpClientErrorException
 import java.util.*
 
 
@@ -26,6 +28,18 @@ class MusicService(private val songRepo:SongRepository , private val albumRepo: 
         return song
     }
 
+    fun toggleAlbumCompleteness(albumId:String, isComplete: Boolean ) : Album?
+    {
+        var albumOptional = albumRepo.findById(UUID.fromString(albumId));
+        if (albumOptional.isPresent) {
+            val album = albumOptional.get()
+            album.isComplete = isComplete
+            albumRepo.save(album)
+            return album
+        }
+        return null
+    }
+
     fun createSong(spotifySong:NewSongInput) : Song
     {
         var album:Album? = null ;
@@ -39,7 +53,7 @@ class MusicService(private val songRepo:SongRepository , private val albumRepo: 
             }
         }
         if (spotifySong.album != null) {
-            album = spotifySong.album.let  { Album(id = UUID.randomUUID(), vendorId =  it.vendorId, name = it.name, year= it.year, artist = artist, thumbnail = it.thumbnail) }
+            album = spotifySong.album.let  { Album(id = UUID.randomUUID(), vendorId =  it.vendorId, isComplete=false, name = it.name, year= it.year, artist = artist, thumbnail = it.thumbnail) }
             if (album.vendorId != null) {
                 val existingAlbum = albumRepo.findByVendorId(album.vendorId!!)
                 if (existingAlbum != null) {

@@ -26,6 +26,11 @@ class SchemaBuilder(private val spotifyService: SpotifyApi, private val musicSer
                     val songInput = objectMapper.convertValue(raw, SongInput::class.java)
                     return@dataFetcher musicService.updateSong(songInput)
                 }
+                it.dataFetcher("UpdateAlbum") { env ->
+                    val albumId = env.arguments["albumId"] as String
+                    val isComplete = env.arguments["isComplete"] as Boolean
+                    return@dataFetcher musicService.toggleAlbumCompleteness(albumId,isComplete)
+                }
                 it.dataFetcher("CreateSong") { env ->
                     val raw = env.arguments["song"]
                     val songInput = objectMapper.convertValue(raw, NewSongInput::class.java)
@@ -65,8 +70,17 @@ class SchemaBuilder(private val spotifyService: SpotifyApi, private val musicSer
             }
             .type("SearchQuery")
             {
-                it.dataFetcher("artists") { env ->
-                    spotifyService.searchArtist(env.arguments["name"] as String)
+                it.dataFetcher("artist") { env ->
+                    val name = env.arguments["name"] as String?
+                    if (name != null ) {
+                        return@dataFetcher spotifyService.searchArtist(env.arguments["name"] as String)
+                    }
+                    val id = env.arguments["vendorId"] as String?
+                    if (id != null) {
+                        return@dataFetcher spotifyService.getArtistById(id)
+                    } else {
+                        throw IllegalArgumentException("Needs at least one argument")
+                    }
                 }
                 it.dataFetcher("tracks") { env ->
                     spotifyService.getTracksForAlbum(env.arguments["albumId"] as String)

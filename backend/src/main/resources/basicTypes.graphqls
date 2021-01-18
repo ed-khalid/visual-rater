@@ -23,6 +23,7 @@ type Album {
     id: String!
     vendorId:String
     name: String!
+    isComplete:Boolean
     year: Int
     thumbnail: String
     songs:[Song!]!

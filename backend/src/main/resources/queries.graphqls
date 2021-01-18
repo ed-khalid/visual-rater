@@ -5,7 +5,7 @@ type Query {
 }
 
 type SearchQuery {
-    artists(name:String) : ArtistSearchResult!
+    artist(name:String, vendorId:String) : ArtistSearchResult!
     tracks(albumId:String!): [TrackSearchResult!]!
 }
 

@@ -2,6 +2,7 @@ type Mutation {
     CreateSong(song:NewSongInput) : Song
     UpdateSong(song:SongInput) : Song
     DeleteSong(songId:String!) : Boolean
+    UpdateAlbum(albumId:String, isComplete:Boolean): Album
 }
 
 input SongInput {

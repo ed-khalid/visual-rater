@@ -19,6 +19,7 @@ class Album(
     var vendorId:String?,
     var name:String,
     var thumbnail:String?,
+    var isComplete:Boolean,
     var year:Int,
     @ManyToOne @JoinColumn(name="artist_id") var artist:Artist,
     @OneToMany(mappedBy="album", cascade = arrayOf(CascadeType.REMOVE) )
