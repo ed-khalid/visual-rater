@@ -101,7 +101,7 @@ class SpotifyApi(private val configuration: SpotifyConfiguration, val imageServi
     }
 
     fun getTracksForAlbum(albumId:String) : List<Track> {
-        val response = makeCall { api().getForObject<SpotifyTrackList>("/albums/{albumId}/tracks&limit=50", albumId) }
+        val response = makeCall { api().getForObject<SpotifyTrackList>("/albums/{albumId}/tracks?limit=50", albumId) }
         return response.items
     }
 }
