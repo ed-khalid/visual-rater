@@ -1,0 +1,10 @@
+
+div#search-input input {
+    width: 97%;
+    height:134px;
+    border: none;
+    background-color:inherit;
+    outline:none;
+    font-size:50px;
+    font-family: sans-serif;
+}

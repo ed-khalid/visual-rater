@@ -19,6 +19,7 @@ export type Album = {
   id: Scalars['String'];
   vendorId?: Maybe<Scalars['String']>;
   name: Scalars['String'];
+  isComplete?: Maybe<Scalars['Boolean']>;
   year?: Maybe<Scalars['Int']>;
   thumbnail?: Maybe<Scalars['String']>;
   songs: Array<Song>;
@@ -77,6 +78,7 @@ export type Mutation = {
   CreateSong?: Maybe<Song>;
   UpdateSong?: Maybe<Song>;
   DeleteSong?: Maybe<Scalars['Boolean']>;
+  UpdateAlbum?: Maybe<Album>;
 };
 
 
@@ -92,6 +94,12 @@ export type MutationUpdateSongArgs = {
 
 export type MutationDeleteSongArgs = {
   songId: Scalars['String'];
+};
+
+
+export type MutationUpdateAlbumArgs = {
+  albumId?: Maybe<Scalars['String']>;
+  isComplete?: Maybe<Scalars['Boolean']>;
 };
 
 export type NewSongInput = {
@@ -112,13 +120,14 @@ export type Query = {
 
 export type SearchQuery = {
   __typename?: 'SearchQuery';
-  artists: ArtistSearchResult;
+  artist: ArtistSearchResult;
   tracks: Array<TrackSearchResult>;
 };
 
 
-export type SearchQueryArtistsArgs = {
+export type SearchQueryArtistArgs = {
   name?: Maybe<Scalars['String']>;
+  vendorId?: Maybe<Scalars['String']>;
 };
 
 
@@ -174,6 +183,20 @@ export type DeleteSongMutation = (
   & Pick<Mutation, 'DeleteSong'>
 );
 
+export type UpdateAlbumMutationVariables = Exact<{
+  albumId: Scalars['String'];
+  isComplete: Scalars['Boolean'];
+}>;
+
+
+export type UpdateAlbumMutation = (
+  { __typename?: 'Mutation' }
+  & { UpdateAlbum?: Maybe<(
+    { __typename?: 'Album' }
+    & Pick<Album, 'id' | 'isComplete'>
+  )> }
+);
+
 export type UpdateSongMutationVariables = Exact<{
   song?: Maybe<SongInput>;
 }>;
@@ -206,6 +229,26 @@ export type GetArtistsQuery = (
   )>> }
 );
 
+export type GetSearchArtistByIdQueryVariables = Exact<{
+  vendorId?: Maybe<Scalars['String']>;
+}>;
+
+
+export type GetSearchArtistByIdQuery = (
+  { __typename?: 'Query' }
+  & { search?: Maybe<(
+    { __typename?: 'SearchQuery' }
+    & { artist: (
+      { __typename?: 'ArtistSearchResult' }
+      & Pick<ArtistSearchResult, 'name' | 'id' | 'thumbnail'>
+      & { albums?: Maybe<Array<(
+        { __typename?: 'AlbumSearchResult' }
+        & Pick<AlbumSearchResult, 'id' | 'name' | 'year' | 'thumbnail'>
+      )>> }
+    ) }
+  )> }
+);
+
 export type GetTracksForAlbumQueryVariables = Exact<{
   albumId: Scalars['String'];
 }>;
@@ -231,7 +274,7 @@ export type SearchByArtistQuery = (
   { __typename?: 'Query' }
   & { search?: Maybe<(
     { __typename?: 'SearchQuery' }
-    & { artists: (
+    & { artist: (
       { __typename?: 'ArtistSearchResult' }
       & Pick<ArtistSearchResult, 'name' | 'id' | 'thumbnail'>
       & { albums?: Maybe<Array<(
@@ -319,6 +362,40 @@ export function useDeleteSongMutation(baseOptions?: ApolloReactHooks.MutationHoo
 export type DeleteSongMutationHookResult = ReturnType<typeof useDeleteSongMutation>;
 export type DeleteSongMutationResult = ApolloReactCommon.MutationResult<DeleteSongMutation>;
 export type DeleteSongMutationOptions = ApolloReactCommon.BaseMutationOptions<DeleteSongMutation, DeleteSongMutationVariables>;
+export const UpdateAlbumDocument = gql`
+    mutation UpdateAlbum($albumId: String!, $isComplete: Boolean!) {
+  UpdateAlbum(albumId: $albumId, isComplete: $isComplete) {
+    id
+    isComplete
+  }
+}
+    `;
+export type UpdateAlbumMutationFn = ApolloReactCommon.MutationFunction<UpdateAlbumMutation, UpdateAlbumMutationVariables>;
+
+/**
+ * __useUpdateAlbumMutation__
+ *
+ * To run a mutation, you first call `useUpdateAlbumMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateAlbumMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateAlbumMutation, { data, loading, error }] = useUpdateAlbumMutation({
+ *   variables: {
+ *      albumId: // value for 'albumId'
+ *      isComplete: // value for 'isComplete'
+ *   },
+ * });
+ */
+export function useUpdateAlbumMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<UpdateAlbumMutation, UpdateAlbumMutationVariables>) {
+        return ApolloReactHooks.useMutation<UpdateAlbumMutation, UpdateAlbumMutationVariables>(UpdateAlbumDocument, baseOptions);
+      }
+export type UpdateAlbumMutationHookResult = ReturnType<typeof useUpdateAlbumMutation>;
+export type UpdateAlbumMutationResult = ApolloReactCommon.MutationResult<UpdateAlbumMutation>;
+export type UpdateAlbumMutationOptions = ApolloReactCommon.BaseMutationOptions<UpdateAlbumMutation, UpdateAlbumMutationVariables>;
 export const UpdateSongDocument = gql`
     mutation UpdateSong($song: SongInput) {
   UpdateSong(song: $song) {
@@ -396,6 +473,49 @@ export function useGetArtistsLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryH
 export type GetArtistsQueryHookResult = ReturnType<typeof useGetArtistsQuery>;
 export type GetArtistsLazyQueryHookResult = ReturnType<typeof useGetArtistsLazyQuery>;
 export type GetArtistsQueryResult = ApolloReactCommon.QueryResult<GetArtistsQuery, GetArtistsQueryVariables>;
+export const GetSearchArtistByIdDocument = gql`
+    query GetSearchArtistById($vendorId: String) {
+  search {
+    artist(vendorId: $vendorId) {
+      name
+      id
+      thumbnail
+      albums {
+        id
+        name
+        year
+        thumbnail
+      }
+    }
+  }
+}
+    `;
+
+/**
+ * __useGetSearchArtistByIdQuery__
+ *
+ * To run a query within a React component, call `useGetSearchArtistByIdQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetSearchArtistByIdQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetSearchArtistByIdQuery({
+ *   variables: {
+ *      vendorId: // value for 'vendorId'
+ *   },
+ * });
+ */
+export function useGetSearchArtistByIdQuery(baseOptions?: ApolloReactHooks.QueryHookOptions<GetSearchArtistByIdQuery, GetSearchArtistByIdQueryVariables>) {
+        return ApolloReactHooks.useQuery<GetSearchArtistByIdQuery, GetSearchArtistByIdQueryVariables>(GetSearchArtistByIdDocument, baseOptions);
+      }
+export function useGetSearchArtistByIdLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetSearchArtistByIdQuery, GetSearchArtistByIdQueryVariables>) {
+          return ApolloReactHooks.useLazyQuery<GetSearchArtistByIdQuery, GetSearchArtistByIdQueryVariables>(GetSearchArtistByIdDocument, baseOptions);
+        }
+export type GetSearchArtistByIdQueryHookResult = ReturnType<typeof useGetSearchArtistByIdQuery>;
+export type GetSearchArtistByIdLazyQueryHookResult = ReturnType<typeof useGetSearchArtistByIdLazyQuery>;
+export type GetSearchArtistByIdQueryResult = ApolloReactCommon.QueryResult<GetSearchArtistByIdQuery, GetSearchArtistByIdQueryVariables>;
 export const GetTracksForAlbumDocument = gql`
     query GetTracksForAlbum($albumId: String!) {
   search {
@@ -437,7 +557,7 @@ export type GetTracksForAlbumQueryResult = ApolloReactCommon.QueryResult<GetTrac
 export const SearchByArtistDocument = gql`
     query SearchByArtist($name: String) {
   search {
-    artists(name: $name) {
+    artist(name: $name) {
       name
       id
       thumbnail
