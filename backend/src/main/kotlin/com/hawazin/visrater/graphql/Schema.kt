@@ -43,10 +43,15 @@ class SchemaBuilder(private val spotifyService: SpotifyApi, private val musicSer
             }
             .type("Query")
             {
-                it.dataFetcher("search") { _ ->
-                    {}
+                it.dataFetcher("search") { env ->
+                    data class ReturnValue(val id: String)
+                    var id = env.selectionSet.arguments["artist"]?.get("name") as String?
+                    if (id == null) {
+                       id = env.variables?.get("albumId") as String?
+                    }
+                    return@dataFetcher ReturnValue(id = id!!.toLowerCase())
                 }
-                it.dataFetcher("artists") { env ->
+                it.dataFetcher("artists") { _ ->
                     val artists = musicService.readArtists()
                     return@dataFetcher artists
                 }
@@ -71,13 +76,13 @@ class SchemaBuilder(private val spotifyService: SpotifyApi, private val musicSer
             .type("SearchQuery")
             {
                 it.dataFetcher("artist") { env ->
-                    val name = env.arguments["name"] as String?
-                    if (name != null ) {
-                        return@dataFetcher spotifyService.searchArtist(env.arguments["name"] as String)
-                    }
                     val id = env.arguments["vendorId"] as String?
                     if (id != null) {
                         return@dataFetcher spotifyService.getArtistById(id)
+                    }
+                    val name = env.arguments["name"] as String?
+                    if (name != null ) {
+                        return@dataFetcher spotifyService.searchArtist(name.toLowerCase())
                     } else {
                         throw IllegalArgumentException("Needs at least one argument")
                     }
