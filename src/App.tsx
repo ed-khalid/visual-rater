@@ -7,7 +7,6 @@ import { Item, ItemType } from './models/Item';
 import { RatedItem } from './models/RatedItem';
 import { Scaler } from './functions/scale';
 import { Album, Artist, Song, useGetArtistsQuery , useGetTracksForAlbumLazyQuery } from './generated/graphql';
-import { SpotifyPlayer } from './components/SpotifyPlayer';
 import { NewSong } from './models/music/Song';
 import { Dashboard } from './components/dashboard/Dashboard';
 import { Search, SearchState } from './components/search/Search';
@@ -44,10 +43,16 @@ function App() {
   const [getTracks, tracks ] = useGetTracksForAlbumLazyQuery();  
   const [scaler, setScaler] = useState<Scaler>(new Scaler())
   const [artists, setArtists] = useState<Artist[]>([]) 
+  const [zoomReset, setZoomReset] = useState<boolean>(false)
   const artistsFull =  useGetArtistsQuery()
 
   const [dashboardToSearch, setDashboardToSearch] = useState<{artist:Artist,album:Album}|undefined>(); 
 
+  const soloRater = (album:Album) => {
+    setRatedItems(album.songs.map(mapSongToRatedItem))
+  }
+
+  const mapSongToRatedItem  = (song:Song) : RatedItem => new RatedItem({ id: song.id, vendorId:song.vendorId, name: song.name },song.score);
 
   useEffect(() => {
     if (searchState.album) {
@@ -82,10 +87,15 @@ function App() {
           }
           return curr
         },[])
-        setRatedItems(songs.map(it => new RatedItem({ id: it.id, vendorId:it.vendorId, name: it.name },it.score)));
+        setRatedItems(songs.map(mapSongToRatedItem))
       }
     }
   } , [artistsFull.data, artistsFull.error])
+
+  const onZoomResetClick = () => {
+    setZoomReset(true)
+    setTimeout(() => { setZoomReset(false) } , 1000)
+  } 
 
   return (
     <div className="App">
@@ -96,6 +106,7 @@ function App() {
           { unratedItems.length > UNRATED_ITEMS_PAGE_SIZE && 
             <ListControlNav setPageNumber={setUnratedPageNumber} numberOfPages={Math.ceil(unratedItems.length/UNRATED_ITEMS_PAGE_SIZE)}  ></ListControlNav> 
           }
+          <button onClick={onZoomResetClick}>Reset</button>
         </div>
         <div className="empty-cell"></div> 
         <div id="search-wrapper">
@@ -105,7 +116,6 @@ function App() {
              setState={setSearchState}
              setUnrated={setUnratedItems}
           />
-          <SpotifyPlayer albumId={searchState.album?.id}></SpotifyPlayer>
         </div>
         <svg id="trackRater" viewBox="0 0 790 950">
           <Unrated 
@@ -123,6 +133,7 @@ function App() {
           <Rater 
                 highlight={draggedItemIsAboveRater} 
                 ratedItems={ratedItems}  
+                zoomReset={zoomReset}
                 updateRatedItems={setRatedItems}
                 scaler={scaler}
                 setScaler={setScaler}
@@ -130,7 +141,7 @@ function App() {
           >
           </Rater>
         </svg>
-        <Dashboard openAlbumInSearch={setDashboardToSearch} artists={artists} />
+        <Dashboard soloRater={soloRater} openAlbumInSearch={setDashboardToSearch} artists={artists}/>
       </div>
     </div>
   );

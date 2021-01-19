@@ -1,5 +1,5 @@
 import React, { Dispatch, SetStateAction, useEffect } from "react";
-import { Album, AlbumSearchResult, Artist, ArtistSearchResult, useGetSearchArtistByIdLazyQuery, useSearchByArtistLazyQuery } from "../../generated/graphql";
+import { Album, AlbumSearchResult, Artist, ArtistSearchResult, useSearchByArtistLazyQuery } from "../../generated/graphql";
 import { SearchInputField } from "./SearchInputField";
 import { SearchResults } from "./SearchResults";
 import './Search.css'
@@ -20,30 +20,29 @@ interface Props {
 }
 
 export const Search = ({state,setState, refreshWith, setUnrated}:Props) => {
-  const [searchByArtistName, searchByArtistNameResults ]  = useSearchByArtistLazyQuery()    
-  const [searchByArtistId, searchByArtistIdResults] = useGetSearchArtistByIdLazyQuery()
+  const [searchArtist, searchArtistResults ]  = useSearchByArtistLazyQuery()    
 
   useEffect(() => {
       if (refreshWith) {
           reset()
-          searchByArtistId({ variables: { vendorId: refreshWith.artist.vendorId }})
+          searchArtist({ variables: { vendorId: refreshWith.artist.vendorId, name: refreshWith.artist.name.toLowerCase()  }})
       }
   }, [refreshWith])
 
   useEffect(() => {
-      if (searchByArtistIdResults && refreshWith && searchByArtistIdResults.data?.search?.artist) {
-        const album = searchByArtistIdResults.data.search.artist.albums?.find(it => it.id == refreshWith?.album.vendorId)
+      if (searchArtistResults && refreshWith && searchArtistResults.data?.search?.artist) {
+        const album = searchArtistResults.data.search.artist.albums?.find(it => it.id == refreshWith?.album.vendorId)
         setState({...state,
-                artist: searchByArtistIdResults.data.search.artist,
+                artist: searchArtistResults.data.search.artist,
                 album,
-                loading: searchByArtistIdResults.loading
+                loading: searchArtistResults.loading
         })
       } else {
-          if (searchByArtistIdResults && searchByArtistIdResults.loading) {
+          if (searchArtistResults && searchArtistResults.loading) {
               setState({...state, loading: true})
           }
       }
-  }, [searchByArtistIdResults])
+  }, [searchArtistResults])
 
   const reset  = () => {
     setState({
@@ -60,21 +59,21 @@ export const Search = ({state,setState, refreshWith, setUnrated}:Props) => {
           reset()
       }
       if (state.artistName && state.artistName.length > 2) {
-         searchByArtistName({ variables: { name:  state.artistName}})
+         searchArtist({ variables: { name:  state.artistName.toLowerCase()}})
          setState({...state, artist:undefined, album:undefined})
          setUnrated([])
       } 
   }, [state.artistName])
   useEffect(() => {
-      if (searchByArtistNameResults && searchByArtistNameResults.data?.search?.artist) {
-        const artist = searchByArtistNameResults.data.search.artist 
-        const newState ={ ...state, artist, album:undefined, loading: searchByArtistNameResults.loading }
+      if (!refreshWith && searchArtistResults && searchArtistResults.data?.search?.artist) {
+        const artist = searchArtistResults.data.search.artist 
+        const newState ={ ...state, artist, album:undefined, loading: searchArtistResults.loading }
         setState(newState)
         setUnrated([])
-      } else if (searchByArtistNameResults.loading) {
+      } else if (searchArtistResults.loading) {
         setState({...state, loading: true })
       }
-  }, [searchByArtistNameResults])
+  }, [searchArtistResults])
 
   const setArtistName = (artistName:string) => setState({...state, artistName }) 
   const setAlbum = (album:AlbumSearchResult|undefined) => setState({...state, album }) 
@@ -84,7 +83,7 @@ export const Search = ({state,setState, refreshWith, setUnrated}:Props) => {
         <SearchInputField value={state.artistName} onInputFieldChange={setArtistName}></SearchInputField>
         <div id="artist-col">
             {state.loading && <p>Loading...</p> }
-            {searchByArtistNameResults.error && <p>Error!</p> }
+            {searchArtistResults.error && <p>Error!</p> }
             {
             (state.artist) && 
                     <SearchResults searchArtist={state.artist} searchAlbum={state.album} setSearchAlbum={setAlbum}></SearchResults>
