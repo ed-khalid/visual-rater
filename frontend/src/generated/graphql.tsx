@@ -120,6 +120,7 @@ export type Query = {
 
 export type SearchQuery = {
   __typename?: 'SearchQuery';
+  id: Scalars['String'];
   artist: ArtistSearchResult;
   tracks: Array<TrackSearchResult>;
 };
@@ -229,26 +230,6 @@ export type GetArtistsQuery = (
   )>> }
 );
 
-export type GetSearchArtistByIdQueryVariables = Exact<{
-  vendorId?: Maybe<Scalars['String']>;
-}>;
-
-
-export type GetSearchArtistByIdQuery = (
-  { __typename?: 'Query' }
-  & { search?: Maybe<(
-    { __typename?: 'SearchQuery' }
-    & { artist: (
-      { __typename?: 'ArtistSearchResult' }
-      & Pick<ArtistSearchResult, 'name' | 'id' | 'thumbnail'>
-      & { albums?: Maybe<Array<(
-        { __typename?: 'AlbumSearchResult' }
-        & Pick<AlbumSearchResult, 'id' | 'name' | 'year' | 'thumbnail'>
-      )>> }
-    ) }
-  )> }
-);
-
 export type GetTracksForAlbumQueryVariables = Exact<{
   albumId: Scalars['String'];
 }>;
@@ -258,6 +239,7 @@ export type GetTracksForAlbumQuery = (
   { __typename?: 'Query' }
   & { search?: Maybe<(
     { __typename?: 'SearchQuery' }
+    & Pick<SearchQuery, 'id'>
     & { tracks: Array<(
       { __typename?: 'TrackSearchResult' }
       & Pick<TrackSearchResult, 'id' | 'name' | 'trackNumber' | 'discNumber'>
@@ -267,6 +249,7 @@ export type GetTracksForAlbumQuery = (
 
 export type SearchByArtistQueryVariables = Exact<{
   name?: Maybe<Scalars['String']>;
+  vendorId?: Maybe<Scalars['String']>;
 }>;
 
 
@@ -274,6 +257,7 @@ export type SearchByArtistQuery = (
   { __typename?: 'Query' }
   & { search?: Maybe<(
     { __typename?: 'SearchQuery' }
+    & Pick<SearchQuery, 'id'>
     & { artist: (
       { __typename?: 'ArtistSearchResult' }
       & Pick<ArtistSearchResult, 'name' | 'id' | 'thumbnail'>
@@ -473,52 +457,10 @@ export function useGetArtistsLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryH
 export type GetArtistsQueryHookResult = ReturnType<typeof useGetArtistsQuery>;
 export type GetArtistsLazyQueryHookResult = ReturnType<typeof useGetArtistsLazyQuery>;
 export type GetArtistsQueryResult = ApolloReactCommon.QueryResult<GetArtistsQuery, GetArtistsQueryVariables>;
-export const GetSearchArtistByIdDocument = gql`
-    query GetSearchArtistById($vendorId: String) {
-  search {
-    artist(vendorId: $vendorId) {
-      name
-      id
-      thumbnail
-      albums {
-        id
-        name
-        year
-        thumbnail
-      }
-    }
-  }
-}
-    `;
-
-/**
- * __useGetSearchArtistByIdQuery__
- *
- * To run a query within a React component, call `useGetSearchArtistByIdQuery` and pass it any options that fit your needs.
- * When your component renders, `useGetSearchArtistByIdQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useGetSearchArtistByIdQuery({
- *   variables: {
- *      vendorId: // value for 'vendorId'
- *   },
- * });
- */
-export function useGetSearchArtistByIdQuery(baseOptions?: ApolloReactHooks.QueryHookOptions<GetSearchArtistByIdQuery, GetSearchArtistByIdQueryVariables>) {
-        return ApolloReactHooks.useQuery<GetSearchArtistByIdQuery, GetSearchArtistByIdQueryVariables>(GetSearchArtistByIdDocument, baseOptions);
-      }
-export function useGetSearchArtistByIdLazyQuery(baseOptions?: ApolloReactHooks.LazyQueryHookOptions<GetSearchArtistByIdQuery, GetSearchArtistByIdQueryVariables>) {
-          return ApolloReactHooks.useLazyQuery<GetSearchArtistByIdQuery, GetSearchArtistByIdQueryVariables>(GetSearchArtistByIdDocument, baseOptions);
-        }
-export type GetSearchArtistByIdQueryHookResult = ReturnType<typeof useGetSearchArtistByIdQuery>;
-export type GetSearchArtistByIdLazyQueryHookResult = ReturnType<typeof useGetSearchArtistByIdLazyQuery>;
-export type GetSearchArtistByIdQueryResult = ApolloReactCommon.QueryResult<GetSearchArtistByIdQuery, GetSearchArtistByIdQueryVariables>;
 export const GetTracksForAlbumDocument = gql`
     query GetTracksForAlbum($albumId: String!) {
   search {
+    id
     tracks(albumId: $albumId) {
       id
       name
@@ -555,9 +497,10 @@ export type GetTracksForAlbumQueryHookResult = ReturnType<typeof useGetTracksFor
 export type GetTracksForAlbumLazyQueryHookResult = ReturnType<typeof useGetTracksForAlbumLazyQuery>;
 export type GetTracksForAlbumQueryResult = ApolloReactCommon.QueryResult<GetTracksForAlbumQuery, GetTracksForAlbumQueryVariables>;
 export const SearchByArtistDocument = gql`
-    query SearchByArtist($name: String) {
+    query SearchByArtist($name: String, $vendorId: String) {
   search {
-    artist(name: $name) {
+    id
+    artist(name: $name, vendorId: $vendorId) {
       name
       id
       thumbnail
@@ -585,6 +528,7 @@ export const SearchByArtistDocument = gql`
  * const { data, loading, error } = useSearchByArtistQuery({
  *   variables: {
  *      name: // value for 'name'
+ *      vendorId: // value for 'vendorId'
  *   },
  * });
  */

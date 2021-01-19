@@ -1,5 +1,6 @@
 query GetTracksForAlbum($albumId:String!) {
   search {
+    id
     tracks(albumId: $albumId) {
         id
         name

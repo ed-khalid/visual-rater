@@ -7,9 +7,10 @@ import { DashboardAlbumSummary } from "./DashboardAlbumSummary"
 interface Props {
     artists:Artist[]
     openAlbumInSearch: Dispatch<SetStateAction<{album:Album,artist:Artist}|undefined>>
+    soloRater:any
 }
 
-export const Dashboard = ({artists, openAlbumInSearch}:Props) => {
+export const Dashboard = ({artists, openAlbumInSearch, soloRater}:Props) => {
 
     const [dashboardAlbum,setDashboardAlbum] = useState<Album>()
     const [dashboardArtist,setDashboardArtist] = useState<Artist>()
@@ -28,7 +29,7 @@ export const Dashboard = ({artists, openAlbumInSearch}:Props) => {
     } 
 
     return <div id="dashboard" className="flex-column">
-        {artists.map(artist =>  <DashboardArtist key={artist.id} onAlbumSelect={setAlbum} artist={artist} />)}
+        {artists.map(artist =>  <DashboardArtist soloRater={soloRater} key={artist.id} onAlbumSelect={setAlbum} artist={artist} />)}
         {dashboardArtist && dashboardAlbum && <DashboardAlbumSummary openAlbumInSearch={() => openAlbumInSearch({album:dashboardAlbum,artist:dashboardArtist})} artistName={dashboardArtist.name} album={dashboardAlbum} />}
     </div>
 
