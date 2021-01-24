@@ -1,25 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
-import { Unrated } from './components/Unrated';
-import { ListControlNav } from './components/ListControlNav';
-import { Rater } from './components/rater/Rater';
-import { Item, ItemType } from './models/Item';
+import { Rater, GlobalRaterState } from './components/rater/Rater';
+import { ItemType } from './models/Item';
 import { RatedItem } from './models/RatedItem';
 import { Scaler } from './functions/scale';
 import { Album, Artist, Song, useGetArtistsQuery , useGetTracksForAlbumLazyQuery } from './generated/graphql';
-import { NewSong } from './models/music/Song';
 import { Dashboard } from './components/dashboard/Dashboard';
 import { Search, SearchState } from './components/search/Search';
-
-export const AppConstants = {
-  rater : {
-      position : {
-        x: 300,
-        y: 905
-      }
-  }
-}
-
+import { ReadOnlyRater } from './components/rater/read-only-rater/ReadOnlyRater';
 
 export const initialSearchState:SearchState = {
   artist:undefined,
@@ -28,44 +16,75 @@ export const initialSearchState:SearchState = {
   loading:false
 }  
 
+export const RATER_BOTTOM:number = 905; 
 
+export const initialRaterState:GlobalRaterState = {
+   start: '0'
+  ,end: '5'
+  ,scaler : new Scaler() 
+  ,itemType: ItemType.MUSIC
+} 
 
 
 function App() {
-  const UNRATED_ITEMS_PAGE_SIZE = 15
-  const ITEM_TYPE = ItemType.MUSIC
-  const [searchState,setSearchState] = useState<SearchState>(initialSearchState); 
-  const [unratedItems, setUnratedItems] = useState<Item[]>([])  
-  const [ratedItems, setRatedItems] = useState<RatedItem[]>([]) 
-  const [, updateDraggedItem] = useState<Item|undefined>(undefined) 
-  const [draggedItemIsAboveRater, setDraggedItemIsAboveRater] = useState(false)
-  const [unratedPageNumber, setUnratedPageNumber] = useState<number>(1) 
+  const [searchState,setSearchState] = useState<SearchState>(initialSearchState)
+  const [raterState, setRaterState] = useState<GlobalRaterState>(initialRaterState)
+  const [mainRaterItems, setMainRaterItems] = useState<RatedItem[]>([])
   const [getTracks, tracks ] = useGetTracksForAlbumLazyQuery();  
-  const [scaler, setScaler] = useState<Scaler>(new Scaler())
   const [artists, setArtists] = useState<Artist[]>([]) 
-  const [zoomReset, setZoomReset] = useState<boolean>(false)
+  const [shouldShowSimilar, setShouldShowSimilar] = useState<boolean>(false)
+  const [allSongs, setAllSongs] = useState<RatedItem[]>([]); 
   const artistsFull =  useGetArtistsQuery()
 
   const [dashboardToSearch, setDashboardToSearch] = useState<{artist:Artist,album:Album}|undefined>(); 
 
-  const soloRater = (album:Album) => {
-    setRatedItems(album.songs.map(mapSongToRatedItem))
+  useEffect(() => {
+    const newSongs = allSongs.filter(song => !mainRaterItems.find(it => it.id === song.id)) 
+    if (newSongs.length !== allSongs.length) {
+      setAllSongs(newSongs)
+    }
+  }, [allSongs,mainRaterItems])
+
+  useEffect(() => {
+    const scale = raterState.scaler.yScale.domain([Number(raterState.start), Number(raterState.end)])
+    setRaterState(r => ({...r, scaler : new Scaler(scale)}))
+  }, [raterState.start, raterState.end, raterState.scaler.yScale])
+
+  const updateScale = (newStart?:string, newEnd?:string) => {
+    if (newStart === '') {
+      newStart = '0'
+    }
+    if (newEnd === '') {
+      newEnd = '0'
+    }
+    const start = newStart || raterState.start + ''   
+    const end = newEnd || raterState.end  + ''  
+    const allowed = new RegExp('^([0-5]+([.][0-9]*)?)$') 
+    if (allowed.test(start) && allowed.test(end) ) {
+      const startNumber = Number(start)
+      const endNumber = Number(end) 
+      if (startNumber >= 0 && startNumber < 5 && startNumber < endNumber && endNumber <= 5) {
+        setRaterState({...raterState,start,end})
+      }
+    }
   }
 
+  const soloRater = (album:Album) => {
+    setShouldShowSimilar(false)
+    onZoomResetClick()
+    const ratedItems = album.songs.map(mapSongToRatedItem)
+    setMainRaterItems(ratedItems)
+  }
   const mapSongToRatedItem  = (song:Song) : RatedItem => new RatedItem({ id: song.id, vendorId:song.vendorId, name: song.name },song.score);
 
   useEffect(() => {
     if (searchState.album) {
       getTracks({ variables: { albumId: searchState.album.id} })
     }
-  }, [searchState.album])
+  }, [searchState.album, getTracks])
   useEffect(() => {
       if (tracks.data?.search?.tracks && searchState.artist) {
-          let { albums, ...artistWithoutAlbums } = searchState.artist  
-          let unratedSongs:NewSong[] = tracks.data.search.tracks.map(track =>({ id:track.id, vendorId:track.id, name:track.name, artist:artistWithoutAlbums , album:searchState.album, number:track.trackNumber, discNumber: track.discNumber}))
-          unratedSongs = unratedSongs.filter(it => !ratedItems.find(rIt => ((rIt as Song).vendorId === it.id)))
-          setUnratedItems(unratedSongs)
-  }}, [tracks.data])
+  }}, [tracks.data, searchState.artist])
   useEffect(() => {
     if (artistsFull.error) {
       console.log(artistsFull.error)
@@ -87,14 +106,16 @@ function App() {
           }
           return curr
         },[])
-        setRatedItems(songs.map(mapSongToRatedItem))
+        setAllSongs(songs.map(mapSongToRatedItem));
       }
     }
   } , [artistsFull.data, artistsFull.error])
 
   const onZoomResetClick = () => {
-    setZoomReset(true)
-    setTimeout(() => { setZoomReset(false) } , 1000)
+    setRaterState({...raterState,start:'0', end:'5'})
+  } 
+  const showSimilar =  () => {
+    setShouldShowSimilar(true)
   } 
 
   return (
@@ -103,10 +124,12 @@ function App() {
       <div className="main grid">
         <div className="empty-cell"></div> 
         <div id="top-controls">
-          { unratedItems.length > UNRATED_ITEMS_PAGE_SIZE && 
-            <ListControlNav setPageNumber={setUnratedPageNumber} numberOfPages={Math.ceil(unratedItems.length/UNRATED_ITEMS_PAGE_SIZE)}  ></ListControlNav> 
-          }
+          <label htmlFor="scale-start">Start</label>
+          <input id="scale-start" type="text" value={raterState.start} onChange={(e) => updateScale(e.target.value, undefined)}/>
+          <label htmlFor="scale-end">End</label>
+          <input id="scale-end" type="text" value={raterState.end} onChange={(e) => updateScale(undefined, e.target.value)}/>
           <button onClick={onZoomResetClick}>Reset</button>
+          <button onClick={showSimilar}>Compare</button> 
         </div>
         <div className="empty-cell"></div> 
         <div id="search-wrapper">
@@ -114,32 +137,25 @@ function App() {
              refreshWith={dashboardToSearch}
              state={searchState}
              setState={setSearchState}
-             setUnrated={setUnratedItems}
           />
         </div>
         <svg id="trackRater" viewBox="0 0 790 950">
-          <Unrated 
-                  unratedItems={unratedItems} 
-                  ratedItems={ratedItems} 
-                  onDrag={updateDraggedItem}
-                  onRater={setDraggedItemIsAboveRater}
-                  updateItems={[setUnratedItems, setRatedItems]} 
-                  pageNumber={unratedPageNumber}  
-                  pageSize = {UNRATED_ITEMS_PAGE_SIZE}
-                  scaler={scaler}
-                  itemType={ITEM_TYPE}
-          > 
-          </Unrated>
-          <Rater 
-                highlight={draggedItemIsAboveRater} 
-                ratedItems={ratedItems}  
-                zoomReset={zoomReset}
-                updateRatedItems={setRatedItems}
-                scaler={scaler}
-                setScaler={setScaler}
-                itemType={ITEM_TYPE}
+          {mainRaterItems.length && <Rater 
+                setState={setRaterState}
+                position={{x:300, y:RATER_BOTTOM}}
+                state={raterState}
+                items={mainRaterItems}
+                setItems={setMainRaterItems}
           >
-          </Rater>
+          </Rater>}
+          {shouldShowSimilar &&  
+          <ReadOnlyRater
+            state = {raterState}
+            position={{x:350,y:RATER_BOTTOM}}
+            items={allSongs}
+          >
+          </ReadOnlyRater>
+          }
         </svg>
         <Dashboard soloRater={soloRater} openAlbumInSearch={setDashboardToSearch} artists={artists}/>
       </div>

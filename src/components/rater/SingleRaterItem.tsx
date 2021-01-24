@@ -4,19 +4,19 @@ import { drag } from 'd3-drag'
 import { RatedItem } from "../../models/RatedItem";
 import { event as d3Event} from 'd3'
 import { Scaler } from "../../functions/scale";
-import { AppConstants } from "../../App";
 
 interface SingleRaterItemProps {
     item:RatedItem
     x:number
     y:number
+    raterBottom:number
     onRemove:any
     onDragEnd:any
     scaler:Scaler
+    scale?:number
 } 
 
-export const SingleRaterItem = ({item, x, y, scaler, onRemove, onDragEnd}:SingleRaterItemProps) =>  {
-    const raterBottom = AppConstants.rater.position.y 
+export const SingleRaterItem = ({item, x, y, scale=1, raterBottom, scaler, onRemove, onDragEnd}:SingleRaterItemProps) =>  {
     const [g,setG] = useState<SVGGElement|undefined>()
     const width = 20; 
 
@@ -27,7 +27,7 @@ export const SingleRaterItem = ({item, x, y, scaler, onRemove, onDragEnd}:Single
 
     const dragStart = (d:any, i:number, nodeList:ArrayLike<SVGElement> ) => {
         if (g) {
-            select(g).select('g.closeButton').classed('hide', true);
+            select(g).select('g.close-button').classed('hide', true);
             select(g).classed('active', true);
         }
     }   
@@ -36,20 +36,27 @@ export const SingleRaterItem = ({item, x, y, scaler, onRemove, onDragEnd}:Single
               return;
           }
           if (g) {
-            select(g).selectAll('#itemSymbol').attr('cy', d3Event.y)
+            select(g).selectAll('.item-symbol').attr('cy', d3Event.y)
             select(g).selectAll('text').attr('y', d3Event.y)
-            select(g).selectAll('text#score').text(scaler.toScore(d3Event.y).toFixed(2));
+            select(g).selectAll('text.item-score').text(scaler.toScore(d3Event.y).toFixed(2));
           }
     }
     const dragEnd = (d:any, i:number, nodeList:ArrayLike<SVGElement> ) => {
         if (g) {
-          select(g).select('g.closeButton').classed('hide', false);
-          const yPosition = Number(select(g).select('#itemSymbol').attr('cy'));        
+          select(g).select('g.close-button').classed('hide', false);
+          const yPosition = Number(select(g).select('.item-symbol').attr('cy'));        
           const score = scaler.toScore(yPosition);  
           onDragEnd(item.id, score)
           select(g).classed('active', false);
         }
     }   
+
+    const formatName= (name:string) => {
+        if (name.length <= 20 ) {
+            return name
+        }
+        return name.slice(0,20) + '...'
+    }
 
     const attachDrag = (g:SVGGElement|null) => {
         if (g) {
@@ -61,28 +68,28 @@ export const SingleRaterItem = ({item, x, y, scaler, onRemove, onDragEnd}:Single
         }
     } 
       return <g ref={it => attachDrag(it)} className="item" key={item.name}>
-                          <g id="closeButton" onClick={() => onRemove(item)} className="closeButton" cursor="pointer" pointerEvents="stroke">
+                          <g className="close-button" onClick={() => onRemove(item)} cursor="pointer" pointerEvents="stroke">
                               <line 
-                                        x1={x-(width/2)-95} 
+                                        x1={x-(width/2)-220} 
                                         y1={y-3}
-                                        x2={x-(width/2)-90}
+                                        x2={x-(width/2)-225}
                                         y2={y+3}
                                         stroke="#3d3d3d"
                               > 
                               </line>
                               <line 
-                                        x1={x-(width/2)-90} 
+                                        x1={x-(width/2)-225} 
                                         y1={y-3}
-                                        x2={x-(width/2)-95}
+                                        x2={x-(width/2)-220}
                                         y2={y+3}
                                         stroke="#3d3d3d"
                               > 
                             </line>
                           </g>
                           <g id="item" className="draggable"> 
-                            <circle id="itemSymbol" cursor="move" cx={x} cy={y} r="5" fill="#3d3d3d" fillOpacity="0.5"></circle>
-                            <text id="score" cursor="move" fontSize="12" fontSizeAdjust="2" fill="#3d3d3d" x={x - 70} y={y} dy=".35em">{item.score.toFixed(2)}</text>
-                            <text id="name" cursor="move" fontSize="12" fontSizeAdjust="2" fill="#3d3d3d" x={x + 70} y={y} dy=".35em">{item.name}</text>
+                            <circle className="item-symbol" cursor="move" cx={x} cy={y} r={5*scale} fill="#3d3d3d" fillOpacity="0.5"></circle>
+                            <text className="item-score" cursor="move" fontSize={12*scale} fontSizeAdjust="2" fill="#3d3d3d" x={x - 210} y={y} dy=".35em">{item.score.toFixed(2)}</text>
+                            <text className="item-name" cursor="move" fontSize={12*scale} fontSizeAdjust="2" fill="#3d3d3d" x={x - 170} y={y} dy=".35em">{formatName(item.name)}</text>
                           </g>
                       </g>
 }
