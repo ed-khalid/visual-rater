@@ -30,8 +30,8 @@ class RepositoriesTests @Autowired constructor(
     @Test
     fun  `When Persisting Song, Album, Artist Then They All Get Saved`() {
         val artist = Artist(UUID.randomUUID(),"random-vendor-id", "Britney Spears", null)
-        val album = Album(UUID.randomUUID(),"random-vendor-album-id","Baby One More Time", null, 1975 ,artist)
-        val song = Song(UUID.randomUUID(),"vendor-song-id","Stronger", album, artist, 7.3 )
+        val album = Album(UUID.randomUUID(),"random-vendor-album-id","Baby One More Time", null, false, 1975 ,artist)
+        val song = Song(UUID.randomUUID(),"vendor-song-id","Stronger",1,1, album, artist, 7.3 )
         entityManager.persist(artist)
         entityManager.persist(album)
         entityManager.persist(song)
