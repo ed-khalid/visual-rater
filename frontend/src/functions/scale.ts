@@ -1,7 +1,6 @@
 
 import { scaleLinear, ScaleLinear } from 'd3-scale';
-import { AppConstants } from '../App';
-
+import { RATER_BOTTOM } from '../App';
 
 export class Scaler {
 
@@ -11,7 +10,7 @@ export class Scaler {
     }     
     private line  = {
         start: 5
-        ,end: AppConstants.rater.position.y 
+        ,end: RATER_BOTTOM 
     } 
     public scale:ScaleLinear<number,number>;
     public get yScale() { 

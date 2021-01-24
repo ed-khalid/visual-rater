@@ -3,7 +3,6 @@ import { Album, AlbumSearchResult, Artist, ArtistSearchResult, useSearchByArtist
 import { SearchInputField } from "./SearchInputField";
 import { SearchResults } from "./SearchResults";
 import './Search.css'
-import { Item } from "../../models/Item";
 
 export type SearchState = {
   artist:ArtistSearchResult|undefined
@@ -15,23 +14,27 @@ export type SearchState = {
 interface Props {
     state:SearchState
     setState:Dispatch<SetStateAction<SearchState>>;
-    setUnrated:Dispatch<SetStateAction<Item[]>>;
     refreshWith:{artist:Artist, album:Album}|undefined
 }
 
-export const Search = ({state,setState, refreshWith, setUnrated}:Props) => {
+export const Search = ({state,setState, refreshWith}:Props) => {
   const [searchArtist, searchArtistResults ]  = useSearchByArtistLazyQuery()    
 
   useEffect(() => {
       if (refreshWith) {
-          reset()
+          setState({
+              artistName: ''
+              ,artist: undefined
+              ,album: undefined
+              ,loading:false
+          })
           searchArtist({ variables: { vendorId: refreshWith.artist.vendorId, name: refreshWith.artist.name.toLowerCase()  }})
       }
-  }, [refreshWith])
+  }, [refreshWith, searchArtist, setState])
 
   useEffect(() => {
       if (searchArtistResults && refreshWith && searchArtistResults.data?.search?.artist) {
-        const album = searchArtistResults.data.search.artist.albums?.find(it => it.id == refreshWith?.album.vendorId)
+        const album = searchArtistResults.data.search.artist.albums?.find(it => it.id === refreshWith?.album.vendorId)
         setState({...state,
                 artist: searchArtistResults.data.search.artist,
                 album,
@@ -42,38 +45,32 @@ export const Search = ({state,setState, refreshWith, setUnrated}:Props) => {
               setState({...state, loading: true})
           }
       }
-  }, [searchArtistResults])
+  }, [searchArtistResults, refreshWith, setState, state])
 
-  const reset  = () => {
-    setState({
-        artistName: ''
-        ,artist: undefined
-        ,album: undefined
-        ,loading:false
-    })
-    setUnrated([])
-  }
 
   useEffect(() => {
-      if (!state.artistName.length) {
-          reset()
+      if (!state.artistName.length && (state.album || state.artist || state.loading)) {
+          setState({
+              artistName: ''
+              ,artist: undefined
+              ,album: undefined
+              ,loading:false
+          })
       }
-      if (state.artistName && state.artistName.length > 2) {
+      if (state.artistName?.length > 2) {
          searchArtist({ variables: { name:  state.artistName.toLowerCase()}})
          setState({...state, artist:undefined, album:undefined})
-         setUnrated([])
       } 
-  }, [state.artistName])
+  }, [state.artistName, searchArtist, setState, state])
   useEffect(() => {
       if (!refreshWith && searchArtistResults && searchArtistResults.data?.search?.artist) {
         const artist = searchArtistResults.data.search.artist 
         const newState ={ ...state, artist, album:undefined, loading: searchArtistResults.loading }
         setState(newState)
-        setUnrated([])
       } else if (searchArtistResults.loading) {
         setState({...state, loading: true })
       }
-  }, [searchArtistResults])
+  }, [searchArtistResults, setState, state, refreshWith])
 
   const setArtistName = (artistName:string) => setState({...state, artistName }) 
   const setAlbum = (album:AlbumSearchResult|undefined) => setState({...state, album }) 
