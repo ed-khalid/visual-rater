@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import { RATER_BOTTOM } from "../../App";
 import { Scaler } from "../../functions/scale";
 import { RatedItem } from "../../models/RatedItem";
+import { RaterOrientation } from "./Rater";
 import { SingleRaterItem } from "./SingleRaterItem";
 
 interface MultiRaterItemProps {
     items:RatedItem[]
+    orientation:RaterOrientation
     x:number
     y:number
     id:string
@@ -15,7 +17,7 @@ interface MultiRaterItemProps {
     zoomOnGroup:any
 } 
 
-export const MultiRaterItem = ({items, x, y, id, scaler, onRemove, onDragEnd, zoomOnGroup}:MultiRaterItemProps) =>  {
+export const MultiRaterItem = ({items, x, y, id, scaler, onRemove, onDragEnd, orientation, zoomOnGroup}:MultiRaterItemProps) =>  {
 
     const [isExploded, setisExploded] = useState<boolean>(false) 
 
@@ -26,6 +28,7 @@ export const MultiRaterItem = ({items, x, y, id, scaler, onRemove, onDragEnd, zo
        return <g>
              {items.map((item,i) => 
                <SingleRaterItem 
+                 orientation={orientation}
                  key={item.id}
                  scale={0.5}
                  item={item}

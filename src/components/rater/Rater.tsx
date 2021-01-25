@@ -1,6 +1,6 @@
 import { axisRight } from 'd3-axis'
 import { select } from 'd3-selection';
-import { AxisScale } from 'd3';
+import { AxisScale, event as d3Event } from 'd3';
 import { Scaler } from "../../functions/scale";
 import { useDeleteSongMutation, useUpdateSongMutation } from "../../generated/graphql";
 import { ItemType } from "../../models/Item";
@@ -19,6 +19,7 @@ interface Props {
     setState:Dispatch<SetStateAction<GlobalRaterState>>
     items: RatedItem[];
     setItems:Dispatch<SetStateAction<RatedItem[]>>
+    mode:RaterMode
 }
 
 export type GlobalRaterState = {
@@ -27,15 +28,22 @@ export type GlobalRaterState = {
     end:string
     itemType:ItemType
 }
+export enum RaterMode {
+    PRIMARY, SECONDARY
+} 
+export enum RaterOrientation {
+    RIGHT, LEFT
+}   
 
 
 
-export const Rater:React.FunctionComponent<Props> = ({position, state, setState, items, setItems}:Props) => {
+export const Rater:React.FunctionComponent<Props> = ({position, state, setState, items, setItems, mode}:Props) => {
 
     const [updateSong]  = useUpdateSongMutation();
     const [deleteSong] = useDeleteSongMutation()  
     const [currentItem, setCurrentItem] = useState<RatedItem|null>();  
     const [groupedItems, setGroupedItems] = useState<RatedItemGrouped[]>([]);
+    const [g, setG] = useState<SVGGElement>()
 
 
     useEffect(() => {
@@ -105,28 +113,37 @@ export const Rater:React.FunctionComponent<Props> = ({position, state, setState,
         }
     }
 
+    const zoomIn = (e:MouseEvent) => {
+        const y = e.offsetY;  
+        const score = state.scaler.toScore(y) 
+        console.log(score)
+        const min = Math.min((score - 0.25) || 0) 
+        const max = Math.min((score + 0.25) || 5) 
+        setState({...state, start: min.toFixed(2), end: max.toFixed(2) })
+    }
 
     const makeAxis = (scale:AxisScale<number>) => {
         const _axis = axisRight(scale) 
-        const axisSel = select<SVGSVGElement, any>('g#axis')
-        .attr('transform', `translate(${position.x}, ${0})` )
-        .call(_axis)
-        axisSel.selectAll('line')
-        .attr('x1', -6 )
-        return axisSel
+        if (g) {
+          const axisSel = select(g).select<SVGSVGElement>('g.rater-axis')
+            .attr('transform', `translate(${position.x}, ${0})` )
+            .call(_axis)
+            axisSel.selectAll('line')
+            .attr('x1', -6 )
+            return axisSel
+        }
     }
     makeAxis(state.scaler.scale) 
 
-
     return (
-                  <g id="raterContainer">
-                      <rect id="zoomListener" width="600" x="30" height={position.y} fill="none" pointerEvents="all"></rect>
-                      <g className="rater-axis"></g>
-                      <line className="rater-line" x1={position.x} y1={0} x2={position.x} y2={position.y}>
-                      </line>
+                  <g  ref={it=> it ? setG(it):null} className="rater-container">
+                      {mode === RaterMode.PRIMARY && <rect id="zoom-listener" onDoubleClick={(e) => zoomIn(e.nativeEvent)} width="600" x="30" height={position.y} fill="none" pointerEvents="all"></rect>}
+                      <g className={mode === RaterMode.PRIMARY ? "rater-axis" : "rater-axis readonly" }></g>
+                      <line className={mode === RaterMode.PRIMARY? "rater-line": 'rater-line readonly' } x1={position.x} y1={0} x2={position.x} y2={position.y} />
                       { groupedItems.map(rItemGrouped => 
                       (rItemGrouped.items.length === 1) ? 
                         <SingleRaterItem
+                            orientation={mode === RaterMode.PRIMARY? RaterOrientation.LEFT:RaterOrientation.RIGHT}
                             key={rItemGrouped.items[0].id}
                             item={rItemGrouped.items[0]}
                             raterBottom={RATER_BOTTOM}
@@ -138,6 +155,7 @@ export const Rater:React.FunctionComponent<Props> = ({position, state, setState,
                         />
                       :
                         <MultiRaterItem  
+                            orientation={ mode === RaterMode.PRIMARY? RaterOrientation.LEFT:RaterOrientation.RIGHT}
                             key={rItemGrouped.position}
                             items={rItemGrouped.items} 
                             id = {rItemGrouped.id}
