@@ -1,22 +1,4 @@
 
-.hide {
-    visibility: hidden;
-}
-
-div.rater {
-    width: 100%;
-    height: 100%;
-}
-g.rater-axis {
-    color: #988a8a
-}
-g.rater-axis g.tick {
-    transform: translateX(-1)
-}
-line.rater-line {
-    stroke:#726d6dcc;
-}
-
 g.read-only-item  circle {
     fill: rgba(61,61,61,0.2);
     fill-opacity: 0.5 ;
@@ -31,11 +13,4 @@ g.read-only-item text.item-name {
 g.read-only-item text.item-name:hover {
     fill: rgba(170, 58, 58, 0.534);
     cursor:pointer;
-}
-
-g.rater-axis.readonly {
-    color: #988a8a
-}
-line.rater-line.readonly {
-    stroke:#b7b7b77a ;
 }

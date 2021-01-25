@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
-import { Rater, GlobalRaterState } from './components/rater/Rater';
+import { Rater, GlobalRaterState, RaterMode } from './components/rater/Rater';
 import { ItemType } from './models/Item';
 import { RatedItem } from './models/RatedItem';
 import { Scaler } from './functions/scale';
 import { Album, Artist, Song, useGetArtistsQuery , useGetTracksForAlbumLazyQuery } from './generated/graphql';
 import { Dashboard } from './components/dashboard/Dashboard';
 import { Search, SearchState } from './components/search/Search';
-import { ReadOnlyRater } from './components/rater/read-only-rater/ReadOnlyRater';
 
 export const initialSearchState:SearchState = {
   artist:undefined,
@@ -69,9 +68,18 @@ function App() {
     }
   }
 
-  const soloRater = (album:Album) => {
-    setShouldShowSimilar(false)
+  const putAlbumForSong = (songId:string) => {
+    const artist  = artistsFull.data?.artists?.find(artist => artist.albums?.find(it => it?.songs.find(it => it.id === songId)))
+    const album = artist?.albums?.find(album => album?.songs.find(it => it.id === songId ))
+    if (album) {
+      const ratedItems = (album as Album).songs.map(mapSongToRatedItem)
+      setMainRaterItems(ratedItems)
+    }
+  }
+
+  const soloRater = (album:Album, shouldShowSimilar = false ) => {
     onZoomResetClick()
+    setShouldShowSimilar(shouldShowSimilar)
     const ratedItems = album.songs.map(mapSongToRatedItem)
     setMainRaterItems(ratedItems)
   }
@@ -146,15 +154,19 @@ function App() {
                 state={raterState}
                 items={mainRaterItems}
                 setItems={setMainRaterItems}
+                mode={RaterMode.PRIMARY}
           >
           </Rater>}
           {shouldShowSimilar &&  
-          <ReadOnlyRater
+          <Rater
             state = {raterState}
+            setState={setRaterState}
             position={{x:350,y:RATER_BOTTOM}}
             items={allSongs}
+            setItems={setAllSongs}
+            mode={RaterMode.SECONDARY}
           >
-          </ReadOnlyRater>
+          </Rater>
           }
         </svg>
         <Dashboard soloRater={soloRater} openAlbumInSearch={setDashboardToSearch} artists={artists}/>
