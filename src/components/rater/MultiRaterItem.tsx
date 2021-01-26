@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { RATER_BOTTOM } from "../../App";
 import { Scaler } from "../../functions/scale";
 import { RatedItem } from "../../models/RatedItem";
@@ -19,11 +19,11 @@ interface MultiRaterItemProps {
 
 export const MultiRaterItem = ({items, x, y, id, scaler, onRemove, onDragEnd, orientation, zoomOnGroup}:MultiRaterItemProps) =>  {
 
-    const [isExploded, setisExploded] = useState<boolean>(false) 
+    // const [isExploded, setisExploded] = useState<boolean>(false) 
 
-    const explodeGroup =  () => {
-        setisExploded(true)
-    } 
+    // const explodeGroup =  () => {
+    //     setisExploded(true)
+    // } 
 
        return <g>
              {items.map((item,i) => 
