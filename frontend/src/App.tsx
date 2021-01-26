@@ -4,16 +4,9 @@ import { Rater, GlobalRaterState, RaterMode } from './components/rater/Rater';
 import { ItemType } from './models/Item';
 import { RatedItem } from './models/RatedItem';
 import { Scaler } from './functions/scale';
-import { Album, Artist, Song, useGetArtistsQuery , useGetTracksForAlbumLazyQuery } from './generated/graphql';
+import { Album, AlbumSearchResult, Artist, Song, useGetArtistsQuery , useGetTracksForAlbumLazyQuery } from './generated/graphql';
 import { Dashboard } from './components/dashboard/Dashboard';
-import { Search, SearchState } from './components/search/Search';
-
-export const initialSearchState:SearchState = {
-  artist:undefined,
-  album:undefined,
-  artistName:'',
-  loading:false
-}  
+import { Search } from './components/search/Search';
 
 export const RATER_BOTTOM:number = 905; 
 
@@ -26,7 +19,7 @@ export const initialRaterState:GlobalRaterState = {
 
 
 function App() {
-  const [searchState,setSearchState] = useState<SearchState>(initialSearchState)
+  const [searchAlbum, setSearchAlbum] = useState<AlbumSearchResult>()
   const [raterState, setRaterState] = useState<GlobalRaterState>(initialRaterState)
   const [mainRaterItems, setMainRaterItems] = useState<RatedItem[]>([])
   const [getTracks, tracks ] = useGetTracksForAlbumLazyQuery();  
@@ -35,7 +28,7 @@ function App() {
   const [allSongs, setAllSongs] = useState<RatedItem[]>([]); 
   const artistsFull =  useGetArtistsQuery()
 
-  const [dashboardToSearch, setDashboardToSearch] = useState<{artist:Artist,album:Album}|undefined>(); 
+  const [, setDashboardToSearch] = useState<{artist:Artist,album:Album}|undefined>(); 
 
   useEffect(() => {
     const newSongs = allSongs.filter(song => !mainRaterItems.find(it => it.id === song.id)) 
@@ -68,15 +61,6 @@ function App() {
     }
   }
 
-  const putAlbumForSong = (songId:string) => {
-    const artist  = artistsFull.data?.artists?.find(artist => artist.albums?.find(it => it?.songs.find(it => it.id === songId)))
-    const album = artist?.albums?.find(album => album?.songs.find(it => it.id === songId ))
-    if (album) {
-      const ratedItems = (album as Album).songs.map(mapSongToRatedItem)
-      setMainRaterItems(ratedItems)
-    }
-  }
-
   const soloRater = (album:Album, shouldShowSimilar = false ) => {
     onZoomResetClick()
     setShouldShowSimilar(shouldShowSimilar)
@@ -86,13 +70,10 @@ function App() {
   const mapSongToRatedItem  = (song:Song) : RatedItem => new RatedItem({ id: song.id, vendorId:song.vendorId, name: song.name },song.score);
 
   useEffect(() => {
-    if (searchState.album) {
-      getTracks({ variables: { albumId: searchState.album.id} })
+    if (searchAlbum) {
+      getTracks({ variables: { albumId: searchAlbum.id} })
     }
-  }, [searchState.album, getTracks])
-  useEffect(() => {
-      if (tracks.data?.search?.tracks && searchState.artist) {
-  }}, [tracks.data, searchState.artist])
+  }, [searchAlbum, getTracks])
   useEffect(() => {
     if (artistsFull.error) {
       console.log(artistsFull.error)
@@ -142,9 +123,8 @@ function App() {
         <div className="empty-cell"></div> 
         <div id="search-wrapper">
           <Search 
-             refreshWith={dashboardToSearch}
-             state={searchState}
-             setState={setSearchState}
+             album={searchAlbum}
+             onAlbumSelect={setSearchAlbum}
           />
         </div>
         <svg id="trackRater" viewBox="0 0 790 950">

@@ -1,6 +1,6 @@
 import { axisRight } from 'd3-axis'
 import { select } from 'd3-selection';
-import { AxisScale, event as d3Event } from 'd3';
+import { AxisScale } from 'd3';
 import { Scaler } from "../../functions/scale";
 import { useDeleteSongMutation, useUpdateSongMutation } from "../../generated/graphql";
 import { ItemType } from "../../models/Item";
@@ -47,6 +47,25 @@ export const Rater:React.FunctionComponent<Props> = ({position, state, setState,
 
 
     useEffect(() => {
+        const groupCloseItems = (ratedItems:RatedItem[]) => {
+            const groupedItems = ratedItems.reduce((acc:RatedItemGrouped[] , curr:RatedItem) => {
+                const position =  state.scaler.toPosition(curr.score) 
+                const overlap = acc.find((it:RatedItemGrouped) =>  Math.abs(Number(it.position) - position) < 15  )
+                if (overlap) {
+                    overlap.items.push(curr)
+                } else {
+                    acc.push({ position, items:[curr], id: '' + acc.length + 1 })
+                }
+                return acc
+            },  [])
+            // replace keys with average of groups   
+            groupedItems.forEach(it => {
+                const sum  = it.items.reduce((curr,it) => curr + state.scaler.toPosition(it.score),0)
+                const avg = sum/(it.items.length)
+                it.position = avg
+            })
+            setGroupedItems(groupedItems)
+        }  
         groupCloseItems(items)
     }, [items, state.scaler])
 
@@ -58,7 +77,7 @@ export const Rater:React.FunctionComponent<Props> = ({position, state, setState,
                 setCurrentItem(null)
            } 
         }
-    }, [currentItem, state.itemType])
+    }, [currentItem, state.itemType, updateSong])
 
     const removeItem = (rItem: RatedItem) => {
         deleteSong({ variables : { songId:  rItem.id}})
@@ -72,25 +91,6 @@ export const Rater:React.FunctionComponent<Props> = ({position, state, setState,
         ,items:RatedItem[]
     } 
 
-    const groupCloseItems = (ratedItems:RatedItem[]) => {
-         const groupedItems = ratedItems.reduce((acc:RatedItemGrouped[] , curr:RatedItem) => {
-            const position =  state.scaler.toPosition(curr.score) 
-            const overlap = acc.find((it:RatedItemGrouped) =>  Math.abs(Number(it.position) - position) < 15  )
-            if (overlap) {
-                overlap.items.push(curr)
-            } else {
-                acc.push({ position, items:[curr], id: '' + acc.length + 1 })
-            }
-            return acc
-        },  [])
-        // replace keys with average of groups   
-        groupedItems.forEach(it => {
-            const sum  = it.items.reduce((curr,it) => curr + state.scaler.toPosition(it.score),0)
-            const avg = sum/(it.items.length)
-            it.position = avg
-        })
-        setGroupedItems(groupedItems)
-    }  
 
     const updateItem =  (itemId:string, newScore:number) => {
         const item = items.find( it => it.id === itemId) 
