@@ -1,17 +1,15 @@
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { useEffect, useState } from "react";
-import { Album, Song, SongInput, useUpdateSongMutation } from "../../generated/graphql";
-import { faEye } from '@fortawesome/free-solid-svg-icons';
+import { Album, GetArtistsDocument, Song, SongInput, useDeleteAlbumMutation, useUpdateSongMutation } from "../../generated/graphql";
 import './DashboardAlbumSummary.css'
 
 interface Props {
     album:Album;
     artistName:string|undefined;
-    openAlbumInSearch:() => void;
+    onClose:any
 }
 
 
-export const DashboardAlbumSummary =  ({artistName, album, openAlbumInSearch }:Props) => {
+export const DashboardAlbumSummary =  ({onClose, artistName, album }:Props) => {
 
     enum SORT_TYPE { NUMBER, NAME, SCORE}    
     enum SORT_DIRECTION {  ASC, DESC }    
@@ -19,6 +17,7 @@ export const DashboardAlbumSummary =  ({artistName, album, openAlbumInSearch }:P
     const [updateSong] = useUpdateSongMutation()
     const [albumRating, setAlbumRating] = useState<number>(0);
     const [songs, setSongs] = useState<Song[]>(album.songs)    
+    const [deleteAlbum, ] = useDeleteAlbumMutation()
     const [sortDirections, setSortDirections] = useState<{[key:string]:SORT_DIRECTION}>({
         "name": SORT_DIRECTION.ASC,
         "number": SORT_DIRECTION.ASC,
@@ -34,8 +33,9 @@ export const DashboardAlbumSummary =  ({artistName, album, openAlbumInSearch }:P
     }, [songs])
 
     const calculateAlbumRating =  (songs:Song[]) => {
-        const scores = songs.reduce((curr,it) => curr + it.score, 0)
-        setAlbumRating(scores/songs.length)
+        const songsWithScores = songs.filter(it=>it.score) 
+        const scores = songsWithScores.filter(it => it.score).reduce((curr,it) => curr + it.score!, 0)
+        setAlbumRating(scores/songsWithScores.length)
     }
 
 
@@ -70,27 +70,27 @@ export const DashboardAlbumSummary =  ({artistName, album, openAlbumInSearch }:P
         }
         setSongs(sortedSongs)
     }
-    const updateScore = (score:number, _song:Song) => {
-        if (Number.isNaN(score)) {
-            console.log('not a number')
-            return;
-        }
-        
+    const updateScore = (score:number|null, _song:Song) => {
         const song:SongInput = {
             score 
             ,id: _song.id
         }
         updateSong({ variables: { song }})
     }
+    const onAlbumDelete = (album:Album) => {
+        deleteAlbum({variables: { albumId: album.id}, refetchQueries: [{query: GetArtistsDocument}]})
+        onClose()
+    }
 
     return <div className="dashboard-album-summary flex-column">
+        <div onClick={onClose} className="dashboard-album-close-button">x</div>
         <div className="dashboard-album-header flex">
           <div className="dashboard-album-thumbnail">
               <img src={album.thumbnail || undefined} alt={album.name}/>
           </div>
-          {!album.isComplete && <div id="dashboard-search">
-              <FontAwesomeIcon onClick={openAlbumInSearch} icon={faEye} ></FontAwesomeIcon> 
-          </div>}
+          <div className="dashboard-album-actions">
+              <button onClick={() => onAlbumDelete(album)}>DELETE</button>
+          </div>
           <div className="dashboard-album-title-wrapper">
               <div>
                   {artistName}
@@ -118,11 +118,12 @@ export const DashboardAlbumSummary =  ({artistName, album, openAlbumInSearch }:P
                     <td className="name-cell">{song.name}</td>
                     <td className="score-cell">
                         <div>
-                          <input type="text" value={song.score.toFixed(2)} onChange={(e)=> updateScore(Number(e.target.value), song)  }/>
+                          <input type="text" value={song.score?.toFixed(2) || 'N/A' } onChange={(e)=> updateScore(Number(e.target.value), song)  }/>
                           <div id="score-shortcut-wrapper" className="flex">
-                              <div className="score-shortcut plus-minus" onClick={() => updateScore(song.score - 0.25, song) }>-</div>
+                              <div className="score-shortcut plus-minus" onClick={() => updateScore((song.score||0) - 0.25, song) }>-</div>
                               {[1,2,3,4,5].map(it => <div className="score-shortcut" key={"score-"+it} onClick={() => updateScore(it, song)}>{it}</div> )}
-                              <div className="score-shortcut plus-minus" onClick={() => updateScore(song.score + 0.25, song) }>+</div>
+                              <div className="score-shortcut plus-minus" onClick={() => updateScore((song.score||0) + 0.25, song) }>+</div>
+                              <div className="score-shortcut plus-minus" onClick={() => updateScore(null, song) }>n/a</div>
                           </div>
                         </div>
                     </td>

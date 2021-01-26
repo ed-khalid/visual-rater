@@ -25,13 +25,6 @@ export type Album = {
   songs: Array<Song>;
 };
 
-export type AlbumInput = {
-  vendorId?: Maybe<Scalars['String']>;
-  name: Scalars['String'];
-  thumbnail?: Maybe<Scalars['String']>;
-  year?: Maybe<Scalars['Int']>;
-};
-
 export type AlbumSearchResult = {
   __typename?: 'AlbumSearchResult';
   id: Scalars['String'];
@@ -66,7 +59,7 @@ export type ArtistSearchResult = {
 export type Item = {
   id: Scalars['String'];
   name: Scalars['String'];
-  score: Scalars['Float'];
+  score?: Maybe<Scalars['Float']>;
 };
 
 export enum ItemType {
@@ -75,15 +68,15 @@ export enum ItemType {
 
 export type Mutation = {
   __typename?: 'Mutation';
-  CreateSong?: Maybe<Song>;
+  CreateAlbum?: Maybe<Album>;
   UpdateSong?: Maybe<Song>;
   DeleteSong?: Maybe<Scalars['Boolean']>;
-  UpdateAlbum?: Maybe<Album>;
+  DeleteAlbum?: Maybe<Scalars['Boolean']>;
 };
 
 
-export type MutationCreateSongArgs = {
-  song?: Maybe<NewSongInput>;
+export type MutationCreateAlbumArgs = {
+  album?: Maybe<NewAlbumInput>;
 };
 
 
@@ -97,19 +90,25 @@ export type MutationDeleteSongArgs = {
 };
 
 
-export type MutationUpdateAlbumArgs = {
-  albumId?: Maybe<Scalars['String']>;
-  isComplete?: Maybe<Scalars['Boolean']>;
+export type MutationDeleteAlbumArgs = {
+  albumId: Scalars['String'];
+};
+
+export type NewAlbumInput = {
+  vendorId?: Maybe<Scalars['String']>;
+  name: Scalars['String'];
+  thumbnail?: Maybe<Scalars['String']>;
+  year?: Maybe<Scalars['Int']>;
+  artist?: Maybe<ArtistInput>;
+  songs?: Maybe<Array<NewSongInput>>;
 };
 
 export type NewSongInput = {
   vendorId?: Maybe<Scalars['String']>;
-  score: Scalars['Float'];
+  score?: Maybe<Scalars['Float']>;
   name: Scalars['String'];
   number?: Maybe<Scalars['Int']>;
   discNumber?: Maybe<Scalars['Int']>;
-  album?: Maybe<AlbumInput>;
-  artist?: Maybe<ArtistInput>;
 };
 
 export type Query = {
@@ -140,7 +139,7 @@ export type Song = Item & {
   __typename?: 'Song';
   id: Scalars['String'];
   vendorId?: Maybe<Scalars['String']>;
-  score: Scalars['Float'];
+  score?: Maybe<Scalars['Float']>;
   name: Scalars['String'];
   artist: Artist;
   number: Scalars['Int'];
@@ -150,7 +149,7 @@ export type Song = Item & {
 
 export type SongInput = {
   id: Scalars['String'];
-  score: Scalars['Float'];
+  score?: Maybe<Scalars['Float']>;
 };
 
 export type TrackSearchResult = {
@@ -161,17 +160,27 @@ export type TrackSearchResult = {
   discNumber: Scalars['Int'];
 };
 
-export type CreateSongMutationVariables = Exact<{
-  song?: Maybe<NewSongInput>;
+export type CreateAlbumMutationVariables = Exact<{
+  albumInput?: Maybe<NewAlbumInput>;
 }>;
 
 
-export type CreateSongMutation = (
+export type CreateAlbumMutation = (
   { __typename?: 'Mutation' }
-  & { CreateSong?: Maybe<(
-    { __typename?: 'Song' }
-    & SongFieldsFragment
+  & { CreateAlbum?: Maybe<(
+    { __typename?: 'Album' }
+    & Pick<Album, 'id' | 'name'>
   )> }
+);
+
+export type DeleteAlbumMutationVariables = Exact<{
+  albumId: Scalars['String'];
+}>;
+
+
+export type DeleteAlbumMutation = (
+  { __typename?: 'Mutation' }
+  & Pick<Mutation, 'DeleteAlbum'>
 );
 
 export type DeleteSongMutationVariables = Exact<{
@@ -182,20 +191,6 @@ export type DeleteSongMutationVariables = Exact<{
 export type DeleteSongMutation = (
   { __typename?: 'Mutation' }
   & Pick<Mutation, 'DeleteSong'>
-);
-
-export type UpdateAlbumMutationVariables = Exact<{
-  albumId: Scalars['String'];
-  isComplete: Scalars['Boolean'];
-}>;
-
-
-export type UpdateAlbumMutation = (
-  { __typename?: 'Mutation' }
-  & { UpdateAlbum?: Maybe<(
-    { __typename?: 'Album' }
-    & Pick<Album, 'id' | 'isComplete'>
-  )> }
 );
 
 export type UpdateSongMutationVariables = Exact<{
@@ -284,38 +279,69 @@ export const SongFieldsFragmentDoc = gql`
   score
 }
     `;
-export const CreateSongDocument = gql`
-    mutation CreateSong($song: NewSongInput) {
-  CreateSong(song: $song) {
-    ...SongFields
+export const CreateAlbumDocument = gql`
+    mutation CreateAlbum($albumInput: NewAlbumInput) {
+  CreateAlbum(album: $albumInput) {
+    id
+    name
   }
 }
-    ${SongFieldsFragmentDoc}`;
-export type CreateSongMutationFn = ApolloReactCommon.MutationFunction<CreateSongMutation, CreateSongMutationVariables>;
+    `;
+export type CreateAlbumMutationFn = ApolloReactCommon.MutationFunction<CreateAlbumMutation, CreateAlbumMutationVariables>;
 
 /**
- * __useCreateSongMutation__
+ * __useCreateAlbumMutation__
  *
- * To run a mutation, you first call `useCreateSongMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useCreateSongMutation` returns a tuple that includes:
+ * To run a mutation, you first call `useCreateAlbumMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateAlbumMutation` returns a tuple that includes:
  * - A mutate function that you can call at any time to execute the mutation
  * - An object with fields that represent the current status of the mutation's execution
  *
  * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
  *
  * @example
- * const [createSongMutation, { data, loading, error }] = useCreateSongMutation({
+ * const [createAlbumMutation, { data, loading, error }] = useCreateAlbumMutation({
  *   variables: {
- *      song: // value for 'song'
+ *      albumInput: // value for 'albumInput'
  *   },
  * });
  */
-export function useCreateSongMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<CreateSongMutation, CreateSongMutationVariables>) {
-        return ApolloReactHooks.useMutation<CreateSongMutation, CreateSongMutationVariables>(CreateSongDocument, baseOptions);
+export function useCreateAlbumMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<CreateAlbumMutation, CreateAlbumMutationVariables>) {
+        return ApolloReactHooks.useMutation<CreateAlbumMutation, CreateAlbumMutationVariables>(CreateAlbumDocument, baseOptions);
       }
-export type CreateSongMutationHookResult = ReturnType<typeof useCreateSongMutation>;
-export type CreateSongMutationResult = ApolloReactCommon.MutationResult<CreateSongMutation>;
-export type CreateSongMutationOptions = ApolloReactCommon.BaseMutationOptions<CreateSongMutation, CreateSongMutationVariables>;
+export type CreateAlbumMutationHookResult = ReturnType<typeof useCreateAlbumMutation>;
+export type CreateAlbumMutationResult = ApolloReactCommon.MutationResult<CreateAlbumMutation>;
+export type CreateAlbumMutationOptions = ApolloReactCommon.BaseMutationOptions<CreateAlbumMutation, CreateAlbumMutationVariables>;
+export const DeleteAlbumDocument = gql`
+    mutation DeleteAlbum($albumId: String!) {
+  DeleteAlbum(albumId: $albumId)
+}
+    `;
+export type DeleteAlbumMutationFn = ApolloReactCommon.MutationFunction<DeleteAlbumMutation, DeleteAlbumMutationVariables>;
+
+/**
+ * __useDeleteAlbumMutation__
+ *
+ * To run a mutation, you first call `useDeleteAlbumMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteAlbumMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteAlbumMutation, { data, loading, error }] = useDeleteAlbumMutation({
+ *   variables: {
+ *      albumId: // value for 'albumId'
+ *   },
+ * });
+ */
+export function useDeleteAlbumMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<DeleteAlbumMutation, DeleteAlbumMutationVariables>) {
+        return ApolloReactHooks.useMutation<DeleteAlbumMutation, DeleteAlbumMutationVariables>(DeleteAlbumDocument, baseOptions);
+      }
+export type DeleteAlbumMutationHookResult = ReturnType<typeof useDeleteAlbumMutation>;
+export type DeleteAlbumMutationResult = ApolloReactCommon.MutationResult<DeleteAlbumMutation>;
+export type DeleteAlbumMutationOptions = ApolloReactCommon.BaseMutationOptions<DeleteAlbumMutation, DeleteAlbumMutationVariables>;
 export const DeleteSongDocument = gql`
     mutation DeleteSong($songId: String!) {
   DeleteSong(songId: $songId)
@@ -346,40 +372,6 @@ export function useDeleteSongMutation(baseOptions?: ApolloReactHooks.MutationHoo
 export type DeleteSongMutationHookResult = ReturnType<typeof useDeleteSongMutation>;
 export type DeleteSongMutationResult = ApolloReactCommon.MutationResult<DeleteSongMutation>;
 export type DeleteSongMutationOptions = ApolloReactCommon.BaseMutationOptions<DeleteSongMutation, DeleteSongMutationVariables>;
-export const UpdateAlbumDocument = gql`
-    mutation UpdateAlbum($albumId: String!, $isComplete: Boolean!) {
-  UpdateAlbum(albumId: $albumId, isComplete: $isComplete) {
-    id
-    isComplete
-  }
-}
-    `;
-export type UpdateAlbumMutationFn = ApolloReactCommon.MutationFunction<UpdateAlbumMutation, UpdateAlbumMutationVariables>;
-
-/**
- * __useUpdateAlbumMutation__
- *
- * To run a mutation, you first call `useUpdateAlbumMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useUpdateAlbumMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [updateAlbumMutation, { data, loading, error }] = useUpdateAlbumMutation({
- *   variables: {
- *      albumId: // value for 'albumId'
- *      isComplete: // value for 'isComplete'
- *   },
- * });
- */
-export function useUpdateAlbumMutation(baseOptions?: ApolloReactHooks.MutationHookOptions<UpdateAlbumMutation, UpdateAlbumMutationVariables>) {
-        return ApolloReactHooks.useMutation<UpdateAlbumMutation, UpdateAlbumMutationVariables>(UpdateAlbumDocument, baseOptions);
-      }
-export type UpdateAlbumMutationHookResult = ReturnType<typeof useUpdateAlbumMutation>;
-export type UpdateAlbumMutationResult = ApolloReactCommon.MutationResult<UpdateAlbumMutation>;
-export type UpdateAlbumMutationOptions = ApolloReactCommon.BaseMutationOptions<UpdateAlbumMutation, UpdateAlbumMutationVariables>;
 export const UpdateSongDocument = gql`
     mutation UpdateSong($song: SongInput) {
   UpdateSong(song: $song) {

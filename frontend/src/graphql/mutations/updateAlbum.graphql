@@ -1,7 +1,0 @@
-
-mutation UpdateAlbum($albumId:String!, $isComplete:Boolean!){
-  UpdateAlbum(albumId:$albumId, isComplete:$isComplete)  {
-      id
-      isComplete
-  }
-}

@@ -2,7 +2,7 @@ import { axisRight } from 'd3-axis'
 import { select } from 'd3-selection';
 import { AxisScale } from 'd3';
 import { Scaler } from "../../functions/scale";
-import { useDeleteSongMutation, useUpdateSongMutation } from "../../generated/graphql";
+import { GetArtistsDocument, useDeleteSongMutation, useUpdateSongMutation } from "../../generated/graphql";
 import { ItemType } from "../../models/Item";
 import { RatedItem } from "../../models/RatedItem";
 import { SingleRaterItem } from "./SingleRaterItem";
@@ -80,7 +80,7 @@ export const Rater:React.FunctionComponent<Props> = ({position, state, setState,
     }, [currentItem, state.itemType, updateSong])
 
     const removeItem = (rItem: RatedItem) => {
-        deleteSong({ variables : { songId:  rItem.id}})
+        deleteSong({ variables : { songId:  rItem.id}, refetchQueries:[{query:GetArtistsDocument}] })
         const _r  =  items.filter(_item => _item !== rItem);
         setItems([..._r])
     } 

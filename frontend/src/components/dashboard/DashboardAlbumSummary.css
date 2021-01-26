@@ -24,6 +24,16 @@ div.dashboard-album-thumbnail img {
     height: 100%;
     width: 100%;
 }
+div.dashboard-album-close-button {
+    cursor: pointer;
+    position: absolute;
+    top: -2px;
+    right: 4px;
+} 
+
+div.dashboard-album-actions {
+    margin-left: 5px;
+}
 
 table {
     margin: 0 auto;
@@ -84,6 +94,7 @@ div.dashboard-album-summary {
     border: 1px solid #3d3d3d;
     flex-grow: 1;
     margin-top: 5px;
+    position: relative;
 }
 
 div#album-rating {
