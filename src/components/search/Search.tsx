@@ -6,13 +6,14 @@ import './Search.css'
 
 interface Props {
     onAlbumSelect:Dispatch<SetStateAction<AlbumSearchResult|undefined>>
+    onArtistSelect:Dispatch<SetStateAction<ArtistSearchResult|undefined>>
     album:AlbumSearchResult|undefined
+    artist:ArtistSearchResult|undefined
 }
 
-export const Search = ({onAlbumSelect, album}:Props) => {
+export const Search = ({onAlbumSelect, album, artist, onArtistSelect}:Props) => {
   const [searchArtist,  { data, error ,loading } ]  = useSearchByArtistLazyQuery()    
   const [artistName, setArtistName] = useState<string>('')
-  const [artist, setArtist] = useState<ArtistSearchResult>()
 
   useEffect(() => {
         if (!artistName.length) {
@@ -24,9 +25,9 @@ export const Search = ({onAlbumSelect, album}:Props) => {
   }, [artistName, searchArtist])
   useEffect(() => {
       if (data?.search?.artist) {
-        setArtist(data.search.artist)
+        onArtistSelect(data.search.artist)
       }
-  }, [data,  setArtist])
+  }, [data,  onArtistSelect])
 
   return <div id="search" className="grid">
         <SearchInputField value={artistName} onInputFieldChange={setArtistName}></SearchInputField>

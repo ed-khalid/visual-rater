@@ -1,0 +1,5 @@
+
+mutation DeleteAlbum($albumId:String!) 
+{
+    DeleteAlbum(albumId:$albumId)
+}

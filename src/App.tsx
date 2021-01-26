@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import './App.css';
 import { Rater, GlobalRaterState, RaterMode } from './components/rater/Rater';
 import { ItemType } from './models/Item';
 import { RatedItem } from './models/RatedItem';
 import { Scaler } from './functions/scale';
-import { Album, AlbumSearchResult, Artist, Song, useGetArtistsQuery , useGetTracksForAlbumLazyQuery } from './generated/graphql';
+import { Album, AlbumSearchResult, Artist, ArtistSearchResult, GetArtistsDocument, NewSongInput, Song, useCreateAlbumMutation, useGetArtistsQuery , useGetTracksForAlbumLazyQuery } from './generated/graphql';
 import { Dashboard } from './components/dashboard/Dashboard';
 import { Search } from './components/search/Search';
 
@@ -20,15 +20,17 @@ export const initialRaterState:GlobalRaterState = {
 
 function App() {
   const [searchAlbum, setSearchAlbum] = useState<AlbumSearchResult>()
+  const [searchArtist,setSearchArtist] = useState<ArtistSearchResult>()
+  const [dashboardAlbum,setDashboardAlbum] = useState<Album>()
+  const [dashboardArtist,setDashboardArtist] = useState<Artist>()
   const [raterState, setRaterState] = useState<GlobalRaterState>(initialRaterState)
   const [mainRaterItems, setMainRaterItems] = useState<RatedItem[]>([])
   const [getTracks, tracks ] = useGetTracksForAlbumLazyQuery();  
-  const [artists, setArtists] = useState<Artist[]>([]) 
   const [shouldShowSimilar, setShouldShowSimilar] = useState<boolean>(false)
+  const [createAlbum, createAlbumResults] = useCreateAlbumMutation() 
+  const [artists, setArtists] = useState<Artist[]>([]) 
   const [allSongs, setAllSongs] = useState<RatedItem[]>([]); 
   const artistsFull =  useGetArtistsQuery()
-
-  const [, setDashboardToSearch] = useState<{artist:Artist,album:Album}|undefined>(); 
 
   useEffect(() => {
     const newSongs = allSongs.filter(song => !mainRaterItems.find(it => it.id === song.id)) 
@@ -36,6 +38,26 @@ function App() {
       setAllSongs(newSongs)
     }
   }, [allSongs,mainRaterItems])
+  const onZoomResetClick = useCallback(() => {
+    setRaterState(prev => ({...prev, start : '0', end : '5'})) 
+  }, []) 
+  const showSimilar =  () => {
+    setShouldShowSimilar(true)
+  } 
+  const soloRater = useCallback((album:Album, shouldShowSimilar = false ) => {
+    onZoomResetClick()
+    setShouldShowSimilar(shouldShowSimilar)
+    const ratedItems = album.songs.filter(it => it.score).map(mapSongToRatedItem)
+    setMainRaterItems(ratedItems)
+  },[onZoomResetClick])
+
+  useEffect(() => {
+    if (dashboardAlbum?.id) {
+      soloRater(dashboardAlbum, true)
+    } else {
+      setMainRaterItems([])
+    }
+  }, [dashboardAlbum?.id, soloRater])
 
   useEffect(() => {
     const scale = raterState.scaler.yScale.domain([Number(raterState.start), Number(raterState.end)])
@@ -61,13 +83,35 @@ function App() {
     }
   }
 
-  const soloRater = (album:Album, shouldShowSimilar = false ) => {
-    onZoomResetClick()
-    setShouldShowSimilar(shouldShowSimilar)
-    const ratedItems = album.songs.map(mapSongToRatedItem)
-    setMainRaterItems(ratedItems)
-  }
-  const mapSongToRatedItem  = (song:Song) : RatedItem => new RatedItem({ id: song.id, vendorId:song.vendorId, name: song.name },song.score);
+  const mapSongToRatedItem  = (song:Song) : RatedItem => new RatedItem({ id: song.id, vendorId:song.vendorId, name: song.name },song.score!);
+
+  useEffect(() => {
+    setSearchAlbum(undefined)
+  }, [searchArtist])
+
+  useEffect(() => {
+    if (tracks.data?.search?.tracks && searchArtist && searchAlbum) {
+      const songs:NewSongInput[] = tracks.data.search.tracks.map((it,index) => 
+        ({ 
+          vendorId : it.id, 
+          name: it.name, 
+          discNumber: it.discNumber, 
+          number: it.trackNumber, 
+          score: 3.5 - ((index)*0.1)    
+        }))
+        createAlbum({ variables: { albumInput: {
+          vendorId: searchAlbum.id,
+          name: searchAlbum.name,
+          year: searchAlbum.year,
+          thumbnail: searchAlbum.thumbnail
+          ,artist: {
+            vendorId: searchArtist.id,
+            name: searchArtist.name,
+            thumbnail: searchArtist.thumbnail
+          }, songs
+        }}, refetchQueries: [{query: GetArtistsDocument}] })
+    }
+  },[tracks.data, searchAlbum,searchArtist, createAlbum])
 
   useEffect(() => {
     if (searchAlbum) {
@@ -80,6 +124,16 @@ function App() {
     }
     else  {
       if (artistsFull.data && artistsFull.data.artists) {
+        if (createAlbumResults.data && !createAlbumResults.called) {
+          const albumId = createAlbumResults.data?.CreateAlbum?.id 
+          const artist  = artists.find(it => it.albums?.find(it=> it?.id === albumId) )     
+          const album = artist?.albums?.find(it => it?.id === albumId) 
+          if (album) {
+            soloRater(album)
+            setDashboardArtist(artist)
+            setDashboardAlbum(album)
+          }
+        }
         setArtists(artistsFull.data.artists)
         const songs:Song[] = artistsFull.data.artists.reduce((curr:Song[],it) => {
           if (it.albums) {
@@ -95,17 +149,11 @@ function App() {
           }
           return curr
         },[])
-        setAllSongs(songs.map(mapSongToRatedItem));
+        setAllSongs(songs.filter(it => it.score).map(mapSongToRatedItem));
       }
     }
-  } , [artistsFull.data, artistsFull.error])
+  } , [artistsFull.data, artistsFull.error, createAlbumResults.data, createAlbumResults.called, soloRater, artists])
 
-  const onZoomResetClick = () => {
-    setRaterState({...raterState,start:'0', end:'5'})
-  } 
-  const showSimilar =  () => {
-    setShouldShowSimilar(true)
-  } 
 
   return (
     <div className="App">
@@ -124,7 +172,9 @@ function App() {
         <div id="search-wrapper">
           <Search 
              album={searchAlbum}
+             artist={searchArtist}
              onAlbumSelect={setSearchAlbum}
+             onArtistSelect={setSearchArtist}
           />
         </div>
         <svg id="trackRater" viewBox="0 0 790 950">
@@ -149,7 +199,7 @@ function App() {
           </Rater>
           }
         </svg>
-        <Dashboard soloRater={soloRater} openAlbumInSearch={setDashboardToSearch} artists={artists}/>
+        <Dashboard selectedArtist={dashboardArtist} selectedAlbum={dashboardAlbum} onAlbumSelect={setDashboardAlbum} onArtistSelect={setDashboardArtist}  artists={artists}/>
       </div>
     </div>
   );

@@ -1,5 +1,0 @@
-mutation CreateSong($song:NewSongInput){
-  CreateSong(song:$song) {
-    ...SongFields
-  }
-}
