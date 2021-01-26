@@ -1,7 +1,7 @@
 interface Item {
 id:String!
 name:String!
-score:Float!
+score:Float
 }
 
 enum ItemType {
@@ -11,7 +11,7 @@ MUSIC
 type Song implements Item {
     id:String!
     vendorId:String
-    score:Float!
+    score:Float
     name: String!
     artist:Artist!
     number:Int!

@@ -3,7 +3,7 @@ spring:
   jpa:
     hibernate:
       format_sql: true
-      ddl-auto: update
+      ddl-auto: create
     show-sql:  true
   datasource:
     url: "jdbc:postgresql://localhost:5432/visual_rater"

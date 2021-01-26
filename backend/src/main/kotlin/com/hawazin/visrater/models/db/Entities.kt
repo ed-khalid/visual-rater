@@ -36,5 +36,5 @@ class Song(
     var discNumber:Int,
     @ManyToOne @JoinColumn(name="album_id") var album:Album? =null,
     @ManyToOne @JoinColumn(name="artist_id") var artist:Artist? = null,
-    var score:Double
+    var score:Double?
 )

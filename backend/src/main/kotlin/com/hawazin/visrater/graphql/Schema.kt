@@ -1,6 +1,6 @@
 package com.hawazin.visrater.graphql
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.hawazin.visrater.graphql.models.NewSongInput
+import com.hawazin.visrater.graphql.models.NewAlbumInput
 import com.hawazin.visrater.graphql.models.SongInput
 import com.hawazin.visrater.models.db.Artist
 import com.hawazin.visrater.models.graphql.ItemType
@@ -26,19 +26,18 @@ class SchemaBuilder(private val spotifyService: SpotifyApi, private val musicSer
                     val songInput = objectMapper.convertValue(raw, SongInput::class.java)
                     return@dataFetcher musicService.updateSong(songInput)
                 }
-                it.dataFetcher("UpdateAlbum") { env ->
-                    val albumId = env.arguments["albumId"] as String
-                    val isComplete = env.arguments["isComplete"] as Boolean
-                    return@dataFetcher musicService.toggleAlbumCompleteness(albumId,isComplete)
-                }
-                it.dataFetcher("CreateSong") { env ->
-                    val raw = env.arguments["song"]
-                    val songInput = objectMapper.convertValue(raw, NewSongInput::class.java)
-                    return@dataFetcher musicService.createSong(songInput)
+                it.dataFetcher("CreateAlbum") { env ->
+                    val raw = env.arguments["album"]
+                    val albumInput = objectMapper.convertValue(raw, NewAlbumInput::class.java)
+                    return@dataFetcher musicService.createAlbum(albumInput)
                 }
                 it.dataFetcher("DeleteSong") { env ->
                     val id = env.arguments["songId"] as String
                     return@dataFetcher musicService.deleteSongById(UUID.fromString(id))
+                }
+                it.dataFetcher("DeleteAlbum") { env ->
+                    val id = env.arguments["albumId"] as String
+                    return@dataFetcher musicService.deleteAlbumById(UUID.fromString(id))
                 }
             }
             .type("Query")
