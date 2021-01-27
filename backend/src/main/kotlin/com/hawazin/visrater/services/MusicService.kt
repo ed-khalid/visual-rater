@@ -29,6 +29,10 @@ class MusicService(private val songRepo:SongRepository , private val albumRepo: 
     {
         val song = songRepo.findById(songInput.id).get()
         song.score = songInput.score ?: song.score
+        // if input score is null, ignroe update, if it's a negative number, nullify score
+        if (song.score!! < 0) {
+            song.score = null
+        }
         song.name = songInput.name ?: song.name
         song.number = songInput.number ?: song.number
         songRepo.save(song)
