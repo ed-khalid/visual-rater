@@ -1,42 +1,48 @@
-import React, { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { AlbumSearchResult, ArtistSearchResult, useSearchByArtistLazyQuery } from "../../generated/graphql";
+import React, { useEffect, useState } from "react";
+import { AlbumSearchResult, Artist, ArtistSearchResult, useSearchByArtistLazyQuery } from "../../generated/graphql";
 import { SearchInputField } from "./SearchInputField";
 import { SearchResults } from "./SearchResults";
 import './Search.css'
 
 interface Props {
-    onAlbumSelect:Dispatch<SetStateAction<AlbumSearchResult|undefined>>
-    onArtistSelect:Dispatch<SetStateAction<ArtistSearchResult|undefined>>
+    onAlbumSelect:any;
+    onArtistSelect:any;
     album:AlbumSearchResult|undefined
     artist:ArtistSearchResult|undefined
+    existingArtist:Artist|undefined
 }
 
-export const Search = ({onAlbumSelect, album, artist, onArtistSelect}:Props) => {
+export const Search = ({onAlbumSelect, album, artist, existingArtist, onArtistSelect}:Props) => {
   const [searchArtist,  { data, error ,loading } ]  = useSearchByArtistLazyQuery()    
   const [artistName, setArtistName] = useState<string>('')
 
-  useEffect(() => {
-        if (!artistName.length) {
+
+  const updateArtistName = (name:string) => {
+        if (!name.length) {
             setArtistName('')
+            onArtistSelect(undefined)
+        } else {
+          setArtistName(name)
+          if ( name.length > 2) {
+            searchArtist({ variables: { name:  name.toLowerCase()}})
+          }
         }
-        if ( artistName.length > 2) {
-            searchArtist({ variables: { name:  artistName.toLowerCase()}})
-        }
-  }, [artistName, searchArtist])
+  }
+
   useEffect(() => {
       if (data?.search?.artist) {
         onArtistSelect(data.search.artist)
       }
-  }, [data,  onArtistSelect])
+  }, [data?.search?.artist, onArtistSelect])
 
   return <div id="search" className="grid">
-        <SearchInputField value={artistName} onInputFieldChange={setArtistName}></SearchInputField>
+        <SearchInputField value={artistName} onInputFieldChange={updateArtistName}></SearchInputField>
         <div id="artist-col">
-            {loading && <p>Loading...</p> }
-            {error && <p>Error!</p> }
+            {artistName && loading && <p>Loading...</p> }
+            {artistName && error && <p>Error!</p> }
             {
             (artist) && 
-                    <SearchResults searchArtist={artist} searchAlbum={album} setSearchAlbum={onAlbumSelect}></SearchResults>
+                    <SearchResults searchArtist={artist} searchAlbum={album} existingArtist={existingArtist} setSearchAlbum={onAlbumSelect}></SearchResults>
             }
         </div> 
   </div>

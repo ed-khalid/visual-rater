@@ -149,6 +149,8 @@ export type Song = Item & {
 
 export type SongInput = {
   id: Scalars['String'];
+  name?: Maybe<Scalars['String']>;
+  number?: Maybe<Scalars['Int']>;
   score?: Maybe<Scalars['Float']>;
 };
 
@@ -169,7 +171,11 @@ export type CreateAlbumMutation = (
   { __typename?: 'Mutation' }
   & { CreateAlbum?: Maybe<(
     { __typename?: 'Album' }
-    & Pick<Album, 'id' | 'name'>
+    & Pick<Album, 'id' | 'name' | 'year' | 'thumbnail' | 'vendorId'>
+    & { songs: Array<(
+      { __typename?: 'Song' }
+      & SongFieldsFragment
+    )> }
   )> }
 );
 
@@ -284,9 +290,15 @@ export const CreateAlbumDocument = gql`
   CreateAlbum(album: $albumInput) {
     id
     name
+    year
+    thumbnail
+    vendorId
+    songs {
+      ...SongFields
+    }
   }
 }
-    `;
+    ${SongFieldsFragmentDoc}`;
 export type CreateAlbumMutationFn = ApolloReactCommon.MutationFunction<CreateAlbumMutation, CreateAlbumMutationVariables>;
 
 /**

@@ -4,5 +4,11 @@ mutation CreateAlbum($albumInput:NewAlbumInput)
     CreateAlbum(album:$albumInput) {
         id
         name
+        year
+        thumbnail
+        vendorId
+        songs {
+            ...SongFields
+        }
     }
 }
