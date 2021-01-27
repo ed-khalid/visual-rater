@@ -33,6 +33,10 @@ div.album-result {
 div.album-result.selected {
     border: 1px solid #3d3d3d;
 }
+div.album-result.disabled img {
+    opacity: 0.5 ;
+    cursor: not-allowed;
+}
 div.album-result img {
     width: inherit;
     height:inherit;
