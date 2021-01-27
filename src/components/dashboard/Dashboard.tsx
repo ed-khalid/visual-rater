@@ -1,40 +1,28 @@
-import React, { useEffect } from "react"
+import React  from "react"
 import './Dashboard.css'
-import { Album, Artist, Maybe } from "../../generated/graphql"
+import { Album, Artist } from "../../generated/graphql"
 import { DashboardArtist } from "./ArtistDashboard"
 import { DashboardAlbumSummary } from "./DashboardAlbumSummary"
 
 interface Props {
     artists:Artist[]
     selectedAlbum:Album|undefined
-    onAlbumSelect:any
+    onAlbumSelect:(album:Album|undefined,artist:Artist|undefined) => void
     selectedArtist:Artist|undefined
-    onArtistSelect:any
 }
 
-export const Dashboard = ({artists,selectedAlbum, selectedArtist, onAlbumSelect, onArtistSelect }:Props) => {
-
-
-    useEffect(() => {
-        const hasChosenAlbum = (it:Maybe<Album>) => it?.id === selectedAlbum?.id    
-        const chosenAlbumUpdated = artists.find(it => it.albums?.find(hasChosenAlbum))?.albums?.find(hasChosenAlbum)
-        if (chosenAlbumUpdated) {
-            onAlbumSelect(chosenAlbumUpdated)
-        }
-    }, [artists, selectedAlbum, onAlbumSelect])
+export const Dashboard = ({artists,selectedAlbum, selectedArtist, onAlbumSelect}:Props) => {
 
     const setAlbum =  (album:Album, artist:Artist) => {
-        onArtistSelect(artist)
-        onAlbumSelect(album)
+        onAlbumSelect(album, artist)
     } 
     const onAlbumClose = () => {
-        onArtistSelect(undefined)
-        onAlbumSelect(undefined)
+        onAlbumSelect(undefined, undefined)
     } 
      
 
     return <div id="dashboard" className="flex-column">
-        {artists.map(artist =>  <DashboardArtist key={artist.id} onAlbumSelect={setAlbum} artist={artist} />)}
+        {artists && artists.map(artist =>  <DashboardArtist key={artist.id} onAlbumSelect={setAlbum} artist={artist} />)}
         {selectedAlbum && selectedArtist && <DashboardAlbumSummary onClose={onAlbumClose}  artistName={selectedArtist.name} album={selectedAlbum} />}
     </div>
 
