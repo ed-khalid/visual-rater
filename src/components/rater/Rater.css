@@ -16,6 +16,13 @@ g.rater-axis g.tick {
 line.rater-line {
     stroke:#726d6dcc;
 }
+g rect#zoom-listener {
+    cursor:pointer ;
+    fill: red;
+    opacity: 0.2;
+    width:40px;
+    pointer-events: all;
+}
 
 g.read-only-item  circle {
     fill: rgba(61,61,61,0.2);
