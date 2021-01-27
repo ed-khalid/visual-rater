@@ -8,6 +8,9 @@ interface Props {
     onClose:any
 }
 
+// type SongCell =  Song & {  isNumberEdited:boolean, isNameEdited:boolean }   
+// const mapSongToSongCell = (song:Song):SongCell => ({...song ,isNameEdited:false, isNumberEdited:false  })
+
 
 export const DashboardAlbumSummary =  ({onClose, artistName, album }:Props) => {
 
@@ -23,6 +26,8 @@ export const DashboardAlbumSummary =  ({onClose, artistName, album }:Props) => {
         "number": SORT_DIRECTION.ASC,
         "score": SORT_DIRECTION.ASC,
     })    
+    const [songUnderEdit, setSongUnderEdit] = useState<{id:string|undefined, name:string, number:string}>({ id:undefined, name: '', number:'' }) 
+
 
     useEffect(() => {
         setSongs(album.songs)
@@ -70,16 +75,25 @@ export const DashboardAlbumSummary =  ({onClose, artistName, album }:Props) => {
         }
         setSongs(sortedSongs)
     }
-    const updateScore = (score:number|null, _song:Song) => {
+    const updateScore = (score:number, _song:Song) => {
         const song:SongInput = {
+            id: _song.id,
             score 
-            ,id: _song.id
         }
         updateSong({ variables: { song }})
     }
     const onAlbumDelete = (album:Album) => {
         deleteAlbum({variables: { albumId: album.id}, refetchQueries: [{query: GetArtistsDocument}]})
         onClose()
+    }
+
+    const onNumberEdit = (val:string) => {
+        setSongUnderEdit({...songUnderEdit, number:val})
+    }
+
+    const saveNumber =  () => {
+          updateSong({variables: { song: { id:songUnderEdit.id! , number: Number(songUnderEdit.number)  } }})
+          setSongUnderEdit({ id: undefined, name: '', number: ''})
     }
 
     return <div className="dashboard-album-summary flex-column">
@@ -114,7 +128,24 @@ export const DashboardAlbumSummary =  ({onClose, artistName, album }:Props) => {
             </thead>
             <tbody>
                 {songs.map(song =><tr key={song.id}>
-                    <td className="number-cell">{song.number}</td>
+                    <td className="number-cell">
+                        <div className="flex-column">
+                            {!(songUnderEdit.id === song.id) && 
+                                <><div className="content">
+                                    {song.number}
+                                </div>
+                                    <div onClick={() => setSongUnderEdit({id : song.id, name: '', number: ''})  } className="action">
+                                        edit
+                                    </div></>
+                            }
+                            {(songUnderEdit.id === song.id) && 
+                            <div>
+                              <input className="song-number" value={songUnderEdit.number} onChange={(e) => onNumberEdit(e.target.value) } ></input>
+                              <div onClick={() => saveNumber()} className="action">save</div>
+                            </div>
+                            }
+                        </div>
+                    </td>
                     <td className="name-cell">{song.name}</td>
                     <td className="score-cell">
                         <div>
@@ -123,7 +154,7 @@ export const DashboardAlbumSummary =  ({onClose, artistName, album }:Props) => {
                               <div className="score-shortcut plus-minus" onClick={() => updateScore((song.score||0) - 0.25, song) }>-</div>
                               {[1,2,3,4,5].map(it => <div className="score-shortcut" key={"score-"+it} onClick={() => updateScore(it, song)}>{it}</div> )}
                               <div className="score-shortcut plus-minus" onClick={() => updateScore((song.score||0) + 0.25, song) }>+</div>
-                              <div className="score-shortcut plus-minus" onClick={() => updateScore(null, song) }>n/a</div>
+                              <div className="score-shortcut plus-minus" onClick={() => updateScore(-1, song) }>n/a</div>
                           </div>
                         </div>
                     </td>

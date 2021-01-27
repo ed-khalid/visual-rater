@@ -57,6 +57,10 @@ td.header-cell {
 td.number-cell {
     width: 5%;
 }
+td.number-cell div.action {
+    font-size:8px;
+    cursor: pointer;
+}
 td.name-cell {
     width: 70%;
 }
@@ -100,4 +104,9 @@ div.dashboard-album-summary {
 div#album-rating {
     margin: 5px;
     border: 1px solid #3d3d3d;
+}
+
+input.song-number {
+    width: 66%;
+    text-align: center;
 }
