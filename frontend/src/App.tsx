@@ -28,8 +28,8 @@ function App() {
   const [getTracks, tracks ] = useGetTracksForAlbumLazyQuery()
   const [shouldShowSimilar, setShouldShowSimilar] = useState<boolean>(false)
   const [createAlbum, ] = useCreateAlbumMutation() 
-  const [artists, setArtists] = useState<Artist[]>([]) 
-  const [allSongs, setAllSongs] = useState<RatedItem[]>([]) 
+  // const [artists, setArtists] = useState<Artist[]>([]) 
+  const [otherSongs, setOtherSongs] = useState<RatedItem[]>([]) 
   const [existingArtist, setExistingArtist] = useState<Artist>()
   const artistsFull =  useGetArtistsQuery()
 
@@ -47,10 +47,10 @@ function App() {
   const updateSearchArtist = useCallback((artist?:ArtistSearchResult) => {
       setSearchArtist(artist)
       if (artist) {
-        const existingArtist = artists.find(it => it.vendorId === artist?.id)
-          setExistingArtist(existingArtist)
+        const existingArtist = artistsFull.data?.artists?.find(it => it.vendorId === artist?.id)
+          setExistingArtist(existingArtist as Artist)
       }
-  }, [artists])
+  }, [artistsFull.data?.artists])
   const updateScale = (newStart?:string, newEnd?:string) => {
     if (newStart === '') {
       newStart = '0'
@@ -71,18 +71,33 @@ function App() {
   }
 
   useEffect(() => {
-    if (dashboardAlbum?.id) {
-      const ratedItems = dashboardAlbum.songs.filter(it => it.score).map(mapSongToRatedItem)
-      setMainRaterItems(ratedItems)
-      soloRater(true)
-      const newSongs = allSongs.filter(song => !ratedItems.find(it => it.id === song.id)) 
-      if (newSongs.length !== allSongs.length) {
-        setAllSongs(newSongs)
+    if (artistsFull.data?.artists) {
+        const songs:Song[] = artistsFull.data.artists.reduce((curr:Song[],it) => {
+          if (it.albums) {
+            it.albums.forEach(album => {
+              if (album && album.songs) {
+                album.songs.forEach(song => {
+                  if (song) {
+                    curr.push( { ...song, artist: it as Artist })
+                  }
+                })
+              }
+            })
+          }
+          return curr
+        },[])
+      const allSongsAsRatedItems = songs.filter(it => it.score).map(mapSongToRatedItem);
+      if (dashboardAlbum?.id) {
+        const ratedItems:RatedItem[] = dashboardAlbum?.songs.filter((it:Song) => it.score).map(mapSongToRatedItem)
+        setMainRaterItems(ratedItems)
+        const _otherSongs = allSongsAsRatedItems.filter(song => !ratedItems.find(it => it.id === song.id)) 
+        setOtherSongs(_otherSongs)
+      } else {
+        setMainRaterItems([])
+        setOtherSongs(allSongsAsRatedItems)
       }
-    } else {
-      setMainRaterItems([])
     }
-  }, [allSongs, dashboardAlbum?.id])
+  }, [dashboardAlbum?.id, artistsFull.data?.artists, dashboardAlbum?.songs, soloRater])
 
   useEffect(() => {
     const scale = raterState.scaler.yScale.domain([Number(raterState.start), Number(raterState.end)])
@@ -125,7 +140,7 @@ function App() {
               artist.albums = [...albums!, newAlbum ] 
               cache.writeQuery<GetArtistsQuery>({ query: GetArtistsDocument, data : { artists : [...otherArtists, artist]}    })
             }
-            const dashboardArtist = artists.find(it => it.id === artist.id)  
+            const dashboardArtist:Artist = artistsFull.data?.artists?.find(it => it.id === artist.id) as Artist
             if (dashboardArtist) {
               setDashboardArtist(dashboardArtist)
               setDashboardAlbum({ 
@@ -140,39 +155,21 @@ function App() {
           }
         }})
     }
-  }, [tracks.data?.search?.tracks])
-
+  }, [tracks.data?.search?.tracks, createAlbum, artistsFull.data?.artists])
 
   const updateSearchAlbum = async (album:AlbumSearchResult) => {
     setSearchAlbum(album)
     getTracks({ variables: { albumId: album.id} })
   }
-
-  useEffect(() => {
-    if (artistsFull.error) {
-      console.log(artistsFull.error)
-    }
-    else  {
-      if (artistsFull.data && artistsFull.data.artists) {
-        setArtists(artistsFull.data.artists)
-        const songs:Song[] = artistsFull.data.artists.reduce((curr:Song[],it) => {
-          if (it.albums) {
-            it.albums.forEach(album => {
-              if (album && album.songs) {
-                album.songs.forEach(song => {
-                  if (song) {
-                    curr.push( { ...song, artist: it  })
-                  }
-                })
-              }
-            })
-          }
-          return curr
-        },[])
-        setAllSongs(songs.filter(it => it.score).map(mapSongToRatedItem));
+  const updateDashboardAlbum =  (album?:Album, artist?:Artist) => {
+    if ( album?.id !== dashboardAlbum?.id) {
+      setDashboardAlbum(album)
+      setDashboardArtist(artist)
+      if (album) {
+        soloRater(true)
       }
     }
-  } , [artistsFull.data, artistsFull.error, soloRater, artists])
+  } 
 
 
   return (
@@ -213,14 +210,19 @@ function App() {
             state = {raterState}
             setState={setRaterState}
             position={{x:350,y:RATER_BOTTOM}}
-            items={allSongs}
-            setItems={setAllSongs}
+            items={otherSongs}
+            setItems={setOtherSongs}
             mode={RaterMode.SECONDARY}
           >
           </Rater>
           }
         </svg>
-        <Dashboard selectedArtist={dashboardArtist} selectedAlbum={dashboardAlbum} onAlbumSelect={setDashboardAlbum} onArtistSelect={setDashboardArtist}  artists={artists}/>
+        <Dashboard 
+          selectedArtist={dashboardArtist} 
+          selectedAlbum={dashboardAlbum} 
+          onAlbumSelect={updateDashboardAlbum} 
+          artists={artistsFull.data?.artists as Artist[]}
+        />
       </div>
     </div>
   );
