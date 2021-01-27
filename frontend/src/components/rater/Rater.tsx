@@ -116,7 +116,6 @@ export const Rater:React.FunctionComponent<Props> = ({position, state, setState,
     const zoomIn = (e:MouseEvent) => {
         const y = e.offsetY;  
         const score = state.scaler.toScore(y) 
-        console.log(score)
         const min = Math.min((score - 0.25) || 0) 
         const max = Math.min((score + 0.25) || 5) 
         setState({...state, start: min.toFixed(2), end: max.toFixed(2) })
@@ -134,10 +133,13 @@ export const Rater:React.FunctionComponent<Props> = ({position, state, setState,
         }
     }
     makeAxis(state.scaler.scale) 
+    const pan = (e:any) => {
+        console.log('pan', e)
+    }
 
     return (
                   <g  ref={it=> it ? setG(it):null} className="rater-container">
-                      {mode === RaterMode.PRIMARY && <rect id="zoom-listener" onDoubleClick={(e) => zoomIn(e.nativeEvent)} width="600" x="30" height={position.y} fill="none" pointerEvents="all"></rect>}
+                      {mode === RaterMode.PRIMARY && <rect id="zoom-listener" onDragStart={(e) => pan(e)} onDrag={(e) => pan(e)} onClick={(e) => zoomIn(e.nativeEvent)} x={position.x+5} height={position.y}></rect>}
                       <g className={mode === RaterMode.PRIMARY ? "rater-axis" : "rater-axis readonly" }></g>
                       <line className={mode === RaterMode.PRIMARY? "rater-line": 'rater-line readonly' } x1={position.x} y1={0} x2={position.x} y2={position.y} />
                       { groupedItems.map(rItemGrouped => 
