@@ -1,12 +1,9 @@
 package com.hawazin.visrater.services
 
 import com.hawazin.visrater.graphql.models.NewAlbumInput
-import com.hawazin.visrater.graphql.models.NewSongInput
 import com.hawazin.visrater.graphql.models.SongInput
 import com.hawazin.visrater.models.db.*
-import org.hibernate.annotations.NotFound
 import org.springframework.stereotype.Service
-import org.springframework.web.client.HttpClientErrorException
 import java.util.*
 
 
@@ -31,7 +28,9 @@ class MusicService(private val songRepo:SongRepository , private val albumRepo: 
     fun updateSong(songInput: SongInput) : Song
     {
         val song = songRepo.findById(songInput.id).get()
-        song.score = songInput.score
+        song.score = songInput.score ?: song.score
+        song.name = songInput.name ?: song.name
+        song.number = songInput.number ?: song.number
         songRepo.save(song)
         return song
     }
@@ -56,8 +55,9 @@ class MusicService(private val songRepo:SongRepository , private val albumRepo: 
                 albumRepo.save(album)
             }
         }
-        var song = albumInput.songs.map { Song( id =  UUID.randomUUID(),  vendorId = it.vendorId, name = it.name, album = album, artist = artist, score = it.score, number= it.number, discNumber = it.discNumber   ) }
-        songRepo.saveAll(song)
+        var songs = albumInput.songs.map { Song( id =  UUID.randomUUID(),  vendorId = it.vendorId, name = it.name, album = album, artist = artist, score = it.score, number= it.number, discNumber = it.discNumber   ) }
+        songRepo.saveAll(songs)
+        album.songs = songs.toMutableList()
         return album
     }
 

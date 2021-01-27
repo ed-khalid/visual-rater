@@ -7,6 +7,8 @@ type Mutation {
 
 input SongInput {
     id:String!
+    name:String
+    number:Int
     score:Float
 }
 
