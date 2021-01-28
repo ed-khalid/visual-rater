@@ -1,22 +1,31 @@
-import { select } from 'd3-selection';
+import { select, Selection } from 'd3-selection';
 import { zoom } from 'd3-zoom'
-import { event as d3Event } from 'd3';
+import { axisBottom, event as d3Event } from 'd3';
 import { Scaler } from '../../../functions/scale';
-import { RatedItemGrouped } from '../Rater';
+import { GlobalRaterState, RatedItemGrouped } from '../Rater';
+import { ScaleLinear } from 'd3-scale' 
+import { Dispatch, SetStateAction } from 'react';
 interface Props {
-    listener:SVGRectElement
-    target:SVGGElement
+    listener:SVGRectElement|null
+    axis:Selection<SVGGElement,unknown, null, undefined>
+    scale:ScaleLinear<number,number>
+    target:any
+    setState:Dispatch<SetStateAction<GlobalRaterState>>
 }
 
-export const ZoomBehavior = ({listener,target}:Props) => {
+export const ZoomBehavior = (props?:Props) => {
 
-    // const doZoom = () => {
-    //     const transform = d3Event.transform 
-    //     console.log('transform', transform)
-    //     select(target).attr('transform', `translate(0, ${transform.y})`)
-    // }
-    // const zoomHandler = zoom<SVGRectElement, unknown>().on('zoom', doZoom) 
-    // select(listener).call(zoomHandler)
+    if (props && props.listener) {
+        const doZoom = () => {
+            const transform = d3Event.transform 
+            const newScale = transform.rescaleY(props.scale) 
+            props.setState(s => ({...s, scaler: new Scaler(newScale)}) )
+        }
+        const zoomHandler = zoom<SVGRectElement, unknown>()
+          .scaleExtent([0,Infinity])
+          .on('zoom', doZoom) 
+        select(props.listener).call(zoomHandler)
+    }
 
     return {
         zoomOnGroup: (group:RatedItemGrouped) =>  {

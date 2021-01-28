@@ -5,6 +5,7 @@ import { ItemType } from './models/Item';
 import { RatedItem } from './models/RatedItem';
 import { Scaler } from './functions/scale';
 import { AlbumSearchResult, Artist, ArtistSearchResult, GetArtistsDocument, GetArtistsQuery, NewSongInput, Song, useCreateAlbumMutation, useGetArtistsQuery , useGetTracksForAlbumLazyQuery } from './generated/graphql';
+import { zoomIdentity } from 'd3-zoom'
 import { Dashboard } from './components/dashboard/Dashboard';
 import { Search } from './components/search/Search';
 
@@ -35,7 +36,7 @@ function App() {
   const [searchOrDashboardAlbum, setSearchOrDashboardAlbum] = useState<SearchOrDashboardAlbum>()
   const [otherSongs, setOtherSongs] = useState<RatedItem[]>([]) 
   const [existingArtist, setExistingArtist] = useState<Artist>()
-  const svg = useRef<SVGSVGElement>(null)
+  const gWrapper = useRef<SVGGElement>(null)
   const artistsFull =  useGetArtistsQuery()
 
 
@@ -44,7 +45,8 @@ function App() {
     setShouldShowSimilar(true)
   } 
   const onZoomResetClick = useCallback(() => {
-    setRaterState(prev => ({...prev, start : '0', end : '5'})) 
+    const resetScale = zoomIdentity.rescaleY(raterState.scaler.yScale) 
+    setRaterState(prev => ({...prev, scaler: new Scaler(resetScale)})) 
   }, []) 
   const soloRater = useCallback((shouldShowSimilar = false ) => {
     onZoomResetClick()
@@ -78,6 +80,7 @@ function App() {
 
   useEffect(() => {
     if (artistsFull.data?.artists) {
+          console.log(artistsFull)
         const songs:Song[] = artistsFull.data.artists.reduce((curr:Song[],it) => {
           if (it.albums) {
             it.albums.forEach(album => {
@@ -97,7 +100,7 @@ function App() {
             const dashboardArtist:Artist = artistsFull.data?.artists?.find(it => it.vendorId === searchArtist.id) as Artist
             const dashboardAlbum = dashboardArtist.albums?.find(it => it?.vendorId === searchAlbum.id) 
             if (dashboardArtist && dashboardAlbum) {
-              updateDashboardAlbum(dashboardArtist.id, dashboardAlbum.id)
+              updateDashboardAlbum(dashboardAlbum.id, dashboardArtist.id)
             }
       } else {
       if (searchOrDashboardAlbum === SearchOrDashboardAlbum.DASHBOARD && dashboardAlbumId) {
@@ -114,12 +117,14 @@ function App() {
     }
   }, [dashboardAlbumId, artistsFull.data?.artists, soloRater])
 
-  useEffect(() => {
-    const scale = raterState.scaler.yScale.domain([Number(raterState.start), Number(raterState.end)])
-    setRaterState(r => ({...r, scaler : new Scaler(scale)}))
-  }, [raterState.start, raterState.end, raterState.scaler.yScale])
+  // scale
+  // useEffect(() => {
+  //   const scale = raterState.scaler.yScale.domain([Number(raterState.start), Number(raterState.end)])
+  //   setRaterState(r => ({...r, scaler : new Scaler(scale)}))
+  // }, [raterState.scaler])
 
 
+  // search album click get tracks  
   useEffect(() => {
     if (tracks.data?.search?.tracks && searchAlbum && searchArtist) {
       const songs:NewSongInput[] = tracks.data.search.tracks.map((it,index) => 
@@ -160,6 +165,7 @@ function App() {
     }
   }, [tracks.data?.search?.tracks, createAlbum])
 
+  // album selections 
   const updateSearchAlbum = (album:AlbumSearchResult) => {
     setSearchAlbum(album)
     setSearchOrDashboardAlbum(SearchOrDashboardAlbum.SEARCH)
@@ -198,12 +204,18 @@ function App() {
              onArtistSelect={updateSearchArtist}
           />
         </div>
-        <svg ref={svg} id="trackRater" viewBox="0 0 790 950">
+        <svg id="trackRater" viewBox="0 0 1000 950">
+          <defs>
+            <clipPath id="clip-path">
+              <rect x={0} width="1000" height={RATER_BOTTOM}></rect>
+            </clipPath>
+          </defs>
+          <g ref={gWrapper} id="wrapper">
           {mainRaterItems.length && <Rater 
                 setState={setRaterState}
                 position={{x:300, y:RATER_BOTTOM}}
                 state={raterState}
-                svgRef={svg.current}
+                zoomTarget={gWrapper.current}
                 items={mainRaterItems}
                 setItems={setMainRaterItems}
                 mode={RaterMode.PRIMARY}
@@ -214,13 +226,13 @@ function App() {
             state = {raterState}
             setState={setRaterState}
             position={{x:350,y:RATER_BOTTOM}}
-            svgRef={null}
             items={otherSongs}
             setItems={setOtherSongs}
             mode={RaterMode.SECONDARY}
           >
           </Rater>
           }
+          </g>
         </svg>
         <Dashboard 
           selectedArtistId={dashboardArtistId} 
