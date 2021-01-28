@@ -17,6 +17,10 @@ export const initialRaterState:GlobalRaterState = {
   ,itemType: ItemType.MUSIC
 } 
 
+enum SearchOrDashboardAlbum {
+  SEARCH, DASHBOARD
+}  
+
 
 function App() {
   const [searchAlbum, setSearchAlbum] = useState<AlbumSearchResult>()
@@ -28,7 +32,7 @@ function App() {
   const [getTracks, tracks ] = useGetTracksForAlbumLazyQuery()
   const [shouldShowSimilar, setShouldShowSimilar] = useState<boolean>(false)
   const [createAlbum, ] = useCreateAlbumMutation() 
-  // const [artists, setArtists] = useState<Artist[]>([]) 
+  const [searchOrDashboardAlbum, setSearchOrDashboardAlbum] = useState<SearchOrDashboardAlbum>()
   const [otherSongs, setOtherSongs] = useState<RatedItem[]>([]) 
   const [existingArtist, setExistingArtist] = useState<Artist>()
   const artistsFull =  useGetArtistsQuery()
@@ -87,15 +91,23 @@ function App() {
           return curr
         },[])
       const allSongsAsRatedItems = songs.filter(it => it.score).map(mapSongToRatedItem);
-      if (dashboardAlbumId) {
+      if (searchOrDashboardAlbum === SearchOrDashboardAlbum.SEARCH && searchAlbum?.id && searchArtist?.id) {
+            const dashboardArtist:Artist = artistsFull.data?.artists?.find(it => it.vendorId === searchArtist.id) as Artist
+            const dashboardAlbum = dashboardArtist.albums?.find(it => it?.vendorId === searchAlbum.id) 
+            if (dashboardArtist && dashboardAlbum) {
+              updateDashboardAlbum(dashboardArtist.id, dashboardAlbum.id)
+            }
+      } else {
+      if (searchOrDashboardAlbum === SearchOrDashboardAlbum.DASHBOARD && dashboardAlbumId) {
         const album = artistsFull.data.artists.find(it=> it.albums?.find(it => it?.id === dashboardAlbumId))?.albums!.find(it => it?.id === dashboardAlbumId)  
         const ratedItems:RatedItem[] = album!.songs.filter(it => it.score).map(mapSongToRatedItem)
         setMainRaterItems(ratedItems)
         const _otherSongs = allSongsAsRatedItems.filter(song => !ratedItems.find(it => it.id === song.id)) 
         setOtherSongs(_otherSongs)
       } else {
-        setMainRaterItems([])
-        setOtherSongs(allSongsAsRatedItems)
+          setMainRaterItems([])
+          setOtherSongs(allSongsAsRatedItems)
+        }
       }
     }
   }, [dashboardAlbumId, artistsFull.data?.artists, soloRater])
@@ -141,21 +153,18 @@ function App() {
               artist.albums = [...albums!, newAlbum ] 
               cache.writeQuery<GetArtistsQuery>({ query: GetArtistsDocument, data : { artists : [...otherArtists, artist]}    })
             }
-            const dashboardArtist:Artist = artistsFull.data?.artists?.find(it => it.id === artist.id) as Artist
-            if (dashboardArtist) {
-              setDashboardArtistId(dashboardArtist.id)
-              setDashboardAlbumId(newAlbum.id) 
-            }
           }
         }})
     }
-  }, [tracks.data?.search?.tracks, createAlbum, artistsFull.data?.artists])
+  }, [tracks.data?.search?.tracks, createAlbum])
 
-  const updateSearchAlbum = async (album:AlbumSearchResult) => {
+  const updateSearchAlbum = (album:AlbumSearchResult) => {
     setSearchAlbum(album)
+    setSearchOrDashboardAlbum(SearchOrDashboardAlbum.SEARCH)
     getTracks({ variables: { albumId: album.id} })
   }
   const updateDashboardAlbum =  (albumId?:string, artistId?:string) => {
+      setSearchOrDashboardAlbum(SearchOrDashboardAlbum.DASHBOARD)
       setDashboardAlbumId(albumId)
       setDashboardArtistId(artistId)
       if (albumId) {
@@ -210,8 +219,8 @@ function App() {
           }
         </svg>
         <Dashboard 
-          selectedArtist={dashboardArtistId} 
-          selectedAlbum={dashboardAlbumId} 
+          selectedArtistId={dashboardArtistId} 
+          selectedAlbumId={dashboardAlbumId} 
           onAlbumSelect={updateDashboardAlbum} 
           artists={artistsFull.data?.artists as Artist[]}
         />
