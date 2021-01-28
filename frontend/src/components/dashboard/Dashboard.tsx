@@ -6,13 +6,12 @@ import { DashboardAlbumSummary } from "./DashboardAlbumSummary"
 
 interface Props {
     artists:Artist[]
-    selectedAlbum:string|undefined
+    selectedAlbumId:string|undefined
     onAlbumSelect:(albumId:string|undefined,artistId:string|undefined) => void
-    selectedArtist:string|undefined
+    selectedArtistId:string|undefined
 }
 
-export const Dashboard = ({artists,selectedAlbum, selectedArtist, onAlbumSelect}:Props) => {
-
+export const Dashboard = ({artists,selectedAlbumId, selectedArtistId , onAlbumSelect}:Props) => {
     const setAlbum =  (album:Album, artist:Artist) => {
         onAlbumSelect(album.id, artist.id)
     } 
@@ -22,7 +21,7 @@ export const Dashboard = ({artists,selectedAlbum, selectedArtist, onAlbumSelect}
 
     return <div id="dashboard" className="flex-column">
         {artists && artists.map(artist =>  <DashboardArtist key={artist.id} onAlbumSelect={setAlbum} artist={artist} />)}
-        {selectedAlbum && selectedArtist && <DashboardAlbumSummary onClose={onAlbumClose} artistName={artists.find(it => it.id === selectedArtist)!.name} album={artists.find(it => it.id === selectedArtist)?.albums?.find(it => it?.id === selectedAlbum )!} />}
+        {selectedAlbumId && selectedArtistId && <DashboardAlbumSummary onClose={onAlbumClose} artistName={artists.find(it => it.id === selectedArtistId)!.name} album={artists.find(it => it.id === selectedArtistId)?.albums?.find(it => it?.id === selectedAlbumId )!} />}
     </div>
 
 }

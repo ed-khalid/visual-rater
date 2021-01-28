@@ -44,6 +44,7 @@ export const Rater:React.FunctionComponent<Props> = ({position, state, setState,
     const [currentItem, setCurrentItem] = useState<RatedItem|null>();  
     const [groupedItems, setGroupedItems] = useState<RatedItemGrouped[]>([]);
     const [g, setG] = useState<SVGGElement>()
+    const [panPoint,setPanPoint] = useState<{x:number,y:number}>()
 
 
     useEffect(() => {
@@ -133,13 +134,38 @@ export const Rater:React.FunctionComponent<Props> = ({position, state, setState,
         }
     }
     makeAxis(state.scaler.scale) 
-    const pan = (e:any) => {
-        console.log('pan', e)
+    const startPan = (e:MouseEvent) => {
+        setPanPoint({x:e.offsetX, y:e.offsetY})
+        console.log('pan start',{x:e.x, y:e.y})
+    }
+    const duringPan = (e:MouseEvent) => {
+        if (panPoint) {
+            const point:Position = { x: e.offsetX, y:e.offsetY}  
+            const original = state.scaler.toScore(panPoint.y)  
+            const delta = state.scaler.toScore(point.y) - original  
+            // console.log('delta', delta)
+            // console.log('start', state.start, 'end', state.end)
+            const min = Math.max(Number(state.start) + delta, 0)     
+            const max = Math.min(Number(state.end) + delta, 5)  
+            console.log('start2', min.toFixed(2), 'end2', max.toFixed(2))
+            setState({...state, start: min.toFixed(2), end:max.toFixed(2) })
+            // console.log('pan move',point)
+        }
+    }  
+    const endPan = (e:MouseEvent) => {
+        const point:Position = {x:e.offsetX, y:e.offsetY}
+        console.log('pan end', point)
+        if (point.x === panPoint?.x && point.y === panPoint?.y) {
+            zoomIn(e)
+            setPanPoint(undefined)
+        } else {
+            setPanPoint(undefined)
+        }
     }
 
     return (
                   <g  ref={it=> it ? setG(it):null} className="rater-container">
-                      {mode === RaterMode.PRIMARY && <rect id="zoom-listener" onDragStart={(e) => pan(e)} onDrag={(e) => pan(e)} onClick={(e) => zoomIn(e.nativeEvent)} x={position.x+5} height={position.y}></rect>}
+                      {mode === RaterMode.PRIMARY && <rect id="zoom-listener" onMouseUp={(e) => endPan(e.nativeEvent) } onMouseDown={(e) => startPan(e.nativeEvent)} onMouseMove={(e) => duringPan(e.nativeEvent) } x={position.x+5} height={position.y}></rect>}
                       <g className={mode === RaterMode.PRIMARY ? "rater-axis" : "rater-axis readonly" }></g>
                       <line className={mode === RaterMode.PRIMARY? "rater-line": 'rater-line readonly' } x1={position.x} y1={0} x2={position.x} y2={position.y} />
                       { groupedItems.map(rItemGrouped => 
