@@ -3,7 +3,7 @@ import { select } from 'd3-selection'
 import { drag } from 'd3-drag'
 import { RatedItem } from "../../models/RatedItem";
 import { Scaler } from "../../functions/scale";
-import { DragBehavior } from "./DragBehavior";
+import { DragBehavior } from "./behaviors/DragBehavior";
 import { RaterOrientation } from "./Rater";
 import { CloseButton } from "./CloseButton";
 

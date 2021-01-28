@@ -23,6 +23,13 @@ g rect#zoom-listener {
     width:40px;
     pointer-events: all;
 }
+g rect#pan-listener {
+    cursor:move ;
+    fill: none;
+    opacity: 0.2;
+    width:350px;
+    pointer-events: all;
+}
 
 g.read-only-item  circle {
     fill: rgba(61,61,61,0.2);

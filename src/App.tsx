@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import './App.css';
 import { Rater, GlobalRaterState, RaterMode } from './components/rater/Rater';
 import { ItemType } from './models/Item';
@@ -35,7 +35,9 @@ function App() {
   const [searchOrDashboardAlbum, setSearchOrDashboardAlbum] = useState<SearchOrDashboardAlbum>()
   const [otherSongs, setOtherSongs] = useState<RatedItem[]>([]) 
   const [existingArtist, setExistingArtist] = useState<Artist>()
+  const svg = useRef<SVGSVGElement>(null)
   const artistsFull =  useGetArtistsQuery()
+
 
   const mapSongToRatedItem  = (song:any) : RatedItem => new RatedItem({ id: song.id, vendorId:song.vendorId, name: song.name },song.score!);
   const showSimilar =  () => {
@@ -196,11 +198,12 @@ function App() {
              onArtistSelect={updateSearchArtist}
           />
         </div>
-        <svg id="trackRater" viewBox="0 0 790 950">
+        <svg ref={svg} id="trackRater" viewBox="0 0 790 950">
           {mainRaterItems.length && <Rater 
                 setState={setRaterState}
                 position={{x:300, y:RATER_BOTTOM}}
                 state={raterState}
+                svgRef={svg.current}
                 items={mainRaterItems}
                 setItems={setMainRaterItems}
                 mode={RaterMode.PRIMARY}
@@ -211,6 +214,7 @@ function App() {
             state = {raterState}
             setState={setRaterState}
             position={{x:350,y:RATER_BOTTOM}}
+            svgRef={null}
             items={otherSongs}
             setItems={setOtherSongs}
             mode={RaterMode.SECONDARY}

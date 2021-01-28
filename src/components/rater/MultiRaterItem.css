@@ -1,0 +1,9 @@
+
+g text.multi-title {
+    cursor: pointer;
+    font-size:10px;
+    fill: rgba(107, 56, 155, 0.69);
+}
+circle.multi-item-symbol {
+    fill: rgba(159, 86, 228, 0.69);
+}
