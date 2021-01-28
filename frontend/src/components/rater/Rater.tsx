@@ -8,19 +8,27 @@ import { RatedItem } from "../../models/RatedItem";
 import { SingleRaterItem } from "./SingleRaterItem";
 import { MultiRaterItem } from "./MultiRaterItem";
 import { Position } from '../../models/Position';
-import { Dispatch, SetStateAction, useEffect, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import React from 'react';
 import { RATER_BOTTOM } from '../../App';
 import './Rater.css'
+import { ZoomBehavior } from './behaviors/ZoomBehavior';
+import { PanBehavior } from './behaviors/PanBehavior';
 
 interface Props {
     position:Position
     state:GlobalRaterState
+    svgRef:SVGSVGElement|null
     setState:Dispatch<SetStateAction<GlobalRaterState>>
     items: RatedItem[];
     setItems:Dispatch<SetStateAction<RatedItem[]>>
     mode:RaterMode
 }
+export type RatedItemGrouped  = {
+        id:string
+        position:number
+        ,items:RatedItem[]
+    } 
 
 export type GlobalRaterState = {
     scaler:Scaler
@@ -37,15 +45,24 @@ export enum RaterOrientation {
 
 
 
-export const Rater:React.FunctionComponent<Props> = ({position, state, setState, items, setItems, mode}:Props) => {
+export const Rater:React.FunctionComponent<Props> = ({position, svgRef, state, setState, items, setItems, mode}:Props) => {
 
     const [updateSong]  = useUpdateSongMutation();
     const [deleteSong] = useDeleteSongMutation()  
     const [currentItem, setCurrentItem] = useState<RatedItem|null>();  
     const [groupedItems, setGroupedItems] = useState<RatedItemGrouped[]>([]);
-    const [g, setG] = useState<SVGGElement>()
-    const [panPoint,setPanPoint] = useState<{x:number,y:number}>()
+    const g = useRef<SVGGElement>(null)
+    const [zoomListener, setZoomListener] = useState<SVGRectElement>()
+    const [pan, ] = useState(PanBehavior())
+    const [zoomBehavior, setZoomBehavior] = useState<any>() 
 
+
+    useEffect(() => {
+        if (svgRef && zoomListener) {
+            const z = ZoomBehavior({listener: zoomListener, target: svgRef  })
+            setZoomBehavior(z)
+        }
+    }, [zoomListener,svgRef])
 
     useEffect(() => {
         const groupCloseItems = (ratedItems:RatedItem[]) => {
@@ -86,12 +103,18 @@ export const Rater:React.FunctionComponent<Props> = ({position, state, setState,
         setItems([..._r])
     } 
 
-    type RatedItemGrouped  = {
-        id:string
-        position:number
-        ,items:RatedItem[]
+    const zoomOnGroup = (position:number) => {
+        const group = groupedItems.find(it => it.position === position)  
+        if (group) {
+            const {start,end} = zoomBehavior?.zoomOnGroup(group)
+            console.log(start,end)
+            setState({...state, start, end})
+        }
     } 
-
+    const zoomIn = (e:MouseEvent) => {
+        const {start, end} = zoomBehavior?.zoomIn(e, state.scaler)
+        setState({...state, start, end})
+    }  
 
     const updateItem =  (itemId:string, newScore:number) => {
         const item = items.find( it => it.id === itemId) 
@@ -103,29 +126,24 @@ export const Rater:React.FunctionComponent<Props> = ({position, state, setState,
         }
     }
 
-    const zoomOnGroup=(position:number) => {
-        const group = groupedItems.find(it => it.position === position)  
-        if (group) {
-            const min = group.items.reduce((curr,it) => Math.min(it.score,curr)  , Infinity)  
-            const max = group.items.reduce((curr,it) => Math.max(it.score,curr)  , -Infinity)  
-            const yScale = state.scaler.yScale  
-            yScale.domain([min-0.05, max+0.05])
-            setState({...state, start: min-0.05+'', end:max+0.05+'' })
+    const startPan = (e:MouseEvent) => pan.startPan(e)
+    const duringPan = (e:MouseEvent) => {
+        const x = pan.duringPan(e, state.scaler, { start: state.start, end: state.end })
+        if (x) {
+          setState({...state, start: x.start, end:x.end })
         }
-    }
-
-    const zoomIn = (e:MouseEvent) => {
-        const y = e.offsetY;  
-        const score = state.scaler.toScore(y) 
-        const min = Math.min((score - 0.25) || 0) 
-        const max = Math.min((score + 0.25) || 5) 
-        setState({...state, start: min.toFixed(2), end: max.toFixed(2) })
+    }  
+    const endPan = (e:MouseEvent) => {
+       const shouldZoomIn = pan.endPan(e)  
+       if (shouldZoomIn) {
+           zoomIn(e)
+       }
     }
 
     const makeAxis = (scale:AxisScale<number>) => {
         const _axis = axisRight(scale) 
         if (g) {
-          const axisSel = select(g).select<SVGSVGElement>('g.rater-axis')
+          const axisSel = select(g.current).select<SVGSVGElement>('g.rater-axis')
             .attr('transform', `translate(${position.x}, ${0})` )
             .call(_axis)
             axisSel.selectAll('line')
@@ -134,38 +152,30 @@ export const Rater:React.FunctionComponent<Props> = ({position, state, setState,
         }
     }
     makeAxis(state.scaler.scale) 
-    const startPan = (e:MouseEvent) => {
-        setPanPoint({x:e.offsetX, y:e.offsetY})
-        console.log('pan start',{x:e.x, y:e.y})
-    }
-    const duringPan = (e:MouseEvent) => {
-        if (panPoint) {
-            const point:Position = { x: e.offsetX, y:e.offsetY}  
-            const original = state.scaler.toScore(panPoint.y)  
-            const delta = state.scaler.toScore(point.y) - original  
-            // console.log('delta', delta)
-            // console.log('start', state.start, 'end', state.end)
-            const min = Math.max(Number(state.start) + delta, 0)     
-            const max = Math.min(Number(state.end) + delta, 5)  
-            console.log('start2', min.toFixed(2), 'end2', max.toFixed(2))
-            setState({...state, start: min.toFixed(2), end:max.toFixed(2) })
-            // console.log('pan move',point)
-        }
-    }  
-    const endPan = (e:MouseEvent) => {
-        const point:Position = {x:e.offsetX, y:e.offsetY}
-        console.log('pan end', point)
-        if (point.x === panPoint?.x && point.y === panPoint?.y) {
-            zoomIn(e)
-            setPanPoint(undefined)
-        } else {
-            setPanPoint(undefined)
-        }
-    }
 
     return (
-                  <g  ref={it=> it ? setG(it):null} className="rater-container">
-                      {mode === RaterMode.PRIMARY && <rect id="zoom-listener" onMouseUp={(e) => endPan(e.nativeEvent) } onMouseDown={(e) => startPan(e.nativeEvent)} onMouseMove={(e) => duringPan(e.nativeEvent) } x={position.x+5} height={position.y}></rect>}
+                  <g  ref={g} className="rater-container">
+                      {mode === RaterMode.PRIMARY && 
+                        <rect 
+                            ref={it => it? setZoomListener(it):null} 
+                            onClick={(e) => zoomIn(e.nativeEvent) }
+                            id="zoom-listener" 
+                            x={position.x+5} 
+                            height={position.y}
+                            >
+                        </rect>
+                      }
+                      {mode === RaterMode.PRIMARY && 
+                        <rect 
+                            onMouseDown={(e)=>startPan(e.nativeEvent)}
+                            onMouseMove={(e)=>duringPan(e.nativeEvent)}
+                            onMouseUp={(e)=>endPan(e.nativeEvent)}
+                            id="pan-listener" 
+                            x={position.x+70} 
+                            height={position.y}
+                            >
+                        </rect>
+                      }
                       <g className={mode === RaterMode.PRIMARY ? "rater-axis" : "rater-axis readonly" }></g>
                       <line className={mode === RaterMode.PRIMARY? "rater-line": 'rater-line readonly' } x1={position.x} y1={0} x2={position.x} y2={position.y} />
                       { groupedItems.map(rItemGrouped => 

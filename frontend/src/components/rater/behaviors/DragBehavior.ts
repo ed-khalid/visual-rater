@@ -1,7 +1,7 @@
 import { select } from "d3-selection";
 import { event as d3Event } from 'd3'
-import { Scaler } from "../../functions/scale";
-import { RatedItem } from "../../models/RatedItem";
+import { Scaler } from "../../../functions/scale";
+import { RatedItem } from "../../../models/RatedItem";
 
 interface Props {
     raterBottom:number
