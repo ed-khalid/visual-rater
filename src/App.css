@@ -41,3 +41,28 @@ svg {
   width: 100%;
   height: 950px; 
 }
+div.compare-section {
+  position:relative;
+  border: 4px solid rgb(112, 35, 35);
+  color: rgba(112,35,35);
+  height:40px;
+  width:180px;
+  border-radius:5px;
+}
+div.compare-section button {
+  width:50%;
+  height:100%;
+}
+div.compare-section button.selected {
+  background-color: black ;
+  color: white;
+}
+div.compare-section::after  {
+  position:absolute;
+  top:-8px;
+  left:4px;
+  content: 'compare';
+  background: #e9dfdf; 
+  font-size:11px;
+  text-transform: uppercase;
+}
