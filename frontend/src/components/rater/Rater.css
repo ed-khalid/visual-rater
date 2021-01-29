@@ -18,7 +18,7 @@ line.rater-line {
 }
 g rect#zoom-listener {
     cursor:pointer ;
-    fill: red;
+    fill: none;
     opacity: 0.2;
     width:40px;
     pointer-events: all;
