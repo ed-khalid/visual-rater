@@ -21,6 +21,10 @@ export const initialRaterState:GlobalRaterState = {
 enum SearchOrDashboardAlbum {
   SEARCH, DASHBOARD
 }  
+enum OtherRaterView {
+  ARTIST,EVERYONE,NONE
+} 
+
 
 
 function App() {
@@ -28,30 +32,24 @@ function App() {
   const [searchArtist,setSearchArtist] = useState<ArtistSearchResult>()
   const [dashboardAlbumId,setDashboardAlbumId] = useState<string>()
   const [dashboardArtistId,setDashboardArtistId] = useState<string>()
-  const [raterState, setRaterState] = useState<GlobalRaterState>(initialRaterState)
-  const [mainRaterItems, setMainRaterItems] = useState<RatedItem[]>([])
   const [getTracks, tracks ] = useGetTracksForAlbumLazyQuery()
-  const [shouldShowSimilar, setShouldShowSimilar] = useState<boolean>(false)
   const [createAlbum, ] = useCreateAlbumMutation() 
   const [searchOrDashboardAlbum, setSearchOrDashboardAlbum] = useState<SearchOrDashboardAlbum>()
-  const [otherSongs, setOtherSongs] = useState<RatedItem[]>([]) 
   const [existingArtist, setExistingArtist] = useState<Artist>()
   const gWrapper = useRef<SVGGElement>(null)
   const artistsFull =  useGetArtistsQuery()
+  // rater items
+  const [otherRaterView, setOtherRaterView] = useState<OtherRaterView>(OtherRaterView.NONE)
+  const [raterState, setRaterState] = useState<GlobalRaterState>(initialRaterState)
+  const [mainRaterItems, setMainRaterItems] = useState<RatedItem[]>([])
+  const [otherSongs, setOtherSongs] = useState<RatedItem[]>([]) 
 
 
   const mapSongToRatedItem  = (song:any) : RatedItem => new RatedItem({ id: song.id, vendorId:song.vendorId, name: song.name },song.score!);
-  const showSimilar =  () => {
-    setShouldShowSimilar(true)
-  } 
   const onZoomResetClick = useCallback(() => {
     const resetScale = zoomIdentity.rescaleY(raterState.scaler.yScale) 
     setRaterState(prev => ({...prev, scaler: new Scaler(resetScale)})) 
   }, []) 
-  const soloRater = useCallback((shouldShowSimilar = false ) => {
-    onZoomResetClick()
-    setShouldShowSimilar(shouldShowSimilar)
-  },[onZoomResetClick])
   const updateSearchArtist = useCallback((artist?:ArtistSearchResult) => {
       setSearchArtist(artist)
       if (artist) {
@@ -80,7 +78,6 @@ function App() {
 
   useEffect(() => {
     if (artistsFull.data?.artists) {
-          console.log(artistsFull)
         const songs:Song[] = artistsFull.data.artists.reduce((curr:Song[],it) => {
           if (it.albums) {
             it.albums.forEach(album => {
@@ -95,7 +92,6 @@ function App() {
           }
           return curr
         },[])
-      const allSongsAsRatedItems = songs.filter(it => it.score).map(mapSongToRatedItem);
       if (searchOrDashboardAlbum === SearchOrDashboardAlbum.SEARCH && searchAlbum?.id && searchArtist?.id) {
             const dashboardArtist:Artist = artistsFull.data?.artists?.find(it => it.vendorId === searchArtist.id) as Artist
             const dashboardAlbum = dashboardArtist.albums?.find(it => it?.vendorId === searchAlbum.id) 
@@ -107,15 +103,27 @@ function App() {
         const album = artistsFull.data.artists.find(it=> it.albums?.find(it => it?.id === dashboardAlbumId))?.albums!.find(it => it?.id === dashboardAlbumId)  
         const ratedItems:RatedItem[] = album!.songs.filter(it => it.score).map(mapSongToRatedItem)
         setMainRaterItems(ratedItems)
-        const _otherSongs = allSongsAsRatedItems.filter(song => !ratedItems.find(it => it.id === song.id)) 
-        setOtherSongs(_otherSongs)
+        let _otherSongs:Song[];
+        switch(otherRaterView) {
+          case OtherRaterView.ARTIST:  
+             _otherSongs = songs.filter(song => !ratedItems.find(it => it.id === song.id))
+             _otherSongs = _otherSongs.filter(it => it.artist.id === dashboardArtistId)
+             break;
+          case OtherRaterView.EVERYONE:
+             _otherSongs = songs.filter(song => !ratedItems.find(it => it.id === song.id))
+             break;
+          case OtherRaterView.NONE:
+            _otherSongs = [] 
+        }
+        setOtherSongs(_otherSongs.filter(it => it.score).map(mapSongToRatedItem))
       } else {
           setMainRaterItems([])
-          setOtherSongs(allSongsAsRatedItems)
+           const _otherSongs = songs.filter(it => it.score).map(mapSongToRatedItem)
+          setOtherSongs(_otherSongs)
         }
       }
     }
-  }, [dashboardAlbumId, artistsFull.data?.artists, soloRater])
+  }, [dashboardAlbumId, artistsFull.data?.artists, otherRaterView])
 
   // scale
   // useEffect(() => {
@@ -175,24 +183,36 @@ function App() {
       setSearchOrDashboardAlbum(SearchOrDashboardAlbum.DASHBOARD)
       setDashboardAlbumId(albumId)
       setDashboardArtistId(artistId)
-      if (albumId) {
-        soloRater(true)
-      }
+      // if (albumId) {
+      //   soloRater()
+      // }
   } 
 
+  const toggleOtherView = (newView:OtherRaterView) => {
+    if (otherRaterView === newView) {
+      setOtherRaterView(OtherRaterView.NONE)
+    } else {
+      setOtherRaterView(newView)
+    }
+  }
 
   return (
     <div className="App">
       <header className="font-title">VisRater</header>
       <div className="main grid">
         <div className="empty-cell"></div> 
-        <div id="top-controls">
+        <div id="top-controls" className="flex">
           <label htmlFor="scale-start">Start</label>
           <input id="scale-start" type="text" value={raterState.start} onChange={(e) => updateScale(e.target.value, undefined)}/>
           <label htmlFor="scale-end">End</label>
           <input id="scale-end" type="text" value={raterState.end} onChange={(e) => updateScale(undefined, e.target.value)}/>
-          <button onClick={onZoomResetClick}>Reset</button>
-          <button onClick={showSimilar}>Compare</button> 
+          <div>
+            <button onClick={onZoomResetClick}>Reset</button>
+          </div>
+          {mainRaterItems?.length > 0 && <div className="compare-section">
+            <button className={`${otherRaterView === OtherRaterView.ARTIST ? 'selected' : ''}`} onClick={() => toggleOtherView(OtherRaterView.ARTIST) }>artist</button>
+            <button  className={`${otherRaterView === OtherRaterView.EVERYONE ? 'selected' : ''}`}  onClick={() => toggleOtherView(OtherRaterView.EVERYONE) }>everyone</button>
+          </div>}
         </div>
         <div className="empty-cell"></div> 
         <div id="search-wrapper">
@@ -221,7 +241,7 @@ function App() {
                 mode={RaterMode.PRIMARY}
           >
           </Rater>}
-          {shouldShowSimilar &&  
+          {otherRaterView !== OtherRaterView.NONE &&  
           <Rater
             state = {raterState}
             setState={setRaterState}
