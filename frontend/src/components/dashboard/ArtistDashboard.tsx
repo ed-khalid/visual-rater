@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useState } from "react"
 import './ArtistDashboard.css'
 import { Album, Artist, Maybe } from "../../generated/graphql"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
