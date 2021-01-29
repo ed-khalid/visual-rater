@@ -545,6 +545,29 @@
             "deprecationReason": null
           },
           {
+            "name": "CreateArtist",
+            "description": null,
+            "args": [
+              {
+                "name": "artist",
+                "description": null,
+                "type": {
+                  "kind": "INPUT_OBJECT",
+                  "name": "ArtistInput",
+                  "ofType": null
+                },
+                "defaultValue": null
+              }
+            ],
+            "type": {
+              "kind": "OBJECT",
+              "name": "Artist",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "UpdateSong",
             "description": null,
             "args": [
@@ -678,12 +701,16 @@
             "defaultValue": null
           },
           {
-            "name": "artist",
+            "name": "artistId",
             "description": null,
             "type": {
-              "kind": "INPUT_OBJECT",
-              "name": "ArtistInput",
-              "ofType": null
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "SCALAR",
+                "name": "String",
+                "ofType": null
+              }
             },
             "defaultValue": null
           },
