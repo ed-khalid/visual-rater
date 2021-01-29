@@ -4,10 +4,11 @@ import { Rater, GlobalRaterState, RaterMode } from './components/rater/Rater';
 import { ItemType } from './models/Item';
 import { RatedItem } from './models/RatedItem';
 import { Scaler } from './functions/scale';
-import { AlbumSearchResult, Artist, ArtistSearchResult, GetArtistsDocument, GetArtistsQuery, NewSongInput, Song, useCreateAlbumMutation, useGetArtistsQuery , useGetTracksForAlbumLazyQuery } from './generated/graphql';
+import { AlbumSearchResult, Artist, ArtistSearchResult, GetArtistsDocument, GetArtistsQuery, NewSongInput, Song, useCreateAlbumMutation, useCreateArtistMutation, useGetArtistsQuery , useGetTracksForAlbumLazyQuery } from './generated/graphql';
 import { zoomIdentity } from 'd3-zoom'
 import { Dashboard } from './components/dashboard/Dashboard';
 import { Search } from './components/search/Search';
+import { Unrated } from './components/Unrated';
 
 export const RATER_BOTTOM:number = 905; 
 
@@ -34,6 +35,7 @@ function App() {
   const [dashboardArtistId,setDashboardArtistId] = useState<string>()
   const [getTracks, tracks ] = useGetTracksForAlbumLazyQuery()
   const [createAlbum, ] = useCreateAlbumMutation() 
+  const [createArtist, createArtistResult ] = useCreateArtistMutation() 
   const [searchOrDashboardAlbum, setSearchOrDashboardAlbum] = useState<SearchOrDashboardAlbum>()
   const [existingArtist, setExistingArtist] = useState<Artist>()
   const gWrapper = useRef<SVGGElement>(null)
@@ -135,7 +137,8 @@ function App() {
   // search album click get tracks  
   useEffect(() => {
     if (tracks.data?.search?.tracks && searchAlbum && searchArtist) {
-      const songs:NewSongInput[] = tracks.data.search.tracks.map((it,index) => 
+    const doCreateAlbum = (frozenArtist:any) => { 
+      const songs:NewSongInput[] = tracks!.data!.search!.tracks.map((it,index) => 
         ({ 
           vendorId : it.id, 
           name: it.name, 
@@ -147,29 +150,40 @@ function App() {
           vendorId: searchAlbum.id,
           name: searchAlbum.name,
           year: searchAlbum.year,
-          thumbnail: searchAlbum.thumbnail
-          ,artist: {
-            vendorId: searchArtist.id,
-            name: searchArtist.name,
-            thumbnail: searchArtist.thumbnail
-          }, songs
+          thumbnail: searchAlbum.thumbnail,
+          artistId:frozenArtist.id,
+          songs
         }}, update: (cache, data)=> { 
+          const artist = {
+            ...frozenArtist
+          }  
           const result = cache.readQuery<GetArtistsQuery>({query: GetArtistsDocument})
           const newAlbum = data.data?.CreateAlbum!
           const queryArtists = [...result!.artists!] 
-          const frozenArtist = queryArtists.find(it => it.vendorId === searchArtist.id )
-          if (frozenArtist) {
-            const artist = {
-              ...frozenArtist
-            } 
-            const otherArtists = queryArtists.filter( it => it.vendorId !== searchArtist.id)
-            if (artist) {
-              const albums = [...artist.albums!]
-              artist.albums = [...albums!, newAlbum ] 
-              cache.writeQuery<GetArtistsQuery>({ query: GetArtistsDocument, data : { artists : [...otherArtists, artist]}    })
+          const otherArtists = queryArtists.filter( it => it.vendorId !== searchArtist.id)
+          const albums = [...artist.albums!]
+          artist.albums = [...albums!, newAlbum ] 
+          cache.writeQuery<GetArtistsQuery>({ query: GetArtistsDocument, data : { artists : [...otherArtists, artist]}    })
+        }
+      })
+     }
+      const artist = artistsFull.data?.artists?.find(it => it.vendorId === searchArtist.id)   
+      if (!artist) {
+        createArtist({
+          variables: {
+            artistInput : {
+              name: searchArtist.name, 
+              vendorId: searchArtist.id,
+              thumbnail: searchArtist.thumbnail
             }
+          }, update:  (cache, data) => {
+             const artist = data.data?.CreateArtist
+             doCreateAlbum(artist)
           }
-        }})
+        })
+      } else {
+        doCreateAlbum(artist)
+      }
     }
   }, [tracks.data?.search?.tracks, createAlbum])
 
