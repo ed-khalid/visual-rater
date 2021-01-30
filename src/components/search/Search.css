@@ -1,18 +1,20 @@
+
+div#search {
+    width: 40vw;
+    max-width: 450px; 
+}
 div.wrapper {
-    margin-left: 10px;
     border: 1px solid #3d3d3d;
     border-radius: 5px;
     font-size: 10px;
     height: 140px;
-    width: 250px;
 }
 div.title {
     width: 50px;
 }
-div.result {
-    margin-top: 10px;
-    height: 140px;  
-}
 div.result-row {
     margin: 0;
+}
+div#artist-col {
+    margin-top: 10px;
 }

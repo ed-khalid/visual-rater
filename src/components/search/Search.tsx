@@ -35,7 +35,7 @@ export const Search = ({onAlbumSelect, album, artist, existingArtist, onArtistSe
       }
   }, [data?.search?.artist, onArtistSelect])
 
-  return <div id="search" className="grid">
+  return <div id="search" className="flex-column">
         <SearchInputField value={artistName} onInputFieldChange={updateArtistName}></SearchInputField>
         <div id="artist-col">
             {artistName && loading && <p>Loading...</p> }

@@ -33,9 +33,9 @@ export const  DashboardArtist = ({artist,  onAlbumSelect}: DashboardArtistProps)
     } 
 
     return <div className="artist-dashboard flex">
-        <div>
-                <img alt={artist.name} className="artist-thumbnail" src={thumbnail}></img>
-        </div>
+                <div className="artist-thumbnail">
+                        <img alt={artist.name} className="artist-thumbnail" src={thumbnail}></img>
+                </div>
                 <div className="artist-title font-title" key={"artist" + artist.id}>{artist.name}</div>
                 <div className="dashboard-albums flex">
                         <div className={`dashboard-albums-navigation flex-column ${(pageNumber === 1) ? 'disabled': '' }`} >
