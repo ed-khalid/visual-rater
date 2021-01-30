@@ -2,7 +2,9 @@ import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from "re
 import { OtherRaterView, RATER_BOTTOM, SearchOrDashboardAlbum } from "../../App"
 import { Artist, Song } from "../../generated/graphql"
 import { RatedItem } from "../../models/RatedItem"
+import { SelectionRectangle } from "./behaviors/SelectionRectangle"
 import { GlobalRaterState, Rater, RaterMode } from "./Rater"
+import { select } from 'd3-selection'
 
 interface Props {
     searchOrDashboardAlbum:SearchOrDashboardAlbum|undefined
@@ -17,8 +19,15 @@ const mapSongToRatedItem  = (song:any) : RatedItem => new RatedItem({ id: song.i
 
 export const RaterWrapper = ({searchOrDashboardAlbum, artists, otherRaterView, state, setState, dashboardAlbumId, dashboardArtistId}:Props) =>  {
     const gWrapper = useRef<SVGGElement>(null)
+    const svgRef = useRef<SVGSVGElement>(null) 
     const [otherSongs, setOtherSongs] = useState<RatedItem[]>([]) 
     const [mainRaterItems, setMainRaterItems] = useState<RatedItem[]>([])
+
+    useEffect(() => {
+      if (svgRef.current) {
+        SelectionRectangle(svgRef.current)
+      }
+    }, [svgRef])
 
     useEffect(() => {
     if (artists) {
@@ -61,10 +70,10 @@ export const RaterWrapper = ({searchOrDashboardAlbum, artists, otherRaterView, s
     }
   }, [dashboardAlbumId, artists, otherRaterView])
 
-    return <svg id="trackRater" viewBox="0 0 1000 950">
+    return <svg ref={svgRef} id="trackRater" viewBox="0 0 950 950">
           <defs>
             <clipPath id="clip-path">
-              <rect x={0} width="1000" height={RATER_BOTTOM}></rect>
+              <rect x="0" y="0" width="950" height={950}></rect>
             </clipPath>
           </defs>
           <g ref={gWrapper} id="wrapper">

@@ -19,9 +19,13 @@ export const Dashboard = ({artists,selectedAlbumId, selectedArtistId , onAlbumSe
         onAlbumSelect(undefined, undefined)
     } 
 
-    return <div id="dashboard" className="flex-column">
-        {artists && artists.map(artist =>  <DashboardArtist key={artist.id} onAlbumSelect={setAlbum} artist={artist} />)}
-        {selectedAlbumId && selectedArtistId && <DashboardAlbumSummary onClose={onAlbumClose} artistName={artists.find(it => it.id === selectedArtistId)!.name} album={artists.find(it => it.id === selectedArtistId)?.albums?.find(it => it?.id === selectedAlbumId )!} />}
+    return <div id="dashboard">
+        <div className="dashboard-section">
+           {artists && artists.map(artist =>  <DashboardArtist key={artist.id} onAlbumSelect={setAlbum} artist={artist} />)}
+        </div> 
+        <div className="dashboard-section">
+          {selectedAlbumId && selectedArtistId && <DashboardAlbumSummary onClose={onAlbumClose} artistName={artists.find(it => it.id === selectedArtistId)!.name} album={artists.find(it => it.id === selectedArtistId)?.albums?.find(it => it?.id === selectedAlbumId )!} />}
+        </div>
     </div>
 
 }

@@ -1,7 +1,7 @@
 
-
-
 div#dashboard {
     text-align:unset;
-    justify-content: space-between;
+}
+div#dashboard div.dashboard-section {
+    height:50%;
 }

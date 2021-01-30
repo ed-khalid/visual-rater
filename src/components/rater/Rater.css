@@ -3,6 +3,19 @@
     visibility: hidden;
 }
 
+rect.selection-rectangle {
+    stroke: gray;
+    stroke-dasharray: 4px;
+    stroke-opacity: 0.5;
+    fill:transparent;
+}
+
+svg * {
+    user-select: none ;
+}
+
+
+
 div.rater {
     width: 100%;
     height: 100%;

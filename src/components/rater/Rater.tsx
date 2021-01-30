@@ -160,7 +160,6 @@ export const Rater:React.FunctionComponent<Props> = ({position, state, setState,
                       {mode === RaterMode.PRIMARY && 
                         <rect 
                             ref={zoomListener} 
-                            // onClick={(e) => zoomIn(e.nativeEvent) }
                             id="zoom-listener" 
                             x={position.x+5} 
                             height={position.y}
@@ -169,9 +168,6 @@ export const Rater:React.FunctionComponent<Props> = ({position, state, setState,
                       }
                       {mode === RaterMode.PRIMARY && 
                         <rect 
-                            // onMouseDown={(e)=>startPan(e.nativeEvent)}
-                            // onMouseMove={(e)=>duringPan(e.nativeEvent)}
-                            // onMouseUp={(e)=>endPan(e.nativeEvent)}
                             id="pan-listener" 
                             x={position.x+70} 
                             height={position.y}
