@@ -70,7 +70,7 @@ export const RaterWrapper = ({searchOrDashboardAlbum, artists, otherRaterView, s
     }
   }, [dashboardAlbumId, artists, otherRaterView])
 
-    return <svg ref={svgRef} id="trackRater" viewBox="0 0 950 950">
+    return <svg preserveAspectRatio="xMinYMin meet" ref={svgRef} id="trackRater" viewBox="0 0 800 550">
           <defs>
             <clipPath id="clip-path">
               <rect x="0" y="0" width="950" height={950}></rect>

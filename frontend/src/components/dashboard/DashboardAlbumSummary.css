@@ -34,8 +34,14 @@ div.dashboard-album-close-button {
 div.dashboard-album-actions {
     margin-left: 5px;
 }
+div#table-wrapper {
+    height:76%;
+    overflow-y:auto;
+}
 
 table {
+    height: 50%;
+    overflow-y: scroll;
     margin: 0 auto;
     border-collapse: collapse;
     width: 95%;
@@ -97,6 +103,7 @@ div.score-shortcut.plus-minus {
 div.dashboard-album-summary {
     border: 1px solid #3d3d3d;
     flex-grow: 1;
+    height:700px;
     margin-top: 5px;
     position: relative;
 }
