@@ -1,6 +1,7 @@
 div#artist {
     position:relative;
-    height: 300px;
+    height: 50vh;
+    background-size: 100% 100%;
 }
 div#artist div#artist-title {
     font-size:3em;
@@ -16,7 +17,7 @@ div#artist:hover {
 div#albums {
     position: absolute;
     bottom: 0;
-    width: 244px;
+    width: 100%;
     padding: 6px;
     padding-right: 0px;
     grid-template-columns: repeat(4, 58px);

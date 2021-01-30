@@ -8,7 +8,6 @@ import { AlbumSearchResult, Artist, ArtistSearchResult, GetArtistsDocument, GetA
 import { zoomIdentity } from 'd3-zoom'
 import { Dashboard } from './components/dashboard/Dashboard';
 import { Search } from './components/search/Search';
-import { Unrated } from './components/Unrated';
 
 export const RATER_BOTTOM:number = 905; 
 
@@ -216,10 +215,6 @@ function App() {
       <div className="main grid">
         <div className="empty-cell"></div> 
         <div id="top-controls" className="flex">
-          <label htmlFor="scale-start">Start</label>
-          <input id="scale-start" type="text" value={raterState.start} onChange={(e) => updateScale(e.target.value, undefined)}/>
-          <label htmlFor="scale-end">End</label>
-          <input id="scale-end" type="text" value={raterState.end} onChange={(e) => updateScale(undefined, e.target.value)}/>
           <div>
             <button onClick={onZoomResetClick}>Reset</button>
           </div>
@@ -229,7 +224,6 @@ function App() {
           </div>}
         </div>
         <div className="empty-cell"></div> 
-        <div id="search-wrapper">
           <Search 
              album={searchAlbum}
              artist={searchArtist}
@@ -237,7 +231,6 @@ function App() {
              onAlbumSelect={updateSearchAlbum}
              onArtistSelect={updateSearchArtist}
           />
-        </div>
         <svg id="trackRater" viewBox="0 0 1000 950">
           <defs>
             <clipPath id="clip-path">

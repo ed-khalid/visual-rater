@@ -34,11 +34,10 @@ export const SearchResults =  ({searchArtist, searchAlbum, setSearchAlbum, exist
         const thumbnail = searchArtist.thumbnail || ''  
         const artistDivStyle = {
             "backgroundImage" : `url(${thumbnail})`,
-            "backgroundSize" : "100% 100%" 
         }    
         return (
-            <div>
-                <div id="artist" className="wrapper result" style={artistDivStyle}>
+            <React.Fragment>
+                <div id="artist" className="wrapper" style={artistDivStyle}>
                     <div id="artist-title" className="font-title" key={"artist" + searchArtist.id}>{searchArtist.name}</div>
                     <div id="albums" className="grid" >
                             {searchArtist.albums?.slice(ALBUMS_PER_PAGE *(pageNumber-1), Math.min(pageNumber *(ALBUMS_PER_PAGE), searchArtist.albums?.length) ).map(album => 
@@ -49,7 +48,7 @@ export const SearchResults =  ({searchArtist, searchAlbum, setSearchAlbum, exist
                     </div>
                 </div>
                 <ListControlNav setPageNumber={setPageNumber} numberOfPages={numberOfPages}></ListControlNav>
-            </div>
+            </React.Fragment>
         )
     }
     return <div></div>
