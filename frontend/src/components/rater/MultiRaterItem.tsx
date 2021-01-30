@@ -1,5 +1,4 @@
 import React from "react";
-import { RATER_BOTTOM } from "../../App";
 import { Scaler } from "../../functions/scale";
 import { RatedItem } from "../../models/RatedItem";
 import { RaterOrientation } from "./Rater";

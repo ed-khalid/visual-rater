@@ -10,10 +10,10 @@ import { MultiRaterItem } from "./MultiRaterItem";
 import { Position } from '../../models/Position';
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import React from 'react';
-import { RATER_BOTTOM } from '../../App';
 import './Rater.css'
 import { ZoomBehavior } from './behaviors/ZoomBehavior';
 import { PanBehavior } from './behaviors/PanBehavior';
+import { RATER_BOTTOM } from '../../App';
 
 interface Props {
     position:Position
