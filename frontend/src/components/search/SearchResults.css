@@ -1,7 +1,7 @@
 div#artist {
     position:relative;
-    height: 50vh;
-    background-size: 100% 100%;
+    background-size: cover;
+    height: 300px;
 }
 div#artist div#artist-title {
     font-size:3em;

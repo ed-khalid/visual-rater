@@ -159,7 +159,7 @@ function App() {
     <div className="App">
       <header className="font-title">VisRater</header>
       <div className="main grid">
-        <div className="empty-cell"></div> 
+        <div className="empty-cell" style={{maxWidth: '450px'}}></div> 
         <div id="top-controls" className="flex">
           <div>
             <button onClick={onZoomResetClick}>Reset</button>
