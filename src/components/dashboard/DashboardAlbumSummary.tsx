@@ -97,6 +97,7 @@ export const DashboardAlbumSummary =  ({onClose, artistName, album }:Props) => {
               </div>
           </div>
         </div>
+        <div id="table-wrapper">
         <table>
             <thead>
                 <tr>
@@ -141,6 +142,7 @@ export const DashboardAlbumSummary =  ({onClose, artistName, album }:Props) => {
                 </tr>)}
             </tbody>
         </table>
+        </div>
         <div id="album-rating" className="flex">
             <div id="album-rating-title" className="font-title">Score</div>
             <div id ="album-score">{albumRating}</div>
