@@ -1,13 +1,13 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import './App.css';
-import { Rater, GlobalRaterState, RaterMode } from './components/rater/Rater';
-import { ItemType } from './models/Item';
-import { RatedItem } from './models/RatedItem';
+import { GlobalRaterState } from './components/rater/Rater';
 import { Scaler } from './functions/scale';
 import { AlbumSearchResult, Artist, ArtistSearchResult, GetArtistsDocument, GetArtistsQuery, NewSongInput, Song, useCreateAlbumMutation, useCreateArtistMutation, useGetArtistsQuery , useGetTracksForAlbumLazyQuery } from './generated/graphql';
 import { zoomIdentity } from 'd3-zoom'
 import { Dashboard } from './components/dashboard/Dashboard';
 import { Search } from './components/search/Search';
+import { RaterWrapper } from './components/rater/RaterWrapper';
+import { ItemType } from './models/Item';
 
 export const RATER_BOTTOM:number = 905; 
 
@@ -18,14 +18,12 @@ export const initialRaterState:GlobalRaterState = {
   ,itemType: ItemType.MUSIC
 } 
 
-enum SearchOrDashboardAlbum {
+export enum SearchOrDashboardAlbum {
   SEARCH, DASHBOARD
 }  
-enum OtherRaterView {
+export enum OtherRaterView {
   ARTIST,EVERYONE,NONE
 } 
-
-
 
 function App() {
   const [searchAlbum, setSearchAlbum] = useState<AlbumSearchResult>()
@@ -34,19 +32,15 @@ function App() {
   const [dashboardArtistId,setDashboardArtistId] = useState<string>()
   const [getTracks, tracks ] = useGetTracksForAlbumLazyQuery()
   const [createAlbum, ] = useCreateAlbumMutation() 
-  const [createArtist, createArtistResult ] = useCreateArtistMutation() 
+  const [createArtist, ] = useCreateArtistMutation() 
   const [searchOrDashboardAlbum, setSearchOrDashboardAlbum] = useState<SearchOrDashboardAlbum>()
   const [existingArtist, setExistingArtist] = useState<Artist>()
-  const gWrapper = useRef<SVGGElement>(null)
   const artistsFull =  useGetArtistsQuery()
   // rater items
   const [otherRaterView, setOtherRaterView] = useState<OtherRaterView>(OtherRaterView.NONE)
   const [raterState, setRaterState] = useState<GlobalRaterState>(initialRaterState)
-  const [mainRaterItems, setMainRaterItems] = useState<RatedItem[]>([])
-  const [otherSongs, setOtherSongs] = useState<RatedItem[]>([]) 
 
 
-  const mapSongToRatedItem  = (song:any) : RatedItem => new RatedItem({ id: song.id, vendorId:song.vendorId, name: song.name },song.score!);
   const onZoomResetClick = useCallback(() => {
     const resetScale = zoomIdentity.rescaleY(raterState.scaler.yScale) 
     setRaterState(prev => ({...prev, scaler: new Scaler(resetScale)})) 
@@ -58,80 +52,35 @@ function App() {
           setExistingArtist(existingArtist as Artist)
       }
   }, [artistsFull.data?.artists])
-  const updateScale = (newStart?:string, newEnd?:string) => {
-    if (newStart === '') {
-      newStart = '0'
-    }
-    if (newEnd === '') {
-      newEnd = '0'
-    }
-    const start = newStart || raterState.start + ''   
-    const end = newEnd || raterState.end  + ''  
-    const allowed = new RegExp('^([0-5]+([.][0-9]*)?)$') 
-    if (allowed.test(start) && allowed.test(end) ) {
-      const startNumber = Number(start)
-      const endNumber = Number(end) 
-      if (startNumber >= 0 && startNumber < 5 && startNumber < endNumber && endNumber <= 5) {
-        setRaterState({...raterState,start,end})
-      }
-    }
-  }
+
+  // const updateScale = (newStart?:string, newEnd?:string) => {
+  //   if (newStart === '') {
+  //     newStart = '0'
+  //   }
+  //   if (newEnd === '') {
+  //     newEnd = '0'
+  //   }
+  //   const start = newStart || raterState.start + ''   
+  //   const end = newEnd || raterState.end  + ''  
+  //   const allowed = new RegExp('^([0-5]+([.][0-9]*)?)$') 
+  //   if (allowed.test(start) && allowed.test(end) ) {
+  //     const startNumber = Number(start)
+  //     const endNumber = Number(end) 
+  //     if (startNumber >= 0 && startNumber < 5 && startNumber < endNumber && endNumber <= 5) {
+  //       setRaterState({...raterState,start,end})
+  //     }
+  //   }
+  // }
 
   useEffect(() => {
-    if (artistsFull.data?.artists) {
-        const songs:Song[] = artistsFull.data.artists.reduce((curr:Song[],it) => {
-          if (it.albums) {
-            it.albums.forEach(album => {
-              if (album && album.songs) {
-                album.songs.forEach(song => {
-                  if (song) {
-                    curr.push( { ...song, artist: it as Artist })
-                  }
-                })
-              }
-            })
-          }
-          return curr
-        },[])
-      if (searchOrDashboardAlbum === SearchOrDashboardAlbum.SEARCH && searchAlbum?.id && searchArtist?.id) {
-            const dashboardArtist:Artist = artistsFull.data?.artists?.find(it => it.vendorId === searchArtist.id) as Artist
-            const dashboardAlbum = dashboardArtist.albums?.find(it => it?.vendorId === searchAlbum.id) 
-            if (dashboardArtist && dashboardAlbum) {
-              updateDashboardAlbum(dashboardAlbum.id, dashboardArtist.id)
-            }
-      } else {
-      if (searchOrDashboardAlbum === SearchOrDashboardAlbum.DASHBOARD && dashboardAlbumId) {
-        const album = artistsFull.data.artists.find(it=> it.albums?.find(it => it?.id === dashboardAlbumId))?.albums!.find(it => it?.id === dashboardAlbumId)  
-        const ratedItems:RatedItem[] = album!.songs.filter(it => it.score).map(mapSongToRatedItem)
-        setMainRaterItems(ratedItems)
-        let _otherSongs:Song[];
-        switch(otherRaterView) {
-          case OtherRaterView.ARTIST:  
-             _otherSongs = songs.filter(song => !ratedItems.find(it => it.id === song.id))
-             _otherSongs = _otherSongs.filter(it => it.artist.id === dashboardArtistId)
-             break;
-          case OtherRaterView.EVERYONE:
-             _otherSongs = songs.filter(song => !ratedItems.find(it => it.id === song.id))
-             break;
-          case OtherRaterView.NONE:
-            _otherSongs = [] 
-        }
-        setOtherSongs(_otherSongs.filter(it => it.score).map(mapSongToRatedItem))
-      } else {
-          setMainRaterItems([])
-           const _otherSongs = songs.filter(it => it.score).map(mapSongToRatedItem)
-          setOtherSongs(_otherSongs)
-        }
-      }
+    if (searchOrDashboardAlbum === SearchOrDashboardAlbum.SEARCH && searchAlbum?.id && searchArtist?.id) {
+       const dashboardArtist:Artist = artistsFull?.data?.artists?.find(it => it.vendorId === searchArtist.id) as Artist
+       const dashboardAlbum = dashboardArtist.albums?.find(it => it?.vendorId === searchAlbum.id) 
+       if (dashboardArtist && dashboardAlbum) {
+          updateDashboardAlbum(dashboardAlbum.id, dashboardArtist.id)
+       }
     }
-  }, [dashboardAlbumId, artistsFull.data?.artists, otherRaterView])
-
-  // scale
-  // useEffect(() => {
-  //   const scale = raterState.scaler.yScale.domain([Number(raterState.start), Number(raterState.end)])
-  //   setRaterState(r => ({...r, scaler : new Scaler(scale)}))
-  // }, [raterState.scaler])
-
+  }, [searchOrDashboardAlbum, artistsFull.data?.artists, searchAlbum?.id, searchArtist?.id])
 
   // search album click get tracks  
   useEffect(() => {
@@ -196,9 +145,6 @@ function App() {
       setSearchOrDashboardAlbum(SearchOrDashboardAlbum.DASHBOARD)
       setDashboardAlbumId(albumId)
       setDashboardArtistId(artistId)
-      // if (albumId) {
-      //   soloRater()
-      // }
   } 
 
   const toggleOtherView = (newView:OtherRaterView) => {
@@ -218,49 +164,28 @@ function App() {
           <div>
             <button onClick={onZoomResetClick}>Reset</button>
           </div>
-          {mainRaterItems?.length > 0 && <div className="compare-section">
+          {dashboardAlbumId && <div className="compare-section">
             <button className={`${otherRaterView === OtherRaterView.ARTIST ? 'selected' : ''}`} onClick={() => toggleOtherView(OtherRaterView.ARTIST) }>artist</button>
             <button  className={`${otherRaterView === OtherRaterView.EVERYONE ? 'selected' : ''}`}  onClick={() => toggleOtherView(OtherRaterView.EVERYONE) }>everyone</button>
           </div>}
         </div>
         <div className="empty-cell"></div> 
-          <Search 
+        <Search 
              album={searchAlbum}
              artist={searchArtist}
              existingArtist={existingArtist}
              onAlbumSelect={updateSearchAlbum}
              onArtistSelect={updateSearchArtist}
-          />
-        <svg id="trackRater" viewBox="0 0 1000 950">
-          <defs>
-            <clipPath id="clip-path">
-              <rect x={0} width="1000" height={RATER_BOTTOM}></rect>
-            </clipPath>
-          </defs>
-          <g ref={gWrapper} id="wrapper">
-          {mainRaterItems.length && <Rater 
-                setState={setRaterState}
-                position={{x:300, y:RATER_BOTTOM}}
-                state={raterState}
-                zoomTarget={gWrapper.current}
-                items={mainRaterItems}
-                setItems={setMainRaterItems}
-                mode={RaterMode.PRIMARY}
-          >
-          </Rater>}
-          {otherRaterView !== OtherRaterView.NONE &&  
-          <Rater
-            state = {raterState}
-            setState={setRaterState}
-            position={{x:350,y:RATER_BOTTOM}}
-            items={otherSongs}
-            setItems={setOtherSongs}
-            mode={RaterMode.SECONDARY}
-          >
-          </Rater>
-          }
-          </g>
-        </svg>
+        />
+        <RaterWrapper
+          searchOrDashboardAlbum={searchOrDashboardAlbum}
+          artists={artistsFull.data?.artists}
+          otherRaterView={otherRaterView}
+          state={raterState}
+          setState={setRaterState}
+          dashboardAlbumId={dashboardAlbumId}
+          dashboardArtistId={dashboardArtistId}
+        />
         <Dashboard 
           selectedArtistId={dashboardArtistId} 
           selectedAlbumId={dashboardAlbumId} 
