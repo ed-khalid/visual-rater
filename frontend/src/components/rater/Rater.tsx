@@ -48,7 +48,6 @@ export const Rater = ({position, state, setState, items, setItems, mode}:Props) 
 
     const [updateSong]  = useUpdateSongMutation();
     const [deleteSong] = useDeleteSongMutation()  
-    const [dragPoint, setDragPoint] = useState<Position>();
     const [currentItem, setCurrentItem] = useState<RatedItem|null>();  
     const [groupedItems, setGroupedItems] = useState<RatedItemGrouped[]>([]);
     const g = useRef<SVGGElement>(null)
@@ -163,8 +162,6 @@ export const Rater = ({position, state, setState, items, setItems, mode}:Props) 
                             orientation={mode === RaterMode.PRIMARY? RaterOrientation.LEFT:RaterOrientation.RIGHT}
                             key={rItemGrouped.items[0].id}
                             item={rItemGrouped.items[0]}
-                            dragPoint={dragPoint}
-                            setDragPoint={setDragPoint}
                             raterBottom={RATER_BOTTOM}
                             x={position.x}
                             y={rItemGrouped.position}

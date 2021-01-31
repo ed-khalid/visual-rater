@@ -1,4 +1,4 @@
-import React, { Dispatch, SetStateAction, useState } from "react";
+import React, {useEffect, useRef } from "react";
 import { select } from 'd3-selection'
 import { drag } from 'd3-drag'
 import { RatedItem } from "../../models/RatedItem";
@@ -6,15 +6,12 @@ import { Scaler } from "../../functions/scale";
 import { DragBehavior } from "./behaviors/DragBehavior";
 import { RaterOrientation } from "./Rater";
 import { CloseButton } from "./CloseButton";
-import { Position } from "../../models/Position";
 
 interface SingleRaterItemProps {
     item:RatedItem
     orientation:RaterOrientation
     x:number
     y:number
-    dragPoint:Position|undefined
-    setDragPoint:Dispatch<SetStateAction<Position|undefined>>
     raterBottom:number
     onRemove:any
     onDragEnd:any
@@ -22,12 +19,11 @@ interface SingleRaterItemProps {
     scale?:number
 } 
 
-export const SingleRaterItem = ({item, orientation, x, y, scale=1, raterBottom, dragPoint, setDragPoint, scaler, onRemove, onDragEnd}:SingleRaterItemProps) =>  {
-    const [g,setG] = useState<SVGGElement|undefined>()
+export const SingleRaterItem = ({item, orientation, x, y, scale=1, raterBottom, scaler, onRemove, onDragEnd}:SingleRaterItemProps) =>  {
+    const g = useRef<SVGGElement>(null)
     const onDragBehaviorEnd = (id:string, score:number) => {
         onDragEnd(id, score)
     }
-    const dragBehavior = DragBehavior({raterBottom, item, g, scaler, dragPoint, setDragPoint, onDragEnd:onDragBehaviorEnd}) 
 
     const formatName= (name:string) => {
         if (name.length <= 20 ) {
@@ -36,17 +32,18 @@ export const SingleRaterItem = ({item, orientation, x, y, scale=1, raterBottom, 
         return name.slice(0,20) + '...'
     }
 
-
-    const attachDrag = (g:SVGGElement|null) => {
-        if (g) {
-            select(g).call(drag<SVGGElement,any>()
+    useEffect(() => {
+        if (g.current) {
+            const dragBehavior = DragBehavior({raterBottom, item, g:g.current, scaler, onDragEnd:onDragBehaviorEnd}) 
+            select(g.current).call(drag<SVGGElement,any>()
                 .on('start', dragBehavior.dragStart)
                 .on('drag', dragBehavior.dragInProgress)
                 .on('end', dragBehavior.dragEnd))
-            setG(g)
+           select(g.current).data<RatedItem>([item])
         }
-    } 
-      return <g ref={it => attachDrag(it)} className="item" key={item.name}>
+    },[g.current]) 
+
+      return <g ref={g} className="item" key={item.name}>
                        <CloseButton position={orientation === RaterOrientation.LEFT ? {x:x-220, y:y+3} : { x: x+280, y:y+3  }} onClick={() => onRemove(item)}></CloseButton>
                        <g id="item" className={`draggable ${orientation === RaterOrientation.LEFT ? 'main-rater-item' : 'secondary'  }`}> 
                          <circle className="item-symbol" cursor="move" cx={x} cy={y} r={5*scale} fill="#3d3d3d" fillOpacity="0.5"></circle>
