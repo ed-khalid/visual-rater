@@ -2,14 +2,14 @@ import React, { useCallback, useEffect, useState } from 'react';
 import './App.css';
 import { GlobalRaterState } from './components/rater/Rater';
 import { Scaler } from './functions/scale';
-import { AlbumSearchResult, Artist, ArtistSearchResult, GetArtistsDocument, GetArtistsQuery, NewSongInput, Song, useCreateAlbumMutation, useCreateArtistMutation, useGetArtistsQuery , useGetTracksForAlbumLazyQuery } from './generated/graphql';
+import { AlbumSearchResult, Artist, ArtistSearchResult, GetArtistsDocument, GetArtistsQuery, NewSongInput, useCreateAlbumMutation, useCreateArtistMutation, useGetArtistsQuery , useGetTracksForAlbumLazyQuery } from './generated/graphql';
 import { zoomIdentity } from 'd3-zoom'
 import { Dashboard } from './components/dashboard/Dashboard';
 import { Search } from './components/search/Search';
 import { RaterWrapper } from './components/rater/RaterWrapper';
 import { ItemType } from './models/Item';
 
-export const RATER_BOTTOM:number = 905; 
+export const RATER_BOTTOM:number = 1150; 
 
 export const initialRaterState:GlobalRaterState = {
    start: '0'

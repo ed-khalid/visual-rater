@@ -4,7 +4,6 @@ import { Artist, Song } from "../../generated/graphql"
 import { RatedItem } from "../../models/RatedItem"
 import { SelectionRectangle } from "./behaviors/SelectionRectangle"
 import { GlobalRaterState, Rater, RaterMode } from "./Rater"
-import { select } from 'd3-selection'
 
 interface Props {
     searchOrDashboardAlbum:SearchOrDashboardAlbum|undefined
@@ -70,7 +69,7 @@ export const RaterWrapper = ({searchOrDashboardAlbum, artists, otherRaterView, s
     }
   }, [dashboardAlbumId, artists, otherRaterView])
 
-    return <svg preserveAspectRatio="xMinYMin meet" ref={svgRef} id="trackRater" viewBox="0 0 800 550">
+    return <svg preserveAspectRatio="xMidYMin meet" ref={svgRef} id="trackRater" viewBox="0 0 800 1200">
           <defs>
             <clipPath id="clip-path">
               <rect x="0" y="0" width="950" height={950}></rect>

@@ -111,7 +111,6 @@ export const Rater:React.FunctionComponent<Props> = ({position, state, setState,
         const group = groupedItems.find(it => it.position === position)  
         if (group) {
             const {start,end} = zoomBehavior?.zoomOnGroup(group)
-            console.log(start,end)
             setState({...state, start, end})
         }
     } 
