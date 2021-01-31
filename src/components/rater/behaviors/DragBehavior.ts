@@ -3,13 +3,10 @@ import { event as d3Event } from 'd3'
 import { Scaler } from "../../../functions/scale";
 import { RatedItem } from "../../../models/RatedItem";
 import { Position } from "../../../models/Position";
-import { Dispatch, SetStateAction } from "react";
 
 interface Props {
     raterBottom:number
     g:SVGGElement|undefined
-    dragPoint:Position|undefined
-    setDragPoint:Dispatch<SetStateAction<Position|undefined>>
     scaler:Scaler
     item:RatedItem
     onDragEnd:(id:string, score:number ) => void
@@ -38,7 +35,6 @@ export const DragBehavior = ({raterBottom, item, g, scaler, onDragEnd}:Props) =>
                 sessionStorage.setItem(`node${index}`, JSON.stringify({x:undefined, y}))
             })
         }
-        console.log(sessionStorage)
     },   
     dragInProgress : (d:any, i:number, nodeList:ArrayLike<SVGElement> ) => {
           if (!isDragInBounds(d3Event.y)) {
@@ -67,9 +63,10 @@ export const DragBehavior = ({raterBottom, item, g, scaler, onDragEnd}:Props) =>
         const nodes = selectAll('svg#trackRater g.item.selected').nodes()
         nodes.forEach((g) => {
                 select(g).select('g.close-button').classed('hide', false);
-                // const yPosition = Number(select(g).select('.item-symbol').attr('cy'));        
-                // const score = scaler.toScore(yPosition);  
-                // onDragEnd(item.id, score)
+                const item:RatedItem = select(g).data()[0] as RatedItem
+                const yPosition = Number(select(g).select('.item-symbol').attr('cy'));        
+                const score = scaler.toScore(yPosition);  
+                onDragEnd(item.id, score)
                 select(g).classed('selected', false);
           })
         // if (g) {
