@@ -1,8 +1,9 @@
 package com.hawazin.visrater.services
 
-import com.hawazin.visrater.graphql.models.NewAlbumInput
-import com.hawazin.visrater.graphql.models.SongInput
+import com.hawazin.visrater.models.graphql.NewAlbumInput
+import com.hawazin.visrater.models.graphql.SongInput
 import com.hawazin.visrater.models.db.*
+import com.hawazin.visrater.models.graphql.ArtistInput
 import org.springframework.stereotype.Service
 import java.util.*
 
@@ -39,30 +40,32 @@ class MusicService(private val songRepo:SongRepository , private val albumRepo: 
         return song
     }
 
-    fun createAlbum(albumInput:NewAlbumInput) : Album
+    fun createArtist(artistInput: ArtistInput): Artist
     {
-        var artist:Artist = albumInput.artist.let { Artist(id = UUID.randomUUID(), name= it.name, vendorId = it.vendorId , thumbnail = it.thumbnail    )   }
-        if (artist.vendorId != null) {
-            val existingArtist  = artistRepo.findByVendorId(artist.vendorId!!)
-            if (existingArtist != null) {
-                artist = existingArtist;
-            } else {
-                artistRepo.save(artist)
+        var artist:Artist = artistInput.let { Artist(id = UUID.randomUUID(), name= it.name, vendorId = it.vendorId , thumbnail = it.thumbnail    )   }
+        return artistRepo.save(artist)
+    }
+
+    fun createAlbum(albumInput: NewAlbumInput) : Album
+    {
+        val artist = artistRepo.findById(albumInput.artistId)
+        if (artist.isPresent()) {
+            var album = albumInput.let  { Album(id = UUID.randomUUID(), vendorId =  it.vendorId, isComplete=false, name = it.name, year= it.year, artist = artist.get(), thumbnail = it.thumbnail) }
+            if (album.vendorId != null) {
+                val existingAlbum = albumRepo.findByVendorId(album.vendorId!!)
+                if (existingAlbum != null) {
+                    album = existingAlbum
+                } else {
+                    albumRepo.save(album)
+                }
             }
+            var songs = albumInput.songs.map { Song( id =  UUID.randomUUID(),  vendorId = it.vendorId, name = it.name, album = album, artist = artist.get(), score = it.score, number= it.number, discNumber = it.discNumber   ) }
+            songRepo.saveAll(songs)
+            album.songs = songs.toMutableList()
+            return album
+        } else {
+            throw Error("Artist ${albumInput.artistId} not found ")
         }
-        var album = albumInput.let  { Album(id = UUID.randomUUID(), vendorId =  it.vendorId, isComplete=false, name = it.name, year= it.year, artist = artist, thumbnail = it.thumbnail) }
-        if (album.vendorId != null) {
-            val existingAlbum = albumRepo.findByVendorId(album.vendorId!!)
-            if (existingAlbum != null) {
-                album = existingAlbum
-            } else {
-                albumRepo.save(album)
-            }
-        }
-        var songs = albumInput.songs.map { Song( id =  UUID.randomUUID(),  vendorId = it.vendorId, name = it.name, album = album, artist = artist, score = it.score, number= it.number, discNumber = it.discNumber   ) }
-        songRepo.saveAll(songs)
-        album.songs = songs.toMutableList()
-        return album
     }
 
 //    fun createSong(spotifySong:NewSongInput) : Song

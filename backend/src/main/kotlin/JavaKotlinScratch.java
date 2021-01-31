@@ -1,5 +1,5 @@
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.hawazin.visrater.graphql.models.NewSongInput;
+import com.hawazin.visrater.models.graphql.NewSongInput;
 import graphql.TypeResolutionEnvironment;
 import graphql.schema.GraphQLObjectType;
 import graphql.schema.TypeResolver;
