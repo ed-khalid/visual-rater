@@ -26,7 +26,6 @@ export const DashboardAlbumSummary =  ({onClose, artistName, album }:Props) => {
     }, [album])
 
     useEffect(() => {
-        console.log(songs.map(it  => it.name ))
         calculateAlbumRating(songs)
     }, [songs])
 

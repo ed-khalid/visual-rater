@@ -31,7 +31,6 @@ export const ZoomBehavior = (props?:Props) => {
         zoomOnGroup: (group:RatedItemGrouped) =>  {
             const min = group.items.reduce((curr,it) => Math.min(it.score,curr)  , Infinity)  
             const max = group.items.reduce((curr,it) => Math.max(it.score,curr)  , -Infinity)  
-            console.log(min,max)
             return { start:(min-0.05)+'', end:(max+0.05)+'' }
         }, 
         zoomIn: (e:MouseEvent, scaler:Scaler) => {

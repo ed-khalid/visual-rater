@@ -1,15 +1,22 @@
 import { select } from 'd3-selection'
-import { event as d3Event} from 'd3'
+import { event as d3Event, svg} from 'd3'
 
 
 export const SelectionRectangle = (svgRef:SVGSVGElement) => {
 
     const SELECTION_RECT_CLASS = 'selection-rectangle'  
 
+        const convertToSvgCoordinate = (e:MouseEvent): {x:number,y:number} =>  {
+            const p = svgRef.createSVGPoint()
+            p.x = e.clientX;  
+            p.y = e.clientY;
+            return p.matrixTransform(svgRef.getScreenCTM()?.inverse())
+        } 
+
 
 
         const mouseDown = () => {
-            const e = d3Event as MouseEvent   
+            const e = convertToSvgCoordinate(d3Event as MouseEvent)   
             select(svgRef)
               .append('rect')
               .attr('rx', 6)
@@ -21,7 +28,7 @@ export const SelectionRectangle = (svgRef:SVGSVGElement) => {
               .attr('height',0)
         }  
         const mouseMove = () => {
-            const e = d3Event as MouseEvent
+            const e = convertToSvgCoordinate(d3Event as MouseEvent)
             const rect = select(svgRef).select(`rect.${SELECTION_RECT_CLASS}`) 
             if (!rect.empty()) {
                 const rectState = {
