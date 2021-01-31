@@ -1,5 +1,6 @@
 import { select } from 'd3-selection'
-import { event as d3Event, svg} from 'd3'
+import { event as d3Event } from 'd3'
+import { selectCircle } from '../../../functions/select'
 
 
 export const SelectionRectangle = (svgRef:SVGSVGElement) => {
@@ -12,8 +13,6 @@ export const SelectionRectangle = (svgRef:SVGSVGElement) => {
             p.y = e.clientY;
             return p.matrixTransform(svgRef.getScreenCTM()?.inverse())
         } 
-
-
 
         const mouseDown = () => {
             const e = convertToSvgCoordinate(d3Event as MouseEvent)   
@@ -60,6 +59,15 @@ export const SelectionRectangle = (svgRef:SVGSVGElement) => {
             }
         }
         const mouseUp = () => {
+            const rect = select(svgRef).select(`rect.${SELECTION_RECT_CLASS}`)  
+            select(svgRef).selectAll<SVGGElement, unknown>('g.item').nodes().forEach((gNode) => {
+                const circle = select(gNode).select<SVGCircleElement>('circle')
+                const [rectX, rectY, rectWidth, rectHeight] = [rect.attr('x'), rect.attr('y'), rect.attr('width'), rect.attr('height')].map( it => parseInt(it, 10)) 
+                const [x ,y] = [circle.attr('cx'), circle.attr('cy')].map(it => parseInt(it, 10))
+                if ( x > rectX && x < (rectX + rectWidth) && y > rectY && y < (rectY +rectHeight)) {
+                    select(gNode).classed('selected', true)
+                }
+            })
             select(svgRef).selectAll(`rect.${SELECTION_RECT_CLASS}`).remove()
         }
 

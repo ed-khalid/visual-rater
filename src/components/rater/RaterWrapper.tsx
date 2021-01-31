@@ -84,8 +84,8 @@ export const RaterWrapper = ({searchOrDashboardAlbum, artists, otherRaterView, s
                 items={mainRaterItems}
                 setItems={setMainRaterItems}
                 mode={RaterMode.PRIMARY}
-          >
-          </Rater>}
+          />
+          }
           {otherRaterView !== OtherRaterView.NONE &&  
           <Rater
             state = {state}
@@ -94,8 +94,7 @@ export const RaterWrapper = ({searchOrDashboardAlbum, artists, otherRaterView, s
             items={otherSongs}
             setItems={setOtherSongs}
             mode={RaterMode.SECONDARY}
-          >
-          </Rater>
+          />
           }
           </g>
         </svg>

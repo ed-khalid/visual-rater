@@ -12,7 +12,6 @@ import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import React from 'react';
 import './Rater.css'
 import { ZoomBehavior } from './behaviors/ZoomBehavior';
-import { PanBehavior } from './behaviors/PanBehavior';
 import { RATER_BOTTOM } from '../../App';
 
 interface Props {
@@ -45,16 +44,16 @@ export enum RaterOrientation {
 
 
 
-export const Rater:React.FunctionComponent<Props> = ({position, state, setState, items, setItems, mode}:Props) => {
+export const Rater = ({position, state, setState, items, setItems, mode}:Props) => {
 
     const [updateSong]  = useUpdateSongMutation();
     const [deleteSong] = useDeleteSongMutation()  
+    const [dragPoint, setDragPoint] = useState<Position>();
     const [currentItem, setCurrentItem] = useState<RatedItem|null>();  
     const [groupedItems, setGroupedItems] = useState<RatedItemGrouped[]>([]);
     const g = useRef<SVGGElement>(null)
     const zoomTarget= useRef<SVGGElement>(null)
     const zoomListener = useRef<SVGRectElement>(null)
-    const [pan, ] = useState(PanBehavior())
     const [zoomBehavior, setZoomBehavior] = useState<any>() 
 
 
@@ -114,10 +113,6 @@ export const Rater:React.FunctionComponent<Props> = ({position, state, setState,
             setState({...state, start, end})
         }
     } 
-    const zoomIn = (e:MouseEvent) => {
-        const {start, end} = zoomBehavior?.zoomIn(e, state.scaler)
-        setState({...state, start, end})
-    }  
 
     const updateItem =  (itemId:string, newScore:number) => {
         const item = items.find( it => it.id === itemId) 
@@ -127,20 +122,6 @@ export const Rater:React.FunctionComponent<Props> = ({position, state, setState,
           setCurrentItem(item);
           setItems( [..._r, item] )
         }
-    }
-
-    const startPan = (e:MouseEvent) => pan.startPan(e)
-    const duringPan = (e:MouseEvent) => {
-        const x = pan.duringPan(e, state.scaler, { start: state.start, end: state.end })
-        if (x) {
-          setState({...state, start: x.start, end:x.end })
-        }
-    }  
-    const endPan = (e:MouseEvent) => {
-       const shouldZoomIn = pan.endPan(e)  
-       if (shouldZoomIn) {
-           zoomIn(e)
-       }
     }
 
     const makeAxis = (scale:AxisScale<number>) => {
@@ -182,6 +163,8 @@ export const Rater:React.FunctionComponent<Props> = ({position, state, setState,
                             orientation={mode === RaterMode.PRIMARY? RaterOrientation.LEFT:RaterOrientation.RIGHT}
                             key={rItemGrouped.items[0].id}
                             item={rItemGrouped.items[0]}
+                            dragPoint={dragPoint}
+                            setDragPoint={setDragPoint}
                             raterBottom={RATER_BOTTOM}
                             x={position.x}
                             y={rItemGrouped.position}
