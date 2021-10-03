@@ -27,6 +27,7 @@ type Album {
     year: Int
     thumbnail: String
     songs:[Song!]!
+    score:Float
 }
 type Artist {
     id: String!
@@ -34,4 +35,5 @@ type Artist {
     name:String!
     thumbnail: String
     albums:[Album]
+    score: Float
 }
