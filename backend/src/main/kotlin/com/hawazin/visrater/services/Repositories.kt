@@ -1,8 +1,6 @@
 package com.hawazin.visrater.services
 
-import com.hawazin.visrater.models.db.Album
-import com.hawazin.visrater.models.db.Artist
-import com.hawazin.visrater.models.db.Song
+import com.hawazin.visrater.models.db.*
 import org.springframework.data.repository.CrudRepository
 import java.util.*
 
@@ -12,9 +10,13 @@ interface ArtistRepository: CrudRepository<Artist, UUID>   {
     fun findByVendorId(vendorId:String): Artist?
 }
 
+interface ArtistTierRepository: CrudRepository<ArtistTier, UUID> {
+    fun findByValue(value: ArtistTierEnum) : ArtistTier
+}
+
 interface AlbumRepository: CrudRepository<Album, UUID> {
     fun findByVendorId(vendorId:String): Album?
-    fun findByArtistId(artistId: UUID) : List<Album>
+    fun findByArtistId(artistId: UUID?) : List<Album>
 }
 
 interface SongRepository:CrudRepository<Song,UUID> {

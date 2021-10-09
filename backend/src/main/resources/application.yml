@@ -9,6 +9,7 @@ spring:
     url: "jdbc:postgresql://localhost:5432/visual_rater"
     username: visual_rater
     password: aerozep
+    initialization-mode: always
   application:
     name: visrater-backend
   servlet:

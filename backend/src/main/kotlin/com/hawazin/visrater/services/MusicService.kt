@@ -9,7 +9,7 @@ import java.util.*
 
 
 @Service
-class MusicService(private val songRepo:SongRepository , private val albumRepo: AlbumRepository, private val artistRepo:ArtistRepository) {
+class MusicService(private val songRepo:SongRepository , private val albumRepo: AlbumRepository, private val artistRepo:ArtistRepository, private val artistTierRepository: ArtistTierRepository) {
 
     fun readArtists() : Iterable<Artist> = artistRepo.findAll()
     fun readAlbumsForArtist(artist:Artist) : Iterable<Album> = albumRepo.findByArtistId(artist.id)
@@ -30,7 +30,7 @@ class MusicService(private val songRepo:SongRepository , private val albumRepo: 
     {
         val song = songRepo.findById(songInput.id).get()
         song.score = songInput.score ?: song.score
-        // if input score is null, ignroe update, if it's a negative number, nullify score
+        // if input score is null, ignore update, if it's a negative number, nullify score
         if (song.score!! < 0) {
             song.score = null
         }
@@ -42,15 +42,16 @@ class MusicService(private val songRepo:SongRepository , private val albumRepo: 
 
     fun createArtist(artistInput: ArtistInput): Artist
     {
-        var artist:Artist = artistInput.let { Artist(id = UUID.randomUUID(), name= it.name, vendorId = it.vendorId , thumbnail = it.thumbnail    )   }
+        var fTier = artistTierRepository.findByValue(ArtistTierEnum.F)
+        var artist:Artist = artistInput.let { Artist(id = null, name= it.name, vendorId = it.vendorId , thumbnail = it.thumbnail, score  = 0.0, metadata = ArtistMetadata(id = null, tier = fTier, songs = ArtistSongMetadata(), totalAlbums = 0, totalSongs = 0  ) )   }
         return artistRepo.save(artist)
     }
 
     fun createAlbum(albumInput: NewAlbumInput) : Album
     {
         val artist = artistRepo.findById(albumInput.artistId)
-        if (artist.isPresent()) {
-            var album = albumInput.let  { Album(id = UUID.randomUUID(), vendorId =  it.vendorId, isComplete=false, name = it.name, year= it.year, artist = artist.get(), thumbnail = it.thumbnail) }
+        if (artist.isPresent) {
+            var album = albumInput.let  { Album(id = UUID.randomUUID(), vendorId =  it.vendorId, name = it.name, year= it.year, artist = artist.get(), thumbnail = it.thumbnail, score = 0.0 ) }
             if (album.vendorId != null) {
                 val existingAlbum = albumRepo.findByVendorId(album.vendorId!!)
                 if (existingAlbum != null) {
