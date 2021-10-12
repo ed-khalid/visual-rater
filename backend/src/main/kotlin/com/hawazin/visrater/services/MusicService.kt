@@ -1,9 +1,12 @@
 package com.hawazin.visrater.services
 
+import com.hawazin.visrater.graphql.VisRaterGraphQLError
 import com.hawazin.visrater.models.graphql.NewAlbumInput
 import com.hawazin.visrater.models.graphql.SongInput
 import com.hawazin.visrater.models.db.*
 import com.hawazin.visrater.models.graphql.ArtistInput
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import java.util.*
 
@@ -11,11 +14,22 @@ import java.util.*
 @Service
 class MusicService(private val songRepo:SongRepository , private val albumRepo: AlbumRepository, private val artistRepo:ArtistRepository, private val artistTierRepository: ArtistTierRepository) {
 
-    fun readArtists() : Iterable<Artist> = artistRepo.findAll()
+    fun readArtists() : Page<Artist> = artistRepo.findAll(PageRequest.of(0,10))
+    fun readArtist(vendorId:String) = artistRepo.findByVendorId(vendorId)
     fun readAlbumsForArtist(artist:Artist) : Iterable<Album> = albumRepo.findByArtistId(artist.id)
     fun deleteSongById(id:UUID) : Boolean
     {
-        songRepo.deleteById(id)
+        try {
+            songRepo.deleteById(id)
+        }
+        catch(e:Exception) {
+            if (e.message != null) {
+                throw VisRaterGraphQLError(e.message!!)
+            }
+            else {
+                throw VisRaterGraphQLError("Shmidreeni")
+            }
+        }
         return true
     }
 

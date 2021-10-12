@@ -29,11 +29,50 @@ type Album {
     songs:[Song!]!
     score:Float
 }
-type Artist {
+
+interface Page {
+    total: Int!
+    pageNumber: Int!
+    content:[Pageable]
+}
+
+interface Pageable {
+    id:String!
+}
+
+type ArtistPage implements Page {
+    total:Int!
+    pageNumber:Int!
+    content:[Artist]!
+}
+
+type Artist implements Pageable {
     id: String!
     vendorId:String
     name:String!
     thumbnail: String
     albums:[Album]
     score: Float
+    metadata:ArtistMetadata
+}
+
+type ArtistSongMetadata {
+    classic:Int!
+    great:Int!
+    good:Int!
+    mediocre:Int!
+    bad:Int!
+    terrible:Int!
+    classicPercentage:Float!
+    greatPercentage:Float!
+    goodPercentage:Float!
+    mediocrePercentage:Float!
+    badPercentage:Float!
+    terriblePercentage:Float!
+}
+
+type ArtistMetadata {
+    songs:ArtistSongMetadata!
+    totalSongs:Int!
+    totalAlbums:Int!
 }

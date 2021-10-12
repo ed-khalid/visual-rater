@@ -1,7 +1,8 @@
 
 type Query {
     search: SearchQuery
-    artists: [Artist!]
+    artists: ArtistPage!
+    artist(vendorId:String): Artist
 }
 
 type SearchQuery {
@@ -16,6 +17,7 @@ type ArtistSearchResult {
     thumbnail:String
     albums:[AlbumSearchResult!]
 }
+
 type AlbumSearchResult {
     id:String!
     name:String!

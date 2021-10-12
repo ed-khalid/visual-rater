@@ -1,11 +1,12 @@
 package com.hawazin.visrater.services
 
 import com.hawazin.visrater.models.db.*
+import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.repository.CrudRepository
 import java.util.*
 
 
-interface ArtistRepository: CrudRepository<Artist, UUID>   {
+interface ArtistRepository: JpaRepository<Artist, UUID>   {
     fun findByName(name:String) : Artist?
     fun findByVendorId(vendorId:String): Artist?
 }

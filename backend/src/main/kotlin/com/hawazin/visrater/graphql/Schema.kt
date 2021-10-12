@@ -1,5 +1,6 @@
 package com.hawazin.visrater.graphql
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.hawazin.visrater.models.api.ArtistPage
 import com.hawazin.visrater.models.graphql.NewAlbumInput
 import com.hawazin.visrater.models.graphql.SongInput
 import com.hawazin.visrater.models.db.Artist
@@ -40,6 +41,16 @@ class SchemaBuilder(private val spotifyService: SpotifyApi, private val musicSer
                 }
                 it.dataFetcher("DeleteSong") { env ->
                     val id = env.arguments["songId"] as String
+                    try {
+                        val string = UUID.fromString(id)
+                    }
+                    catch (e:Exception) {
+                        if (e.message != null) {
+                            throw VisRaterGraphQLError(e.message!!)
+                        } else {
+                            throw VisRaterGraphQLError("Shmidreeni")
+                        }
+                    }
                     return@dataFetcher musicService.deleteSongById(UUID.fromString(id))
                 }
                 it.dataFetcher("DeleteAlbum") { env ->
@@ -57,9 +68,14 @@ class SchemaBuilder(private val spotifyService: SpotifyApi, private val musicSer
                     }
                     return@dataFetcher ReturnValue(id = id!!.toLowerCase())
                 }
+                it.dataFetcher("artist") {
+                    val vendorId = it.arguments["vendorId"] as String
+                    val artist = musicService.readArtist(vendorId)
+                    return@dataFetcher artist
+                }
                 it.dataFetcher("artists") { _ ->
                     val artists = musicService.readArtists()
-                    return@dataFetcher artists
+                    return@dataFetcher ArtistPage(total = artists.totalPages, pageNumber = artists.pageable.pageNumber, content = artists.content )
                 }
                 it.dataFetcher("albums") { env ->
                     val artist  = env.getSource<Artist>()
@@ -88,7 +104,12 @@ class SchemaBuilder(private val spotifyService: SpotifyApi, private val musicSer
                     }
                     val name = env.arguments["name"] as String?
                     if (name != null ) {
-                        return@dataFetcher spotifyService.searchArtist(name.toLowerCase())
+                        val spotifySearchResult = spotifyService.searchArtist(name.toLowerCase())
+                        val existingArtist = musicService.readArtist(spotifySearchResult.id)
+                        if (existingArtist != null) {
+                            spotifySearchResult.albums.filter { existingArtist.albums?.find{ alb -> alb.vendorId != it.id} != null }
+                        }
+                        return@dataFetcher spotifySearchResult
                     } else {
                         throw IllegalArgumentException("Needs at least one argument")
                     }
@@ -100,12 +121,25 @@ class SchemaBuilder(private val spotifyService: SpotifyApi, private val musicSer
             .type("Item") {
                 it.typeResolver(itemResolver())
             }
+            .type("Page") {
+                it.typeResolver(pageResolver())
+            }
+            .type("Pageable") {
+                it.typeResolver(pageableResolver())
+            }
              .build()
     }
     fun itemResolver(): TypeResolver = TypeResolver  {
         when(enumValueOf<ItemType>(it.arguments["type"] as String)) {
             MUSIC -> it.schema.getObjectType("Song")
         }
+    }
+
+    fun pageResolver() : TypeResolver = TypeResolver {
+        it.schema.getObjectType("ArtistPage")
+    }
+    fun pageableResolver() : TypeResolver = TypeResolver {
+        it.schema.getObjectType("Artist")
     }
 
 
