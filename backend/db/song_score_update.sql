@@ -87,6 +87,7 @@ $tot_alb$;
 CREATE TRIGGER trigger_album_total_recalc
     AFTER INSERT
     ON album
+    FOR EACH ROW
     EXECUTE PROCEDURE recalculate_total_albums();
 
 CREATE TRIGGER trigger_recalc_delete
