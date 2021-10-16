@@ -15,7 +15,8 @@ type ArtistSearchResult {
     name:String!
     id:String!
     thumbnail:String
-    albums:[AlbumSearchResult!]
+    unreviewedAlbums:[AlbumSearchResult!]!
+    reviewedAlbums : [Album!]!
 }
 
 type AlbumSearchResult {

@@ -107,9 +107,17 @@ class SchemaBuilder(private val spotifyService: SpotifyApi, private val musicSer
                         val spotifySearchResult = spotifyService.searchArtist(name.toLowerCase())
                         val existingArtist = musicService.readArtist(spotifySearchResult.id)
                         if (existingArtist != null) {
-                            spotifySearchResult.albums.filter { existingArtist.albums?.find{ alb -> alb.vendorId != it.id} != null }
+                            val albums = spotifySearchResult.unreviewedAlbums.filter { existingArtist.albums?.find{ alb -> alb.vendorId != it.id} != null }
+                            return@dataFetcher com.hawazin.visrater.models.graphql.Artist(
+                                id = spotifySearchResult.id,
+                                name = spotifySearchResult.name,
+                                thumbnail = spotifySearchResult.thumbnail,
+                                unreviewedAlbums = albums,
+                                reviewedAlbums = existingArtist.albums
+                            )
+                        } else {
+                            return@dataFetcher spotifySearchResult
                         }
-                        return@dataFetcher spotifySearchResult
                     } else {
                         throw IllegalArgumentException("Needs at least one argument")
                     }

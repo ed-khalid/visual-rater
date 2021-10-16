@@ -63,14 +63,14 @@ class SpotifyApi(private val configuration: SpotifyConfiguration, val imageServi
     fun getArtistById(id:String): Artist {
         val artist = makeCall { api().getForObject<SpotifyArtist>("/artists/{id}", id) }
         val albums = getAlbumsForArtist(artist.id)
-        return Artist(id = artist.id, name = artist.name, thumbnail = artist.images[1].url, albums = albums)
+        return Artist(id = artist.id, name = artist.name, thumbnail = artist.images[1].url, unreviewedAlbums = albums, reviewedAlbums = emptyList())
     }
 
     fun searchArtist(name:String) :Artist {
         val response = makeCall { api().getForObject<SpotifyArtistListResponse>("/search?q={name}&type=artist", name) }
         val artist = response.artists.items[0]
         val albums = getAlbumsForArtist(artist.id)
-        return Artist(id = artist.id, name= artist.name, thumbnail = artist.images[1].url, albums = albums )
+        return Artist(id = artist.id, name= artist.name, thumbnail = artist.images[1].url, unreviewedAlbums = albums, reviewedAlbums = emptyList())
     }
 
     // let's forget about the offset for now
