@@ -14,7 +14,7 @@ import java.util.*
 @Service
 class MusicService(private val songRepo:SongRepository , private val albumRepo: AlbumRepository, private val artistRepo:ArtistRepository, private val artistTierRepository: ArtistTierRepository) {
 
-    fun readArtists() : Page<Artist> = artistRepo.findAll(PageRequest.of(0,10))
+    fun readArtists() : Page<Artist> = artistRepo.findAll(PageRequest.of(0,5))
     fun readArtist(vendorId:String) = artistRepo.findByVendorId(vendorId)
     fun readAlbumsForArtist(artist:Artist) : Iterable<Album> = albumRepo.findByArtistId(artist.id)
     fun deleteSongById(id:UUID) : Boolean
