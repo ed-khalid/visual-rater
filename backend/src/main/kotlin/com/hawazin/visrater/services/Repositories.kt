@@ -8,19 +8,12 @@ import java.util.*
 
 interface ArtistRepository: JpaRepository<Artist, UUID>   {
     fun findByName(name:String) : Artist?
-    fun findByVendorId(vendorId:String): Artist?
-}
-
-interface ArtistTierRepository: CrudRepository<ArtistTier, UUID> {
-    fun findByValue(value: ArtistTierEnum) : ArtistTier
 }
 
 interface AlbumRepository: CrudRepository<Album, UUID> {
-    fun findByVendorId(vendorId:String): Album?
     fun findByArtistId(artistId: UUID?) : List<Album>
 }
 
 interface SongRepository:CrudRepository<Song,UUID> {
     fun findByName(name:String) : Song?
-   fun findByVendorId(vendorId:String): Song?
 }

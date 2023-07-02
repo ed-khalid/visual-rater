@@ -1,32 +1,26 @@
 
 type Query {
-    search: SearchQuery
+    searchExternalArtist(name:String): ExternalArtistSearchResult
+    searchExternalAlbumTracks(albumId:String): [ExternalTrackSearchResult!]!
     artists: ArtistPage!
-    artist(vendorId:String): Artist
+    artist(name:String): Artist
 }
 
-type SearchQuery {
-    id:String!
-    artist(name:String, vendorId:String) : ArtistSearchResult!
-    tracks(albumId:String!): [TrackSearchResult!]!
-}
-
-type ArtistSearchResult {
+type ExternalArtistSearchResult {
     name:String!
     id:String!
     thumbnail:String
-    unreviewedAlbums:[AlbumSearchResult!]!
-    reviewedAlbums : [Album!]!
+    albums:[ExternalAlbumSearchResult!]!
 }
 
-type AlbumSearchResult {
+type ExternalAlbumSearchResult {
     id:String!
     name:String!
     thumbnail:String!
     year: Int
 }
 
-type TrackSearchResult {
+type ExternalTrackSearchResult {
     id:String!
     name:String!
     trackNumber:Int!

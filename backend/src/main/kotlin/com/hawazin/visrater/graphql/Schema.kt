@@ -11,13 +11,15 @@ import com.hawazin.visrater.services.MusicService
 import com.hawazin.visrater.services.SpotifyApi
 import graphql.schema.TypeResolver
 import graphql.schema.idl.RuntimeWiring
+import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
 class SchemaBuilder(private val spotifyService: SpotifyApi, private val musicService: MusicService) {
 
-    private final val objectMapper = jacksonObjectMapper()
+    private val objectMapper = jacksonObjectMapper()
+    private var logger  = LoggerFactory.getLogger(javaClass)
 
     fun buildRunTimeWiring(): RuntimeWiring {
         return RuntimeWiring.newRuntimeWiring()
@@ -60,72 +62,46 @@ class SchemaBuilder(private val spotifyService: SpotifyApi, private val musicSer
             }
             .type("Query")
             {
-                it.dataFetcher("search") { env ->
-                    data class ReturnValue(val id: String)
-                    var id = env.selectionSet.arguments["artist"]?.get("name") as String?
-                    if (id == null) {
-                       id = env.variables?.get("albumId") as String?
+                it.dataFetcher("artist") { env ->
+                    val artistName = env.arguments["name"] as String?
+                    if (artistName == null) {
+                        throw IllegalArgumentException("Artist name not provided")
+                    } else {
+                        return@dataFetcher musicService.readArtist(artistName)
                     }
-                    return@dataFetcher ReturnValue(id = id!!.toLowerCase())
-                }
-                it.dataFetcher("artist") {
-                    val vendorId = it.arguments["vendorId"] as String
-                    val artist = musicService.readArtist(vendorId)
-                    return@dataFetcher artist
                 }
                 it.dataFetcher("artists") { _ ->
-                    val artists = musicService.readArtists()
-                    return@dataFetcher ArtistPage(total = artists.totalPages, pageNumber = artists.pageable.pageNumber, content = artists.content )
+                    try {
+                        logger.debug("fetching artists")
+                        val artists = musicService.readArtists()
+                        logger.debug(artists.toString())
+                        return@dataFetcher ArtistPage(
+                            total = artists.totalPages,
+                            pageNumber = artists.pageable.pageNumber,
+                            content = artists.content
+                        )
+                    }
+                    catch(e:Exception) {
+                        logger.error(e.message)
+                        throw e
+                    }
                 }
                 it.dataFetcher("albums") { env ->
-                    val artist  = env.getSource<Artist>()
-                    val album = musicService.readAlbumsForArtist(artist)
-                    return@dataFetcher album
+                    val artist = env.getSource<Artist>()
+                    return@dataFetcher musicService.readAlbumsForArtist(artist)
                 }
-//                it.dataFetcher("song") { env ->
-//                    try {
-//                        val songId = env.arguments["id"] as String?
-//                        val uuid = UUID.fromString(songId)
-//                        val song = musicService.readSong(id = uuid)
-//                        return@dataFetcher if (song.isEmpty) null else song
-//                    }
-//                    catch (_:IllegalArgumentException)
-//                    {
-//                        throw VisRaterGraphQLError("Invalid ID")
-//                    }
-//                }
-            }
-            .type("SearchQuery")
-            {
-                it.dataFetcher("artist") { env ->
-                    val id = env.arguments["vendorId"] as String?
-                    if (id != null) {
-                        return@dataFetcher spotifyService.getArtistById(id)
-                    }
+                it.dataFetcher("searchExternalAlbumTracks") { env ->
+                    spotifyService.getTracksForAlbum(env.arguments["albumId"] as String)
+                }
+                it.dataFetcher("searchExternalArtist") { env ->
                     val name = env.arguments["name"] as String?
                     if (name != null ) {
-                        val spotifySearchResult = spotifyService.searchArtist(name.toLowerCase())
-                        val existingArtist = musicService.readArtist(spotifySearchResult.id)
-                        if (existingArtist != null) {
-                            val albums = spotifySearchResult.unreviewedAlbums.filter { existingArtist.albums?.find{ alb -> alb.vendorId != it.id} != null }
-                            return@dataFetcher com.hawazin.visrater.models.graphql.Artist(
-                                id = spotifySearchResult.id,
-                                name = spotifySearchResult.name,
-                                thumbnail = spotifySearchResult.thumbnail,
-                                unreviewedAlbums = albums,
-                                reviewedAlbums = existingArtist.albums
-                            )
-                        } else {
-                            return@dataFetcher spotifySearchResult
-                        }
+                        return@dataFetcher spotifyService.searchArtist(name.toLowerCase())
                     } else {
                         throw IllegalArgumentException("Needs at least one argument")
                     }
                 }
-                it.dataFetcher("tracks") { env ->
-                    spotifyService.getTracksForAlbum(env.arguments["albumId"] as String)
-                }
-             }
+            }
             .type("Item") {
                 it.typeResolver(itemResolver())
             }
@@ -135,7 +111,7 @@ class SchemaBuilder(private val spotifyService: SpotifyApi, private val musicSer
             .type("Pageable") {
                 it.typeResolver(pageableResolver())
             }
-             .build()
+            .build()
     }
     fun itemResolver(): TypeResolver = TypeResolver  {
         when(enumValueOf<ItemType>(it.arguments["type"] as String)) {

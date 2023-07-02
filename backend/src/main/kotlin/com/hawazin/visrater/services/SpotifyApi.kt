@@ -22,7 +22,7 @@ data class SpotifyAuthToken(@JsonProperty("access_token") val accessToken:String
 
 
 @Service
-class SpotifyApi(private val configuration: SpotifyConfiguration, val imageService: ImageService ) {
+class SpotifyApi(private val configuration: SpotifyConfiguration, val imageService: ImageService) {
 
     private var token:SpotifyAuthToken? = null
     private val accountsTemplate: RestTemplate = RestTemplateBuilder()
@@ -60,21 +60,15 @@ class SpotifyApi(private val configuration: SpotifyConfiguration, val imageServi
         return accountsTemplate.postForObject<SpotifyAuthToken>("/api/token", request, SpotifyAuthToken::class.java)
     }
 
-    fun getArtistById(id:String): Artist {
-        val artist = makeCall { api().getForObject<SpotifyArtist>("/artists/{id}", id) }
-        val albums = getAlbumsForArtist(artist.id)
-        return Artist(id = artist.id, name = artist.name, thumbnail = artist.images[1].url, unreviewedAlbums = albums, reviewedAlbums = emptyList())
-    }
-
     fun searchArtist(name:String) :Artist {
         val response = makeCall { api().getForObject<SpotifyArtistListResponse>("/search?q={name}&type=artist", name) }
         val artist = response.artists.items[0]
         val albums = getAlbumsForArtist(artist.id)
-        return Artist(id = artist.id, name= artist.name, thumbnail = artist.images[1].url, unreviewedAlbums = albums, reviewedAlbums = emptyList())
+        return Artist(id = artist.id, name= artist.name, thumbnail = artist.images[1].url, albums = albums)
     }
 
     // let's forget about the offset for now
-    fun getAlbumsForArtist(artistId: String, _offset: Int = 0): List<Album> {
+    private fun getAlbumsForArtist(artistId: String, _offset: Int = 0): List<Album> {
         val response = makeCall {
             api().getForObject<SpotifyAlbumList>(
                 "/artists/{artistId}/albums?limit=50&county=US&include_groups=album",
@@ -93,11 +87,9 @@ class SpotifyApi(private val configuration: SpotifyConfiguration, val imageServi
         }.toTypedArray()
         val similarityArray = imageService.groupSimilarAlbums(imageUrls)
         val albums = imageService.removeDuplicates(similarityArray, response.items)
-
         return albums.distinctBy { album -> album.name }
             .map { Album(id = it.id, name = it.name, thumbnail = it.images[2].url, year = dateParser(it.release_date)) }
             .sortedBy { it.year  }
-
     }
 
     fun getTracksForAlbum(albumId:String) : List<Track> {

@@ -11,7 +11,6 @@ class Artist(
     @Id
     @GeneratedValue(generator = "UUID") @GenericGenerator( name="UUID", strategy =  "org.hibernate.id.UUIDGenerator")
     var id: UUID?,
-    var vendorId:String?,
     var name:String,
     var thumbnail:String?,
     @OneToMany(mappedBy = "artist", cascade = [CascadeType.REMOVE])
@@ -29,19 +28,8 @@ class ArtistMetadata (
     var songs:ArtistSongMetadata,
     var totalSongs:Int,
     var totalAlbums:Int,
-    @ManyToOne(optional=false)
-    var tier:ArtistTier
+    var tier:Int
 )
-
-@Entity
-class ArtistTier(@Id @GeneratedValue(generator = "UUID") @GenericGenerator(name="UUID", strategy = "org.hibernate.id.UUIDGenerator") override var id: UUID, @Enumerated(
-    EnumType.STRING
-) override var value:ArtistTierEnum)
-    : DatabaseEnum<ArtistTierEnum>(id, value)
-
-enum class ArtistTierEnum {
-    A, B, C, D, E, F
-}
 
 abstract class DatabaseEnum<T>(
     open var id:UUID,
@@ -79,7 +67,6 @@ class ArtistSongMetadata (
 @Entity
 class Album(
     @Id var id:UUID,
-    var vendorId:String?,
     var name:String,
     var thumbnail:String?,
     var year:Int,
@@ -94,7 +81,6 @@ class Album(
 @Entity
 class Song(
     @Id var id:UUID,
-    var vendorId:String? = null,
     var name:String? = null,
     var number:Int,
     var discNumber:Int,

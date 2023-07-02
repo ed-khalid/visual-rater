@@ -14,7 +14,6 @@ input SongInput {
 }
 
 input NewAlbumInput {
-    vendorId: String
     name: String!
     thumbnail:String
     year: Int
@@ -24,14 +23,12 @@ input NewAlbumInput {
 
 
 input NewSongInput {
-    vendorId:String
     score:Float
     name: String!
     number:Int
     discNumber:Int
 }
 input ArtistInput {
-    vendorId: String
     name:String!
     thumbnail:String
 }

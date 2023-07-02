@@ -12,10 +12,10 @@ import java.util.*
 
 
 @Service
-class MusicService(private val songRepo:SongRepository , private val albumRepo: AlbumRepository, private val artistRepo:ArtistRepository, private val artistTierRepository: ArtistTierRepository) {
+class MusicService(private val songRepo:SongRepository , private val albumRepo: AlbumRepository, private val artistRepo:ArtistRepository) {
 
     fun readArtists() : Page<Artist> = artistRepo.findAll(PageRequest.of(0,5))
-    fun readArtist(vendorId:String) = artistRepo.findByVendorId(vendorId)
+    fun readArtist(name:String) = artistRepo.findByName(name)
     fun readAlbumsForArtist(artist:Artist) : Iterable<Album> = albumRepo.findByArtistId(artist.id)
     fun deleteSongById(id:UUID) : Boolean
     {
@@ -45,7 +45,7 @@ class MusicService(private val songRepo:SongRepository , private val albumRepo: 
         val song = songRepo.findById(songInput.id).get()
         song.score = songInput.score ?: song.score
         // if input score is null, ignore update, if it's a negative number, nullify score
-        if (song.score!! < 0) {
+        if (song.score != null && song.score!! < 0) {
             song.score = null
         }
         song.name = songInput.name ?: song.name
@@ -56,8 +56,7 @@ class MusicService(private val songRepo:SongRepository , private val albumRepo: 
 
     fun createArtist(artistInput: ArtistInput): Artist
     {
-        var fTier = artistTierRepository.findByValue(ArtistTierEnum.F)
-        var artist:Artist = artistInput.let { Artist(id = null, name= it.name, vendorId = it.vendorId , thumbnail = it.thumbnail, score  = 0.0, metadata = ArtistMetadata(id = null, tier = fTier, songs = ArtistSongMetadata(), totalAlbums = 0, totalSongs = 0  ) )   }
+        var artist:Artist = artistInput.let { Artist(id = null, name= it.name,thumbnail = it.thumbnail, score  = 0.0, metadata = ArtistMetadata(id = null, tier = 0, songs = ArtistSongMetadata(), totalAlbums = 0, totalSongs = 0  ) )   }
         return artistRepo.save(artist)
     }
 
@@ -65,16 +64,9 @@ class MusicService(private val songRepo:SongRepository , private val albumRepo: 
     {
         val artist = artistRepo.findById(albumInput.artistId)
         if (artist.isPresent) {
-            var album = albumInput.let  { Album(id = UUID.randomUUID(), vendorId =  it.vendorId, name = it.name, year= it.year, artist = artist.get(), thumbnail = it.thumbnail, score = 0.0 ) }
-            if (album.vendorId != null) {
-                val existingAlbum = albumRepo.findByVendorId(album.vendorId!!)
-                if (existingAlbum != null) {
-                    album = existingAlbum
-                } else {
-                    albumRepo.save(album)
-                }
-            }
-            var songs = albumInput.songs.map { Song( id =  UUID.randomUUID(),  vendorId = it.vendorId, name = it.name, album = album, artist = artist.get(), score = it.score, number= it.number, discNumber = it.discNumber   ) }
+            var album = albumInput.let  { Album(id = UUID.randomUUID(),name = it.name, year= it.year, artist = artist.get(), thumbnail = it.thumbnail, score = 0.0 ) }
+            albumRepo.save(album)
+            var songs = albumInput.songs.map { Song( id =  UUID.randomUUID(), name = it.name, album = album, artist = artist.get(), score = it.score, number= it.number, discNumber = it.discNumber   ) }
             songRepo.saveAll(songs)
             album.songs = songs.toMutableList()
             return album

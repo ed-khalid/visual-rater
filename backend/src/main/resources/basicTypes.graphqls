@@ -10,20 +10,15 @@ MUSIC
 
 type Song implements Item {
     id:String!
-    vendorId:String
     score:Float
     name: String!
-    artist:Artist!
     number:Int!
     discNumber:Int!
-    album:Album
 }
 
 type Album {
     id: String!
-    vendorId:String
     name: String!
-    isComplete:Boolean
     year: Int
     thumbnail: String
     songs:[Song!]!
@@ -48,7 +43,6 @@ type ArtistPage implements Page {
 
 type Artist implements Pageable {
     id: String!
-    vendorId:String
     name:String!
     thumbnail: String
     albums:[Album]

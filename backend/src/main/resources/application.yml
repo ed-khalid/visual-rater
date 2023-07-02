@@ -46,8 +46,5 @@ spotify:
     secret: {f245c4d9b1ad42399f98e922c91d02ea:default}
   accounts: 'https://accounts.spotify.com'
   api: 'https://api.spotify.com/v1'
-last-fm:
-  key: 'a8b44976cd3bc50e609ff3785ab3dc98'
-  secret: 'cfc534b406f58de5ea9061aede7114a2'
 image-service:
   uri: 'http://localhost:7011'
