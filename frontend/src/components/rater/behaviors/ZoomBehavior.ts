@@ -1,6 +1,5 @@
 import { select, Selection } from 'd3-selection';
 import { zoom } from 'd3-zoom'
-import { axisBottom, event as d3Event } from 'd3';
 import { Scaler } from '../../../functions/scale';
 import { GlobalRaterState, RatedItemGrouped } from '../Rater';
 import { ScaleLinear } from 'd3-scale' 
@@ -16,8 +15,8 @@ interface Props {
 export const ZoomBehavior = (props?:Props) => {
 
     if (props && props.listener) {
-        const doZoom = () => {
-            const transform = d3Event.transform 
+        const doZoom = (event:any) => {
+            const transform = event.transform 
             const newScale = transform.rescaleY(props.scale) 
             props.setState(s => ({...s, scaler: new Scaler(newScale)}) )
         }

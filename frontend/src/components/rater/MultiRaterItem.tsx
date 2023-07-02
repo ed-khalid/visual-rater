@@ -14,10 +14,9 @@ interface MultiRaterItemProps {
     scaler:Scaler
     onRemove:any
     onDragEnd:any
-    zoomOnGroup:any
 } 
 
-export const MultiRaterItem = ({items, x, y, id, scaler, onRemove, onDragEnd, orientation, zoomOnGroup}:MultiRaterItemProps) =>  {
+export const MultiRaterItem = ({items, x, y, id, scaler, onRemove, onDragEnd, orientation}:MultiRaterItemProps) =>  {
 
     // const [isExploded, setisExploded] = useState<boolean>(false) 
 
@@ -25,7 +24,7 @@ export const MultiRaterItem = ({items, x, y, id, scaler, onRemove, onDragEnd, or
     //     setisExploded(true)
     // } 
 
-       return <g id={'rater-item-'+id} className="groupedItems" key={"groupat"+y} onClick={() => zoomOnGroup(y)}>
+       return <g id={'rater-item-'+id} className="groupedItems" key={"groupat"+y}>
              {/* <rect id="itemSymbol" cursor="pointer" x={x-25} y={y} width={50} height={15}  fill="red" fillOpacity="0.5"></rect> */}
               <text className="multi-title" fontSizeAdjust="2" x={orientation ===  RaterOrientation.LEFT ? (x-170):(x+100) } y={y} dy=".35em">{items[0].name} &amp; {items.length-1} others</text>
               <circle className="multi-item-symbol" cx={x} cy={y} r={5}></circle>

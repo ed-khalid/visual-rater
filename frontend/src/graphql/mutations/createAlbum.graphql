@@ -6,7 +6,6 @@ mutation CreateAlbum($albumInput:NewAlbumInput)
         name
         year
         thumbnail
-        vendorId
         songs {
             ...SongFields
         }

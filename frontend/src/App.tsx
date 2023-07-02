@@ -2,14 +2,16 @@ import React, { useCallback, useEffect, useState } from 'react';
 import './App.css';
 import { GlobalRaterState } from './components/rater/Rater';
 import { Scaler } from './functions/scale';
-import { AlbumSearchResult, Artist, ArtistSearchResult, GetArtistsDocument, GetArtistsQuery, NewSongInput, useCreateAlbumMutation, useCreateArtistMutation, useGetArtistsQuery , useGetTracksForAlbumLazyQuery } from './generated/graphql';
+import {  ExternalAlbumSearchResult, Artist, ExternalArtistSearchResult, GetArtistsDocument, GetArtistsQuery, NewSongInput, useCreateAlbumMutation, useCreateArtistMutation, useGetArtistsQuery , useGetTracksForSearchAlbumQuery, useGetTracksForSearchAlbumLazyQuery, Song, Album } from './generated/graphql';
 import { zoomIdentity } from 'd3-zoom'
 import { Dashboard } from './components/dashboard/Dashboard';
 import { Search } from './components/search/Search';
-import { RaterWrapper } from './components/rater/RaterWrapper';
 import { ItemType } from './models/Item';
+import { ExternalFullSearchResult } from './models/ExternalFullSearchResult';
+import { SongFull } from './models/SongFull';
+import { RaterWrapper } from './components/rater/RaterWrapper';
 
-export const RATER_BOTTOM:number = 1150; 
+export const RATER_BOTTOM:number = 600; 
 
 export const initialRaterState:GlobalRaterState = {
    start: '0'
@@ -18,40 +20,43 @@ export const initialRaterState:GlobalRaterState = {
   ,itemType: ItemType.MUSIC
 } 
 
-export enum SearchOrDashboardAlbum {
-  SEARCH, DASHBOARD
-}  
 export enum OtherRaterView {
   ARTIST,EVERYONE,NONE
 } 
 
 function App() {
-  const [searchAlbum, setSearchAlbum] = useState<AlbumSearchResult>()
-  const [searchArtist,setSearchArtist] = useState<ArtistSearchResult>()
-  const [dashboardAlbumId,setDashboardAlbumId] = useState<string>()
-  const [dashboardArtistId,setDashboardArtistId] = useState<string>()
-  const [getTracks, tracks ] = useGetTracksForAlbumLazyQuery()
+
+  const [searchAlbum, setSearchAlbum] = useState<ExternalAlbumSearchResult>()
+  const [searchArtist,setSearchArtist] = useState<ExternalArtistSearchResult>()
+  const [searchArtistAlbumTracks, setSearchArtistAlbumTracks] = useState<ExternalFullSearchResult>()
+
+  const [getTracks, getTracksResult ] = useGetTracksForSearchAlbumLazyQuery()
   const [createAlbum, ] = useCreateAlbumMutation() 
   const [createArtist, ] = useCreateArtistMutation() 
-  const [searchOrDashboardAlbum, setSearchOrDashboardAlbum] = useState<SearchOrDashboardAlbum>()
-  const [existingArtist, setExistingArtist] = useState<Artist>()
+
+  const [dashboardAlbum,setDashboardAlbum] = useState<Album>()
+  const [dashboardArtist,setDashboardArtist] = useState<Artist>()
+
+
   const artistsFull =  useGetArtistsQuery()
   // rater items
-  const [otherRaterView, setOtherRaterView] = useState<OtherRaterView>(OtherRaterView.NONE)
   const [raterState, setRaterState] = useState<GlobalRaterState>(initialRaterState)
 
+
+  const onExternalAlbumSearchClick =  (artist:ExternalArtistSearchResult, album:ExternalAlbumSearchResult) => {
+    setSearchArtist(artist)
+    setSearchAlbum(album)
+  }
+  useEffect(() => {
+    if (searchAlbum) {
+      getTracks({ variables: { albumId: searchAlbum.id} })
+    }
+  }, [searchAlbum, getTracks])
 
   const onZoomResetClick = useCallback(() => {
     const resetScale = zoomIdentity.rescaleY(raterState.scaler.yScale) 
     setRaterState(prev => ({...prev, scaler: new Scaler(resetScale)})) 
   }, []) 
-  const updateSearchArtist = useCallback((artist?:ArtistSearchResult) => {
-      setSearchArtist(artist)
-      if (artist) {
-        const existingArtist = artistsFull.data?.artists?.find(it => it.vendorId === artist?.id)
-          setExistingArtist(existingArtist as Artist)
-      }
-  }, [artistsFull.data?.artists])
 
   // const updateScale = (newStart?:string, newEnd?:string) => {
   //   if (newStart === '') {
@@ -73,32 +78,31 @@ function App() {
   // }
 
   useEffect(() => {
-    if (searchOrDashboardAlbum === SearchOrDashboardAlbum.SEARCH && searchAlbum?.id && searchArtist?.id) {
-       const dashboardArtist:Artist = artistsFull?.data?.artists?.find(it => it.vendorId === searchArtist.id) as Artist
-       const dashboardAlbum = dashboardArtist.albums?.find(it => it?.vendorId === searchAlbum.id) 
-       if (dashboardArtist && dashboardAlbum) {
-          updateDashboardAlbum(dashboardAlbum.id, dashboardArtist.id)
-       }
+    if (getTracksResult.data?.searchExternalAlbumTracks && searchArtist && searchAlbum) {
+      setSearchArtistAlbumTracks({
+        artist: searchArtist,
+        album: searchAlbum,
+        tracks: getTracksResult.data?.searchExternalAlbumTracks 
+      })
+      setSearchArtist(undefined)
+      setSearchAlbum(undefined)
     }
-  }, [searchOrDashboardAlbum, artistsFull.data?.artists, searchAlbum?.id, searchArtist?.id])
+  }, [getTracksResult.data?.searchExternalAlbumTracks, searchArtist, searchAlbum ] )
 
-  // search album click get tracks  
-  useEffect(() => {
-    if (tracks.data?.search?.tracks && searchAlbum && searchArtist) {
+  useEffect(() => { 
+    if (searchArtistAlbumTracks) {
     const doCreateAlbum = (frozenArtist:any) => { 
-      const songs:NewSongInput[] = tracks!.data!.search!.tracks.map((it,index) => 
+      const songs:NewSongInput[] = searchArtistAlbumTracks.tracks.map((it,index) => 
         ({ 
-          vendorId : it.id, 
           name: it.name, 
           discNumber: it.discNumber, 
           number: it.trackNumber, 
           score: 3.5 - ((index)*0.1)    
         }))
         createAlbum({ variables: { albumInput: {
-          vendorId: searchAlbum.id,
-          name: searchAlbum.name,
-          year: searchAlbum.year,
-          thumbnail: searchAlbum.thumbnail,
+          name: searchArtistAlbumTracks.album.name,
+          year: searchArtistAlbumTracks.album.year,
+          thumbnail: searchArtistAlbumTracks.album.thumbnail,
           artistId:frozenArtist.id,
           songs
         }}, update: (cache, data)=> { 
@@ -107,22 +111,24 @@ function App() {
           }  
           const result = cache.readQuery<GetArtistsQuery>({query: GetArtistsDocument})
           const newAlbum = data.data?.CreateAlbum!
-          const queryArtists = [...result!.artists!] 
-          const otherArtists = queryArtists.filter( it => it.vendorId !== searchArtist.id)
+          const queryArtists = [...result!.artists!.content!] 
+          const otherArtists = queryArtists.filter( it => it?.name !== searchArtist!.name)
           const albums = [...artist.albums!]
           artist.albums = [...albums!, newAlbum ] 
-          cache.writeQuery<GetArtistsQuery>({ query: GetArtistsDocument, data : { artists : [...otherArtists, artist]}    })
+          setDashboardArtist(frozenArtist)
+          setDashboardAlbum(newAlbum)
+          cache.writeQuery<GetArtistsQuery>({ query: GetArtistsDocument, data : { artists : { total: (result?.artists.total)|| 0, pageNumber: result?.artists.pageNumber || 0,  content: [...otherArtists, artist]} }    })
         }
       })
      }
-      const artist = artistsFull.data?.artists?.find(it => it.vendorId === searchArtist.id)   
+
+      const artist = artistsFull.data?.artists?.content?.find(it => it?.name === searchArtistAlbumTracks.artist.name)   
       if (!artist) {
         createArtist({
           variables: {
-            artistInput : {
-              name: searchArtist.name, 
-              vendorId: searchArtist.id,
-              thumbnail: searchArtist.thumbnail
+            artistInput: {
+              name: searchArtistAlbumTracks.artist.name, 
+              thumbnail: searchArtistAlbumTracks.artist.thumbnail
             }
           }, update:  (cache, data) => {
              const artist = data.data?.CreateArtist
@@ -132,27 +138,16 @@ function App() {
       } else {
         doCreateAlbum(artist)
       }
-    }
-  }, [tracks.data?.search?.tracks, createAlbum])
+      setSearchArtistAlbumTracks(undefined)
+    }},
+  [searchArtistAlbumTracks])
 
-  // album selections 
-  const updateSearchAlbum = (album:AlbumSearchResult) => {
-    setSearchAlbum(album)
-    setSearchOrDashboardAlbum(SearchOrDashboardAlbum.SEARCH)
-    getTracks({ variables: { albumId: album.id} })
-  }
-  const updateDashboardAlbum =  (albumId?:string, artistId?:string) => {
-      setSearchOrDashboardAlbum(SearchOrDashboardAlbum.DASHBOARD)
-      setDashboardAlbumId(albumId)
-      setDashboardArtistId(artistId)
-  } 
 
-  const toggleOtherView = (newView:OtherRaterView) => {
-    if (otherRaterView === newView) {
-      setOtherRaterView(OtherRaterView.NONE)
-    } else {
-      setOtherRaterView(newView)
-    }
+
+
+  const updateDashboardAlbum = (album:Album|undefined, artist:Artist|undefined) => {
+    setDashboardAlbum(album)
+    setDashboardArtist(artist)
   }
 
   return (
@@ -164,33 +159,21 @@ function App() {
           <div>
             <button onClick={onZoomResetClick}>Reset</button>
           </div>
-          {dashboardAlbumId && <div className="compare-section">
-            <button className={`${otherRaterView === OtherRaterView.ARTIST ? 'selected' : ''}`} onClick={() => toggleOtherView(OtherRaterView.ARTIST) }>artist</button>
-            <button  className={`${otherRaterView === OtherRaterView.EVERYONE ? 'selected' : ''}`}  onClick={() => toggleOtherView(OtherRaterView.EVERYONE) }>everyone</button>
-          </div>}
         </div>
         <div className="empty-cell"></div> 
-        <Search 
-             album={searchAlbum}
-             artist={searchArtist}
-             existingArtist={existingArtist}
-             onAlbumSelect={updateSearchAlbum}
-             onArtistSelect={updateSearchArtist}
-        />
+        <Search onAlbumSelect={onExternalAlbumSearchClick}/>
         <RaterWrapper
-          searchOrDashboardAlbum={searchOrDashboardAlbum}
-          artists={artistsFull.data?.artists}
-          otherRaterView={otherRaterView}
+          artists={artistsFull.data?.artists.content as Artist[]}
+          selectedAlbumId={dashboardAlbum?.id}
+          selectedArtistId={dashboardArtist?.id}
           state={raterState}
           setState={setRaterState}
-          dashboardAlbumId={dashboardAlbumId}
-          dashboardArtistId={dashboardArtistId}
         />
         <Dashboard 
-          selectedArtistId={dashboardArtistId} 
-          selectedAlbumId={dashboardAlbumId} 
+          selectedArtistId={dashboardArtist?.id} 
+          selectedAlbumId={dashboardAlbum?.id} 
           onAlbumSelect={updateDashboardAlbum} 
-          artists={artistsFull.data?.artists as Artist[]}
+          artists={artistsFull.data?.artists?.content as Artist[]}
         />
       </div>
     </div>

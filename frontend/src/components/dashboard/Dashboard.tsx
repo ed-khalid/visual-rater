@@ -7,13 +7,13 @@ import { DashboardAlbumSummary } from "./DashboardAlbumSummary"
 interface Props {
     artists:Artist[]
     selectedAlbumId:string|undefined
-    onAlbumSelect:(albumId:string|undefined,artistId:string|undefined) => void
+    onAlbumSelect:(album:Album|undefined,artist:Artist|undefined) => void
     selectedArtistId:string|undefined
 }
 
 export const Dashboard = ({artists,selectedAlbumId, selectedArtistId , onAlbumSelect}:Props) => {
     const setAlbum =  (album:Album, artist:Artist) => {
-        onAlbumSelect(album.id, artist.id)
+        onAlbumSelect(album, artist)
     } 
     const onAlbumClose = () => {
         onAlbumSelect(undefined, undefined)

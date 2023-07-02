@@ -4,7 +4,7 @@ import { AxisScale, Selection } from 'd3';
 import { Scaler } from "../../functions/scale";
 import { GetArtistsDocument, useDeleteSongMutation, useUpdateSongMutation } from "../../generated/graphql";
 import { ItemType } from "../../models/Item";
-import { RatedItem } from "../../models/RatedItem";
+import { RatedItem, RatedSongItem } from "../../models/RatedItem";
 import { SingleRaterItem } from "./SingleRaterItem";
 import { MultiRaterItem } from "./MultiRaterItem";
 import { Position } from '../../models/Position';
@@ -19,14 +19,14 @@ interface Props {
     state:GlobalRaterState
     zoomTarget?:SVGGElement|null
     setState:Dispatch<SetStateAction<GlobalRaterState>>
-    items: RatedItem[];
-    setItems:Dispatch<SetStateAction<RatedItem[]>>
+    items: RatedSongItem[];
+    setItems:Dispatch<SetStateAction<RatedSongItem[]>>
     mode:RaterMode
 }
 export type RatedItemGrouped  = {
         id:string
         position:number
-        ,items:RatedItem[]
+        ,items:RatedSongItem[]
     } 
 
 export type GlobalRaterState = {
@@ -51,24 +51,13 @@ export const Rater = ({position, state, setState, items, setItems, mode}:Props) 
     const [currentItem, setCurrentItem] = useState<RatedItem|null>();  
     const [groupedItems, setGroupedItems] = useState<RatedItemGrouped[]>([]);
     const g = useRef<SVGGElement>(null)
-    const zoomTarget= useRef<SVGGElement>(null)
-    const zoomListener = useRef<SVGRectElement>(null)
-    const [zoomBehavior, setZoomBehavior] = useState<any>() 
-
-
-    useEffect(() => {
-        if (zoomTarget && zoomListener) {
-            const z = ZoomBehavior({listener: zoomListener.current, target: zoomTarget.current,axis: axisSel ,scale:state.scaler.yScale, setState  })
-            setZoomBehavior(z)
-        } else if (mode === RaterMode.SECONDARY) {
-            const z = ZoomBehavior()
-            setZoomBehavior(z)
-        } 
-    }, [zoomListener,zoomTarget, mode])
+    // const zoomTarget= useRef<SVGGElement>(null)
+    // const zoomListener = useRef<SVGRectElement>(null)
+    // const [zoomBehavior, setZoomBehavior] = useState<any>() 
 
     useEffect(() => {
-        const groupCloseItems = (ratedItems:RatedItem[]) => {
-            const groupedItems = ratedItems.reduce((acc:RatedItemGrouped[] , curr:RatedItem) => {
+        const groupCloseItems = (ratedItems:RatedSongItem[]) => {
+            const groupedItems = ratedItems.reduce((acc:RatedItemGrouped[] , curr:RatedSongItem) => {
                 const position =  state.scaler.toPosition(curr.score) 
                 const overlap = acc.find((it:RatedItemGrouped) =>  Math.abs(Number(it.position) - position) < 15  )
                 if (overlap) {
@@ -105,14 +94,6 @@ export const Rater = ({position, state, setState, items, setItems, mode}:Props) 
         setItems([..._r])
     } 
 
-    const zoomOnGroup = (position:number) => {
-        const group = groupedItems.find(it => it.position === position)  
-        if (group) {
-            const {start,end} = zoomBehavior?.zoomOnGroup(group)
-            setState({...state, start, end})
-        }
-    } 
-
     const updateItem =  (itemId:string, newScore:number) => {
         const item = items.find( it => it.id === itemId) 
         if (item) {
@@ -136,24 +117,7 @@ export const Rater = ({position, state, setState, items, setItems, mode}:Props) 
 
     return (
                   <g clipPath="url(#clip-path)"  ref={g} className="rater-container">
-                      {mode === RaterMode.PRIMARY && 
-                        <rect 
-                            ref={zoomListener} 
-                            id="zoom-listener" 
-                            x={position.x+5} 
-                            height={position.y}
-                            >
-                        </rect>
-                      }
-                      {mode === RaterMode.PRIMARY && 
-                        <rect 
-                            id="pan-listener" 
-                            x={position.x+70} 
-                            height={position.y}
-                            >
-                        </rect>
-                      }
-                      <g ref={zoomTarget} className="zoom-target">
+                      <g className="zoom-target">
                         <g className={mode === RaterMode.PRIMARY ? "rater-axis" : "rater-axis readonly" }></g>
                         <line className={mode === RaterMode.PRIMARY? "rater-line": 'rater-line readonly' } x1={position.x} y1={0} x2={position.x} y2={position.y} />
                       { groupedItems.map(rItemGrouped => 
@@ -175,7 +139,6 @@ export const Rater = ({position, state, setState, items, setItems, mode}:Props) 
                             key={rItemGrouped.position}
                             items={rItemGrouped.items} 
                             id = {rItemGrouped.id}
-                            zoomOnGroup={zoomOnGroup}
                             scaler={state.scaler}
                             onRemove={removeItem}
                             onDragEnd={updateItem}
