@@ -23,7 +23,7 @@ interface Props {
     setItems:Dispatch<SetStateAction<RatedSongItem[]>>
     mode:RaterMode
 }
-export type RatedItemGrouped  = {
+export type RatedSongItemGrouped  = {
         id:string
         position:number
         ,items:RatedSongItem[]
@@ -49,17 +49,21 @@ export const Rater = ({position, state, setState, items, setItems, mode}:Props) 
     const [updateSong]  = useUpdateSongMutation();
     const [deleteSong] = useDeleteSongMutation()  
     const [currentItem, setCurrentItem] = useState<RatedItem|null>();  
-    const [groupedItems, setGroupedItems] = useState<RatedItemGrouped[]>([]);
+    const [groupedItems, setGroupedItems] = useState<RatedSongItemGrouped[]>([]);
     const g = useRef<SVGGElement>(null)
+    const singleItemDimensions = {
+        width:150,
+        height:30
+    } 
     // const zoomTarget= useRef<SVGGElement>(null)
     // const zoomListener = useRef<SVGRectElement>(null)
     // const [zoomBehavior, setZoomBehavior] = useState<any>() 
 
     useEffect(() => {
         const groupCloseItems = (ratedItems:RatedSongItem[]) => {
-            const groupedItems = ratedItems.reduce((acc:RatedItemGrouped[] , curr:RatedSongItem) => {
+            const groupedItems = ratedItems.reduce((acc:RatedSongItemGrouped[] , curr:RatedSongItem) => {
                 const position =  state.scaler.toPosition(curr.score) 
-                const overlap = acc.find((it:RatedItemGrouped) =>  Math.abs(Number(it.position) - position) < 15  )
+                const overlap = acc.find((it:RatedSongItemGrouped) =>  Math.abs(Number(it.position) - position) < 30  )
                 if (overlap) {
                     overlap.items.push(curr)
                 } else {
@@ -126,6 +130,7 @@ export const Rater = ({position, state, setState, items, setItems, mode}:Props) 
                             orientation={mode === RaterMode.PRIMARY? RaterOrientation.LEFT:RaterOrientation.RIGHT}
                             key={rItemGrouped.items[0].id}
                             item={rItemGrouped.items[0]}
+                            itemDimensions={singleItemDimensions}
                             raterBottom={RATER_BOTTOM}
                             x={position.x}
                             y={rItemGrouped.position}
@@ -140,6 +145,7 @@ export const Rater = ({position, state, setState, items, setItems, mode}:Props) 
                             items={rItemGrouped.items} 
                             id = {rItemGrouped.id}
                             scaler={state.scaler}
+                            itemDimensions={singleItemDimensions}
                             onRemove={removeItem}
                             onDragEnd={updateItem}
                             x={position.x} 
