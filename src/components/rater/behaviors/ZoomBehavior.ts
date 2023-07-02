@@ -1,7 +1,7 @@
 import { select, Selection } from 'd3-selection';
 import { zoom } from 'd3-zoom'
 import { Scaler } from '../../../functions/scale';
-import { GlobalRaterState, RatedItemGrouped } from '../Rater';
+import { GlobalRaterState, RatedSongItemGrouped } from '../Rater';
 import { ScaleLinear } from 'd3-scale' 
 import { Dispatch, SetStateAction } from 'react';
 interface Props {
@@ -27,7 +27,7 @@ export const ZoomBehavior = (props?:Props) => {
     }
 
     return {
-        zoomOnGroup: (group:RatedItemGrouped) =>  {
+        zoomOnGroup: (group:RatedSongItemGrouped) =>  {
             const min = group.items.reduce((curr,it) => Math.min(it.score,curr)  , Infinity)  
             const max = group.items.reduce((curr,it) => Math.max(it.score,curr)  , -Infinity)  
             return { start:(min-0.05)+'', end:(max+0.05)+'' }

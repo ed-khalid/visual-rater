@@ -1,13 +1,15 @@
 import React from "react";
 import { Scaler } from "../../functions/scale";
-import { RatedItem } from "../../models/RatedItem";
+import { RatedSongItem } from "../../models/RatedItem";
 import { RaterOrientation } from "./Rater";
 import { SingleRaterItem } from "./SingleRaterItem";
 import './MultiRaterItem.css'
+import { RATER_BOTTOM } from "../../App";
 
 interface MultiRaterItemProps {
-    items:RatedItem[]
+    items:RatedSongItem[]
     orientation:RaterOrientation
+    itemDimensions:{width:number,height:number}
     x:number
     y:number
     id:string
@@ -16,34 +18,41 @@ interface MultiRaterItemProps {
     onDragEnd:any
 } 
 
-export const MultiRaterItem = ({items, x, y, id, scaler, onRemove, onDragEnd, orientation}:MultiRaterItemProps) =>  {
+export const MultiRaterItem = ({items, x, y, id, itemDimensions, scaler, onRemove, onDragEnd, orientation}:MultiRaterItemProps) =>  {
 
-    // const [isExploded, setisExploded] = useState<boolean>(false) 
+     const length = Math.min(items.length, 6)
+     const totalWidth = (itemDimensions.width/2) * length  
+     const startingPoint = x - (totalWidth/2)
 
-    // const explodeGroup =  () => {
-    //     setisExploded(true)
-    // } 
+     const sortedItems = items.sort((a,b) => {
+      if (a.score > b.score) {
+        return -1
+      }
+      if (a.score < b.score) {
+        return 1
+      }
+      return 0
+     }) 
+
 
        return <g id={'rater-item-'+id} className="groupedItems" key={"groupat"+y}>
-             {/* <rect id="itemSymbol" cursor="pointer" x={x-25} y={y} width={50} height={15}  fill="red" fillOpacity="0.5"></rect> */}
-              <text className="multi-title" fontSizeAdjust="2" x={orientation ===  RaterOrientation.LEFT ? (x-170):(x+100) } y={y} dy=".35em">{items[0].name} &amp; {items.length-1} others</text>
-              <circle className="multi-item-symbol" cx={x} cy={y} r={5}></circle>
-              {/* <text className="item-name" cursor="move" fontSize={12*scale} fontSizeAdjust="2" fill="#3d3d3d" x={orientation === RaterOrientation.LEFT ? (x-170):(x+100)} y={y} dy=".35em">{formatName(item.name)}</text> */} 
+             <rect id="multi-item-wrapper" cursor="pointer" x={startingPoint} y={y} width={totalWidth} height={itemDimensions.height}  fill="red" fillOpacity={0.5}></rect> 
+             
+             <g className="multi-item-group">
+                    {sortedItems.map((item,i) => 
+                    <SingleRaterItem 
+                      orientation={orientation}
+                      key={item.id}
+                      scale={0.5}
+                      item={item}
+                      itemDimensions={{width:itemDimensions.width/2, height:itemDimensions.height}}
+                      x={startingPoint+70+(i*(itemDimensions.width/2))}
+                      raterBottom={RATER_BOTTOM}
+                      y={y+30}
+                      scaler={scaler}
+                      onRemove={onRemove}
+                      onDragEnd={onDragEnd}
+                    />)}
+                    </g>
             </g>   
-      //  <g>
-             {/* {items.map((item,i) => 
-               <SingleRaterItem 
-                 orientation={orientation}
-                 key={item.id}
-                 scale={0.5}
-                 item={item}
-                 x={x}
-                 raterBottom={RATER_BOTTOM}
-                 y={y+i}
-                 scaler={scaler}
-                 onRemove={onRemove}
-                 onDragEnd={onDragEnd}
-               />)}
-             </g> */}
-            {/* // : */}
 }

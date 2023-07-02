@@ -1,7 +1,7 @@
 import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from "react"
 import { RATER_BOTTOM } from "../../App"
 import { Album, Artist } from "../../generated/graphql"
-import { RatedItem, RatedSongItem } from "../../models/RatedItem"
+import { RatedSongItem } from "../../models/RatedItem"
 import { GlobalRaterState, Rater, RaterMode } from "./Rater"
 
 interface Props {
