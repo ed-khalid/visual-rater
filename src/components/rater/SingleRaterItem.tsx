@@ -1,14 +1,13 @@
 import React, {useEffect, useRef } from "react";
 import { select } from 'd3-selection'
 import { drag } from 'd3-drag'
-import { RatedItem } from "../../models/RatedItem";
+import { RatedItem, RatedSongItem } from "../../models/RatedItem";
 import { Scaler } from "../../functions/scale";
 import { DragBehavior } from "./behaviors/DragBehavior";
 import { RaterOrientation } from "./Rater";
-import { CloseButton } from "./CloseButton";
 
 interface SingleRaterItemProps {
-    item:RatedItem
+    item:RatedSongItem
     orientation:RaterOrientation
     x:number
     y:number
@@ -44,11 +43,11 @@ export const SingleRaterItem = ({item, orientation, x, y, scale=1, raterBottom, 
     },[g.current]) 
 
       return <g ref={g} className="item" key={item.name}>
-                       <CloseButton position={orientation === RaterOrientation.LEFT ? {x:x-220, y:y+3} : { x: x+280, y:y+3  }} onClick={() => onRemove(item)}></CloseButton>
                        <g id="item" className={`draggable ${orientation === RaterOrientation.LEFT ? 'main-rater-item' : 'secondary'  }`}> 
-                         <circle className="item-symbol" cursor="move" cx={x} cy={y} r={5*scale} fill="#3d3d3d" fillOpacity="0.5"></circle>
-                         <text className="item-score" cursor="move" fontSize={12*scale} fontSizeAdjust="2" fill="#3d3d3d" x={orientation ===  RaterOrientation.LEFT ? (x-210):(x+70) } y={y} dy=".35em">{item.score.toFixed(2)}</text>
-                         <text className="item-name" cursor="move" fontSize={12*scale} fontSizeAdjust="2" fill="#3d3d3d" x={orientation === RaterOrientation.LEFT ? (x-170):(x+100)} y={y} dy=".35em">{formatName(item.name)}</text>
+                         <rect cursor="move" x={x-70} y={y-30} width="150" height="30" rx="10" fill="black"/>
+                         <image width="20" x={x-64} y={y-25} height="20" href={item.thumbnail}/>
+                         <text className="item-score" cursor="move" fontSize={10*scale} fontSizeAdjust="2" fill="#3d3d3d" x={orientation ===  RaterOrientation.LEFT ? (x-40):(x+70) } y={y-8} dy=".35em">{item.score.toFixed(2)}</text>
+                         <text className="item-name" cursor="move" fontSize={10*scale} fontSizeAdjust="2" fill="#3d3d3d" x={orientation === RaterOrientation.LEFT ? (x-40):(x+100)} y={y-20} dy=".35em">{formatName(item.name)}</text>
                        </g>
               </g>
 }

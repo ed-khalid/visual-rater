@@ -1,5 +1,4 @@
 import { select, selectAll } from "d3-selection";
-import { event as d3Event } from 'd3'
 import { Scaler } from "../../../functions/scale";
 import { RatedItem } from "../../../models/RatedItem";
 import { Position } from "../../../models/Position";
@@ -19,25 +18,23 @@ export const DragBehavior = ({raterBottom, item, g, scaler, onDragEnd}:Props) =>
     }
 
     return {
-    dragStart : (d:any, i:number, nodeList:ArrayLike<SVGElement> ) => {
+    dragStart : (event:any) => {
         const nodes = selectAll('svg#trackRater g.item.selected').nodes()
-        sessionStorage.setItem('dragStartPoint', JSON.stringify({x:d3Event.x, y:d3Event.y}))    
+        sessionStorage.setItem('dragStartPoint', JSON.stringify({x:event.x, y:event.y}))    
         if (nodes.length === 0 && g) {
             const y = Number(select(g).select('text').attr('y'))
-            select(g).select('g.close-button').classed('hide', true);
             select(g).classed('selected', true)
             sessionStorage.setItem('node0', JSON.stringify({x: undefined, y}) )
         } else {
             nodes.forEach((node,index) => {
                 const gNode = select(node)
-                gNode.select('g.close-button').classed('hide', true)
                 const y = Number(select(node).select('text').attr('y'))
                 sessionStorage.setItem(`node${index}`, JSON.stringify({x:undefined, y}))
             })
         }
     },   
-    dragInProgress : (d:any, i:number, nodeList:ArrayLike<SVGElement> ) => {
-          if (!isDragInBounds(d3Event.y)) {
+    dragInProgress : (event:any) => {
+          if (!isDragInBounds(event.y)) {
               return;
           }
           const nodes = selectAll('svg#trackRater g.item.selected').nodes()
@@ -49,7 +46,7 @@ export const DragBehavior = ({raterBottom, item, g, scaler, onDragEnd}:Props) =>
               if (_dragPoint) {
                 const gNode = select(node) 
                 const dragPoint = JSON.parse(_dragPoint) as Position 
-                const delta = d3Event.y - dragPoint.y   
+                const delta = event.y - dragPoint.y   
                 const newPos = nodeOriginalPosition.y+delta 
                 gNode.select('.item-symbol').attr('cy', newPos )
                 gNode.selectAll('text').attr('y',  newPos)
@@ -58,7 +55,7 @@ export const DragBehavior = ({raterBottom, item, g, scaler, onDragEnd}:Props) =>
               }
           })
     },
-    dragEnd : (d:any, i:number, nodeList:ArrayLike<SVGElement> ) => {
+    dragEnd : (event:any) => {
         sessionStorage.clear()
         const nodes = selectAll('svg#trackRater g.item.selected').nodes()
         nodes.forEach((g) => {
