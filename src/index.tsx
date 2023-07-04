@@ -5,12 +5,16 @@ import App from './App';
 import * as serviceWorker from './serviceWorker';
 import {  ApolloProvider } from '@apollo/client';
 import { client } from './setupApollo';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 
 
 ReactDOM.render(
   <React.StrictMode>
     <ApolloProvider client={client}>
+     <DndProvider backend={HTML5Backend}>
       <App />
+      </DndProvider>
     </ApolloProvider>
   </React.StrictMode>,
   document.getElementById('root')

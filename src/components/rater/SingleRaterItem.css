@@ -1,0 +1,9 @@
+
+circle.item-thumbnail-border {
+    visibility: hidden;
+}
+
+image.item-thumbnail:hover + circle.item-thumbnail-border  {
+    visibility: visible;
+}
+

@@ -8,8 +8,9 @@ import { Dashboard } from './components/dashboard/Dashboard';
 import { Search } from './components/search/Search';
 import { ItemType } from './models/Item';
 import { ExternalFullSearchResult } from './models/ExternalFullSearchResult';
-import { SongFull } from './models/SongFull';
 import { RaterWrapper } from './components/rater/RaterWrapper';
+import { DragType } from './models/DragType';
+import { useDrop } from 'react-dnd';
 
 export const RATER_BOTTOM:number = 600; 
 
@@ -20,11 +21,7 @@ export const initialRaterState:GlobalRaterState = {
   ,itemType: ItemType.MUSIC
 } 
 
-export enum OtherRaterView {
-  ARTIST,EVERYONE,NONE
-} 
-
-function App() {
+export const App = () => {
 
   const [searchAlbum, setSearchAlbum] = useState<ExternalAlbumSearchResult>()
   const [searchArtist,setSearchArtist] = useState<ExternalArtistSearchResult>()
@@ -34,13 +31,22 @@ function App() {
   const [createAlbum, ] = useCreateAlbumMutation() 
   const [createArtist, ] = useCreateArtistMutation() 
 
-  const [dashboardAlbum,setDashboardAlbum] = useState<Album>()
-  const [dashboardArtist,setDashboardArtist] = useState<Artist>()
-
-
   const artistsFull =  useGetArtistsQuery()
+
+  // dashboard
+  const [dashboardArtist,setDashboardArtist] = useState<Artist>()
+  const [dashboardAlbum,setDashboardAlbum] = useState<Album>()
+
   // rater items
   const [raterState, setRaterState] = useState<GlobalRaterState>(initialRaterState)
+  const [raterAlbums, setRaterAlbums] = useState<Array<Album>>([]) 
+
+  const [, drop] = useDrop(() => ({
+    accept: DragType.ALBUM
+    ,drop(item:{album:Album},_) {
+      setRaterAlbums([...raterAlbums, item.album])
+    }
+  }), [raterAlbums])
 
 
   const onExternalAlbumSearchClick =  (artist:ExternalArtistSearchResult, album:ExternalAlbumSearchResult) => {
@@ -114,9 +120,7 @@ function App() {
           const queryArtists = [...result!.artists!.content!] 
           const otherArtists = queryArtists.filter( it => it?.name !== searchArtist!.name)
           const albums = [...artist.albums!]
-          artist.albums = [...albums!, newAlbum ] 
-          setDashboardArtist(frozenArtist)
-          setDashboardAlbum(newAlbum)
+          artist.albums = [...albums!, newAlbum] 
           cache.writeQuery<GetArtistsQuery>({ query: GetArtistsDocument, data : { artists : { total: (result?.artists.total)|| 0, pageNumber: result?.artists.pageNumber || 0,  content: [...otherArtists, artist]} }    })
         }
       })
@@ -144,11 +148,22 @@ function App() {
 
 
 
-
-  const updateDashboardAlbum = (album:Album|undefined, artist:Artist|undefined) => {
-    setDashboardAlbum(album)
-    setDashboardArtist(artist)
+  const updateRaterAlbums = (album:Album|undefined, artist:Artist|undefined) => {
+    if (artist) {
+      setDashboardArtist(artist)
+    }
+    else {
+      setDashboardArtist(undefined)
+    }
+    if (album) {
+      setDashboardAlbum(album)
+      setRaterAlbums([album])
+    } else {
+      setDashboardAlbum(undefined)
+      setRaterAlbums([])
+    }
   }
+
 
   return (
     <div className="App">
@@ -162,17 +177,18 @@ function App() {
         </div>
         <div className="empty-cell"></div> 
         <Search onAlbumSelect={onExternalAlbumSearchClick}/>
+        <div className="drop-target" ref={drop}>
         <RaterWrapper
           artists={artistsFull.data?.artists.content as Artist[]}
-          selectedAlbumId={dashboardAlbum?.id}
-          selectedArtistId={dashboardArtist?.id}
+          albums={raterAlbums}
           state={raterState}
           setState={setRaterState}
         />
+        </div>
         <Dashboard 
-          selectedArtistId={dashboardArtist?.id} 
-          selectedAlbumId={dashboardAlbum?.id} 
-          onAlbumSelect={updateDashboardAlbum} 
+          onAlbumSelect={updateRaterAlbums} 
+          artist={dashboardArtist}
+          album={dashboardAlbum}
           artists={artistsFull.data?.artists?.content as Artist[]}
         />
       </div>
