@@ -5,21 +5,20 @@ import { RatedItem, RatedSongItem } from "../../models/RatedItem";
 import { Scaler } from "../../functions/scale";
 import { DragBehavior } from "./behaviors/DragBehavior";
 import { RaterOrientation } from "./Rater";
+import './SingleRaterItem.css' 
 
 interface SingleRaterItemProps {
     item:RatedSongItem
-    orientation:RaterOrientation
-    itemDimensions:{width:number,height:number}
+    multiItemLineLength?:number|undefined
     x:number
     y:number
     raterBottom:number
-    onRemove:any
     onDragEnd:any
     scaler:Scaler
     scale?:number
 } 
 
-export const SingleRaterItem = ({item, orientation, itemDimensions, x, y, scale=1, raterBottom, scaler, onRemove, onDragEnd}:SingleRaterItemProps) =>  {
+export const SingleRaterItem = ({item, multiItemLineLength, x, y, scale=1, raterBottom, scaler, onDragEnd}:SingleRaterItemProps) =>  {
     const g = useRef<SVGGElement>(null)
     const onDragBehaviorEnd = (id:string, score:number) => {
         onDragEnd(id, score)
@@ -42,13 +41,34 @@ export const SingleRaterItem = ({item, orientation, itemDimensions, x, y, scale=
            select(g.current).data<RatedItem>([item])
         }
     },[g.current]) 
+    const imageSize = 20
+    const imageDimensions = {
+        x: x - 100 - (multiItemLineLength || 0),
+        y: y - imageSize/2,
+        size:imageSize
+    }  
+    const songNameDimensions = {
+        x: imageDimensions.x + imageDimensions.size + 5 ,
+        y: y - 7 
+    }  
+    const songScoreDimensions = {
+        x: songNameDimensions.x,  
+        y: songNameDimensions.y + 14 
+    }  
+    const lineDimensions = {
+        x1: imageDimensions.x + imageDimensions.size, 
+        y1: y, 
+        x2: x,
+        y2: y
+    }
 
       return <g ref={g} className="item" key={item.name}>
-                       <g id="item" className={`draggable ${orientation === RaterOrientation.LEFT ? 'main-rater-item' : 'secondary'  }`}> 
-                         <rect cursor="move" x={x-70} y={y-30} width={itemDimensions.width} height={itemDimensions.height} rx="10" fill="black"/>
-                         <image width="20" x={x-64} y={y-25} height="20" href={item.thumbnail}/>
-                         <text className="item-score" cursor="move" fontSize={10*scale} fontSizeAdjust="2" fill="#3d3d3d" x={orientation ===  RaterOrientation.LEFT ? (x-40):(x+70) } y={y-8} dy=".35em">{item.score.toFixed(2)}</text>
-                         <text className="item-name" cursor="move" fontSize={10*scale} fontSizeAdjust="2" fill="#3d3d3d" x={orientation === RaterOrientation.LEFT ? (x-40):(x+100)} y={y-20} dy=".35em">{formatName(item.name)}</text>
+                       <g className="draggable"> 
+                         <image xlinkHref={item.thumbnail} clipPath="inset(0% round 15px)" cursor="move" className="item-thumbnail" width={imageDimensions.size} x={imageDimensions.x} y={imageDimensions.y} height={imageDimensions.size} href={item.thumbnail}/>
+                         <circle className="item-thumbnail-border" cx={imageDimensions.x+10} cy={imageDimensions.y+10} r={imageDimensions.size/2} fill="none" stroke="black"></circle>
+                         <line className="item-scoreline" x1={lineDimensions.x1} y1={lineDimensions.y1} x2={lineDimensions.x2} y2={lineDimensions.y2} stroke="black"/> 
+                         <text className="item-name" cursor="move" fontSize={8*scale} fontSizeAdjust="2" fill="#3d3d3d" x={songNameDimensions.x} y={songNameDimensions.y} dy=".35em">{formatName(item.name)}</text>
+                         <text className="item-score" cursor="move" fontSize={10*scale} fontWeight="bold" fontSizeAdjust="3" fill="#3d3d3d" x={songScoreDimensions.x} y={songScoreDimensions.y} dy=".35em">{item.score.toFixed(2)}</text>
                        </g>
               </g>
 }

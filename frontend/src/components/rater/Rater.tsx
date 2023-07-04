@@ -47,14 +47,9 @@ export enum RaterOrientation {
 export const Rater = ({position, state, setState, items, setItems, mode}:Props) => {
 
     const [updateSong]  = useUpdateSongMutation();
-    const [deleteSong] = useDeleteSongMutation()  
     const [currentItem, setCurrentItem] = useState<RatedItem|null>();  
     const [groupedItems, setGroupedItems] = useState<RatedSongItemGrouped[]>([]);
     const g = useRef<SVGGElement>(null)
-    const singleItemDimensions = {
-        width:150,
-        height:30
-    } 
     // const zoomTarget= useRef<SVGGElement>(null)
     // const zoomListener = useRef<SVGRectElement>(null)
     // const [zoomBehavior, setZoomBehavior] = useState<any>() 
@@ -63,7 +58,7 @@ export const Rater = ({position, state, setState, items, setItems, mode}:Props) 
         const groupCloseItems = (ratedItems:RatedSongItem[]) => {
             const groupedItems = ratedItems.reduce((acc:RatedSongItemGrouped[] , curr:RatedSongItem) => {
                 const position =  state.scaler.toPosition(curr.score) 
-                const overlap = acc.find((it:RatedSongItemGrouped) =>  Math.abs(Number(it.position) - position) < 30  )
+                const overlap = acc.find((it:RatedSongItemGrouped) =>  Math.abs(Number(it.position) - position) < 20  )
                 if (overlap) {
                     overlap.items.push(curr)
                 } else {
@@ -71,12 +66,6 @@ export const Rater = ({position, state, setState, items, setItems, mode}:Props) 
                 }
                 return acc
             },  [])
-            // replace keys with average of groups   
-            groupedItems.forEach(it => {
-                const sum  = it.items.reduce((curr,it) => curr + state.scaler.toPosition(it.score),0)
-                const avg = sum/(it.items.length)
-                it.position = avg
-            })
             setGroupedItems(groupedItems)
         }  
         groupCloseItems(items)
@@ -92,11 +81,6 @@ export const Rater = ({position, state, setState, items, setItems, mode}:Props) 
         }
     }, [currentItem, state.itemType, updateSong])
 
-    const removeItem = (rItem: RatedItem) => {
-        deleteSong({ variables : { songId:  rItem.id}, refetchQueries:[{query:GetArtistsDocument}] })
-        const _r  =  items.filter(_item => _item !== rItem);
-        setItems([..._r])
-    } 
 
     const updateItem =  (itemId:string, newScore:number) => {
         const item = items.find( it => it.id === itemId) 
@@ -127,26 +111,20 @@ export const Rater = ({position, state, setState, items, setItems, mode}:Props) 
                       { groupedItems.map(rItemGrouped => 
                       (rItemGrouped.items.length === 1) ? 
                         <SingleRaterItem
-                            orientation={mode === RaterMode.PRIMARY? RaterOrientation.LEFT:RaterOrientation.RIGHT}
                             key={rItemGrouped.items[0].id}
                             item={rItemGrouped.items[0]}
-                            itemDimensions={singleItemDimensions}
                             raterBottom={RATER_BOTTOM}
                             x={position.x}
                             y={rItemGrouped.position}
                             scaler={state.scaler}
-                            onRemove={removeItem}
                             onDragEnd={updateItem}
                         />
                       :
                         <MultiRaterItem  
-                            orientation={ mode === RaterMode.PRIMARY? RaterOrientation.LEFT:RaterOrientation.RIGHT}
                             key={rItemGrouped.position}
                             items={rItemGrouped.items} 
                             id = {rItemGrouped.id}
                             scaler={state.scaler}
-                            itemDimensions={singleItemDimensions}
-                            onRemove={removeItem}
                             onDragEnd={updateItem}
                             x={position.x} 
                             y={rItemGrouped.position} 

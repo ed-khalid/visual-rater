@@ -1,28 +1,23 @@
 import React from "react";
 import { Scaler } from "../../functions/scale";
 import { RatedSongItem } from "../../models/RatedItem";
-import { RaterOrientation } from "./Rater";
 import { SingleRaterItem } from "./SingleRaterItem";
 import './MultiRaterItem.css'
 import { RATER_BOTTOM } from "../../App";
 
 interface MultiRaterItemProps {
     items:RatedSongItem[]
-    orientation:RaterOrientation
-    itemDimensions:{width:number,height:number}
     x:number
     y:number
     id:string
     scaler:Scaler
-    onRemove:any
     onDragEnd:any
 } 
 
-export const MultiRaterItem = ({items, x, y, id, itemDimensions, scaler, onRemove, onDragEnd, orientation}:MultiRaterItemProps) =>  {
+export const MultiRaterItem = ({items, x, y, id, scaler, onDragEnd }:MultiRaterItemProps) =>  {
 
-     const length = Math.min(items.length, 6)
-     const totalWidth = (itemDimensions.width/2) * length  
-     const startingPoint = x - (totalWidth/2)
+     const scale = 1 - (0.1 * items.length)
+     const xScale = 100 
 
      const sortedItems = items.sort((a,b) => {
       if (a.score > b.score) {
@@ -36,21 +31,17 @@ export const MultiRaterItem = ({items, x, y, id, itemDimensions, scaler, onRemov
 
 
        return <g id={'rater-item-'+id} className="groupedItems" key={"groupat"+y}>
-             <rect id="multi-item-wrapper" cursor="pointer" x={startingPoint} y={y} width={totalWidth} height={itemDimensions.height}  fill="red" fillOpacity={0.5}></rect> 
-             
              <g className="multi-item-group">
                     {sortedItems.map((item,i) => 
                     <SingleRaterItem 
-                      orientation={orientation}
                       key={item.id}
-                      scale={0.5}
+                      scale={scale}
+                      multiItemLineLength={(i*xScale)}
                       item={item}
-                      itemDimensions={{width:itemDimensions.width/2, height:itemDimensions.height}}
-                      x={startingPoint+70+(i*(itemDimensions.width/2))}
+                      x={x}
                       raterBottom={RATER_BOTTOM}
-                      y={y+30}
+                      y={scaler.toPosition(item.score)}
                       scaler={scaler}
-                      onRemove={onRemove}
                       onDragEnd={onDragEnd}
                     />)}
                     </g>

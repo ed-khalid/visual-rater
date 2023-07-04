@@ -1,12 +1,12 @@
 import React from 'react';
-import { render, wait } from '@testing-library/react';
+import { render } from '@testing-library/react';
 import { MockedProvider, MockedResponse } from '@apollo/client/testing'
 import App from './App';
 import { GetArtistsDocument } from './generated/graphql';
 
 test('renders app and sees eminem', async () => {
   const { findByText } = render(<MockedProvider mocks={mocks} addTypename={false}><App/></MockedProvider>);
-  await wait(undefined, {timeout: 7000})
+  // await wait(undefined, {timeout: 7000})
   const linkElement = await findByText(/Eminem/i);
   expect(linkElement).toBeInTheDocument();
 });

@@ -6,29 +6,34 @@ import { GlobalRaterState, Rater, RaterMode } from "./Rater"
 
 interface Props {
     artists:Artist[]|undefined
-    selectedAlbumId:string|undefined
-    selectedArtistId:string|undefined
+    albums:Array<Album>
     state:GlobalRaterState
     setState:Dispatch<SetStateAction<GlobalRaterState>>
 }
 const mapSongToRatedItem  = (song:any, artist:Artist, album:Album) : RatedSongItem => new RatedSongItem({ id: song.id, name: song.name },song.score!, album.thumbnail!, song.number,artist.name, album.name );
 
-export const RaterWrapper = ({state, setState, artists, selectedAlbumId, selectedArtistId}:Props) =>  {
+export const RaterWrapper = ({state, setState, artists, albums}:Props) =>  {
     const gWrapper = useRef<SVGGElement>(null)
     const svgRef = useRef<SVGSVGElement>(null) 
     const [mainRaterItems, setMainRaterItems] = useState<RatedSongItem[]>([])
 
     useEffect(() => {
       if (artists) {
-        const artist = artists.find(it => it.id === selectedArtistId)
-        if (artist) {
-        const album = artists.find(it => it.id === selectedArtistId)?.albums?.find(it => it?.id === selectedAlbumId) 
-        if (album && album.songs) {
-          setMainRaterItems(album.songs.filter(it => it.score).map(it => mapSongToRatedItem(it, artist,album)))
-        }
-        }
+        let raterItems:Array<RatedSongItem> = [] 
+        albums.map(it => it.id).forEach(albumId => {
+          artists.find(artist => {
+            const foundAlbum = artist.albums?.find(album => album?.id === albumId)
+            if (foundAlbum && foundAlbum.songs) {
+               const albumItems = foundAlbum.songs.filter(it => it.score).map(it => mapSongToRatedItem(it, artist, foundAlbum)) 
+               raterItems.push(...albumItems)
+               return true;
+            }
+            return false;
+          })
+          setMainRaterItems(raterItems)
+        })
       }
-    }, [artists, selectedAlbumId, selectedArtistId])
+    }, [artists, albums])
 
 
     return <svg preserveAspectRatio="xMidYMin meet" ref={svgRef} id="trackRater" viewBox="0 0 800 300">

@@ -4,7 +4,6 @@ import React, {  useState, useEffect, Dispatch, SetStateAction } from "react";
 import './Unrated.css';
 import { select } from 'd3-selection';
 import { drag } from 'd3-drag';
-import { event as d3Event } from 'd3'
 import { RatedItem } from "../models/RatedItem";
 import { Scaler } from "../functions/scale";
 import { GetArtistsDocument, NewSongInput, Song } from "../generated/graphql";

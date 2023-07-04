@@ -34,3 +34,16 @@ export class Scaler {
     public toPosition  = (score:number) => this.scale(score) 
 
 }  
+
+export function clampToNearestIncrement(rawScore:number) {
+    // 375 
+    let byHundred = Math.round(rawScore * 100)
+    const firstDigit = byHundred % 10;    
+    if (firstDigit > 5) {
+        byHundred = byHundred - (firstDigit-5)    
+    } 
+    if (firstDigit !==0 && firstDigit < 5) {
+        byHundred = byHundred - (firstDigit)    
+    }
+        return byHundred/100;
+    }
