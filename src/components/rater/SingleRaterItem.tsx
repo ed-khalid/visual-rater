@@ -9,16 +9,17 @@ import './SingleRaterItem.css'
 
 interface SingleRaterItemProps {
     item:RatedSongItem
-    multiItemLineLength?:number|undefined
     x:number
     y:number
     raterBottom:number
     onDragEnd:any
     scaler:Scaler
     scale?:number
+    orientation:RaterOrientation
+    isLeaf?:boolean
 } 
 
-export const SingleRaterItem = ({item, multiItemLineLength, x, y, scale=1, raterBottom, scaler, onDragEnd}:SingleRaterItemProps) =>  {
+export const SingleRaterItem = ({item, orientation , isLeaf, x, y, scale=1, raterBottom, scaler, onDragEnd}:SingleRaterItemProps) =>  {
     const g = useRef<SVGGElement>(null)
     const onDragBehaviorEnd = (id:string, score:number) => {
         onDragEnd(id, score)
@@ -42,14 +43,15 @@ export const SingleRaterItem = ({item, multiItemLineLength, x, y, scale=1, rater
         }
     },[g.current]) 
     const imageSize = 20
-    const imageDimensions = {
-        x: x - 100 - (multiItemLineLength || 0),
+    const lineDistance = (isLeaf) ? 70 : 100
+    const imageDimensions =  {
+        x: (orientation === RaterOrientation.LEFT) ?  x- lineDistance : x + lineDistance,
         y: y - imageSize/2,
         size:imageSize
     }  
     const songNameDimensions = {
         x: imageDimensions.x + imageDimensions.size + 5 ,
-        y: y - 7 
+        y: y - 7  
     }  
     const songScoreDimensions = {
         x: songNameDimensions.x,  
@@ -66,7 +68,7 @@ export const SingleRaterItem = ({item, multiItemLineLength, x, y, scale=1, rater
                        <g className="draggable"> 
                          <image xlinkHref={item.thumbnail} clipPath="inset(0% round 15px)" cursor="move" className="item-thumbnail" width={imageDimensions.size} x={imageDimensions.x} y={imageDimensions.y} height={imageDimensions.size} href={item.thumbnail}/>
                          <circle className="item-thumbnail-border" cx={imageDimensions.x+10} cy={imageDimensions.y+10} r={imageDimensions.size/2} fill="none" stroke="black"></circle>
-                         <line className="item-scoreline" x1={lineDimensions.x1} y1={lineDimensions.y1} x2={lineDimensions.x2} y2={lineDimensions.y2} stroke="black"/> 
+                         <line className="item-scoreline" x1={lineDimensions.x1} y1={lineDimensions.y1} x2={lineDimensions.x2} y2={lineDimensions.y2} stroke="black"/>
                          <text className="item-name" cursor="move" fontSize={8*scale} fontSizeAdjust="2" fill="#3d3d3d" x={songNameDimensions.x} y={songNameDimensions.y} dy=".35em">{formatName(item.name)}</text>
                          <text className="item-score" cursor="move" fontSize={10*scale} fontWeight="bold" fontSizeAdjust="3" fill="#3d3d3d" x={songScoreDimensions.x} y={songScoreDimensions.y} dy=".35em">{item.score.toFixed(2)}</text>
                        </g>

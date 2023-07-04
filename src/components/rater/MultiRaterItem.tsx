@@ -4,9 +4,12 @@ import { RatedSongItem } from "../../models/RatedItem";
 import { SingleRaterItem } from "./SingleRaterItem";
 import './MultiRaterItem.css'
 import { RATER_BOTTOM } from "../../App";
+import { RaterOrientation } from "./Rater";
+import { RaterTree } from "./RaterTree";
 
 interface MultiRaterItemProps {
     items:RatedSongItem[]
+    orientation:RaterOrientation
     x:number
     y:number
     id:string
@@ -14,11 +17,9 @@ interface MultiRaterItemProps {
     onDragEnd:any
 } 
 
-export const MultiRaterItem = ({items, x, y, id, scaler, onDragEnd }:MultiRaterItemProps) =>  {
+export const MultiRaterItem = ({items, orientation, x, y, id, scaler, onDragEnd }:MultiRaterItemProps) =>  {
 
-     const scale = 1 - (0.1 * items.length)
-     const xScale = 100 
-
+     // sort by score
      const sortedItems = items.sort((a,b) => {
       if (a.score > b.score) {
         return -1
@@ -28,22 +29,30 @@ export const MultiRaterItem = ({items, x, y, id, scaler, onDragEnd }:MultiRaterI
       }
       return 0
      }) 
-
-
+     // get first item to render it normally 
+     const firstItem = sortedItems[0]  
+     const otherItems = sortedItems.slice(1) 
        return <g id={'rater-item-'+id} className="groupedItems" key={"groupat"+y}>
-             <g className="multi-item-group">
-                    {sortedItems.map((item,i) => 
                     <SingleRaterItem 
-                      key={item.id}
-                      scale={scale}
-                      multiItemLineLength={(i*xScale)}
-                      item={item}
+                      key={firstItem.id}
+                      item={firstItem}
+                      orientation={orientation}
                       x={x}
                       raterBottom={RATER_BOTTOM}
-                      y={scaler.toPosition(item.score)}
+                      y={scaler.toPosition(firstItem.score)}
+                      scaler={scaler}
+                      onDragEnd={onDragEnd}/>
+             <g className="multi-item-group">
+                    <RaterTree 
+                      key={'rater-leaf'}
+                      orientation={orientation}
+                      items={otherItems}
+                      x={x}
+                      raterBottom={RATER_BOTTOM}
+                      y={y}
                       scaler={scaler}
                       onDragEnd={onDragEnd}
-                    />)}
+                      />
                     </g>
             </g>   
 }
