@@ -35,7 +35,12 @@ div.main.grid div#top-controls div.list-control-nav {
   float: left;
   margin-left: 60px; 
 }
+div.drop-target {
+  height:680px;
+} 
 svg {
+  min-width:33%;
+  max-width:70%;
   width: 100%;
   height: 100%; 
 }
