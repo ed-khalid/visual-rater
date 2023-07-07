@@ -4,6 +4,7 @@ import { Album, Artist } from "../../generated/graphql"
 import { RatedSongItem } from "../../models/RatedItem"
 import { GlobalRaterState, Rater, RaterMode } from "./Rater"
 
+
 interface Props {
     artists:Artist[]|undefined
     albums:Array<Album>
@@ -16,6 +17,22 @@ export const RaterWrapper = ({state, setState, artists, albums}:Props) =>  {
     const gWrapper = useRef<SVGGElement>(null)
     const svgRef = useRef<SVGSVGElement>(null) 
     const [mainRaterItems, setMainRaterItems] = useState<RatedSongItem[]>([])
+
+    const mouseLocationListener =  (svg:SVGSVGElement) => {
+        const pt = svg.createSVGPoint() 
+
+        const cursorPoint = (evt:MouseEvent) => {
+          pt.x = evt.clientX
+          pt.y = evt.clientY
+          return pt.matrixTransform(svgRef.current?.getScreenCTM()?.inverse())
+        }
+
+        svg.addEventListener('mousemove', (evt) => {
+          const loc = cursorPoint(evt)
+          console.log(`{ x: ${loc.x}, y: ${loc.y}`)
+        })
+
+    } 
 
     useEffect(() => {
       if (artists) {
@@ -36,7 +53,7 @@ export const RaterWrapper = ({state, setState, artists, albums}:Props) =>  {
     }, [artists, albums])
 
 
-    return <svg preserveAspectRatio="xMidYMin meet" ref={svgRef} id="trackRater" viewBox="0 0 800 300">
+    return <svg preserveAspectRatio="xMidYMin meet" ref={svgRef} id="trackRater" viewBox="0 0 600 620">
           <defs>
             <clipPath id="clip-path">
               <rect x="0" y="0" width="950" height={950}></rect>
@@ -45,7 +62,7 @@ export const RaterWrapper = ({state, setState, artists, albums}:Props) =>  {
           <g ref={gWrapper} id="wrapper">
           {mainRaterItems.length && <Rater 
                 setState={setState}
-                position={{x:300, y:RATER_BOTTOM}}
+                position={{x:350, y:RATER_BOTTOM}}
                 state={state}
                 zoomTarget={gWrapper.current}
                 items={mainRaterItems}
