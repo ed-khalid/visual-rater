@@ -1,6 +1,7 @@
 
 div#search {
     max-width: 450px; 
+    min-width: 200px;
 }
 div.wrapper {
     border: 1px solid #3d3d3d;
