@@ -66,7 +66,7 @@ export const DragBehavior = ({raterBottom, item, g, scaler, onDragEnd}:Props) =>
                         },
                         rect: nodeOriginalPosition.y.rect + delta,
                         name: nodeOriginalPosition.y.name + delta,
-                        score: nodeOriginalPosition.y.score + delta,
+                        score: event.y,
                         image: nodeOriginalPosition.y.image + delta,
                     }
                 } 
