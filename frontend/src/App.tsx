@@ -177,7 +177,7 @@ export const App = () => {
         </div>
         <div className="empty-cell"></div> 
         <Search onAlbumSelect={onExternalAlbumSearchClick}/>
-        <div className="drop-target" ref={drop}>
+        <div id="rater" className="drop-target" ref={drop}>
         <RaterWrapper
           artists={artistsFull.data?.artists.content as Artist[]}
           albums={raterAlbums}
