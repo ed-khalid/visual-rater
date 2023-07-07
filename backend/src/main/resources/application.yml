@@ -7,8 +7,8 @@ spring:
     show-sql:  true
   datasource:
     url: "jdbc:postgresql://localhost:5432/visual_rater"
-    username: visual_rater
-    password: aerozep
+    username: visual_rater_app
+    password: {:default}
     initialization-mode: always
   application:
     name: visrater-backend
