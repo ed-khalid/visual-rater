@@ -43,7 +43,7 @@ export const SingleRaterItem = ({item, orientation , isLeaf, x, y, scale=1, rate
         }
     },[g.current]) 
     const imageSize = 20
-    const lineDistance = (isLeaf) ? 70 : 100
+    const lineDistance = (isLeaf) ? 50 : 90
     const imageDimensions =  {
         x: (orientation === RaterOrientation.LEFT) ?  x- lineDistance : x + lineDistance,
         y: y - imageSize/2,

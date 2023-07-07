@@ -2,17 +2,25 @@ import { axisRight } from 'd3-axis'
 import { select } from 'd3-selection';
 import { AxisScale, Selection } from 'd3';
 import { Scaler } from "../../functions/scale";
-import { GetArtistsDocument, useDeleteSongMutation, useUpdateSongMutation } from "../../generated/graphql";
+import { useUpdateSongMutation } from "../../generated/graphql";
 import { ItemType } from "../../models/Item";
 import { RatedItem, RatedSongItem } from "../../models/RatedItem";
 import { SingleRaterItem } from "./SingleRaterItem";
 import { MultiRaterItem } from "./MultiRaterItem";
 import { Position } from '../../models/Position';
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
+import { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
 import React from 'react';
 import './Rater.css'
-import { ZoomBehavior } from './behaviors/ZoomBehavior';
 import { RATER_BOTTOM } from '../../App';
+export interface RaterTreeInfo {
+  top: number;
+  bottom: number;
+  items:Array<{ coord: {x:number,y:number}, item: RatedSongItem}>;
+  mainline:Position
+  center: { x:number, y:number} 
+  stepSize: number
+  radius:number
+}
 
 interface Props {
     position:Position
@@ -48,11 +56,70 @@ export const Rater = ({position, state, setState, items, setItems, mode}:Props) 
 
     const [updateSong]  = useUpdateSongMutation();
     const [currentItem, setCurrentItem] = useState<RatedItem|null>();  
-    const [groupedItems, setGroupedItems] = useState<RatedSongItemGrouped[]>([]);
+    const [singleElements, setSingleElements] = useState<RatedSongItem[]>([])
+    const [trees, setTrees] = useState<RaterTreeInfo[]>([])
     const g = useRef<SVGGElement>(null)
     // const zoomTarget= useRef<SVGGElement>(null)
     // const zoomListener = useRef<SVGRectElement>(null)
     // const [zoomBehavior, setZoomBehavior] = useState<any>() 
+
+
+
+    const drawTrees =  useCallback((groupedItems:RatedSongItemGrouped[])  => {
+        const trees:Array<RaterTreeInfo> = []
+        // sort by position
+        groupedItems.sort((a,b) => (a.position < b.position) ? -1 :(a.position > b.position) ? 1 : 0 ) 
+        // sort by middle then one then down
+        const index = Math.floor(groupedItems.length / 2)
+        const graphSort:RatedSongItemGrouped[] = [groupedItems[index]]
+        for (let i = 1 ; i <= groupedItems.length/2; i++) {
+            if ((index+i) < groupedItems.length) {
+              graphSort.push(groupedItems[index+i]) 
+            }
+            if ((index-i) > -1) {
+              graphSort.push(groupedItems[index-i]) 
+            }
+        }
+
+        const findNewCenter = (mainlineY:number, items:Array<{coord:Position, item:RatedSongItem}>, intersection: RaterTreeInfo) => {
+            const intersectionHalfHeight = (intersection.bottom - intersection.top)/2      
+            const newTreeTop = (mainlineY - items[0].coord.y)  
+            const newTreeBottom = (mainlineY - items[items.length-1].coord.y)  
+            const newTreeHalfHeight  = (newTreeBottom - newTreeTop)/2 
+            const margin = 30
+            let retv;  
+            if (mainlineY >= intersection.center.y) {
+                retv =  mainlineY+ intersectionHalfHeight + newTreeHalfHeight
+            } else {
+                retv = mainlineY - intersectionHalfHeight - newTreeHalfHeight 
+            }
+            return retv
+        } 
+
+        graphSort.forEach(group => {
+           const anchor = 90 * (Math.PI/180); 
+           const intersection  = trees.find(it => it.top <= group.position && it.bottom >= group.position)
+           const circleDivisions = group.items.length + 1;   
+           const step = Math.PI / circleDivisions   
+           const radius = 60  + (group.items.length * 7) ; 
+           const items = group.items.map((item, i) => {
+                const cos = radius * Math.cos(anchor + ((i+1)*step) ) 
+                const sin = radius * Math.sin(anchor + ((i+1)*step) ) 
+                return { item, coord: { x: cos, y : sin } }
+           })
+           const center = intersection ? { x: position.x-150, y: findNewCenter(group.position, items, intersection)}  : { x: position.x-150, y: group.position}  
+            trees.push({
+                top: center.y - items[0].coord.y ,
+                bottom: center.y - items[items.length-1].coord.y,
+                items,
+                mainline: {x: position.x, y: group.position },
+                center,
+                stepSize: step,
+                radius: radius 
+            })
+        })
+        return trees
+    }, [position.x])
 
     useEffect(() => {
         const groupCloseItems = (ratedItems:RatedSongItem[]) => {
@@ -66,10 +133,14 @@ export const Rater = ({position, state, setState, items, setItems, mode}:Props) 
                 }
                 return acc
             },  [])
-            setGroupedItems(groupedItems)
+
+            const singleElements = groupedItems.filter(it => it.items.length === 1).map(it => it.items[0])    
+            const trees = drawTrees(groupedItems.filter(it => it.items.length > 1))
+            setSingleElements(singleElements)
+            setTrees(trees)
         }  
         groupCloseItems(items)
-    }, [items, state.scaler])
+    }, [items, state.scaler, drawTrees])
 
     useEffect(() => {
         switch(state.itemType) {
@@ -83,6 +154,7 @@ export const Rater = ({position, state, setState, items, setItems, mode}:Props) 
 
 
     const updateItem =  (itemId:string, newScore:number) => {
+        console.log(newScore)
         const item = items.find( it => it.id === itemId) 
         if (item) {
           item.score = newScore; 
@@ -108,30 +180,27 @@ export const Rater = ({position, state, setState, items, setItems, mode}:Props) 
                       <g className="zoom-target">
                         <g className={mode === RaterMode.PRIMARY ? "rater-axis" : "rater-axis readonly" }></g>
                         <line className={mode === RaterMode.PRIMARY? "rater-line": 'rater-line readonly' } x1={position.x} y1={0} x2={position.x} y2={position.y} />
-                      { groupedItems.map(rItemGrouped => 
-                      (rItemGrouped.items.length === 1) ? 
-                        <SingleRaterItem
-                            key={rItemGrouped.items[0].id}
-                            item={rItemGrouped.items[0]}
-                            raterBottom={RATER_BOTTOM}
-                            orientation={RaterOrientation.LEFT}
-                            x={position.x}
-                            y={rItemGrouped.position}
-                            scaler={state.scaler}
-                            onDragEnd={updateItem}
-                        />
-                      :
-                        <MultiRaterItem  
-                            key={rItemGrouped.position}
-                            items={rItemGrouped.items} 
-                            id = {rItemGrouped.id}
+                      { singleElements.map(item => 
+                            <SingleRaterItem
+                                key={item.id}
+                                item={item}
+                                raterBottom={RATER_BOTTOM}
+                                orientation={RaterOrientation.LEFT}
+                                x={position.x}
+                                y={state.scaler.toPosition(item.score)}
+                                scaler={state.scaler}
+                                onDragEnd={updateItem}
+                            />)
+                      }
+                      {trees.map(tree => <MultiRaterItem
+                            key={"tree-" + tree.top}
+                            tree={tree}
                             orientation={RaterOrientation.LEFT}
                             scaler={state.scaler}
                             onDragEnd={updateItem}
-                            x={position.x} 
-                            y={rItemGrouped.position} 
-                        />)}
+                      />)
+                      }
                       </g>
                     </g>
-                    )
-                      }
+            )
+    }
