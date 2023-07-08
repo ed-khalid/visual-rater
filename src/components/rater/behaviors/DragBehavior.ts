@@ -1,7 +1,7 @@
 import { select, selectAll } from "d3-selection";
 import { Scaler, clampToNearestIncrement } from "../../../functions/scale";
-import { RatedItem } from "../../../models/RatedItem";
-import { Position, SongItemPosition } from "../../../models/Position";
+import { Position, SongItemPosition } from "../../../models/ui/Position";
+import { RatedItem } from "../../../models/domain/ItemTypes";
 
 interface Props {
     raterBottom:number

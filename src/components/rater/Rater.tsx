@@ -3,19 +3,19 @@ import { select } from 'd3-selection';
 import { AxisScale, Selection } from 'd3';
 import { Scaler } from "../../functions/scale";
 import { useUpdateSongMutation } from "../../generated/graphql";
-import { ItemType } from "../../models/Item";
-import { RatedItem, RatedSongItem } from "../../models/RatedItem";
+import { ItemType, RatedItem } from "../../models/domain/ItemTypes";
+import { RatedSongItemUI } from "../../models/ui/ItemTypes";
 import { SingleRaterItem } from "./SingleRaterItem";
 import { MultiRaterItem } from "./MultiRaterItem";
-import { Position } from '../../models/Position';
-import { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from 'react';
+import { Position } from '../../models/ui/Position';
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import React from 'react';
 import './Rater.css'
 import { RATER_BOTTOM } from '../../App';
 export interface RaterTreeInfo {
   top: number;
   bottom: number;
-  items:Array<{ coord: {x:number,y:number}, item: RatedSongItem}>;
+  items:Array<{ coord: {x:number,y:number}, item: RatedSongItemUI}>;
   mainline:Position
   center: { x:number, y:number} 
   stepSize: number
@@ -27,14 +27,13 @@ interface Props {
     state:GlobalRaterState
     zoomTarget?:SVGGElement|null
     setState:Dispatch<SetStateAction<GlobalRaterState>>
-    items: RatedSongItem[];
-    setItems:Dispatch<SetStateAction<RatedSongItem[]>>
-    mode:RaterMode
+    items: RatedSongItemUI[];
+    setItems:Dispatch<SetStateAction<RatedSongItemUI[]>>
 }
 export type RatedSongItemGrouped  = {
         id:string
         position:number
-        ,items:RatedSongItem[]
+        ,items:RatedSongItemUI[]
     } 
 
 export type GlobalRaterState = {
@@ -43,16 +42,13 @@ export type GlobalRaterState = {
     end:string
     itemType:ItemType
 }
-export enum RaterMode {
-    PRIMARY, SECONDARY
-} 
 export enum RaterOrientation {
     RIGHT, LEFT
 }   
 
 
 
-export const Rater = ({position, state, setState, items, setItems, mode}:Props) => {
+export const Rater = ({position, state, setState, items, setItems }:Props) => {
 
     const [updateSong]  = useUpdateSongMutation();
     const [currentItem, setCurrentItem] = useState<RatedItem|null>();  
@@ -64,8 +60,8 @@ export const Rater = ({position, state, setState, items, setItems, mode}:Props) 
 
 
     useEffect(() => {
-        const groupCloseItems = (ratedItems:RatedSongItem[]) => {
-            const groupedItems = ratedItems.reduce((acc:RatedSongItemGrouped[] , curr:RatedSongItem) => {
+        const groupCloseItems = (ratedItems:RatedSongItemUI[]) => {
+            const groupedItems = ratedItems.reduce((acc:RatedSongItemGrouped[] , curr:RatedSongItemUI) => {
                 const position =  state.scaler.toPosition(curr.score) 
                 const overlap = acc.find((it:RatedSongItemGrouped) =>  Math.abs(Number(it.position) - position) < 15  )
                 if (overlap) {
@@ -120,8 +116,8 @@ export const Rater = ({position, state, setState, items, setItems, mode}:Props) 
     return (
                   <g clipPath="url(#clip-path)"  ref={g} className="rater-container">
                       <g className="zoom-target">
-                        <g className={mode === RaterMode.PRIMARY ? "rater-axis" : "rater-axis readonly" }></g>
-                        <line className={mode === RaterMode.PRIMARY? "rater-line": 'rater-line readonly' } x1={position.x} y1={0} x2={position.x} y2={position.y} />
+                        <g className="rater-axis"></g>
+                        <line className="rater-line" x1={position.x} y1={0} x2={position.x} y2={position.y} />
                       {groupedItems.map(group =>  
                        (group.items.length === 1) ? 
                             <SingleRaterItem
