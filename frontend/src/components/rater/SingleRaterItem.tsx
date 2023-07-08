@@ -1,14 +1,15 @@
 import React, {useEffect, useRef } from "react";
 import { select } from 'd3-selection'
 import { drag } from 'd3-drag'
-import { RatedItem, RatedSongItem } from "../../models/RatedItem";
+import { RatedSongItemUI } from "../../models/ui/ItemTypes";
 import { Scaler } from "../../functions/scale";
 import { DragBehavior } from "./behaviors/DragBehavior";
 import { RaterOrientation } from "./Rater";
 import './SingleRaterItem.css' 
+import { RatedItem } from "../../models/domain/ItemTypes";
 
 interface SingleRaterItemProps {
-    item:RatedSongItem
+    item:RatedSongItemUI
     x:number
     mainlineX:number
     y:number

@@ -1,4 +1,4 @@
-import { ExternalAlbumSearchResult, ExternalArtistSearchResult, ExternalTrackSearchResult } from "../generated/graphql"
+import { ExternalAlbumSearchResult, ExternalArtistSearchResult, ExternalTrackSearchResult } from "../../generated/graphql"
 
 
 export type ExternalFullSearchResult = {

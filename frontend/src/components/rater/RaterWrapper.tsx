@@ -1,8 +1,8 @@
 import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from "react"
 import { RATER_BOTTOM } from "../../App"
 import { Album, Artist } from "../../generated/graphql"
-import { RatedSongItem } from "../../models/RatedItem"
-import { GlobalRaterState, Rater, RaterMode, RaterOrientation } from "./Rater"
+import { RatedSongItemUI } from "../../models/ui/ItemTypes"
+import { GlobalRaterState, Rater, RaterOrientation } from "./Rater"
 
 
 
@@ -12,12 +12,12 @@ interface Props {
     state:GlobalRaterState
     setState:Dispatch<SetStateAction<GlobalRaterState>>
 }
-const mapSongToRatedItem  = (song:any, artist:Artist, album:Album, orientation:RaterOrientation) : RatedSongItem => new RatedSongItem({ id: song.id, name: song.name },song.score!, album.thumbnail!, song.number,artist.name, album.name, orientation );
+const mapSongToRatedItem  = (song:any, artist:Artist, album:Album, orientation:RaterOrientation) : RatedSongItemUI => new RatedSongItemUI({ id: song.id, name: song.name },song.score!, album.thumbnail!, song.number,artist.name, album.name, orientation, 1 );
 
 export const RaterWrapper = ({state, setState, artists, albums}:Props) =>  {
     const gWrapper = useRef<SVGGElement>(null)
     const svgRef = useRef<SVGSVGElement>(null) 
-    const [mainRaterItems, setMainRaterItems] = useState<RatedSongItem[]>([])
+    const [mainRaterItems, setMainRaterItems] = useState<RatedSongItemUI[]>([])
 
     const mouseLocationListener =  (svg:SVGSVGElement) => {
         const pt = svg.createSVGPoint() 
@@ -38,7 +38,7 @@ export const RaterWrapper = ({state, setState, artists, albums}:Props) =>  {
     useEffect(() => {
       if (artists) {
         let whichOrientation = RaterOrientation.LEFT  
-        let raterAlbums : Array<RatedSongItem>  = []
+        let raterAlbums : Array<RatedSongItemUI>  = []
 
         albums.map(it => it.id).forEach(albumId => {
           artists.find(artist => {
@@ -71,7 +71,6 @@ export const RaterWrapper = ({state, setState, artists, albums}:Props) =>  {
                 zoomTarget={gWrapper.current}
                 items={mainRaterItems}
                 setItems={setMainRaterItems}
-                mode={RaterMode.PRIMARY}
           />
           }
           </g>

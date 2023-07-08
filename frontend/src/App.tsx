@@ -6,10 +6,10 @@ import {  ExternalAlbumSearchResult, Artist, ExternalArtistSearchResult, GetArti
 import { zoomIdentity } from 'd3-zoom'
 import { Dashboard } from './components/dashboard/Dashboard';
 import { Search } from './components/search/Search';
-import { ItemType } from './models/Item';
-import { ExternalFullSearchResult } from './models/ExternalFullSearchResult';
+import { ItemType } from './models/domain/ItemTypes';
+import { ExternalFullSearchResult } from './models/domain/ExternalFullSearchResult';
 import { RaterWrapper } from './components/rater/RaterWrapper';
-import { DragType } from './models/DragType';
+import { DragType } from './models/ui/DragType';
 import { useDrop } from 'react-dnd';
 
 export const RATER_BOTTOM:number = 600; 
