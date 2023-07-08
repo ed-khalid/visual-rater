@@ -1,8 +1,8 @@
 import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from "react"
-import { RATER_BOTTOM } from "../../App"
 import { Album, Artist } from "../../generated/graphql"
 import { RatedSongItemUI } from "../../models/ui/ItemTypes"
-import { GlobalRaterState, Rater, RaterOrientation } from "./Rater"
+import { Rater } from "./Rater"
+import { GlobalRaterState, RATER_X, RATER_Y_BOTTOM, RaterOrientation } from "../../models/ui/RaterTypes"
 
 
 
@@ -66,7 +66,7 @@ export const RaterWrapper = ({state, setState, artists, albums}:Props) =>  {
           <g ref={gWrapper} id="wrapper">
           {mainRaterItems.length && <Rater 
                 setState={setState}
-                position={{x:350, y:RATER_BOTTOM}}
+                position={{x:RATER_X, y:RATER_Y_BOTTOM}}
                 state={state}
                 zoomTarget={gWrapper.current}
                 items={mainRaterItems}

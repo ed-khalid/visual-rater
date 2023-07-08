@@ -2,9 +2,9 @@ import { select, selectAll } from "d3-selection";
 import { Scaler, clampToNearestIncrement } from "../../../functions/scale";
 import { Position, SongItemPosition } from "../../../models/ui/Position";
 import { RatedItem } from "../../../models/domain/ItemTypes";
+import { RATER_Y_BOTTOM } from "../../../models/ui/RaterTypes";
 
 interface Props {
-    raterBottom:number
     g:SVGGElement|undefined
     scaler:Scaler
     item:RatedItem
@@ -12,9 +12,9 @@ interface Props {
 }
 
 
-export const DragBehavior = ({raterBottom, item, g, scaler, onDragEnd}:Props) => {
+export const DragBehavior = ({item, g, scaler, onDragEnd}:Props) => {
     const isDragInBounds = (_y:number) => {
-        return _y  >= 5  && _y <= raterBottom - 5; 
+        return _y  >= 5  && _y <= RATER_Y_BOTTOM - 5; 
     }
 
     return {
