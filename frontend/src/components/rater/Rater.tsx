@@ -1,7 +1,6 @@
 import { axisRight } from 'd3-axis'
 import { select } from 'd3-selection';
 import { AxisScale, Selection } from 'd3';
-import { Scaler } from "../../functions/scale";
 import { useUpdateSongMutation } from "../../generated/graphql";
 import { ItemType, RatedItem } from "../../models/domain/ItemTypes";
 import { RatedSongItemUI } from "../../models/ui/ItemTypes";
@@ -11,16 +10,7 @@ import { Position } from '../../models/ui/Position';
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import React from 'react';
 import './Rater.css'
-import { RATER_BOTTOM } from '../../App';
-export interface RaterTreeInfo {
-  top: number;
-  bottom: number;
-  items:Array<{ coord: {x:number,y:number}, item: RatedSongItemUI}>;
-  mainline:Position
-  center: { x:number, y:number} 
-  stepSize: number
-  radius:number
-}
+import { GlobalRaterState, RaterOrientation } from '../../models/ui/RaterTypes';
 
 interface Props {
     position:Position
@@ -36,15 +26,6 @@ export type RatedSongItemGrouped  = {
         ,items:RatedSongItemUI[]
     } 
 
-export type GlobalRaterState = {
-    scaler:Scaler
-    start:string
-    end:string
-    itemType:ItemType
-}
-export enum RaterOrientation {
-    RIGHT, LEFT
-}   
 
 
 
@@ -66,6 +47,8 @@ export const Rater = ({position, state, setState, items, setItems }:Props) => {
                 const overlap = acc.find((it:RatedSongItemGrouped) =>  Math.abs(Number(it.position) - position) < 15  )
                 if (overlap) {
                     overlap.items.push(curr)
+                    overlap.items.sort((a,b) => (a.score > b.score) ? 1 : (a.score < b.score) ? -1 : 0 )
+                    overlap.items.forEach((item, i) => item.tier = i+1)
                 } else {
                     acc.push({ position, items:[curr], id: '' + acc.length + 1 })
                 }
@@ -123,13 +106,9 @@ export const Rater = ({position, state, setState, items, setItems }:Props) => {
                             <SingleRaterItem
                                 key={group.items[0].id}
                                 item={group.items[0]}
-                                raterBottom={RATER_BOTTOM}
                                 orientation={group.items[0].orientation}
                                 mainlineX={position.x}
-                                x={90}
-                                y={state.scaler.toPosition(group.items[0].score)}
                                 scaler={state.scaler}
-                                isPartOfGroup={false}
                                 onDragEnd={updateItem}
                             />:
                         <MultiRaterItem
@@ -137,7 +116,6 @@ export const Rater = ({position, state, setState, items, setItems }:Props) => {
                             group={group}
                             orientation={group.items[0].orientation}
                             mainlineX={position.x}
-                            itemShiftX={90}
                             scaler={state.scaler}
                             onDragEnd={updateItem}
                       />)

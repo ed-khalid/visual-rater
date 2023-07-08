@@ -1,9 +1,10 @@
 import { select, Selection } from 'd3-selection';
 import { zoom } from 'd3-zoom'
 import { Scaler } from '../../../functions/scale';
-import { GlobalRaterState, RatedSongItemGrouped } from '../Rater';
+import { RatedSongItemGrouped } from '../Rater';
 import { ScaleLinear } from 'd3-scale' 
 import { Dispatch, SetStateAction } from 'react';
+import { GlobalRaterState } from '../../../models/ui/RaterTypes';
 interface Props {
     listener:SVGRectElement|null
     axis:Selection<SVGGElement,unknown, null, undefined>

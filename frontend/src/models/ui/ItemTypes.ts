@@ -1,5 +1,5 @@
-import { RaterOrientation } from '../../components/rater/Rater';
 import { Item, RatedItem } from '../domain/ItemTypes';
+import { RaterOrientation } from './RaterTypes'
 
 
 

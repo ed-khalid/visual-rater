@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import './App.css';
-import { GlobalRaterState } from './components/rater/Rater';
 import { Scaler } from './functions/scale';
 import {  ExternalAlbumSearchResult, Artist, ExternalArtistSearchResult, GetArtistsDocument, GetArtistsQuery, NewSongInput, useCreateAlbumMutation, useCreateArtistMutation, useGetArtistsQuery , useGetTracksForSearchAlbumQuery, useGetTracksForSearchAlbumLazyQuery, Song, Album } from './generated/graphql';
 import { zoomIdentity } from 'd3-zoom'
@@ -11,8 +10,9 @@ import { ExternalFullSearchResult } from './models/domain/ExternalFullSearchResu
 import { RaterWrapper } from './components/rater/RaterWrapper';
 import { DragType } from './models/ui/DragType';
 import { useDrop } from 'react-dnd';
+import { GlobalRaterState } from './models/ui/RaterTypes';
 
-export const RATER_BOTTOM:number = 600; 
+
 
 export const initialRaterState:GlobalRaterState = {
    start: '0'
