@@ -67,6 +67,9 @@ export const Rater = ({position, state, setState, items, setItems, mode}:Props) 
 
     const drawTrees =  useCallback((groupedItems:RatedSongItemGrouped[])  => {
         const trees:Array<RaterTreeInfo> = []
+        if (groupedItems.length === 0) {
+            return trees
+        }
         // sort by position
         groupedItems.sort((a,b) => (a.position < b.position) ? -1 :(a.position > b.position) ? 1 : 0 ) 
         // sort by middle then one then down
@@ -89,25 +92,34 @@ export const Rater = ({position, state, setState, items, setItems, mode}:Props) 
             const margin = 30
             let retv;  
             if (mainlineY >= intersection.center.y) {
-                retv =  mainlineY+ intersectionHalfHeight + newTreeHalfHeight
+                retv =  intersection.center.y+ intersectionHalfHeight + newTreeHalfHeight + margin
             } else {
-                retv = mainlineY - intersectionHalfHeight - newTreeHalfHeight 
+                retv = intersection.center.y - intersectionHalfHeight - newTreeHalfHeight - margin
             }
             return retv
         } 
 
+        const detectIntersection = (mainlineY:number, tree:RaterTreeInfo, items:Array<{coord:Position, item:RatedSongItem}>) => {
+            const newTreeTop = (mainlineY - items[0].coord.y)  
+            const newTreeBottom = (mainlineY - items[items.length-1].coord.y)  
+            if ( tree.top <= newTreeTop && tree.bottom >= newTreeTop) return true 
+            if ( tree.top <= newTreeBottom && tree.bottom >= newTreeBottom) return true
+            return false
+        }
+
         graphSort.forEach(group => {
-           const anchor = 90 * (Math.PI/180); 
-           const intersection  = trees.find(it => it.top <= group.position && it.bottom >= group.position)
+           const orientation = group.items[0].orientation
+           const anchor = (orientation === RaterOrientation.LEFT) ? (90 * (Math.PI/180)) : (-90 * (Math.PI/180)); 
            const circleDivisions = group.items.length + 1;   
            const step = Math.PI / circleDivisions   
-           const radius = 60  + (group.items.length * 7) ; 
+           const radius = 60 + (group.items.length * 7) ; 
            const items = group.items.map((item, i) => {
                 const cos = radius * Math.cos(anchor + ((i+1)*step) ) 
                 const sin = radius * Math.sin(anchor + ((i+1)*step) ) 
-                return { item, coord: { x: cos, y : sin } }
+                return { item, coord: { x: cos, y : sin} }
            })
-           const center = intersection ? { x: position.x-150, y: findNewCenter(group.position, items, intersection)}  : { x: position.x-150, y: group.position}  
+           const intersection  = trees.find(it =>  detectIntersection(group.position, it, items))
+           const center = intersection ? { x: (orientation === RaterOrientation.LEFT) ?position.x-100: position.x+100, y: findNewCenter(group.position, items, intersection)}  : { x: (orientation === RaterOrientation.LEFT)? position.x-100: position.x+100, y: group.position}  
             trees.push({
                 top: center.y - items[0].coord.y ,
                 bottom: center.y - items[items.length-1].coord.y,
@@ -136,10 +148,14 @@ export const Rater = ({position, state, setState, items, setItems, mode}:Props) 
 
             const singleElements = groupedItems.filter(it => it.items.length === 1).map(it => it.items[0])    
             const trees = drawTrees(groupedItems.filter(it => it.items.length > 1))
-            setSingleElements(singleElements)
-            setTrees(trees)
+            return { singleElements, trees } 
         }  
-        groupCloseItems(items)
+        const leftItems = items.filter( it => it.orientation === RaterOrientation.LEFT)
+        const rightItems = items.filter( it => it.orientation === RaterOrientation.RIGHT)
+        const leftGroups =  groupCloseItems(leftItems)
+        const rightGroups =  groupCloseItems(rightItems)
+        setSingleElements([...leftGroups.singleElements, ...rightGroups.singleElements])
+        setTrees([...leftGroups.trees, ...rightGroups.trees])
     }, [items, state.scaler, drawTrees])
 
     useEffect(() => {
@@ -185,7 +201,7 @@ export const Rater = ({position, state, setState, items, setItems, mode}:Props) 
                                 key={item.id}
                                 item={item}
                                 raterBottom={RATER_BOTTOM}
-                                orientation={RaterOrientation.LEFT}
+                                orientation={item.orientation}
                                 x={position.x}
                                 y={state.scaler.toPosition(item.score)}
                                 scaler={state.scaler}
@@ -195,7 +211,7 @@ export const Rater = ({position, state, setState, items, setItems, mode}:Props) 
                       {trees.map(tree => <MultiRaterItem
                             key={"tree-" + tree.top}
                             tree={tree}
-                            orientation={RaterOrientation.LEFT}
+                            orientation={tree.items[0].item.orientation}
                             scaler={state.scaler}
                             onDragEnd={updateItem}
                       />)

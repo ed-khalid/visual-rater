@@ -50,15 +50,15 @@ export const SingleRaterItem = ({item, orientation , isLeaf, x, y, scale=1, rate
         size:imageSize
     }  
     const songNameDimensions = {
-        x: imageDimensions.x + imageDimensions.size + 5 ,
+        x: (orientation === RaterOrientation.LEFT) ? (imageDimensions.x + imageDimensions.size + 5) : (imageDimensions.x - imageDimensions.size - 35)  ,
         y: y - 7  
     }  
     const songScoreDimensions = {
-        x: songNameDimensions.x,  
+        x: (orientation === RaterOrientation.LEFT ) ? songNameDimensions.x: songNameDimensions.x + 30,
         y: songNameDimensions.y + 14 
     }  
     const lineDimensions = {
-        x1: imageDimensions.x + imageDimensions.size, 
+        x1: (orientation === RaterOrientation.LEFT) ? (imageDimensions.x + imageDimensions.size) : imageDimensions.x + imageDimensions.size, 
         y1: y, 
         x2: x,
         y2: y

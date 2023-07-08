@@ -4,7 +4,6 @@ import './MultiRaterItem.css'
 import { RATER_BOTTOM } from "../../App";
 import { RaterOrientation, RaterTreeInfo } from "./Rater";
 import { SingleRaterItem } from "./SingleRaterItem";
-import { Position } from "../../models/Position";
 
 interface MultiRaterItemProps {
     tree:RaterTreeInfo
