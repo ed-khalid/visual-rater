@@ -2,7 +2,8 @@ import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from "re
 import { RATER_BOTTOM } from "../../App"
 import { Album, Artist } from "../../generated/graphql"
 import { RatedSongItem } from "../../models/RatedItem"
-import { GlobalRaterState, Rater, RaterMode } from "./Rater"
+import { GlobalRaterState, Rater, RaterMode, RaterOrientation } from "./Rater"
+
 
 
 interface Props {
@@ -11,7 +12,7 @@ interface Props {
     state:GlobalRaterState
     setState:Dispatch<SetStateAction<GlobalRaterState>>
 }
-const mapSongToRatedItem  = (song:any, artist:Artist, album:Album) : RatedSongItem => new RatedSongItem({ id: song.id, name: song.name },song.score!, album.thumbnail!, song.number,artist.name, album.name );
+const mapSongToRatedItem  = (song:any, artist:Artist, album:Album, orientation:RaterOrientation) : RatedSongItem => new RatedSongItem({ id: song.id, name: song.name },song.score!, album.thumbnail!, song.number,artist.name, album.name, orientation );
 
 export const RaterWrapper = ({state, setState, artists, albums}:Props) =>  {
     const gWrapper = useRef<SVGGElement>(null)
@@ -36,18 +37,21 @@ export const RaterWrapper = ({state, setState, artists, albums}:Props) =>  {
 
     useEffect(() => {
       if (artists) {
-        let raterItems:Array<RatedSongItem> = [] 
+        let whichOrientation = RaterOrientation.LEFT  
+        let raterAlbums : Array<RatedSongItem>  = []
+
         albums.map(it => it.id).forEach(albumId => {
           artists.find(artist => {
             const foundAlbum = artist.albums?.find(album => album?.id === albumId)
             if (foundAlbum && foundAlbum.songs) {
-               const albumItems = foundAlbum.songs.filter(it => it.score).map(it => mapSongToRatedItem(it, artist, foundAlbum)) 
-               raterItems.push(...albumItems)
+               const albumItems = foundAlbum.songs.filter(it => it.score).map(it => mapSongToRatedItem(it, artist, foundAlbum, whichOrientation)) 
+               raterAlbums = [...raterAlbums, ...albumItems] 
+               whichOrientation = (whichOrientation === RaterOrientation.LEFT) ? RaterOrientation.RIGHT : RaterOrientation.LEFT   
                return true;
             }
             return false;
           })
-          setMainRaterItems(raterItems)
+          setMainRaterItems(raterAlbums)
         })
       }
     }, [artists, albums])
