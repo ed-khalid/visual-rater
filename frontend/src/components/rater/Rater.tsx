@@ -67,7 +67,7 @@ export const Rater = ({position, state, setState, items, setItems, mode}:Props) 
         const groupCloseItems = (ratedItems:RatedSongItem[]) => {
             const groupedItems = ratedItems.reduce((acc:RatedSongItemGrouped[] , curr:RatedSongItem) => {
                 const position =  state.scaler.toPosition(curr.score) 
-                const overlap = acc.find((it:RatedSongItemGrouped) =>  Math.abs(Number(it.position) - position) < 20  )
+                const overlap = acc.find((it:RatedSongItemGrouped) =>  Math.abs(Number(it.position) - position) < 15  )
                 if (overlap) {
                     overlap.items.push(curr)
                 } else {
@@ -122,24 +122,26 @@ export const Rater = ({position, state, setState, items, setItems, mode}:Props) 
                       <g className="zoom-target">
                         <g className={mode === RaterMode.PRIMARY ? "rater-axis" : "rater-axis readonly" }></g>
                         <line className={mode === RaterMode.PRIMARY? "rater-line": 'rater-line readonly' } x1={position.x} y1={0} x2={position.x} y2={position.y} />
-                      { groupedItems.map(group => { 
-                       (group.items.length === 1) ? return 
+                      {groupedItems.map(group =>  
+                       (group.items.length === 1) ? 
                             <SingleRaterItem
                                 key={group.items[0].id}
                                 item={group.items[0]}
                                 raterBottom={RATER_BOTTOM}
                                 orientation={group.items[0].orientation}
-                                x={position.x}
+                                mainlineX={position.x}
+                                x={90}
                                 y={state.scaler.toPosition(group.items[0].score)}
                                 scaler={state.scaler}
+                                isPartOfGroup={false}
                                 onDragEnd={updateItem}
-                                :
-                            />})}
-                        (group.items.length > 1) && 
+                            />:
                         <MultiRaterItem
-                            key={"tree-" + tree.top}
-                            tree={tree}
-                            orientation={tree.items[0].item.orientation}
+                            key={"multi-rater-item-" + group.id}
+                            group={group}
+                            orientation={group.items[0].orientation}
+                            mainlineX={position.x}
+                            itemShiftX={90}
                             scaler={state.scaler}
                             onDragEnd={updateItem}
                       />)
