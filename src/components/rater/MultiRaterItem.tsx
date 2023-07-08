@@ -2,33 +2,38 @@ import React from "react";
 import { Scaler } from "../../functions/scale";
 import './MultiRaterItem.css'
 import { RATER_BOTTOM } from "../../App";
-import { RaterOrientation, RaterTreeInfo } from "./Rater";
+import { RatedSongItemGrouped, RaterOrientation } from "./Rater";
 import { SingleRaterItem } from "./SingleRaterItem";
 
 interface MultiRaterItemProps {
-    tree:RaterTreeInfo
+    group:RatedSongItemGrouped
     orientation:RaterOrientation
     scaler:Scaler
+    mainlineX:number
+    itemShiftX:number
     onDragEnd:any
 } 
 
-export const MultiRaterItem = ({tree, onDragEnd, orientation, scaler }:MultiRaterItemProps) =>  {
+export const MultiRaterItem = ({group, onDragEnd, mainlineX, itemShiftX, orientation, scaler }:MultiRaterItemProps) =>  {
+
+       const lineX = mainlineX-itemShiftX 
 
        return <g className="groupedItems">
-            <line x1={tree.center.x} y1={tree.center.y} x2={tree.mainline.x} y2={tree.mainline.y} stroke="black"></line> 
-            {tree.items.map((treeElement,i) => 
+            <line x1={mainlineX} y1={group.position} x2={lineX} y2={group.position} stroke="black"></line> 
+            {group.items.map((item,i) => 
             <g>
-            <line key={"coord"+i} x1={tree.center.x} y1={tree.center.y} x2={treeElement.coord.x + tree.center.x} y2={tree.center.y- treeElement.coord.y} stroke="black"></line>
             <SingleRaterItem
-              key={'multiline-tree-item-' + treeElement.item.id + "-" + i }
-              item={treeElement.item}
+              key={'multiline-tree-item-' + item.id + "-" + i }
+              item={item}
               orientation={orientation}
               raterBottom={RATER_BOTTOM}
-              x={treeElement.coord.x+ tree.center.x}
-              y={tree.center.y-treeElement.coord.y}
+              mainlineX={mainlineX}
+              x={lineX-(70*i)}
+              y={group.position}
               scaler={scaler}
               onDragEnd={onDragEnd}
-              isLeaf={true}
+              isPartOfGroup={true}
+              isFirstItemInGroup={i === 0}
              />
             </g>
         )}
