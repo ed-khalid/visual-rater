@@ -106,6 +106,13 @@ export const Rater = ({position, state, setState, items, setItems }:Props) => {
 
     return (
                   <g clipPath="url(#clip-path)"  ref={g} className="rater-container">
+ <rect 
+                            ref={zoomListener} 
+                            id="zoom-listener" 
+                            x={position.x+5} 
+                            height={position.y}
+                            >
+                        </rect>
                       <g ref={zoomTarget} className="zoom-target">
                         <g className="rater-axis"></g>
                         <line className="rater-line" x1={position.x} y1={0} x2={position.x} y2={position.y} />
