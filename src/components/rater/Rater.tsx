@@ -93,6 +93,14 @@ export const Rater = ({position, state, setState, items, setItems }:Props) => {
         }
     }
 
+    const zoomOnGroup = (position:number) => {
+        const group = groupedItems.find(it => it.position === position)  
+        if (group) {
+            const {start,end} = zoomBehavior?.zoomOnGroup(group)
+            setState({...state, start, end})
+        }
+    } 
+
     const makeAxis = (scale:AxisScale<number>) => {
         const _axis = axisRight(scale) 
         const axisSel = select(g.current).select<SVGGElement>('g.rater-axis')
@@ -126,6 +134,7 @@ export const Rater = ({position, state, setState, items, setItems }:Props) => {
                                 scaler={state.scaler}
                                 onDragEnd={updateItem}
                             />:
+<MultiRaterItemGroup></MultiRaterItemGroup>
                         <MultiRaterItem
                             key={"multi-rater-item-" + group.id}
                             group={group}
