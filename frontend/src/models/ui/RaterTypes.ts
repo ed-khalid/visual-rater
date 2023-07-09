@@ -14,4 +14,4 @@ export enum RaterOrientation {
 
 export const RATER_Y_BOTTOM:number = 600; 
 export const RATER_X:number = 350; 
-export const RATER_TIER_WIDTH:number = 90 
+export const RATER_TIER_WIDTH:number = 50 

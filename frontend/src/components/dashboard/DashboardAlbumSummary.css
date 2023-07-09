@@ -103,7 +103,7 @@ div.score-shortcut.plus-minus {
 div.dashboard-album-summary {
     border: 1px solid #3d3d3d;
     flex-grow: 1;
-    height:600px;
+    height:500px;
     margin-top: 5px;
     position: relative;
 }
