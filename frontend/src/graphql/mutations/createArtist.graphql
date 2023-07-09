@@ -3,7 +3,6 @@ mutation CreateArtist($artistInput:ArtistInput) {
     CreateArtist(artist:$artistInput) {
         id
         name
-        vendorId
         thumbnail
     }
 

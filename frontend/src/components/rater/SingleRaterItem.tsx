@@ -1,40 +1,46 @@
 import React, {useEffect, useRef } from "react";
 import { select } from 'd3-selection'
 import { drag } from 'd3-drag'
-import { RatedItem } from "../../models/RatedItem";
+import { RatedSongItemUI } from "../../models/ui/ItemTypes";
 import { Scaler } from "../../functions/scale";
 import { DragBehavior } from "./behaviors/DragBehavior";
-import { RaterOrientation } from "./Rater";
-import { CloseButton } from "./CloseButton";
+import './SingleRaterItem.css' 
+import { RatedItem } from "../../models/domain/ItemTypes";
+import { RATER_TIER_WIDTH, RaterOrientation } from "../../models/ui/RaterTypes";
 
 interface SingleRaterItemProps {
-    item:RatedItem
-    orientation:RaterOrientation
-    x:number
-    y:number
-    raterBottom:number
-    onRemove:any
+    item:RatedSongItemUI
+    mainlineX:number
     onDragEnd:any
     scaler:Scaler
     scale?:number
+    orientation:RaterOrientation
 } 
 
-export const SingleRaterItem = ({item, orientation, x, y, scale=1, raterBottom, scaler, onRemove, onDragEnd}:SingleRaterItemProps) =>  {
+export const SingleRaterItem = ({item, orientation , mainlineX, scale=1, scaler, onDragEnd}:SingleRaterItemProps) =>  {
+    const y = scaler.toPosition(item.score) 
+    const tierOffset = RATER_TIER_WIDTH * item.tier 
+    const tierLineOpacityOffset = 0.7 
+    const x = (orientation === RaterOrientation.LEFT) ?(mainlineX - tierOffset) : (mainlineX + tierOffset) 
     const g = useRef<SVGGElement>(null)
     const onDragBehaviorEnd = (id:string, score:number) => {
         onDragEnd(id, score)
     }
 
     const formatName= (name:string) => {
-        if (name.length <= 20 ) {
+        const maxLength = 15
+        if (name.length < maxLength ) {
             return name
         }
-        return name.slice(0,20) + '...'
+        if (name.length >= maxLength) {
+            name = name.slice(0,maxLength) 
+        }
+        return name.split(" ").slice(0,3).join(" ")
     }
 
     useEffect(() => {
         if (g.current) {
-            const dragBehavior = DragBehavior({raterBottom, item, g:g.current, scaler, onDragEnd:onDragBehaviorEnd}) 
+            const dragBehavior = DragBehavior({item, g:g.current, scaler, onDragEnd:onDragBehaviorEnd}) 
             select(g.current).call(drag<SVGGElement,any>()
                 .on('start', dragBehavior.dragStart)
                 .on('drag', dragBehavior.dragInProgress)
@@ -42,13 +48,64 @@ export const SingleRaterItem = ({item, orientation, x, y, scale=1, raterBottom, 
            select(g.current).data<RatedItem>([item])
         }
     },[g.current]) 
+    const imageSize = 25 
+        const lineDistance = x 
+        const imageDimensions =  {
+            x: lineDistance,
+            y: y - imageSize/2,
+            size:imageSize
+        }  
+        const songNameDimensions = {
+            x: (imageDimensions.x + imageDimensions.size/2 ),
+            y: imageDimensions.y      
+        }  
+        const songScoreDimensions = {
+            x: songNameDimensions.x,
+            y: imageDimensions.y + imageSize/2   
+        }  
+        const lineDimensions = {
+                x1: (orientation === RaterOrientation.LEFT) ? (imageDimensions.x + imageDimensions.size) : imageDimensions.x + imageDimensions.size, 
+                y1: y, 
+                x2: mainlineX,
+                y2: y
+            }
 
-      return <g ref={g} className="item" key={item.name}>
-                       <CloseButton position={orientation === RaterOrientation.LEFT ? {x:x-220, y:y+3} : { x: x+280, y:y+3  }} onClick={() => onRemove(item)}></CloseButton>
-                       <g id="item" className={`draggable ${orientation === RaterOrientation.LEFT ? 'main-rater-item' : 'secondary'  }`}> 
-                         <circle className="item-symbol" cursor="move" cx={x} cy={y} r={5*scale} fill="#3d3d3d" fillOpacity="0.5"></circle>
-                         <text className="item-score" cursor="move" fontSize={12*scale} fontSizeAdjust="2" fill="#3d3d3d" x={orientation ===  RaterOrientation.LEFT ? (x-210):(x+70) } y={y} dy=".35em">{item.score.toFixed(2)}</text>
-                         <text className="item-name" cursor="move" fontSize={12*scale} fontSizeAdjust="2" fill="#3d3d3d" x={orientation === RaterOrientation.LEFT ? (x-170):(x+100)} y={y} dy=".35em">{formatName(item.name)}</text>
-                       </g>
-              </g>
+        
+        const drawArc = (x:number, y:number, radius:number, startAngle:number, endAngle:number) => {
+
+            const polarToCarestian = (centerX:number, centerY:number, radius:number,angleInDegrees:number) => {
+                const angleRadians = (angleInDegrees - 90) * Math.PI / 180.0 ; 
+                return {
+                    x : centerX + (radius * Math.cos(angleRadians)),
+                    y : centerY + (radius * Math.sin(angleRadians))
+                }
+            } 
+
+            const start = polarToCarestian(x,y,radius,endAngle) 
+            const end = polarToCarestian(x,y,radius,startAngle) 
+            const largeArcFlag =  endAngle - startAngle <= 180 ? "0" : "1"
+            const d = [
+                "M", start.x, start.y,
+                "A", radius, radius, 0, largeArcFlag, 0, end.x, end.y
+            ].join(" ") 
+            return d
+
+        }
+        const color = "rgb" + item.overlay   
+        const arcPath = drawArc(imageDimensions.x, imageDimensions.y, imageDimensions.size/2, 180, 0)  
+        
+        return <g ref={g} className="item" key={item.name}>
+                        <g className="draggable"> 
+                            <filter id="shadow">
+                                <feDropShadow dx="0.4" dy="0.4" stdDeviation={0.2} />
+                            </filter>
+                            <line className="item-scoreline" x1={lineDimensions.x1} y1={lineDimensions.y1} x2={lineDimensions.x2} y2={lineDimensions.y2} stroke={color} opacity={1-tierLineOpacityOffset} />
+                            <image fill={"rgba"+item.overlay} opacity={0.5} xlinkHref={item.thumbnail} clipPath="inset(0% round 15px)" cursor="move" className="item-thumbnail" width={imageDimensions.size} x={imageDimensions.x} y={imageDimensions.y} height={imageDimensions.size} href={item.thumbnail}/>
+                            <text filter={"url(#shadow)"} textAnchor="middle" className="item-name" cursor="move" fontSize={6*scale} fontSizeAdjust="2" fill="#3d3d3d" x={songNameDimensions.x} y={songNameDimensions.y} dy=".35em">{formatName(item.name)}</text>
+                            <text filter={"url(#shadow)"} textAnchor="middle" className="item-score" cursor="move" fontSize={10*scale} fontWeight="bold" fontSizeAdjust="3" fill="#3d3d3d" x={songScoreDimensions.x} y={songScoreDimensions.y} dy=".35em">{item.score.toFixed(2)}</text>
+                            <circle className="item-thumbnail-border" cx={imageDimensions.x+imageDimensions.size/2} cy={imageDimensions.y+imageDimensions.size/2} r={imageDimensions.size/2} fill="none" stroke={color}></circle>
+                        </g>
+                </g>
+
+
 }

@@ -1,6 +1,6 @@
 
 import { scaleLinear, ScaleLinear } from 'd3-scale';
-import { RATER_BOTTOM } from '../App';
+import { RATER_Y_BOTTOM } from '../models/ui/RaterTypes';
 
 export class Scaler {
 
@@ -10,7 +10,7 @@ export class Scaler {
     }     
     private line  = {
         start: 5
-        ,end: RATER_BOTTOM 
+        ,end: RATER_Y_BOTTOM 
     } 
     public scale:ScaleLinear<number,number>;
     public get yScale() { 
@@ -34,3 +34,16 @@ export class Scaler {
     public toPosition  = (score:number) => this.scale(score) 
 
 }  
+
+export function clampToNearestIncrement(rawScore:number) {
+    // 375 
+    let byHundred = Math.round(rawScore * 100)
+    const firstDigit = byHundred % 10;    
+    if (firstDigit > 5) {
+        byHundred = byHundred - (firstDigit-5)    
+    } 
+    if (firstDigit !==0 && firstDigit < 5) {
+        byHundred = byHundred - (firstDigit)    
+    }
+        return byHundred/100;
+    }

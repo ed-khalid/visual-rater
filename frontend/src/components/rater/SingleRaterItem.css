@@ -1,0 +1,15 @@
+
+circle.item-thumbnail-border {
+    visibility: hidden;
+}
+
+image.item-thumbnail:hover ~ circle.item-thumbnail-border  {
+    visibility: visible;
+}
+.item-name:hover ~ circle.item-thumbnail-border  {
+    visibility: visible;
+}
+.item-score:hover ~ circle.item-thumbnail-border  {
+    visibility: visible;
+}
+
