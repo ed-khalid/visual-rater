@@ -12,6 +12,7 @@ query getArtists {
         id
         name
         year
+        dominantColor
         thumbnail
         songs {
           ...SongFields

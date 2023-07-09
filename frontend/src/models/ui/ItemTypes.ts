@@ -1,3 +1,4 @@
+import { Maybe } from '../../generated/graphql';
 import { Item, RatedItem } from '../domain/ItemTypes';
 import { RaterOrientation } from './RaterTypes'
 
@@ -19,7 +20,8 @@ export class RatedSongItemUI extends RatedItem implements RaterItemUI {
         public artistName:string, 
         public albumName:string, 
         public orientation:RaterOrientation,
-        public tier:RaterTier 
+        public tier:RaterTier ,
+        public overlay:Maybe<string>|undefined
         ) {
         super(item, score);
     }

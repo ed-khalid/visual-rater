@@ -1,102 +1,106 @@
 import { gql } from '@apollo/client';
 import * as Apollo from '@apollo/client';
 export type Maybe<T> = T | null;
+export type InputMaybe<T> = Maybe<T>;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
+export type MakeEmpty<T extends { [key: string]: unknown }, K extends keyof T> = { [_ in K]?: never };
+export type Incremental<T> = T | { [P in keyof T]?: P extends ' $fragmentName' | '__typename' ? T[P] : never };
 const defaultOptions = {} as const;
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
-  ID: string;
-  String: string;
-  Boolean: boolean;
-  Int: number;
-  Float: number;
+  ID: { input: string; output: string; }
+  String: { input: string; output: string; }
+  Boolean: { input: boolean; output: boolean; }
+  Int: { input: number; output: number; }
+  Float: { input: number; output: number; }
 };
 
 export type Album = {
   __typename?: 'Album';
-  id: Scalars['String'];
-  name: Scalars['String'];
-  year?: Maybe<Scalars['Int']>;
-  thumbnail?: Maybe<Scalars['String']>;
+  dominantColor?: Maybe<Scalars['String']['output']>;
+  id: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  score?: Maybe<Scalars['Float']['output']>;
   songs: Array<Song>;
-  score?: Maybe<Scalars['Float']>;
+  thumbnail?: Maybe<Scalars['String']['output']>;
+  year?: Maybe<Scalars['Int']['output']>;
 };
 
 export type Artist = Pageable & {
   __typename?: 'Artist';
-  id: Scalars['String'];
-  name: Scalars['String'];
-  thumbnail?: Maybe<Scalars['String']>;
   albums?: Maybe<Array<Maybe<Album>>>;
-  score?: Maybe<Scalars['Float']>;
+  id: Scalars['String']['output'];
   metadata?: Maybe<ArtistMetadata>;
+  name: Scalars['String']['output'];
+  score?: Maybe<Scalars['Float']['output']>;
+  thumbnail?: Maybe<Scalars['String']['output']>;
 };
 
 export type ArtistInput = {
-  name: Scalars['String'];
-  thumbnail?: Maybe<Scalars['String']>;
+  name: Scalars['String']['input'];
+  thumbnail?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ArtistMetadata = {
   __typename?: 'ArtistMetadata';
   songs: ArtistSongMetadata;
-  totalSongs: Scalars['Int'];
-  totalAlbums: Scalars['Int'];
+  totalAlbums: Scalars['Int']['output'];
+  totalSongs: Scalars['Int']['output'];
 };
 
 export type ArtistPage = Page & {
   __typename?: 'ArtistPage';
-  total: Scalars['Int'];
-  pageNumber: Scalars['Int'];
   content: Array<Maybe<Artist>>;
+  pageNumber: Scalars['Int']['output'];
+  total: Scalars['Int']['output'];
 };
 
 export type ArtistSongMetadata = {
   __typename?: 'ArtistSongMetadata';
-  classic: Scalars['Int'];
-  great: Scalars['Int'];
-  good: Scalars['Int'];
-  mediocre: Scalars['Int'];
-  bad: Scalars['Int'];
-  terrible: Scalars['Int'];
-  classicPercentage: Scalars['Float'];
-  greatPercentage: Scalars['Float'];
-  goodPercentage: Scalars['Float'];
-  mediocrePercentage: Scalars['Float'];
-  badPercentage: Scalars['Float'];
-  terriblePercentage: Scalars['Float'];
+  bad: Scalars['Int']['output'];
+  badPercentage: Scalars['Float']['output'];
+  classic: Scalars['Int']['output'];
+  classicPercentage: Scalars['Float']['output'];
+  good: Scalars['Int']['output'];
+  goodPercentage: Scalars['Float']['output'];
+  great: Scalars['Int']['output'];
+  greatPercentage: Scalars['Float']['output'];
+  mediocre: Scalars['Int']['output'];
+  mediocrePercentage: Scalars['Float']['output'];
+  terrible: Scalars['Int']['output'];
+  terriblePercentage: Scalars['Float']['output'];
 };
 
 export type ExternalAlbumSearchResult = {
   __typename?: 'ExternalAlbumSearchResult';
-  id: Scalars['String'];
-  name: Scalars['String'];
-  thumbnail: Scalars['String'];
-  year?: Maybe<Scalars['Int']>;
+  id: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  thumbnail: Scalars['String']['output'];
+  year?: Maybe<Scalars['Int']['output']>;
 };
 
 export type ExternalArtistSearchResult = {
   __typename?: 'ExternalArtistSearchResult';
-  name: Scalars['String'];
-  id: Scalars['String'];
-  thumbnail?: Maybe<Scalars['String']>;
   albums: Array<ExternalAlbumSearchResult>;
+  id: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  thumbnail?: Maybe<Scalars['String']['output']>;
 };
 
 export type ExternalTrackSearchResult = {
   __typename?: 'ExternalTrackSearchResult';
-  id: Scalars['String'];
-  name: Scalars['String'];
-  trackNumber: Scalars['Int'];
-  discNumber: Scalars['Int'];
+  discNumber: Scalars['Int']['output'];
+  id: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  trackNumber: Scalars['Int']['output'];
 };
 
 export type Item = {
-  id: Scalars['String'];
-  name: Scalars['String'];
-  score?: Maybe<Scalars['Float']>;
+  id: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  score?: Maybe<Scalars['Float']['output']>;
 };
 
 export enum ItemType {
@@ -107,220 +111,155 @@ export type Mutation = {
   __typename?: 'Mutation';
   CreateAlbum?: Maybe<Album>;
   CreateArtist?: Maybe<Artist>;
+  DeleteAlbum?: Maybe<Scalars['Boolean']['output']>;
+  DeleteSong?: Maybe<Scalars['Boolean']['output']>;
   UpdateSong?: Maybe<Song>;
-  DeleteSong?: Maybe<Scalars['Boolean']>;
-  DeleteAlbum?: Maybe<Scalars['Boolean']>;
 };
 
 
 export type MutationCreateAlbumArgs = {
-  album?: Maybe<NewAlbumInput>;
+  album?: InputMaybe<NewAlbumInput>;
 };
 
 
 export type MutationCreateArtistArgs = {
-  artist?: Maybe<ArtistInput>;
-};
-
-
-export type MutationUpdateSongArgs = {
-  song?: Maybe<SongInput>;
-};
-
-
-export type MutationDeleteSongArgs = {
-  songId: Scalars['String'];
+  artist?: InputMaybe<ArtistInput>;
 };
 
 
 export type MutationDeleteAlbumArgs = {
-  albumId: Scalars['String'];
+  albumId: Scalars['String']['input'];
+};
+
+
+export type MutationDeleteSongArgs = {
+  songId: Scalars['String']['input'];
+};
+
+
+export type MutationUpdateSongArgs = {
+  song?: InputMaybe<SongInput>;
 };
 
 export type NewAlbumInput = {
-  name: Scalars['String'];
-  thumbnail?: Maybe<Scalars['String']>;
-  year?: Maybe<Scalars['Int']>;
-  artistId: Scalars['String'];
-  songs?: Maybe<Array<NewSongInput>>;
+  artistId: Scalars['String']['input'];
+  name: Scalars['String']['input'];
+  songs?: InputMaybe<Array<NewSongInput>>;
+  thumbnail?: InputMaybe<Scalars['String']['input']>;
+  year?: InputMaybe<Scalars['Int']['input']>;
 };
 
 export type NewSongInput = {
-  score?: Maybe<Scalars['Float']>;
-  name: Scalars['String'];
-  number?: Maybe<Scalars['Int']>;
-  discNumber?: Maybe<Scalars['Int']>;
+  discNumber?: InputMaybe<Scalars['Int']['input']>;
+  name: Scalars['String']['input'];
+  number?: InputMaybe<Scalars['Int']['input']>;
+  score?: InputMaybe<Scalars['Float']['input']>;
 };
 
 export type Page = {
-  total: Scalars['Int'];
-  pageNumber: Scalars['Int'];
   content?: Maybe<Array<Maybe<Pageable>>>;
+  pageNumber: Scalars['Int']['output'];
+  total: Scalars['Int']['output'];
 };
 
 export type Pageable = {
-  id: Scalars['String'];
+  id: Scalars['String']['output'];
 };
 
 export type Query = {
   __typename?: 'Query';
-  searchExternalArtist?: Maybe<ExternalArtistSearchResult>;
-  searchExternalAlbumTracks: Array<ExternalTrackSearchResult>;
-  artists: ArtistPage;
   artist?: Maybe<Artist>;
-};
-
-
-export type QuerySearchExternalArtistArgs = {
-  name?: Maybe<Scalars['String']>;
-};
-
-
-export type QuerySearchExternalAlbumTracksArgs = {
-  albumId?: Maybe<Scalars['String']>;
+  artists: ArtistPage;
+  searchExternalAlbumTracks: Array<ExternalTrackSearchResult>;
+  searchExternalArtist?: Maybe<ExternalArtistSearchResult>;
 };
 
 
 export type QueryArtistArgs = {
-  name?: Maybe<Scalars['String']>;
+  name?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QuerySearchExternalAlbumTracksArgs = {
+  albumId?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QuerySearchExternalArtistArgs = {
+  name?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type Song = Item & {
   __typename?: 'Song';
-  id: Scalars['String'];
-  score?: Maybe<Scalars['Float']>;
-  name: Scalars['String'];
-  number: Scalars['Int'];
-  discNumber: Scalars['Int'];
+  discNumber: Scalars['Int']['output'];
+  id: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  number: Scalars['Int']['output'];
+  score?: Maybe<Scalars['Float']['output']>;
 };
 
 export type SongInput = {
-  id: Scalars['String'];
-  name?: Maybe<Scalars['String']>;
-  number?: Maybe<Scalars['Int']>;
-  score?: Maybe<Scalars['Float']>;
+  id: Scalars['String']['input'];
+  name?: InputMaybe<Scalars['String']['input']>;
+  number?: InputMaybe<Scalars['Int']['input']>;
+  score?: InputMaybe<Scalars['Float']['input']>;
 };
 
 export type CreateAlbumMutationVariables = Exact<{
-  albumInput?: Maybe<NewAlbumInput>;
+  albumInput?: InputMaybe<NewAlbumInput>;
 }>;
 
 
-export type CreateAlbumMutation = (
-  { __typename?: 'Mutation' }
-  & { CreateAlbum?: Maybe<(
-    { __typename?: 'Album' }
-    & Pick<Album, 'id' | 'name' | 'year' | 'thumbnail'>
-    & { songs: Array<(
-      { __typename?: 'Song' }
-      & SongFieldsFragment
-    )> }
-  )> }
-);
+export type CreateAlbumMutation = { __typename?: 'Mutation', CreateAlbum?: { __typename?: 'Album', id: string, name: string, year?: number | null, thumbnail?: string | null, songs: Array<{ __typename?: 'Song', id: string, name: string, number: number, discNumber: number, score?: number | null }> } | null };
 
 export type CreateArtistMutationVariables = Exact<{
-  artistInput?: Maybe<ArtistInput>;
+  artistInput?: InputMaybe<ArtistInput>;
 }>;
 
 
-export type CreateArtistMutation = (
-  { __typename?: 'Mutation' }
-  & { CreateArtist?: Maybe<(
-    { __typename?: 'Artist' }
-    & Pick<Artist, 'id' | 'name' | 'thumbnail'>
-  )> }
-);
+export type CreateArtistMutation = { __typename?: 'Mutation', CreateArtist?: { __typename?: 'Artist', id: string, name: string, thumbnail?: string | null } | null };
 
 export type DeleteAlbumMutationVariables = Exact<{
-  albumId: Scalars['String'];
+  albumId: Scalars['String']['input'];
 }>;
 
 
-export type DeleteAlbumMutation = (
-  { __typename?: 'Mutation' }
-  & Pick<Mutation, 'DeleteAlbum'>
-);
+export type DeleteAlbumMutation = { __typename?: 'Mutation', DeleteAlbum?: boolean | null };
 
 export type DeleteSongMutationVariables = Exact<{
-  songId: Scalars['String'];
+  songId: Scalars['String']['input'];
 }>;
 
 
-export type DeleteSongMutation = (
-  { __typename?: 'Mutation' }
-  & Pick<Mutation, 'DeleteSong'>
-);
+export type DeleteSongMutation = { __typename?: 'Mutation', DeleteSong?: boolean | null };
 
 export type UpdateSongMutationVariables = Exact<{
-  song?: Maybe<SongInput>;
+  song?: InputMaybe<SongInput>;
 }>;
 
 
-export type UpdateSongMutation = (
-  { __typename?: 'Mutation' }
-  & { UpdateSong?: Maybe<(
-    { __typename?: 'Song' }
-    & SongFieldsFragment
-  )> }
-);
+export type UpdateSongMutation = { __typename?: 'Mutation', UpdateSong?: { __typename?: 'Song', id: string, name: string, number: number, discNumber: number, score?: number | null } | null };
 
 export type GetArtistsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetArtistsQuery = (
-  { __typename?: 'Query' }
-  & { artists: (
-    { __typename?: 'ArtistPage' }
-    & Pick<ArtistPage, 'total' | 'pageNumber'>
-    & { content: Array<Maybe<(
-      { __typename?: 'Artist' }
-      & Pick<Artist, 'id' | 'name' | 'thumbnail'>
-      & { albums?: Maybe<Array<Maybe<(
-        { __typename?: 'Album' }
-        & Pick<Album, 'id' | 'name' | 'year' | 'thumbnail'>
-        & { songs: Array<(
-          { __typename?: 'Song' }
-          & SongFieldsFragment
-        )> }
-      )>>> }
-    )>> }
-  ) }
-);
+export type GetArtistsQuery = { __typename?: 'Query', artists: { __typename?: 'ArtistPage', total: number, pageNumber: number, content: Array<{ __typename?: 'Artist', id: string, name: string, thumbnail?: string | null, albums?: Array<{ __typename?: 'Album', id: string, name: string, year?: number | null, dominantColor?: string | null, thumbnail?: string | null, songs: Array<{ __typename?: 'Song', id: string, name: string, number: number, discNumber: number, score?: number | null }> } | null> | null } | null> } };
 
 export type GetTracksForSearchAlbumQueryVariables = Exact<{
-  albumId: Scalars['String'];
+  albumId: Scalars['String']['input'];
 }>;
 
 
-export type GetTracksForSearchAlbumQuery = (
-  { __typename?: 'Query' }
-  & { searchExternalAlbumTracks: Array<(
-    { __typename?: 'ExternalTrackSearchResult' }
-    & Pick<ExternalTrackSearchResult, 'id' | 'name' | 'trackNumber' | 'discNumber'>
-  )> }
-);
+export type GetTracksForSearchAlbumQuery = { __typename?: 'Query', searchExternalAlbumTracks: Array<{ __typename?: 'ExternalTrackSearchResult', id: string, name: string, trackNumber: number, discNumber: number }> };
 
 export type SearchByArtistQueryVariables = Exact<{
-  name?: Maybe<Scalars['String']>;
+  name?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
-export type SearchByArtistQuery = (
-  { __typename?: 'Query' }
-  & { searchExternalArtist?: Maybe<(
-    { __typename?: 'ExternalArtistSearchResult' }
-    & Pick<ExternalArtistSearchResult, 'name' | 'id' | 'thumbnail'>
-    & { albums: Array<(
-      { __typename?: 'ExternalAlbumSearchResult' }
-      & Pick<ExternalAlbumSearchResult, 'id' | 'name' | 'thumbnail' | 'year'>
-    )> }
-  )> }
-);
+export type SearchByArtistQuery = { __typename?: 'Query', searchExternalArtist?: { __typename?: 'ExternalArtistSearchResult', name: string, id: string, thumbnail?: string | null, albums: Array<{ __typename?: 'ExternalAlbumSearchResult', id: string, name: string, thumbnail: string, year?: number | null }> } | null };
 
-export type SongFieldsFragment = (
-  { __typename?: 'Song' }
-  & Pick<Song, 'id' | 'name' | 'number' | 'discNumber' | 'score'>
-);
+export type SongFieldsFragment = { __typename?: 'Song', id: string, name: string, number: number, discNumber: number, score?: number | null };
 
 export const SongFieldsFragmentDoc = gql`
     fragment SongFields on Song {
@@ -513,6 +452,7 @@ export const GetArtistsDocument = gql`
         id
         name
         year
+        dominantColor
         thumbnail
         songs {
           ...SongFields
