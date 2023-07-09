@@ -12,6 +12,7 @@ import React from 'react';
 import './Rater.css'
 import { GlobalRaterState, RaterOrientation } from '../../models/ui/RaterTypes';
 import { ZoomBehavior } from './behaviors/ZoomBehavior';
+import { MultiRaterItemGroup } from './MultiRaterItemGroup';
 
 interface Props {
     position:Position
@@ -42,11 +43,11 @@ export const Rater = ({position, state, setState, items, setItems }:Props) => {
 
 
     useEffect(() => {
-        if (zoomTarget && zoomListener) {
-            const z = ZoomBehavior({listener: zoomListener.current, target: zoomTarget.current,axis: axisSel ,scale:state.scaler.yScale, setState  })
+        if (zoomTarget) {
+            const z = ZoomBehavior({listener: zoomListener.current, scale:state.scaler.yScale, setState  })
             setZoomBehavior(z)
         } 
-    }, [zoomListener,zoomTarget])
+    }, [zoomTarget, state.scaler.yScale, setState])
 
     useEffect(() => {
         const groupCloseItems = (ratedItems:RatedSongItemUI[]) => {
@@ -106,6 +107,7 @@ export const Rater = ({position, state, setState, items, setItems }:Props) => {
         const axisSel = select(g.current).select<SVGGElement>('g.rater-axis')
         .attr('transform', `translate(${position.x}, ${0})` )
         .call(_axis)
+        // center axis lines instead of have them to the right 
         axisSel.selectAll('line')
         .attr('x1', -6 )
         return axisSel
@@ -114,13 +116,13 @@ export const Rater = ({position, state, setState, items, setItems }:Props) => {
 
     return (
                   <g clipPath="url(#clip-path)"  ref={g} className="rater-container">
- <rect 
+ {/* <rect 
                             ref={zoomListener} 
                             id="zoom-listener" 
                             x={position.x+5} 
                             height={position.y}
                             >
-                        </rect>
+                        </rect> */}
                       <g ref={zoomTarget} className="zoom-target">
                         <g className="rater-axis"></g>
                         <line className="rater-line" x1={position.x} y1={0} x2={position.x} y2={position.y} />
@@ -134,16 +136,25 @@ export const Rater = ({position, state, setState, items, setItems }:Props) => {
                                 scaler={state.scaler}
                                 onDragEnd={updateItem}
                             />:
-<MultiRaterItemGroup></MultiRaterItemGroup>
-                        <MultiRaterItem
-                            key={"multi-rater-item-" + group.id}
-                            group={group}
-                            orientation={group.items[0].orientation}
-                            mainlineX={position.x}
-                            scaler={state.scaler}
-                            onDragEnd={updateItem}
-                      />)
-                      }
+                            <MultiRaterItemGroup
+                                key={group.items[0].id}
+                                id={group.items[0].id}
+                                items={group.items}
+                                orientation={group.items[0].orientation}
+                                x={position.x}
+                                y={group.position}
+                                scaler={state.scaler}
+                                zoomOnGroup={zoomOnGroup}
+                            ></MultiRaterItemGroup>
+                    //     <MultiRaterItem
+                    //         key={"multi-rater-item-" + group.id}
+                    //         group={group}
+                    //         orientation={group.items[0].orientation}
+                    //         mainlineX={position.x}
+                    //         scaler={state.scaler}
+                    //         onDragEnd={updateItem}
+                    //   />
+                      )}
                       
                       </g>
                     </g>

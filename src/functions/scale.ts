@@ -30,6 +30,13 @@ export class Scaler {
                             .range([this.line.end,this.line.start])
     }  
 
+    public rescaleToScore(start:number, end:number) {
+        this.score.start = Number(start)
+        this.score.end = Number(end)
+        this.scale = this.createDefaultScale() 
+        return this
+    }  
+
     public toScore     = (yPosition:number) => this.scale.invert(yPosition) 
     public toPosition  = (score:number) => this.scale(score) 
 

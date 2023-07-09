@@ -7,24 +7,22 @@ import { Dispatch, SetStateAction } from 'react';
 import { GlobalRaterState } from '../../../models/ui/RaterTypes';
 interface Props {
     listener:SVGRectElement|null
-    axis:Selection<SVGGElement,unknown, null, undefined>
     scale:ScaleLinear<number,number>
-    target:any
     setState:Dispatch<SetStateAction<GlobalRaterState>>
 }
 
-export const ZoomBehavior = (props?:Props) => {
+export const ZoomBehavior = ({listener, scale, setState}:Props) => {
 
-    if (props && props.listener) {
+    if (listener) {
         const doZoom = (event:any) => {
             const transform = event.transform 
-            const newScale = transform.rescaleY(props.scale) 
-            props.setState(s => ({...s, scaler: new Scaler(newScale)}) )
+            const newScale = transform.rescaleY(scale) 
+            setState(s => ({...s, scaler: new Scaler(newScale)}) )
         }
         const zoomHandler = zoom<SVGRectElement, unknown>()
-          .scaleExtent([0,Infinity])
+          .scaleExtent([0,5])
           .on('zoom', doZoom) 
-        select(props.listener).call(zoomHandler)
+        select(listener).call(zoomHandler)
     }
 
     return {

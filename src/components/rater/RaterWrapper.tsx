@@ -54,7 +54,7 @@ export const RaterWrapper = ({state, setState, artists, albums}:Props) =>  {
           setMainRaterItems(raterAlbums)
         })
       }
-    }, [artists, albums])
+    }, [artists, albums ])
 
 
     return <svg preserveAspectRatio="xMidYMin meet" ref={svgRef} id="trackRater" viewBox="0 0 800 620">

@@ -15,8 +15,8 @@ import { GlobalRaterState } from './models/ui/RaterTypes';
 
 
 export const initialRaterState:GlobalRaterState = {
-   start: '0'
-  ,end: '5'
+   start: 0
+  ,end: 5
   ,scaler : new Scaler() 
   ,itemType: ItemType.MUSIC
 } 
@@ -63,6 +63,11 @@ export const App = () => {
     const resetScale = zoomIdentity.rescaleY(raterState.scaler.yScale) 
     setRaterState(prev => ({...prev, scaler: new Scaler(resetScale)})) 
   }, []) 
+
+  useEffect(() => {
+    const newScale = new Scaler().rescaleToScore(raterState.start, raterState.end) 
+    setRaterState(prev => ({...prev, scaler: newScale}))
+  }, [raterState.start, raterState.end ]) 
 
   // const updateScale = (newStart?:string, newEnd?:string) => {
   //   if (newStart === '') {
