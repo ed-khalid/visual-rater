@@ -22,7 +22,7 @@
 }
 
 header {
-  font-size: 10em;
+  font-size: 4em;
 }
 .main {
   position: relative;
@@ -40,12 +40,12 @@ div.drop-target {
 } 
 div#rater {
   min-width:33%;
-  max-width:70%;
 }
 svg {
   width: 100%;
   height: 100%; 
 }
+
 div.compare-section {
   position:relative;
   border: 4px solid rgb(112, 35, 35);
