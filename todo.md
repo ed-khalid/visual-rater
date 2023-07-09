@@ -1,6 +1,9 @@
 
 # TASKS
-- show second album on right 
+- center text around image center
+- zoom in a bit on firstview  
+- highlight selector 
+- add album identifier ribbon on top of rater
 - fix create album bug
 - fix create artist bug
 - add zoom back
