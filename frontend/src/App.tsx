@@ -118,7 +118,7 @@ export const App = () => {
           const result = cache.readQuery<GetArtistsQuery>({query: GetArtistsDocument})
           const newAlbum = data.data?.CreateAlbum!
           const queryArtists = [...result!.artists!.content!] 
-          const otherArtists = queryArtists.filter( it => it?.name !== searchArtist!.name)
+          const otherArtists = queryArtists.filter( it => it?.name !== searchArtistAlbumTracks!.album.name)
           const albums = [...artist.albums!]
           artist.albums = [...albums!, newAlbum] 
           cache.writeQuery<GetArtistsQuery>({ query: GetArtistsDocument, data : { artists : { total: (result?.artists.total)|| 0, pageNumber: result?.artists.pageNumber || 0,  content: [...otherArtists, artist]} }    })
