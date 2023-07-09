@@ -57,7 +57,7 @@ export const RaterWrapper = ({state, setState, artists, albums}:Props) =>  {
     }, [artists, albums])
 
 
-    return <svg preserveAspectRatio="xMidYMin meet" ref={svgRef} id="trackRater" viewBox="0 0 600 620">
+    return <svg preserveAspectRatio="xMidYMin meet" ref={svgRef} id="trackRater" viewBox="0 0 800 620">
           <defs>
             <clipPath id="clip-path">
               <rect x="0" y="0" width="950" height={950}></rect>

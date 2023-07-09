@@ -44,11 +44,11 @@ export const Rater = ({position, state, setState, items, setItems }:Props) => {
         const groupCloseItems = (ratedItems:RatedSongItemUI[]) => {
             const groupedItems = ratedItems.reduce((acc:RatedSongItemGrouped[] , curr:RatedSongItemUI) => {
                 const position =  state.scaler.toPosition(curr.score) 
-                const overlap = acc.find((it:RatedSongItemGrouped) =>  Math.abs(Number(it.position) - position) < 15  )
+                const overlap = acc.find((it:RatedSongItemGrouped) =>  Math.abs(Number(it.position) - position) < 50  )
                 if (overlap) {
                     overlap.items.push(curr)
                     overlap.items.sort((a,b) => (a.score > b.score) ? 1 : (a.score < b.score) ? -1 : 0 )
-                    overlap.items.forEach((item, i) => item.tier = i+1)
+                    overlap.items.forEach((item, i) => item.tier = ((i+1) % 3) + 1)
                 } else {
                     acc.push({ position, items:[curr], id: '' + acc.length + 1 })
                 }
