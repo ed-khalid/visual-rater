@@ -12,7 +12,7 @@ interface Props {
     state:GlobalRaterState
     setState:Dispatch<SetStateAction<GlobalRaterState>>
 }
-const mapSongToRatedItem  = (song:any, artist:Artist, album:Album, orientation:RaterOrientation) : RatedSongItemUI => new RatedSongItemUI({ id: song.id, name: song.name },song.score!, album.thumbnail!, song.number,artist.name, album.name, orientation, 1 );
+const mapSongToRatedItem  = (song:any, artist:Artist, album:Album, orientation:RaterOrientation) : RatedSongItemUI => new RatedSongItemUI({ id: song.id, name: song.name },song.score!, album.thumbnail!, song.number,artist.name, album.name, orientation, 1, album.dominantColor  );
 
 export const RaterWrapper = ({state, setState, artists, albums}:Props) =>  {
     const gWrapper = useRef<SVGGElement>(null)
