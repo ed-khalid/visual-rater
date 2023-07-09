@@ -20,7 +20,7 @@ interface SingleRaterItemProps {
 export const SingleRaterItem = ({item, orientation , mainlineX, scale=1, scaler, onDragEnd}:SingleRaterItemProps) =>  {
     const y = scaler.toPosition(item.score) 
     const tierOffset = RATER_TIER_WIDTH * item.tier 
-    const tierLineOpacityOffset = (item.tier === 1) ? 0 : 0.8
+    const tierLineOpacityOffset = 0.7 
     const x = (orientation === RaterOrientation.LEFT) ?(mainlineX - tierOffset) : (mainlineX + tierOffset) 
     const g = useRef<SVGGElement>(null)
     const onDragBehaviorEnd = (id:string, score:number) => {
@@ -57,7 +57,7 @@ export const SingleRaterItem = ({item, orientation , mainlineX, scale=1, scaler,
         }  
         const songNameDimensions = {
             x: (imageDimensions.x + imageDimensions.size/2 ),
-            y: imageDimensions.y     
+            y: imageDimensions.y      
         }  
         const songScoreDimensions = {
             x: songNameDimensions.x,
@@ -91,15 +91,19 @@ export const SingleRaterItem = ({item, orientation , mainlineX, scale=1, scaler,
             return d
 
         }
+        const color = "rgb" + item.overlay   
         const arcPath = drawArc(imageDimensions.x, imageDimensions.y, imageDimensions.size/2, 180, 0)  
         
         return <g ref={g} className="item" key={item.name}>
                         <g className="draggable"> 
-                            <line className="item-scoreline" x1={lineDimensions.x1} y1={lineDimensions.y1} x2={lineDimensions.x2} y2={lineDimensions.y2} stroke="black" opacity={1-tierLineOpacityOffset}/>
-                            <image opacity={0.3} xlinkHref={item.thumbnail} clipPath="inset(0% round 15px)" cursor="move" className="item-thumbnail" width={imageDimensions.size} x={imageDimensions.x} y={imageDimensions.y} height={imageDimensions.size} href={item.thumbnail}/>
-                            <text textAnchor="middle" className="item-name" cursor="move" fontSize={6*scale} fontSizeAdjust="2" fill="#3d3d3d" x={songNameDimensions.x} y={songNameDimensions.y} dy=".35em">{formatName(item.name)}</text>
-                            <text textAnchor="middle" className="item-score" cursor="move" fontSize={10*scale} fontWeight="bold" fontSizeAdjust="3" fill="#3d3d3d" x={songScoreDimensions.x} y={songScoreDimensions.y} dy=".35em">{item.score.toFixed(2)}</text>
-                            <circle className="item-thumbnail-border" cx={imageDimensions.x+imageDimensions.size/2} cy={imageDimensions.y+imageDimensions.size/2} r={imageDimensions.size/2} fill="none" stroke="black"></circle>
+                            <filter id="shadow">
+                                <feDropShadow dx="0.4" dy="0.4" stdDeviation={0.2} />
+                            </filter>
+                            <line className="item-scoreline" x1={lineDimensions.x1} y1={lineDimensions.y1} x2={lineDimensions.x2} y2={lineDimensions.y2} stroke={color} opacity={1-tierLineOpacityOffset} />
+                            <image fill={"rgba"+item.overlay} opacity={0.5} xlinkHref={item.thumbnail} clipPath="inset(0% round 15px)" cursor="move" className="item-thumbnail" width={imageDimensions.size} x={imageDimensions.x} y={imageDimensions.y} height={imageDimensions.size} href={item.thumbnail}/>
+                            <text filter={"url(#shadow)"} textAnchor="middle" className="item-name" cursor="move" fontSize={6*scale} fontSizeAdjust="2" fill="#3d3d3d" x={songNameDimensions.x} y={songNameDimensions.y} dy=".35em">{formatName(item.name)}</text>
+                            <text filter={"url(#shadow)"} textAnchor="middle" className="item-score" cursor="move" fontSize={10*scale} fontWeight="bold" fontSizeAdjust="3" fill="#3d3d3d" x={songScoreDimensions.x} y={songScoreDimensions.y} dy=".35em">{item.score.toFixed(2)}</text>
+                            <circle className="item-thumbnail-border" cx={imageDimensions.x+imageDimensions.size/2} cy={imageDimensions.y+imageDimensions.size/2} r={imageDimensions.size/2} fill="none" stroke={color}></circle>
                         </g>
                 </g>
 
