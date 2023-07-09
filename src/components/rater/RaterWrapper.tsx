@@ -1,75 +1,63 @@
 import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from "react"
-import { OtherRaterView, RATER_BOTTOM, SearchOrDashboardAlbum } from "../../App"
-import { Artist, Song } from "../../generated/graphql"
-import { RatedItem } from "../../models/RatedItem"
-import { SelectionRectangle } from "./behaviors/SelectionRectangle"
-import { GlobalRaterState, Rater, RaterMode } from "./Rater"
+import { Album, Artist } from "../../generated/graphql"
+import { RatedSongItemUI } from "../../models/ui/ItemTypes"
+import { Rater } from "./Rater"
+import { GlobalRaterState, RATER_X, RATER_Y_BOTTOM, RaterOrientation } from "../../models/ui/RaterTypes"
+
+
 
 interface Props {
-    searchOrDashboardAlbum:SearchOrDashboardAlbum|undefined
-    artists:any[]|null|undefined
-    otherRaterView:OtherRaterView
+    artists:Artist[]|undefined
+    albums:Array<Album>
     state:GlobalRaterState
     setState:Dispatch<SetStateAction<GlobalRaterState>>
-    dashboardAlbumId:string|undefined
-    dashboardArtistId:string|undefined
 }
-const mapSongToRatedItem  = (song:any) : RatedItem => new RatedItem({ id: song.id, vendorId:song.vendorId, name: song.name },song.score!);
+const mapSongToRatedItem  = (song:any, artist:Artist, album:Album, orientation:RaterOrientation) : RatedSongItemUI => new RatedSongItemUI({ id: song.id, name: song.name },song.score!, album.thumbnail!, song.number,artist.name, album.name, orientation, 1, album.dominantColor  );
 
-export const RaterWrapper = ({searchOrDashboardAlbum, artists, otherRaterView, state, setState, dashboardAlbumId, dashboardArtistId}:Props) =>  {
+export const RaterWrapper = ({state, setState, artists, albums}:Props) =>  {
     const gWrapper = useRef<SVGGElement>(null)
     const svgRef = useRef<SVGSVGElement>(null) 
-    const [otherSongs, setOtherSongs] = useState<RatedItem[]>([]) 
-    const [mainRaterItems, setMainRaterItems] = useState<RatedItem[]>([])
+    const [mainRaterItems, setMainRaterItems] = useState<RatedSongItemUI[]>([])
+
+    const mouseLocationListener =  (svg:SVGSVGElement) => {
+        const pt = svg.createSVGPoint() 
+
+        const cursorPoint = (evt:MouseEvent) => {
+          pt.x = evt.clientX
+          pt.y = evt.clientY
+          return pt.matrixTransform(svgRef.current?.getScreenCTM()?.inverse())
+        }
+
+        svg.addEventListener('mousemove', (evt) => {
+          const loc = cursorPoint(evt)
+          console.log(`{ x: ${loc.x}, y: ${loc.y}`)
+        })
+
+    } 
 
     useEffect(() => {
-      if (svgRef.current) {
-        SelectionRectangle(svgRef.current)
+      if (artists) {
+        let whichOrientation = RaterOrientation.LEFT  
+        let raterAlbums : Array<RatedSongItemUI>  = []
+
+        albums.map(it => it.id).forEach(albumId => {
+          artists.find(artist => {
+            const foundAlbum = artist.albums?.find(album => album?.id === albumId)
+            if (foundAlbum && foundAlbum.songs) {
+               const albumItems = foundAlbum.songs.filter(it => it.score).map(it => mapSongToRatedItem(it, artist, foundAlbum, whichOrientation)) 
+               raterAlbums = [...raterAlbums, ...albumItems] 
+               whichOrientation = (whichOrientation === RaterOrientation.LEFT) ? RaterOrientation.RIGHT : RaterOrientation.LEFT   
+               return true;
+            }
+            return false;
+          })
+          setMainRaterItems(raterAlbums)
+        })
       }
-    }, [svgRef])
+    }, [artists, albums])
 
-    useEffect(() => {
-    if (artists) {
-        const songs:Song[] = artists.reduce((curr:Song[],it) => {
-          if (it.albums) {
-            it.albums.forEach((album:any) => {
-              if (album && album.songs) {
-                album.songs.forEach((song:any) => {
-                  if (song) {
-                    curr.push( { ...song, artist: it as Artist })
-                  }
-                })
-              }
-            })
-          }
-          return curr
-        },[])
-      if (searchOrDashboardAlbum === SearchOrDashboardAlbum.DASHBOARD && dashboardAlbumId) {
-        const album = artists.find(it=> it.albums?.find((it:any) => it?.id === dashboardAlbumId))?.albums!.find((it:any) => it?.id === dashboardAlbumId)  
-        const ratedItems:RatedItem[] = album!.songs.filter((it:any) => it.score).map(mapSongToRatedItem)
-        setMainRaterItems(ratedItems)
-        let _otherSongs:Song[];
-        switch(otherRaterView) {
-          case OtherRaterView.ARTIST:  
-             _otherSongs = songs.filter(song => !ratedItems.find(it => it.id === song.id))
-             _otherSongs = _otherSongs.filter(it => it.artist.id === dashboardArtistId)
-             break;
-          case OtherRaterView.EVERYONE:
-             _otherSongs = songs.filter(song => !ratedItems.find(it => it.id === song.id))
-             break;
-          case OtherRaterView.NONE:
-            _otherSongs = [] 
-        }
-        setOtherSongs(_otherSongs.filter(it => it.score).map(mapSongToRatedItem))
-      } else {
-          setMainRaterItems([])
-           const _otherSongs = songs.filter(it => it.score).map(mapSongToRatedItem)
-          setOtherSongs(_otherSongs)
-        }
-    }
-  }, [dashboardAlbumId, artists, otherRaterView])
 
-    return <svg preserveAspectRatio="xMidYMin meet" ref={svgRef} id="trackRater" viewBox="0 0 800 1200">
+    return <svg preserveAspectRatio="xMidYMin meet" ref={svgRef} id="trackRater" viewBox="0 0 800 620">
           <defs>
             <clipPath id="clip-path">
               <rect x="0" y="0" width="950" height={950}></rect>
@@ -78,22 +66,11 @@ export const RaterWrapper = ({searchOrDashboardAlbum, artists, otherRaterView, s
           <g ref={gWrapper} id="wrapper">
           {mainRaterItems.length && <Rater 
                 setState={setState}
-                position={{x:300, y:RATER_BOTTOM}}
+                position={{x:RATER_X, y:RATER_Y_BOTTOM}}
                 state={state}
                 zoomTarget={gWrapper.current}
                 items={mainRaterItems}
                 setItems={setMainRaterItems}
-                mode={RaterMode.PRIMARY}
-          />
-          }
-          {otherRaterView !== OtherRaterView.NONE &&  
-          <Rater
-            state = {state}
-            setState={setState}
-            position={{x:350,y:RATER_BOTTOM}}
-            items={otherSongs}
-            setItems={setOtherSongs}
-            mode={RaterMode.SECONDARY}
           />
           }
           </g>

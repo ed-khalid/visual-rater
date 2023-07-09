@@ -1,55 +1,40 @@
 import { axisRight } from 'd3-axis'
 import { select } from 'd3-selection';
 import { AxisScale, Selection } from 'd3';
-import { Scaler } from "../../functions/scale";
-import { GetArtistsDocument, useDeleteSongMutation, useUpdateSongMutation } from "../../generated/graphql";
-import { ItemType } from "../../models/Item";
-import { RatedItem } from "../../models/RatedItem";
+import { useUpdateSongMutation } from "../../generated/graphql";
+import { ItemType, RatedItem } from "../../models/domain/ItemTypes";
+import { RatedSongItemUI } from "../../models/ui/ItemTypes";
 import { SingleRaterItem } from "./SingleRaterItem";
 import { MultiRaterItem } from "./MultiRaterItem";
-import { Position } from '../../models/Position';
+import { Position } from '../../models/ui/Position';
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import React from 'react';
 import './Rater.css'
+import { GlobalRaterState, RaterOrientation } from '../../models/ui/RaterTypes';
 import { ZoomBehavior } from './behaviors/ZoomBehavior';
-import { RATER_BOTTOM } from '../../App';
 
 interface Props {
     position:Position
     state:GlobalRaterState
     zoomTarget?:SVGGElement|null
     setState:Dispatch<SetStateAction<GlobalRaterState>>
-    items: RatedItem[];
-    setItems:Dispatch<SetStateAction<RatedItem[]>>
-    mode:RaterMode
+    items: RatedSongItemUI[];
+    setItems:Dispatch<SetStateAction<RatedSongItemUI[]>>
 }
-export type RatedItemGrouped  = {
+export type RatedSongItemGrouped  = {
         id:string
         position:number
-        ,items:RatedItem[]
+        ,items:RatedSongItemUI[]
     } 
 
-export type GlobalRaterState = {
-    scaler:Scaler
-    start:string
-    end:string
-    itemType:ItemType
-}
-export enum RaterMode {
-    PRIMARY, SECONDARY
-} 
-export enum RaterOrientation {
-    RIGHT, LEFT
-}   
 
 
 
-export const Rater = ({position, state, setState, items, setItems, mode}:Props) => {
+export const Rater = ({position, state, setState, items, setItems }:Props) => {
 
     const [updateSong]  = useUpdateSongMutation();
-    const [deleteSong] = useDeleteSongMutation()  
     const [currentItem, setCurrentItem] = useState<RatedItem|null>();  
-    const [groupedItems, setGroupedItems] = useState<RatedItemGrouped[]>([]);
+    const [groupedItems, setGroupedItems] = useState<RatedSongItemGrouped[]>([])
     const g = useRef<SVGGElement>(null)
     const zoomTarget= useRef<SVGGElement>(null)
     const zoomListener = useRef<SVGRectElement>(null)
@@ -60,33 +45,30 @@ export const Rater = ({position, state, setState, items, setItems, mode}:Props) 
         if (zoomTarget && zoomListener) {
             const z = ZoomBehavior({listener: zoomListener.current, target: zoomTarget.current,axis: axisSel ,scale:state.scaler.yScale, setState  })
             setZoomBehavior(z)
-        } else if (mode === RaterMode.SECONDARY) {
-            const z = ZoomBehavior()
-            setZoomBehavior(z)
         } 
-    }, [zoomListener,zoomTarget, mode])
+    }, [zoomListener,zoomTarget])
 
     useEffect(() => {
-        const groupCloseItems = (ratedItems:RatedItem[]) => {
-            const groupedItems = ratedItems.reduce((acc:RatedItemGrouped[] , curr:RatedItem) => {
+        const groupCloseItems = (ratedItems:RatedSongItemUI[]) => {
+            const groupedItems = ratedItems.reduce((acc:RatedSongItemGrouped[] , curr:RatedSongItemUI) => {
                 const position =  state.scaler.toPosition(curr.score) 
-                const overlap = acc.find((it:RatedItemGrouped) =>  Math.abs(Number(it.position) - position) < 15  )
+                const overlap = acc.find((it:RatedSongItemGrouped) =>  Math.abs(Number(it.position) - position) < 50  )
                 if (overlap) {
                     overlap.items.push(curr)
+                    overlap.items.sort((a,b) => (a.score > b.score) ? 1 : (a.score < b.score) ? -1 : 0 )
+                    overlap.items.forEach((item, i) => item.tier = ((i+1) % 3) + 1)
                 } else {
                     acc.push({ position, items:[curr], id: '' + acc.length + 1 })
                 }
                 return acc
             },  [])
-            // replace keys with average of groups   
-            groupedItems.forEach(it => {
-                const sum  = it.items.reduce((curr,it) => curr + state.scaler.toPosition(it.score),0)
-                const avg = sum/(it.items.length)
-                it.position = avg
-            })
-            setGroupedItems(groupedItems)
+            return groupedItems
         }  
-        groupCloseItems(items)
+        const leftItems = items.filter( it => it.orientation === RaterOrientation.LEFT)
+        const rightItems = items.filter( it => it.orientation === RaterOrientation.RIGHT)
+        const leftGroups =  groupCloseItems(leftItems)
+        const rightGroups =  groupCloseItems(rightItems)
+        setGroupedItems([...leftGroups, ...rightGroups])
     }, [items, state.scaler])
 
     useEffect(() => {
@@ -99,21 +81,9 @@ export const Rater = ({position, state, setState, items, setItems, mode}:Props) 
         }
     }, [currentItem, state.itemType, updateSong])
 
-    const removeItem = (rItem: RatedItem) => {
-        deleteSong({ variables : { songId:  rItem.id}, refetchQueries:[{query:GetArtistsDocument}] })
-        const _r  =  items.filter(_item => _item !== rItem);
-        setItems([..._r])
-    } 
-
-    const zoomOnGroup = (position:number) => {
-        const group = groupedItems.find(it => it.position === position)  
-        if (group) {
-            const {start,end} = zoomBehavior?.zoomOnGroup(group)
-            setState({...state, start, end})
-        }
-    } 
 
     const updateItem =  (itemId:string, newScore:number) => {
+        console.log(newScore)
         const item = items.find( it => it.id === itemId) 
         if (item) {
           item.score = newScore; 
@@ -136,53 +106,37 @@ export const Rater = ({position, state, setState, items, setItems, mode}:Props) 
 
     return (
                   <g clipPath="url(#clip-path)"  ref={g} className="rater-container">
-                      {mode === RaterMode.PRIMARY && 
-                        <rect 
+ <rect 
                             ref={zoomListener} 
                             id="zoom-listener" 
                             x={position.x+5} 
                             height={position.y}
                             >
                         </rect>
-                      }
-                      {mode === RaterMode.PRIMARY && 
-                        <rect 
-                            id="pan-listener" 
-                            x={position.x+70} 
-                            height={position.y}
-                            >
-                        </rect>
-                      }
                       <g ref={zoomTarget} className="zoom-target">
-                        <g className={mode === RaterMode.PRIMARY ? "rater-axis" : "rater-axis readonly" }></g>
-                        <line className={mode === RaterMode.PRIMARY? "rater-line": 'rater-line readonly' } x1={position.x} y1={0} x2={position.x} y2={position.y} />
-                      { groupedItems.map(rItemGrouped => 
-                      (rItemGrouped.items.length === 1) ? 
-                        <SingleRaterItem
-                            orientation={mode === RaterMode.PRIMARY? RaterOrientation.LEFT:RaterOrientation.RIGHT}
-                            key={rItemGrouped.items[0].id}
-                            item={rItemGrouped.items[0]}
-                            raterBottom={RATER_BOTTOM}
-                            x={position.x}
-                            y={rItemGrouped.position}
+                        <g className="rater-axis"></g>
+                        <line className="rater-line" x1={position.x} y1={0} x2={position.x} y2={position.y} />
+                      {groupedItems.map(group =>  
+                       (group.items.length === 1) ? 
+                            <SingleRaterItem
+                                key={group.items[0].id}
+                                item={group.items[0]}
+                                orientation={group.items[0].orientation}
+                                mainlineX={position.x}
+                                scaler={state.scaler}
+                                onDragEnd={updateItem}
+                            />:
+                        <MultiRaterItem
+                            key={"multi-rater-item-" + group.id}
+                            group={group}
+                            orientation={group.items[0].orientation}
+                            mainlineX={position.x}
                             scaler={state.scaler}
-                            onRemove={removeItem}
                             onDragEnd={updateItem}
-                        />
-                      :
-                        <MultiRaterItem  
-                            orientation={ mode === RaterMode.PRIMARY? RaterOrientation.LEFT:RaterOrientation.RIGHT}
-                            key={rItemGrouped.position}
-                            items={rItemGrouped.items} 
-                            id = {rItemGrouped.id}
-                            zoomOnGroup={zoomOnGroup}
-                            scaler={state.scaler}
-                            onRemove={removeItem}
-                            onDragEnd={updateItem}
-                            x={position.x} 
-                            y={rItemGrouped.position} 
-                        />)}
+                      />)
+                      }
+                      
                       </g>
                     </g>
-                    )
-                      }
+            )
+    }

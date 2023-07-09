@@ -1,6 +1,4 @@
 import { select } from 'd3-selection'
-import { event as d3Event } from 'd3'
-import { selectCircle } from '../../../functions/select'
 
 
 export const SelectionRectangle = (svgRef:SVGSVGElement) => {
@@ -14,7 +12,7 @@ export const SelectionRectangle = (svgRef:SVGSVGElement) => {
             return p.matrixTransform(svgRef.getScreenCTM()?.inverse())
         } 
 
-        const mouseDown = () => {
+        const mouseDown = (d3Event:any) => {
             const e = convertToSvgCoordinate(d3Event as MouseEvent)   
             select(svgRef)
               .append('rect')
@@ -26,7 +24,7 @@ export const SelectionRectangle = (svgRef:SVGSVGElement) => {
               .attr('width', 0)
               .attr('height',0)
         }  
-        const mouseMove = () => {
+        const mouseMove = (d3Event:any) => {
             const e = convertToSvgCoordinate(d3Event as MouseEvent)
             const rect = select(svgRef).select(`rect.${SELECTION_RECT_CLASS}`) 
             if (!rect.empty()) {

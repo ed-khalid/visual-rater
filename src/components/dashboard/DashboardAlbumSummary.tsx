@@ -66,14 +66,20 @@ export const DashboardAlbumSummary =  ({onClose, artistName, album }:Props) => {
         onClose()
     }
 
-    const onNumberEdit = (val:string) => {
-        setSongUnderEdit({...songUnderEdit, number:val})
+    const onEdit = (field:string, val:string) => {
+        if (field === 'number') {
+          setSongUnderEdit({...songUnderEdit, number:val})
+        }
+        if (field === 'name') {
+          setSongUnderEdit({...songUnderEdit, name:val})
+        }
     }
 
-    const saveNumber =  () => {
-          updateSong({variables: { song: { id:songUnderEdit.id! , number: Number(songUnderEdit.number)  } }})
+    const saveSong =  () => {
+          updateSong({variables: { song: { id:songUnderEdit.id! , name: songUnderEdit.name } }})
           setSongUnderEdit({ id: undefined, name: '', number: ''})
     }
+
 
     return <div className="dashboard-album-summary flex-column">
         <div onClick={onClose} className="dashboard-album-close-button">x</div>
@@ -100,6 +106,7 @@ export const DashboardAlbumSummary =  ({onClose, artistName, album }:Props) => {
         <table>
             <thead>
                 <tr>
+                    <td className="header-cell action-cell">actions</td> 
                     <td className="header-cell number-cell">#</td>
                     <td className="header-cell name-cell">Name</td>
                     <td className="header-cell score-cell">Score</td>
@@ -108,28 +115,41 @@ export const DashboardAlbumSummary =  ({onClose, artistName, album }:Props) => {
             </thead>
             <tbody>
                 {sort(songs).map(song =><tr key={song.id}>
+                    <td className="action-cell">
+                        {!(songUnderEdit.id === song.id) && <div onClick={() => setSongUnderEdit({ id: song.id, name: song.name,number:song.number.toString()}) }>
+                          edit
+                        </div>}
+                        {songUnderEdit.id === song.id && <div onClick={() => saveSong()}> save</div>}
+                    </td>
                     <td className="number-cell">
                         <div className="flex-column">
                             {!(songUnderEdit.id === song.id) && 
-                                <><div className="content">
-                                    {song.number}
-                                </div>
-                                    <div onClick={() => setSongUnderEdit({id : song.id, name: '', number: ''})  } className="action">
-                                        edit
-                                    </div></>
+                              <div className="content">
+                                    {song.number}</div>
                             }
                             {(songUnderEdit.id === song.id) && 
                             <div>
-                              <input className="song-number" value={songUnderEdit.number} onChange={(e) => onNumberEdit(e.target.value) } ></input>
-                              <div onClick={() => saveNumber()} className="action">save</div>
+                              <input className="song-number" value={songUnderEdit.number} onChange={(e) => onEdit('number', e.target.value) } ></input>
                             </div>
                             }
                         </div>
                     </td>
-                    <td className="name-cell">{song.name}</td>
+                    <td className="name-cell">
+                        <div className="flex-column">
+                            {!(songUnderEdit.id === song.id) && 
+                              <div className="content">
+                                    {song.name}</div>
+                            }
+                            {(songUnderEdit.id === song.id) && 
+                            <div>
+                              <input className="song-name" value={songUnderEdit.name} onChange={(e) => onEdit('name', e.target.value) } ></input>
+                            </div>
+                            }
+                        </div>
+                    </td>
                     <td className="score-cell">
                         <div>
-                          <input type="text" value={song.score?.toFixed(2) || 'N/A' } onChange={(e)=> updateScore(Number(e.target.value), song)  }/>
+                          <input type="text" value={song.score || 'N/A' } onChange={(e)=> updateScore(Number(e.target.value), song)  }/>
                           <div id="score-shortcut-wrapper" className="flex">
                               {/* <div className="score-shortcut plus-minus" onClick={() => updateScore((song.score||0) - 0.25, song) }>-</div>
                               {[1,2,3,4,5].map(it => <div className="score-shortcut" key={"score-"+it} onClick={() => updateScore(it, song)}>{it}</div> )}
@@ -144,7 +164,7 @@ export const DashboardAlbumSummary =  ({onClose, artistName, album }:Props) => {
         </div>
         <div id="album-rating" className="flex">
             <div id="album-rating-title" className="font-title">Score</div>
-            <div id ="album-score">{albumRating}</div>
+            <div id ="album-score">{albumRating.toFixed(2)}</div>
         </div>
     </div>
 }

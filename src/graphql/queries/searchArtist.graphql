@@ -1,16 +1,13 @@
-query SearchByArtist($name:String, $vendorId:String){
-  search {
-    id
-    artist(name:$name, vendorId:$vendorId) {
+query SearchByArtist($name:String){
+  searchExternalArtist(name:$name) {
       name
       id
       thumbnail
       albums {
-        id 
+        id
         name
-        year
         thumbnail
-      }
+        year
     }
   }
 }
