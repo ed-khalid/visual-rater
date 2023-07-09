@@ -11,6 +11,7 @@ import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import React from 'react';
 import './Rater.css'
 import { GlobalRaterState, RaterOrientation } from '../../models/ui/RaterTypes';
+import { ZoomBehavior } from './behaviors/ZoomBehavior';
 
 interface Props {
     position:Position
@@ -35,10 +36,17 @@ export const Rater = ({position, state, setState, items, setItems }:Props) => {
     const [currentItem, setCurrentItem] = useState<RatedItem|null>();  
     const [groupedItems, setGroupedItems] = useState<RatedSongItemGrouped[]>([])
     const g = useRef<SVGGElement>(null)
-    // const zoomTarget= useRef<SVGGElement>(null)
-    // const zoomListener = useRef<SVGRectElement>(null)
-    // const [zoomBehavior, setZoomBehavior] = useState<any>() 
+    const zoomTarget= useRef<SVGGElement>(null)
+    const zoomListener = useRef<SVGRectElement>(null)
+    const [zoomBehavior, setZoomBehavior] = useState<any>() 
 
+
+    useEffect(() => {
+        if (zoomTarget && zoomListener) {
+            const z = ZoomBehavior({listener: zoomListener.current, target: zoomTarget.current,axis: axisSel ,scale:state.scaler.yScale, setState  })
+            setZoomBehavior(z)
+        } 
+    }, [zoomListener,zoomTarget])
 
     useEffect(() => {
         const groupCloseItems = (ratedItems:RatedSongItemUI[]) => {
@@ -98,7 +106,7 @@ export const Rater = ({position, state, setState, items, setItems }:Props) => {
 
     return (
                   <g clipPath="url(#clip-path)"  ref={g} className="rater-container">
-                      <g className="zoom-target">
+                      <g ref={zoomTarget} className="zoom-target">
                         <g className="rater-axis"></g>
                         <line className="rater-line" x1={position.x} y1={0} x2={position.x} y2={position.y} />
                       {groupedItems.map(group =>  
