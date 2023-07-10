@@ -3,20 +3,21 @@ import { Scaler } from "../../functions/scale";
 import './MultiRaterItem.css'
 import { RatedSongItemGrouped } from "./Rater";
 import { SingleRaterItem } from "./SingleRaterItem";
-import { RATER_Y_BOTTOM, RaterOrientation } from "../../models/ui/RaterTypes";
+import { RaterOrientation } from "../../models/ui/RaterTypes";
 
 interface MultiRaterItemProps {
     group:RatedSongItemGrouped
     orientation:RaterOrientation
     scaler:Scaler
     mainlineX:number
+    zoomOnGroup:(y:number) => void  
     onDragEnd:any
 } 
 
-export const MultiRaterItem = ({group, onDragEnd, mainlineX, orientation, scaler }:MultiRaterItemProps) =>  {
+export const MultiRaterItem = ({group, onDragEnd, mainlineX, zoomOnGroup, orientation, scaler }:MultiRaterItemProps) =>  {
 
 
-       return <g className="groupedItems">
+       return <g className="groupedItems" onClick={() => zoomOnGroup(group.position)}>
             {group.items.map((item,i) => 
             <g>
             <SingleRaterItem

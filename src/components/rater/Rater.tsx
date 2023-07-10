@@ -136,24 +136,25 @@ export const Rater = ({position, state, setState, items, setItems }:Props) => {
                                 scaler={state.scaler}
                                 onDragEnd={updateItem}
                             />:
-                            <MultiRaterItemGroup
-                                key={group.items[0].id}
-                                id={group.items[0].id}
-                                items={group.items}
-                                orientation={group.items[0].orientation}
-                                x={position.x}
-                                y={group.position}
-                                scaler={state.scaler}
-                                zoomOnGroup={zoomOnGroup}
-                            ></MultiRaterItemGroup>
-                    //     <MultiRaterItem
-                    //         key={"multi-rater-item-" + group.id}
-                    //         group={group}
-                    //         orientation={group.items[0].orientation}
-                    //         mainlineX={position.x}
-                    //         scaler={state.scaler}
-                    //         onDragEnd={updateItem}
-                    //   />
+                            // <MultiRaterItemGroup
+                            //     key={group.items[0].id}
+                            //     id={group.items[0].id}
+                            //     items={group.items}
+                            //     orientation={group.items[0].orientation}
+                            //     x={position.x}
+                            //     y={group.position}
+                            //     scaler={state.scaler}
+                            //     zoomOnGroup={zoomOnGroup}
+                            // ></MultiRaterItemGroup>
+                        <MultiRaterItem
+                            key={"multi-rater-item-" + group.id}
+                            group={group}
+                            orientation={group.items[0].orientation}
+                            mainlineX={position.x}
+                            zoomOnGroup = {zoomOnGroup}
+                            scaler={state.scaler}
+                            onDragEnd={updateItem}
+                      />
                       )}
                       
                       </g>
