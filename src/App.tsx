@@ -11,6 +11,7 @@ import { RaterWrapper } from './components/rater/RaterWrapper';
 import { DragType } from './models/ui/DragType';
 import { useDrop } from 'react-dnd';
 import { GlobalRaterState } from './models/ui/RaterTypes';
+import { RaterThreeWrapper } from './components/raterthree/RaterThreeWrapper';
 
 
 
@@ -178,12 +179,16 @@ export const App = () => {
         <div className="empty-cell"></div> 
         <Search onAlbumSelect={onExternalAlbumSearchClick}/>
         <div id="rater" className="drop-target" ref={drop}>
-        <RaterWrapper
+        <RaterThreeWrapper
+          artists={artistsFull.data?.artists.content as Artist[]}
+          albums={raterAlbums}
+        />
+        {/* <RaterWrapper
           artists={artistsFull.data?.artists.content as Artist[]}
           albums={raterAlbums}
           state={raterState}
           setState={setRaterState}
-        />
+        /> */}
         </div>
         <Dashboard 
           onAlbumSelect={updateRaterAlbums} 
