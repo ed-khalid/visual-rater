@@ -56,7 +56,7 @@ export const Rater = ({position, state, setState, items, setItems }:Props) => {
                 if (overlap) {
                     overlap.items.push(curr)
                     overlap.items.sort((a,b) => (a.score > b.score) ? 1 : (a.score < b.score) ? -1 : 0 )
-                    overlap.items.forEach((item, i) => item.tier = ((i+1) % 3) + 1)
+                    overlap.items.forEach((item, i) => item.tier = ((i+1) % 4) + 1)
                 } else {
                     acc.push({ position, items:[curr], id: '' + acc.length + 1 })
                 }

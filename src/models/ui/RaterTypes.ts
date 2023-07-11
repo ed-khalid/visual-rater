@@ -4,8 +4,8 @@ import { ItemType } from '../domain/ItemTypes'
 
 export type GlobalRaterState = {
     scaler:Scaler
-    start:string
-    end:string
+    start:number
+    end:number
     itemType:ItemType
 }
 export enum RaterOrientation {
