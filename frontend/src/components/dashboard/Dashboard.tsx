@@ -1,8 +1,8 @@
-import React, { useEffect, useState }  from "react"
-import './Dashboard.css'
+import React from "react"
 import { Album, Artist } from "../../generated/graphql"
 import { DashboardArtist } from "./ArtistDashboard"
 import { DashboardAlbumSummary } from "./DashboardAlbumSummary"
+import './Dashboard.css'
 
 interface Props {
     artists:Artist[]
@@ -31,13 +31,14 @@ export const Dashboard = ({artists, album, artist, onAlbumSelect}:Props) => {
 
 
 
-    return <div id="dashboard" className="flex-column">
+    return <div className="flex-column">
         <div className="dashboard-section">
            {artists && artists.map(artist =>  <DashboardArtist key={artist.id} onAlbumSelect={onAlbumSelect} artist={artist} />)}
         </div> 
+          {album && 
         <div className="dashboard-section">
-          {album && <DashboardAlbumSummary onClose={onAlbumClose} artistName={findArtist()} album={findAlbumFromStore(album)} />}
-        </div>
+          <DashboardAlbumSummary onClose={onAlbumClose} artistName={findArtist()} album={findAlbumFromStore(album)} />
+        </div>}
     </div>
 
 }

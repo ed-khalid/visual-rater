@@ -14,37 +14,52 @@
 .grid {
   display:grid;
 }
+.panel {
+  position: absolute;
+}
+.panel.top {
+  top: 10px;
+}
+.panel.left {
+  margin-left:10px;
+}
+.panel.right {
+  margin-right:2px;
+}
+.panel.center {
+  left:50vw;
+}
 .App {
   text-align: center;
-  background-color: #e9dfdf;
+  background-color: #fff;
   color: #000; 
-  min-height: 100vh;
+  height: 100vh;
 }
 
-header {
-  font-size: 4em;
-}
 .main {
   position: relative;
   font-size: 16px;
-  margin: 0 10px;
-  grid-template-columns: auto 3fr 2fr;
-  grid-template-rows: 20px;
 }
-div.main.grid div#top-controls div.list-control-nav {
-  float: left;
-  margin-left: 60px; 
-}
+ 
 div.drop-target {
-  height:680px;
+  height:100vh;
 } 
-div#rater {
-  min-width:33%;
+div#search {
+  left: 0;
+}
+div#top-controls {
+}
+
+div#dashboard {
+    text-align:unset;
+    top: 0;
+    right: 0;
 }
 svg {
   width: 100%;
   height: 100%; 
 }
+
 
 div.compare-section {
   position:relative;
