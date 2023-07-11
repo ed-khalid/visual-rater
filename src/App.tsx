@@ -167,30 +167,30 @@ export const App = () => {
 
   return (
     <div className="App">
-      <header className="font-title">VisRater</header>
-      <div className="main grid">
-        <div className="empty-cell" style={{maxWidth: '450px'}}></div> 
-        <div id="top-controls" className="flex">
+      <div className="main">
+        <div className='panel top left' id="search">
+          <Search onAlbumSelect={onExternalAlbumSearchClick}/>
+        </div>
+        <div id="top-controls" className="panel top center">
           <div>
             <button onClick={onZoomResetClick}>Reset</button>
           </div>
         </div>
-        <div className="empty-cell"></div> 
-        <Search onAlbumSelect={onExternalAlbumSearchClick}/>
-        <div id="rater" className="drop-target" ref={drop}>
-        <RaterWrapper
+        <div className='panel top right' id="dashboard">
+          <Dashboard 
+            onAlbumSelect={updateRaterAlbums} 
+            artist={dashboardArtist}
+            album={dashboardAlbum}
+            artists={artistsFull.data?.artists?.content as Artist[]}
+          />
+        </div>
+        <div id="rater" className="viz drop-target" ref={drop}>
           artists={artistsFull.data?.artists.content as Artist[]}
           albums={raterAlbums}
           state={raterState}
           setState={setRaterState}
         />
         </div>
-        <Dashboard 
-          onAlbumSelect={updateRaterAlbums} 
-          artist={dashboardArtist}
-          album={dashboardAlbum}
-          artists={artistsFull.data?.artists?.content as Artist[]}
-        />
       </div>
     </div>
   );
