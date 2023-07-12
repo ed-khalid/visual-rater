@@ -20,9 +20,8 @@ export const MultiRaterItem = ({group, onDragEnd, onClick, isReadonly, mainlineX
 
        return <g className="groupedItems">
             {group.items.map((item,i) => 
-            <g>
+            <g key={'multirater-item-g' + item.id}>
             <SingleRaterItem
-              key={'multiline-tree-item-' + item.id + "-" + i }
               item={item}
               isReadonly={isReadonly}
               onClick={onClick}
