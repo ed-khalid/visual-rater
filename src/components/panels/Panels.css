@@ -12,16 +12,52 @@ div#artists-panel {
 }
 
 div#artists-panel img.artist-thumbnail {
-    width: 3em;
-    height: 3em;
+    width: 1.5em;
+    height: 1.5em;
+    border-radius:15px;
     cursor: pointer;
 }
 div#artists-panel div.artist-name {
-    font-size:0.7em;
+    font-size:0.4em;
 }
 
 
-div#artist-albums {
+div.artist-albums {
     top: 95px;
     right:2px;
 }
+div.artist-albums .albums {
+    display:flex;
+    justify-content: space-evenly;
+    align-items:center;
+    flex-direction: row;
+    flex-wrap: wrap ;
+}
+div.artist-albums .albums .album {
+    width: 4em;
+}
+div.artist-albums .albums .album .album-thumbnail img {
+    width: 1.5em;
+    height: 1.5em;
+    border-radius:15px;
+    cursor: pointer;
+
+} 
+div.artist-albums .albums .album .album-title {
+    font-size:0.4em;
+} 
+div.album-panel {
+    top: 210px; 
+    right:2px;
+}
+div.album-panel .panel-content {
+    font-size: 0.4em;
+}
+div.album-panel .album-header {
+    font-size:2em;
+} 
+div.album-panel div.album-thumbnail img {
+    width: 3em;
+    height: 3em;
+    border-radius:15px;
+} 
