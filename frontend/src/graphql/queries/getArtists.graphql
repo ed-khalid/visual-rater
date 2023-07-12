@@ -8,6 +8,7 @@ query getArtists {
       id
       name 
       thumbnail
+      score
       albums {
         id
         name
@@ -17,6 +18,24 @@ query getArtists {
         thumbnail
         songs {
           ...SongFields
+        }
+      }
+      metadata {
+        totalSongs
+        totalAlbums
+        songs {
+          classic
+          great
+          good
+          mediocre
+          bad
+          terrible
+          classicPercentage
+          greatPercentage
+          goodPercentage
+          mediocrePercentage
+          badPercentage
+          terriblePercentage
         }
       }
     }

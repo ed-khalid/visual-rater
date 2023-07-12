@@ -243,7 +243,7 @@ export type UpdateSongMutation = { __typename?: 'Mutation', UpdateSong?: { __typ
 export type GetArtistsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetArtistsQuery = { __typename?: 'Query', artists: { __typename?: 'ArtistPage', total: number, pageNumber: number, content: Array<{ __typename?: 'Artist', id: string, name: string, thumbnail?: string | null, albums?: Array<{ __typename?: 'Album', id: string, name: string, year?: number | null, score?: number | null, dominantColor?: string | null, thumbnail?: string | null, songs: Array<{ __typename?: 'Song', id: string, name: string, number: number, discNumber: number, score?: number | null }> } | null> | null } | null> } };
+export type GetArtistsQuery = { __typename?: 'Query', artists: { __typename?: 'ArtistPage', total: number, pageNumber: number, content: Array<{ __typename?: 'Artist', id: string, name: string, thumbnail?: string | null, score?: number | null, albums?: Array<{ __typename?: 'Album', id: string, name: string, year?: number | null, score?: number | null, dominantColor?: string | null, thumbnail?: string | null, songs: Array<{ __typename?: 'Song', id: string, name: string, number: number, discNumber: number, score?: number | null }> } | null> | null, metadata?: { __typename?: 'ArtistMetadata', totalSongs: number, totalAlbums: number, songs: { __typename?: 'ArtistSongMetadata', classic: number, great: number, good: number, mediocre: number, bad: number, terrible: number, classicPercentage: number, greatPercentage: number, goodPercentage: number, mediocrePercentage: number, badPercentage: number, terriblePercentage: number } } | null } | null> } };
 
 export type GetTracksForSearchAlbumQueryVariables = Exact<{
   albumId: Scalars['String']['input'];
@@ -448,6 +448,7 @@ export const GetArtistsDocument = gql`
       id
       name
       thumbnail
+      score
       albums {
         id
         name
@@ -457,6 +458,24 @@ export const GetArtistsDocument = gql`
         thumbnail
         songs {
           ...SongFields
+        }
+      }
+      metadata {
+        totalSongs
+        totalAlbums
+        songs {
+          classic
+          great
+          good
+          mediocre
+          bad
+          terrible
+          classicPercentage
+          greatPercentage
+          goodPercentage
+          mediocrePercentage
+          badPercentage
+          terriblePercentage
         }
       }
     }
