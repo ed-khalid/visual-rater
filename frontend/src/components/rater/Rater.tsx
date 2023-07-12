@@ -131,7 +131,7 @@ export const Rater = ({position, state, setState, onItemClick, isReadonly, items
                                 onDragEnd={updateItem}
                             />:  
                         <MultiRaterItem
-                            key={"multi-rater-item-" + group.id}
+                            key={"multi-rater-item-" + group.items[0].id}
                             group={group}
                             isReadonly={isReadonly}
                             orientation={group.items[0].orientation}
