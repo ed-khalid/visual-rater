@@ -58,6 +58,6 @@ div.album-panel .album-header {
 } 
 div.album-panel div.album-thumbnail img {
     width: 3em;
-    height: 3em;
+    height: 2em;
     border-radius:15px;
 } 

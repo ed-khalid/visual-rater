@@ -38,7 +38,7 @@ export const ArtistAlbumsPanel =  ({artist, onAlbumSelect}:Props) => {
     return <Panel className='rightside-panel artist-albums' title={artist.name}>
                 <div className="albums">
                     {sortAlbums(artist.albums).map(album => 
-                        <div onClick={() => onAlbumSelectInternal(album!)} className="album">
+                        <div key={'panel-' + album!.id} onClick={() => onAlbumSelectInternal(album!)} className="album">
                             <div className="album-thumbnail">
                                 <img src={album!.thumbnail!} alt={''}/>
                             </div>
