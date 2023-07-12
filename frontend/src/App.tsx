@@ -12,6 +12,7 @@ import { useDrop } from 'react-dnd';
 import { GlobalRaterState } from './models/ui/RaterTypes';
 import { ArtistsPanel } from './components/panels/ArtistsPanel';
 import { ArtistAlbumsPanel } from './components/panels/ArtistAlbumsPanel';
+import { AlbumPanel } from './components/panels/AlbumPanel';
 
 
 
@@ -37,6 +38,7 @@ export const App = () => {
 
   // rater items
   const [selectedArtists, setSelectedArtists] = useState<Array<Artist>>([])
+  const [selectedAlbums, setSelectedAlbums] = useState<Array<Album>>([])
   const [mode, setRaterWrapperMode] = useState<RaterWrapperMode>(RaterWrapperMode.ARTIST)
   const [raterItems, setRaterItems] = useState<Array<Artist>|Array<Album>>([])
   const [raterState, setRaterState] = useState<GlobalRaterState>(initialRaterState)
@@ -45,10 +47,10 @@ export const App = () => {
     accept: [DragType.ALBUM, DragType.ARTIST]
     ,drop(item:{album?:Album, artist?:Artist},_) {
       if (item.album) {
-        setRaterItems([...raterItems as Array<Album>, item.album])
+        onAlbumSelect(item.album, undefined)
       }
       if (item.artist) {
-        setRaterItems([...raterItems as Array<Artist>, item.artist])
+        onArtistSelect(item.artist)
       }
     }
   }), [raterItems])
@@ -65,6 +67,24 @@ export const App = () => {
       setSelectedArtists([])
     }
   } 
+
+  const onAlbumSelect = (album:Album|undefined, artist:Artist|undefined) => {
+    if (album) {
+      const found = selectedAlbums.find(it => it.id === album.id)
+      if (found) {
+        setSelectedAlbums([album])
+      } else {
+        setSelectedAlbums([...selectedAlbums, album])
+      }
+    } else {
+      setRaterItems([])
+    }
+  }
+
+  useEffect(() => {
+    setRaterWrapperMode(RaterWrapperMode.ALBUM)
+    setRaterItems(selectedAlbums)
+  }, [selectedAlbums])
 
   useEffect(() => {
     setRaterWrapperMode(RaterWrapperMode.ARTIST)
@@ -170,14 +190,6 @@ export const App = () => {
 
 
 
-  const updateRaterAlbums = (album:Album|undefined, artist:Artist|undefined) => {
-    if (album) {
-      setRaterWrapperMode(RaterWrapperMode.ALBUM)
-      setRaterItems([album])
-    } else {
-      setRaterItems([])
-    }
-  }
 
 
   return (
@@ -193,11 +205,12 @@ export const App = () => {
         </div>
 
          <ArtistsPanel artists={artistsFull.data?.artists.content as Artist[]} onArtistSelect={onArtistSelect} ></ArtistsPanel>
-        {selectedArtists.map(artist => <ArtistAlbumsPanel artist={artist} onAlbumSelect={updateRaterAlbums} />)}
+        {selectedArtists.map(artist => <ArtistAlbumsPanel artist={artist} onAlbumSelect={onAlbumSelect} />)}
+        {selectedAlbums.map(album => <AlbumPanel album={album} artistName={undefined} onClose={() => {}}  />)}
         <div id="rater" className="viz drop-target" ref={drop}>
           <RaterWrapper
           artists={artistsFull.data?.artists.content as Artist[]}
-          onAlbumClick={updateRaterAlbums}
+          onAlbumClick={onAlbumSelect}
           mode={mode}
           items={raterItems}
           state={raterState}

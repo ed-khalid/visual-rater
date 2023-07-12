@@ -6,6 +6,7 @@
 - revamp search results into a panel
 - clicking an album should zoom in first then show album rater
 - add navigational breadcrumb
+- add move cursor (anchor) 
 - fix create album bug
 - fix create artist bug
 - add zoom back
