@@ -3,7 +3,7 @@ import React, { ReactElement } from 'react'
 interface PanelProps {
     title:string
     className?:string
-    id:string
+    id?:string
     children:ReactElement
     isDraggable?:boolean
     isResizable?:boolean
@@ -11,9 +11,6 @@ interface PanelProps {
     isCollapsible?:boolean
 }
 
-interface PanelContentProps {
-    children:ReactElement
-}
 export const Panel = ({title, id, className, children}:PanelProps) => {
 
     let classes = 'panel' 
@@ -23,19 +20,13 @@ export const Panel = ({title, id, className, children}:PanelProps) => {
 
     return <div className={classes} id={id} >
     <div className="panel-wrapper">
-          <div className="panel-header-wrapper">
-            <div className="panel-header">
-              <div className="panel-title">{title}</div> 
-            </div>
+        <div className="panel-header">
+            <div className="panel-title">{title}</div> 
+        </div>
+          <div className="panel-content">
+            {children}
           </div>
-          {children}
     </div> 
     </div>
 }
 
-
-export const PanelContent = ({children}:PanelContentProps) => {
-    return <div className="panel-content">
-        {children}
-        </div>
-}

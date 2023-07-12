@@ -1,6 +1,6 @@
 import React, { useState } from "react"
 import { Album, Artist, Maybe } from "../../generated/graphql"
-import { Panel, PanelContent } from "./Panel"
+import { Panel } from "./Panel"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faArrowLeft, faArrowRight } from "@fortawesome/free-solid-svg-icons"
 import { ArtistDashboardAlbumRow } from "../dashboard/ArtistDashboardAlbumRow"
@@ -35,10 +35,20 @@ export const ArtistAlbumsPanel =  ({artist, onAlbumSelect}:Props) => {
         return 0; 
     } 
 
-    return <Panel className='rightside-panel' id="artist-albums" title={artist.name}>
-        <PanelContent>
+    return <Panel className='rightside-panel artist-albums' title={artist.name}>
                 <div className="albums">
-                        {  (artist.albums!.length > ALBUMS_PER_ARTIST) &&  <div className={`dashboard-albums-navigation flex-column ${(pageNumber === 1) ? 'disabled': '' }`} >
+                    {sortAlbums(artist.albums).map(album => 
+                        <div onClick={() => onAlbumSelectInternal(album!)} className="album">
+                            <div className="album-thumbnail">
+                                <img src={album!.thumbnail!} alt={''}/>
+                            </div>
+                            <div className="album-title">
+                                {album!.name}
+                            </div>
+                        </div>)
+                        }
+                    
+                        {/* {  (artist.albums!.length > ALBUMS_PER_ARTIST) &&  <div className={`dashboard-albums-navigation flex-column ${(pageNumber === 1) ? 'disabled': '' }`} >
                             <FontAwesomeIcon onClick={() => setPageNumber(pageNumber-1)} icon={faArrowLeft}></FontAwesomeIcon>
                         </div>}
                         <div className="dashboard-albums-content flex">
@@ -49,10 +59,8 @@ export const ArtistAlbumsPanel =  ({artist, onAlbumSelect}:Props) => {
                         </div>
                         { (artist.albums!.length > ALBUMS_PER_ARTIST) && <div className={`dashboard-albums-navigation flex-column ${pageNumber*ALBUMS_PER_ARTIST >= artist?.albums!.length? "disabled":"" }`}>
                             <FontAwesomeIcon onClick={() => setPageNumber(pageNumber+1)} icon={faArrowRight}></FontAwesomeIcon>
-                        </div>}
+                        </div>} */}
                 </div>
-
-        </PanelContent>
     </Panel>
 
 }
