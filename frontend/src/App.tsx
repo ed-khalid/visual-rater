@@ -3,20 +3,22 @@ import './App.css';
 import { Scaler } from './functions/scale';
 import {  ExternalAlbumSearchResult, Artist, ExternalArtistSearchResult, GetArtistsDocument, GetArtistsQuery, NewSongInput, useCreateAlbumMutation, useCreateArtistMutation, useGetArtistsQuery , useGetTracksForSearchAlbumQuery, useGetTracksForSearchAlbumLazyQuery, Song, Album } from './generated/graphql';
 import { zoomIdentity } from 'd3-zoom'
-import { Dashboard } from './components/dashboard/Dashboard';
 import { Search } from './components/search/Search';
 import { ItemType } from './models/domain/ItemTypes';
 import { ExternalFullSearchResult } from './models/domain/ExternalFullSearchResult';
-import { RaterWrapper } from './components/rater/RaterWrapper';
+import { RaterWrapper, RaterWrapperMode } from './components/rater/RaterWrapper';
 import { DragType } from './models/ui/DragType';
 import { useDrop } from 'react-dnd';
 import { GlobalRaterState } from './models/ui/RaterTypes';
+import { ArtistsPanel } from './components/panels/ArtistsPanel';
+import { ArtistAlbumsPanel } from './components/panels/ArtistAlbumsPanel';
 
 
 
 export const initialRaterState:GlobalRaterState = {
-   start: '0'
-  ,end: '5'
+   start: 0
+  ,end: 5
+  ,isReadonly: true
   ,scaler : new Scaler() 
   ,itemType: ItemType.MUSIC
 } 
@@ -33,21 +35,41 @@ export const App = () => {
 
   const artistsFull =  useGetArtistsQuery()
 
-  // dashboard
-  const [dashboardArtist,setDashboardArtist] = useState<Artist>()
-  const [dashboardAlbum,setDashboardAlbum] = useState<Album>()
-
   // rater items
+  const [selectedArtists, setSelectedArtists] = useState<Array<Artist>>([])
+  const [mode, setRaterWrapperMode] = useState<RaterWrapperMode>(RaterWrapperMode.ARTIST)
+  const [raterItems, setRaterItems] = useState<Array<Artist>|Array<Album>>([])
   const [raterState, setRaterState] = useState<GlobalRaterState>(initialRaterState)
-  const [raterAlbums, setRaterAlbums] = useState<Array<Album>>([]) 
 
   const [, drop] = useDrop(() => ({
-    accept: DragType.ALBUM
-    ,drop(item:{album:Album},_) {
-      setRaterAlbums([...raterAlbums, item.album])
+    accept: [DragType.ALBUM, DragType.ARTIST]
+    ,drop(item:{album?:Album, artist?:Artist},_) {
+      if (item.album) {
+        setRaterItems([...raterItems as Array<Album>, item.album])
+      }
+      if (item.artist) {
+        setRaterItems([...raterItems as Array<Artist>, item.artist])
+      }
     }
-  }), [raterAlbums])
+  }), [raterItems])
 
+  const onArtistSelect = (artist:Artist|undefined) => {
+    if (artist) {
+      const found = selectedArtists.find(it => it.id === artist.id) 
+      if (found) {
+        setSelectedArtists([artist])
+      } else {
+        setSelectedArtists([...selectedArtists, artist])
+      }
+    } else {
+      setSelectedArtists([])
+    }
+  } 
+
+  useEffect(() => {
+    setRaterWrapperMode(RaterWrapperMode.ARTIST)
+    setRaterItems(selectedArtists)
+  }, [selectedArtists])
 
   const onExternalAlbumSearchClick =  (artist:ExternalArtistSearchResult, album:ExternalAlbumSearchResult) => {
     setSearchArtist(artist)
@@ -149,18 +171,11 @@ export const App = () => {
 
 
   const updateRaterAlbums = (album:Album|undefined, artist:Artist|undefined) => {
-    if (artist) {
-      setDashboardArtist(artist)
-    }
-    else {
-      setDashboardArtist(undefined)
-    }
     if (album) {
-      setDashboardAlbum(album)
-      setRaterAlbums([album])
+      setRaterWrapperMode(RaterWrapperMode.ALBUM)
+      setRaterItems([album])
     } else {
-      setDashboardAlbum(undefined)
-      setRaterAlbums([])
+      setRaterItems([])
     }
   }
 
@@ -168,28 +183,26 @@ export const App = () => {
   return (
     <div className="App">
       <div className="main">
-        <div className='panel top left' id="search">
+        <div className='panel noborder top left' id="search">
           <Search onAlbumSelect={onExternalAlbumSearchClick}/>
         </div>
-        <div id="top-controls" className="panel top center">
+        <div id="top-controls" className="panel noborder top center">
           <div>
             <button onClick={onZoomResetClick}>Reset</button>
           </div>
         </div>
-        <div className='panel top right' id="dashboard">
-          <Dashboard 
-            onAlbumSelect={updateRaterAlbums} 
-            artist={dashboardArtist}
-            album={dashboardAlbum}
-            artists={artistsFull.data?.artists?.content as Artist[]}
-          />
-        </div>
+
+         <ArtistsPanel artists={artistsFull.data?.artists.content as Artist[]} onArtistSelect={onArtistSelect} ></ArtistsPanel>
+        {selectedArtists.map(artist => <ArtistAlbumsPanel artist={artist} onAlbumSelect={updateRaterAlbums} />)}
         <div id="rater" className="viz drop-target" ref={drop}>
+          <RaterWrapper
           artists={artistsFull.data?.artists.content as Artist[]}
-          albums={raterAlbums}
+          onAlbumClick={updateRaterAlbums}
+          mode={mode}
+          items={raterItems}
           state={raterState}
           setState={setRaterState}
-        />
+          />
         </div>
       </div>
     </div>

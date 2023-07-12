@@ -1,0 +1,27 @@
+
+.rightside-panel {
+    width:20vw;
+}
+
+div#artists-panel {
+    align-items:center;
+    justify-content: center;
+    top: 4px;
+    height:85px; 
+    right: 2px;
+}
+
+div#artists-panel img.artist-thumbnail {
+    width: 3em;
+    height: 3em;
+    cursor: pointer;
+}
+div#artists-panel div.artist-name {
+    font-size:0.7em;
+}
+
+
+div#artist-albums {
+    top: 95px;
+    right:2px;
+}

@@ -33,7 +33,7 @@ export const Dashboard = ({artists, album, artist, onAlbumSelect}:Props) => {
 
     return <div className="flex-column">
         <div className="dashboard-section">
-           {artists && artists.map(artist =>  <DashboardArtist key={artist.id} onAlbumSelect={onAlbumSelect} artist={artist} />)}
+           {/* {artists && artists.map(artist =>  <DashboardArtist key={artist.id} onAlbumSelect={onAlbumSelect} artist={artist} />)} */}
         </div> 
           {album && 
         <div className="dashboard-section">
