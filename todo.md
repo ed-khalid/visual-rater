@@ -1,7 +1,11 @@
 
 # TASKS
-- zoom in a bit on firstview  
-- add album identifier ribbon on top of rater
+- work on default panel behavior (collapsible,closeable, moveable)
+- style panels better
+- revamp album details into a panel
+- revamp search results into a panel
+- clicking an album should zoom in first then show album rater
+- add navigational breadcrumb
 - fix create album bug
 - fix create artist bug
 - add zoom back
@@ -10,4 +14,6 @@
 - calculate artist tier
 
 - add coloring to rater (good, great, bad)
-- improve dashboard summary editing
+- add graph of album progress   
+- add review panel
+- improve album details summary editing

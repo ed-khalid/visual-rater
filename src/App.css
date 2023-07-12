@@ -14,17 +14,37 @@
 .grid {
   display:grid;
 }
+
 .panel {
   position: absolute;
+  cursor: move;
+  border: 1px solid black; 
+  border-radius: 15px;
 }
-.panel.top {
-  top: 10px;
+.panel-wrapper {
+  position:relative;
 }
-.panel.left {
-  margin-left:10px;
+.panel .panel-header-wrapper {
+  overflow:hidden;
+} 
+.panel .panel-header {
+  position: absolute;
+  top:0px;
+  left:0px;
+  background-color:black;
+  color: white;
+  width: 120%;
 }
-.panel.right {
-  margin-right:2px;
+.panel .panel-header .panel-title {
+  font-size: 0.5em;
+}
+.panel-content {
+  display:flex;
+  padding: 10px;
+  position:relative;
+}
+.panel.noborder {
+  border:none;
 }
 .panel.center {
   left:50vw;

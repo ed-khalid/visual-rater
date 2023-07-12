@@ -12,18 +12,27 @@ export interface RaterItemUI {
     tier:RaterTier
 }
 
-export class RatedSongItemUI extends RatedItem implements RaterItemUI {
+
+
+export class RatedMusicItemUI extends RatedItem implements RaterItemUI {
     public constructor(item:Item, 
         public score:number, 
         public thumbnail:string, 
-        public number:number, 
-        public artistName:string, 
-        public albumName:string, 
         public orientation:RaterOrientation,
         public tier:RaterTier ,
-        public overlay:Maybe<string>|undefined
+        public overlay:Maybe<string>|undefined,
         ) {
         super(item, score);
     }
 } 
 
+export class RatedSongItemUI extends RatedMusicItemUI {
+    public constructor(item:Item, public score:number, public thumbnail:string, public orientation:RaterOrientation, public tier:RaterTier, public overlay:Maybe<string>|undefined,
+        public number:number, 
+        public artistName:string, 
+        public albumName:string
+        ) {
+         super(item, score, thumbnail, orientation, tier, overlay)
+    }
+
+} 

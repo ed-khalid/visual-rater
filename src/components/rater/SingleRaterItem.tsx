@@ -1,7 +1,7 @@
 import React, {useEffect, useRef } from "react";
 import { select } from 'd3-selection'
 import { drag } from 'd3-drag'
-import { RatedSongItemUI } from "../../models/ui/ItemTypes";
+import { RatedMusicItemUI } from "../../models/ui/ItemTypes";
 import { Scaler } from "../../functions/scale";
 import { DragBehavior } from "./behaviors/DragBehavior";
 import './SingleRaterItem.css' 
@@ -9,23 +9,36 @@ import { RatedItem } from "../../models/domain/ItemTypes";
 import { RATER_TIER_WIDTH, RaterOrientation } from "../../models/ui/RaterTypes";
 
 interface SingleRaterItemProps {
-    item:RatedSongItemUI
+    item:RatedMusicItemUI
     mainlineX:number
-    onDragEnd:any
+    isReadonly:boolean
+    onClick?:any
+    onDragEnd?:any
     scaler:Scaler
     scale?:number
     orientation:RaterOrientation
 } 
 
-export const SingleRaterItem = ({item, orientation , mainlineX, scale=1, scaler, onDragEnd}:SingleRaterItemProps) =>  {
+export const SingleRaterItem = ({item, orientation , isReadonly, mainlineX, scale=1, scaler, onClick, onDragEnd}:SingleRaterItemProps) =>  {
     const y = scaler.toPosition(item.score) 
     const tierOffset = RATER_TIER_WIDTH * item.tier 
     const tierLineOpacityOffset = 0.7 
     const x = (orientation === RaterOrientation.LEFT) ?(mainlineX - tierOffset) : (mainlineX + tierOffset) 
     const g = useRef<SVGGElement>(null)
-    const onDragBehaviorEnd = (id:string, score:number) => {
-        onDragEnd(id, score)
-    }
+
+    useEffect(() => {
+        const onDragBehaviorEnd = (id:string, score:number) => {
+            onDragEnd(id, score)
+        }
+        if (!isReadonly && g.current) {
+            const dragBehavior = DragBehavior({item, g:g.current, scaler, onDragEnd:onDragBehaviorEnd}) 
+            select(g.current).call(drag<SVGGElement,any>()
+                .on('start', dragBehavior.dragStart)
+                .on('drag', dragBehavior.dragInProgress)
+                .on('end', dragBehavior.dragEnd))
+        select(g.current).data<RatedItem>([item])
+        }
+    },[isReadonly, item, scaler, onDragEnd]) 
 
     const formatName= (name:string) => {
         const maxLength = 15
@@ -38,16 +51,6 @@ export const SingleRaterItem = ({item, orientation , mainlineX, scale=1, scaler,
         return name.split(" ").slice(0,3).join(" ")
     }
 
-    useEffect(() => {
-        if (g.current) {
-            const dragBehavior = DragBehavior({item, g:g.current, scaler, onDragEnd:onDragBehaviorEnd}) 
-            select(g.current).call(drag<SVGGElement,any>()
-                .on('start', dragBehavior.dragStart)
-                .on('drag', dragBehavior.dragInProgress)
-                .on('end', dragBehavior.dragEnd))
-           select(g.current).data<RatedItem>([item])
-        }
-    },[g.current]) 
     const imageSize = 25 
         const lineDistance = x 
         const imageDimensions =  {
@@ -98,6 +101,12 @@ export const SingleRaterItem = ({item, orientation , mainlineX, scale=1, scaler,
             } else return 'black'
         } 
 
+        const handleOnClick = () => {
+            if (onClick) {
+                onClick(item)
+            }
+        }
+
         
         const drawArc = (x:number, y:number, radius:number, startAngle:number, endAngle:number) => {
 
@@ -121,17 +130,18 @@ export const SingleRaterItem = ({item, orientation , mainlineX, scale=1, scaler,
         }
         const color = "rgb" + item.overlay   
         const arcPath = drawArc(imageDimensions.x, imageDimensions.y, imageDimensions.size/2, 180, 0)  
+        const cursor = (isReadonly) ? "pointer" : "move"  
         
-        return <g ref={g} className="item" key={item.name}>
+        return <g onClick={handleOnClick} ref={g} className="item" key={item.name}>
                         <g className="draggable"> 
                             <filter id="shadow">
                                 <feDropShadow dx="0.2" dy="0.4" stdDeviation={0.2} />
                             </filter>
                             <line className="item-scoreline" x1={lineDimensions.x1} y1={lineDimensions.y1} x2={lineDimensions.x2} y2={lineDimensions.y2} stroke={color} opacity={1-tierLineOpacityOffset} />
                             <circle className="item-thumbnail-overlay" cx={imageDimensions.x+imageDimensions.size/2} cy={imageDimensions.y+imageDimensions.size/2} r={imageDimensions.size/2} fill={color} stroke={color}></circle>
-                            <image fill={"rgba"+item.overlay} opacity={0.5} xlinkHref={item.thumbnail} clipPath="inset(0% round 15px)" cursor="move" className="item-thumbnail" width={imageDimensions.size} x={imageDimensions.x} y={imageDimensions.y} height={imageDimensions.size} href={item.thumbnail}/>
-                            <text textAnchor="middle" className="item-name" cursor="move" fontSize={6*scale} fill="black" x={songNameDimensions.x} y={songNameDimensions.y} dy=".35em">{formatName(item.name)}</text>
-                            <text textAnchor="middle" className="item-score" cursor="move" fontSize={10*scale} fontWeight="bold" fill={determineTextColor(item.overlay)} x={songScoreDimensions.x} y={songScoreDimensions.y} dy=".35em">{item.score.toFixed(2)}</text>
+                            <image fill={"rgba"+item.overlay} opacity={0.5} xlinkHref={item.thumbnail} clipPath="inset(0% round 15px)" cursor={cursor} className="item-thumbnail" width={imageDimensions.size} x={imageDimensions.x} y={imageDimensions.y} height={imageDimensions.size} href={item.thumbnail}/>
+                            <text textAnchor="middle" className="item-name" cursor={cursor} fontSize={6*scale} fill="black" x={songNameDimensions.x} y={songNameDimensions.y} dy=".35em">{formatName(item.name)}</text>
+                            <text textAnchor="middle" className="item-score" cursor={cursor} fontSize={10*scale} fontWeight="bold" fill={determineTextColor(item.overlay)} x={songScoreDimensions.x} y={songScoreDimensions.y} dy=".35em">{item.score.toFixed(2)}</text>
                             <circle className="item-thumbnail-border" cx={imageDimensions.x+imageDimensions.size/2} cy={imageDimensions.y+imageDimensions.size/2} r={imageDimensions.size/2} fill="none" stroke={color}></circle>
                         </g>
                 </g>

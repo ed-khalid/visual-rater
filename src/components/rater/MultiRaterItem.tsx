@@ -3,17 +3,19 @@ import { Scaler } from "../../functions/scale";
 import './MultiRaterItem.css'
 import { RatedSongItemGrouped } from "./Rater";
 import { SingleRaterItem } from "./SingleRaterItem";
-import { RATER_Y_BOTTOM, RaterOrientation } from "../../models/ui/RaterTypes";
+import { RaterOrientation } from "../../models/ui/RaterTypes";
 
 interface MultiRaterItemProps {
     group:RatedSongItemGrouped
     orientation:RaterOrientation
+    isReadonly:boolean
     scaler:Scaler
     mainlineX:number
-    onDragEnd:any
+    onDragEnd?:any
+    onClick?:any
 } 
 
-export const MultiRaterItem = ({group, onDragEnd, mainlineX, orientation, scaler }:MultiRaterItemProps) =>  {
+export const MultiRaterItem = ({group, onDragEnd, onClick, isReadonly, mainlineX, orientation, scaler }:MultiRaterItemProps) =>  {
 
 
        return <g className="groupedItems">
@@ -22,6 +24,8 @@ export const MultiRaterItem = ({group, onDragEnd, mainlineX, orientation, scaler
             <SingleRaterItem
               key={'multiline-tree-item-' + item.id + "-" + i }
               item={item}
+              isReadonly={isReadonly}
+              onClick={onClick}
               orientation={orientation}
               mainlineX={mainlineX}
               scaler={scaler}
