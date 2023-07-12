@@ -19,21 +19,22 @@
   position: absolute;
   cursor: move;
   border: 1px solid black; 
-  border-radius: 15px;
+  border-radius: 0px 0px 15px 15px;
+  z-index:99;
 }
 .panel-wrapper {
+  width:inherit;
   position:relative;
-}
-.panel .panel-header-wrapper {
   overflow:hidden;
-} 
+}
 .panel .panel-header {
+  z-index:-9;
   position: absolute;
   top:0px;
   left:0px;
   background-color:black;
   color: white;
-  width: 120%;
+  width: 100%;
 }
 .panel .panel-header .panel-title {
   font-size: 0.5em;
