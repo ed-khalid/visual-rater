@@ -205,8 +205,8 @@ export const App = () => {
         </div>
 
          <ArtistsPanel artists={artistsFull.data?.artists.content as Artist[]} onArtistSelect={onArtistSelect} ></ArtistsPanel>
-        {selectedArtists.map(artist => <ArtistAlbumsPanel artist={artist} onAlbumSelect={onAlbumSelect} />)}
-        {selectedAlbums.map(album => <AlbumPanel album={album} artistName={undefined} onClose={() => {}}  />)}
+        {selectedArtists.map(artist => <ArtistAlbumsPanel key={artist.id} artist={artist} onAlbumSelect={onAlbumSelect} />)}
+        {selectedAlbums.map(album => <AlbumPanel key={album.id} album={album} artistName={undefined} onClose={() => {}}  />)}
         <div id="rater" className="viz drop-target" ref={drop}>
           <RaterWrapper
           artists={artistsFull.data?.artists.content as Artist[]}
