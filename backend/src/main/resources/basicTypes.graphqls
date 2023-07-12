@@ -21,6 +21,7 @@ type Album {
     name: String!
     year: Int
     thumbnail: String
+    dominantColor: String
     songs:[Song!]!
     score:Float
 }

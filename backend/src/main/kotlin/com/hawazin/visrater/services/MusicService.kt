@@ -64,7 +64,7 @@ class MusicService(private val songRepo:SongRepository , private val albumRepo: 
     {
         val artist = artistRepo.findById(albumInput.artistId)
         if (artist.isPresent) {
-            var album = albumInput.let  { Album(id = UUID.randomUUID(),name = it.name, year= it.year, artist = artist.get(), thumbnail = it.thumbnail, score = 0.0 ) }
+            var album = albumInput.let  { Album(id = UUID.randomUUID(),name = it.name, year= it.year, artist = artist.get(), thumbnail = it.thumbnail, score = 0.0, dominantColor = it.dominantColor  ) }
             albumRepo.save(album)
             var songs = albumInput.songs.map { Song( id =  UUID.randomUUID(), name = it.name, album = album, artist = artist.get(), score = it.score, number= it.number, discNumber = it.discNumber   ) }
             songRepo.saveAll(songs)

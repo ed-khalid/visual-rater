@@ -37,6 +37,7 @@ CREATE TABLE album(
     thumbnail varchar(100),
     year INTEGER NOT NULL,
     artist_id uuid references artist(id),
+    dominant_color varchar(20),
     score float
 );
 

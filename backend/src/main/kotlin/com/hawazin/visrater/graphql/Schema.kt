@@ -7,6 +7,7 @@ import com.hawazin.visrater.models.db.Artist
 import com.hawazin.visrater.models.graphql.ArtistInput
 import com.hawazin.visrater.models.graphql.ItemType
 import com.hawazin.visrater.models.graphql.ItemType.MUSIC
+import com.hawazin.visrater.services.ImageService
 import com.hawazin.visrater.services.MusicService
 import com.hawazin.visrater.services.SpotifyApi
 import graphql.schema.TypeResolver
@@ -16,7 +17,7 @@ import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
-class SchemaBuilder(private val spotifyService: SpotifyApi, private val musicService: MusicService) {
+class SchemaBuilder(private val spotifyService: SpotifyApi, private val musicService: MusicService, private val imageService: ImageService) {
 
     private val objectMapper = jacksonObjectMapper()
     private var logger  = LoggerFactory.getLogger(javaClass)
@@ -39,6 +40,10 @@ class SchemaBuilder(private val spotifyService: SpotifyApi, private val musicSer
                 it.dataFetcher("CreateAlbum") { env ->
                     val raw = env.arguments["album"]
                     val albumInput = objectMapper.convertValue(raw, NewAlbumInput::class.java)
+                    if (albumInput.thumbnail != null) {
+                        val dominantColor = imageService.getDominantColor(albumInput.thumbnail)
+                        albumInput.dominantColor = dominantColor.colorString
+                    }
                     return@dataFetcher musicService.createAlbum(albumInput)
                 }
                 it.dataFetcher("DeleteSong") { env ->

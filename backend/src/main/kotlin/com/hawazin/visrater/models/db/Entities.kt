@@ -70,6 +70,7 @@ class Album(
     var name:String,
     var thumbnail:String?,
     var year:Int,
+    var dominantColor:String?,
     var score:Double,
     @ManyToOne @JoinColumn(name="artist_id")
     var artist:Artist,

@@ -6,7 +6,9 @@ import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Service
+import org.springframework.web.client.getForEntity
 import org.springframework.web.client.postForEntity
+import org.springframework.web.util.UriComponentsBuilder
 import java.util.*
 
 
@@ -25,6 +27,17 @@ class ImageService(val configuration: ImageServiceConfiguration) {
         return resp.body!!
     }
 
+    fun getDominantColor(imageUrl:String) : DominantColorResponse {
+        val template = RestTemplateBuilder()
+            .rootUri(configuration.uri)
+            .build()
+        val headers = HttpHeaders()
+        headers.contentType = MediaType.APPLICATION_JSON
+        headers.accept = Collections.singletonList(MediaType.APPLICATION_JSON)
+        val resp = template.getForEntity<DominantColorResponse>("/colors?imageUrl={imageUrl}",imageUrl)
+        return resp.body!!
+    }
+
     fun removeDuplicates(similarAlbums:Array<ImageSimilarityResponse>, albums:List<SpotifyAlbum>) : List<SpotifyAlbum> {
         val filteredAlbums:List<SpotifyAlbum> = similarAlbums.map<ImageSimilarityResponse, SpotifyAlbum> { it ->
             var albums = it.similarAlbumIds.map { _it -> albums.find { album -> album.id == _it }!! }
@@ -34,5 +47,7 @@ class ImageService(val configuration: ImageServiceConfiguration) {
     }
 }
 
+
+class DominantColorResponse(val colorString:String)
 class ImageSimilarityRequest(val id:String,val imageUrl:String)
 class ImageSimilarityResponse(val similarAlbumIds:Array<String>)
