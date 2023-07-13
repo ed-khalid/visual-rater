@@ -13,13 +13,14 @@ interface SingleRaterItemProps {
     mainlineX:number
     isReadonly:boolean
     onClick?:any
+    shouldDrawScoreline:boolean
     onDragEnd?:any
     scaler:Scaler
     scale?:number
     orientation:RaterOrientation
 } 
 
-export const SingleRaterItem = ({item, orientation , isReadonly, mainlineX, scale=1, scaler, onClick, onDragEnd}:SingleRaterItemProps) =>  {
+export const SingleRaterItem = ({item, orientation , shouldDrawScoreline, isReadonly, mainlineX, scale=1, scaler, onClick, onDragEnd}:SingleRaterItemProps) =>  {
     const y = scaler.toPosition(item.score) 
     const tierOffset = RATER_TIER_WIDTH * item.tier 
     const tierLineOpacityOffset = 0.7 
@@ -137,7 +138,7 @@ export const SingleRaterItem = ({item, orientation , isReadonly, mainlineX, scal
                             <filter id="shadow">
                                 <feDropShadow dx="0.2" dy="0.4" stdDeviation={0.2} />
                             </filter>
-                            <line className="item-scoreline" x1={lineDimensions.x1} y1={lineDimensions.y1} x2={lineDimensions.x2} y2={lineDimensions.y2} stroke={color} opacity={1-tierLineOpacityOffset} />
+                            {shouldDrawScoreline && <line className="item-scoreline" x1={lineDimensions.x1} y1={lineDimensions.y1} x2={lineDimensions.x2} y2={lineDimensions.y2} stroke={"black"} opacity={0.2} />}
                             <circle className="item-thumbnail-overlay" cx={imageDimensions.x+imageDimensions.size/2} cy={imageDimensions.y+imageDimensions.size/2} r={imageDimensions.size/2} fill={color} stroke={color}></circle>
                             <image fill={"rgba"+item.overlay} opacity={0.5} xlinkHref={item.thumbnail} clipPath="inset(0% round 15px)" cursor={cursor} className="item-thumbnail" width={imageDimensions.size} x={imageDimensions.x} y={imageDimensions.y} height={imageDimensions.size} href={item.thumbnail}/>
                             <text textAnchor="middle" className="item-name" cursor={cursor} fontSize={6*scale} fill="black" x={songNameDimensions.x} y={songNameDimensions.y} dy=".35em">{formatName(item.name)}</text>

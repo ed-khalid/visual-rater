@@ -68,15 +68,13 @@ div.drop-target {
 div#search {
   left: 0;
 }
-div#top-controls {
-}
 
 div#dashboard {
     text-align:unset;
     top: 0;
     right: 0;
 }
-svg {
+svg.rater {
   width: 100%;
   height: 100%; 
 }

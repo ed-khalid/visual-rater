@@ -23,6 +23,7 @@ export const MultiRaterItem = ({group, onDragEnd, onClick, isReadonly, mainlineX
             <g key={'multirater-item-g' + item.id}>
             <SingleRaterItem
               item={item}
+              shouldDrawScoreline={ i === group.items.length-1}
               isReadonly={isReadonly}
               onClick={onClick}
               orientation={orientation}

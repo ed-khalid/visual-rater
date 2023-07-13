@@ -1,27 +1,28 @@
-import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from "react"
-import { Album, Artist } from "../../generated/graphql"
+import React, { Dispatch, SetStateAction, useCallback, useEffect, useRef, useState } from "react"
+import { Album, Artist, Song } from "../../generated/graphql"
 import { RatedMusicItemUI, RatedSongItemUI } from "../../models/ui/ItemTypes"
 import { Rater } from "./Rater"
 import { GlobalRaterState, RATER_X, RATER_Y_BOTTOM, RaterOrientation } from "../../models/ui/RaterTypes"
 import { RatedItem } from "../../models/domain/ItemTypes"
+import { findAlbumAndArtist, findItemsByIds } from "../../functions/music"
 
 export enum RaterWrapperMode {
-  ARTIST,ALBUM
+  ARTIST,ALBUM,SONG
 } 
 
 
 interface Props {
     artists:Artist[]|undefined
-    items:Array<Artist>|Array<Album>
-    mode:RaterWrapperMode
-    onAlbumClick:(album:Album|undefined, artist:Artist|undefined) => void 
+    onAlbumClick:(albums:Array<Album>|undefined, artist:Artist|undefined) => void 
+    onArtistClick:(artist:Artist|undefined) => void
     state:GlobalRaterState
     setState:Dispatch<SetStateAction<GlobalRaterState>>
 }
 const mapSongToRatedItem  = (song:any, artist:Artist, album:Album, orientation:RaterOrientation) : RatedSongItemUI => new RatedSongItemUI({ id: song.id, name: song.name },song.score!, album.thumbnail!, orientation,1, album.dominantColor,song.number,artist.name, album.name);
 const mapAlbumToRatedItem  = (album:Album, artist:Artist, orientation:RaterOrientation) : RatedMusicItemUI => new RatedMusicItemUI({ id: album.id, name:album.name}, album.score!, album.thumbnail!, orientation, 1, album.dominantColor)    
+const mapArtistToRatedItem  = (artist:Artist, orientation:RaterOrientation) : RatedMusicItemUI => new RatedMusicItemUI({ id: artist.id, name:artist.name}, artist.score!, artist.thumbnail!, orientation, 1, '(0,0,0)')    
 
-export const RaterWrapper = ({state, setState, artists, onAlbumClick, items, mode}:Props) =>  {
+export const RaterWrapper = ({state, setState, artists, onArtistClick, onAlbumClick}:Props) =>  {
     const gWrapper = useRef<SVGGElement>(null)
     const svgRef = useRef<SVGSVGElement>(null) 
     const [mainRaterItems, setMainRaterItems] = useState<RatedMusicItemUI[]>([])
@@ -46,71 +47,63 @@ export const RaterWrapper = ({state, setState, artists, onAlbumClick, items, mod
       return orientation === RaterOrientation.LEFT ? RaterOrientation.RIGHT : RaterOrientation.LEFT  
     }
 
-    const findAlbumAndArtist = (albumId:string) : [Album|undefined, Artist|undefined] => {
-      let retv:[Album|undefined, Artist|undefined]= [undefined,undefined]; 
-      if (artists) {
-            artists.find(artist => {
-              const foundAlbum = artist.albums?.find(album => album?.id === albumId)
-              if (foundAlbum) {
-                retv = [foundAlbum, artist] 
-                return true
-              }
-              else {
-                return false
-              }
-            })
-       }
-      return retv
+    const handleOnAlbumClick =  (item:RatedItem) => {
+      const [album,artist] = findAlbumAndArtist(item.id, artists)  
+      if (album) {
+        onAlbumClick([album], artist)
+      } else {
+        onAlbumClick(undefined, artist)
+      }
+    }
+    const handleOnArtistClick =  (item:RatedItem) => {
+      const artist = artists!.find(it => it.id === item.id) 
+      onArtistClick(artist)
     }
 
-    const handleOnAlbumClick =  (item:RatedItem) => {
-      const [album,artist] = findAlbumAndArtist(item.id)  
-      onAlbumClick(album, artist)
-    }
 
     useEffect(() => {
-      if (artists) {
+      if (artists && state.selections) {
         let whichOrientation = RaterOrientation.LEFT  
 
-        if (mode === RaterWrapperMode.ARTIST) {
+        if (state.mode === RaterWrapperMode.ARTIST) {
+          const selectedArtists = findItemsByIds(state.selections, state.mode, artists) as Array<Artist>  
+          const newItems = selectedArtists.map( it => {
+            whichOrientation = switchOrientation(whichOrientation)
+            return mapArtistToRatedItem(it, whichOrientation)
+          })
+          setState(prev =>  ({...prev, isReadonly: true}))
+          setMainRaterItems(newItems)
+        }
+
+        if (state.mode === RaterWrapperMode.ALBUM) {
           let  newItems:Array<RatedMusicItemUI> = []  
-          const artists = items as Array<Artist>   
-          artists.map(it => it.id).forEach(artistId => {
-            const foundArtist = artists.find(artist => artist.id === artistId)
-            if (foundArtist) {
-              const albumItems = foundArtist.albums!.map(it =>{ 
+          const albums = findItemsByIds(state.selections, state.mode, artists) as Array<{album:Album, artist:Artist}>
+          const albumItems = albums.filter(it => it!.album.score! >= state.scoreFilter.start && it!.album.score! <= state.scoreFilter.end )
+                 .map(it =>{ 
                 whichOrientation = switchOrientation(whichOrientation)
-                return mapAlbumToRatedItem(it!, foundArtist,whichOrientation )
+                return mapAlbumToRatedItem(it.album, it.artist,whichOrientation )
             })  
               newItems = [ ...newItems, ...albumItems ] 
-            }
-          })
           setState(prev => ({ ...prev, isReadonly: true }))
           setMainRaterItems(newItems)
         }  
-        if (mode === RaterWrapperMode.ALBUM) {
-          let raterAlbums : Array<RatedSongItemUI>  = []
-          const albums = items as Array<Album> 
-          albums.map(it => it.id).forEach(albumId => {
-            artists.find(artist => {
-              const foundAlbum = artist.albums?.find(album => album?.id === albumId)
-              if (foundAlbum && foundAlbum.songs) {
-                const albumItems = foundAlbum.songs.filter(it => it.score).map(it => mapSongToRatedItem(it, artist, foundAlbum, whichOrientation)) 
-                raterAlbums = [...raterAlbums, ...albumItems] 
-                whichOrientation = switchOrientation(whichOrientation) 
-                return true;
-              }
-              return false;
-            })
+        if (state.mode === RaterWrapperMode.SONG) {
+          const songs = findItemsByIds(state.selections, state.mode, artists) as Array<{song:Song, album:Album, artist:Artist}> 
+          const songItems = songs
+                .filter(it => it.song.score && (it!.song.score! >= state.scoreFilter.start && it!.song.score! <= state.scoreFilter.end ))
+                .map(it =>  {
+                  const retv = mapSongToRatedItem(it.song, it.artist, it.album, whichOrientation)
+                  whichOrientation = switchOrientation(whichOrientation) 
+                  return retv
+                })
             setState(prev => ({ ...prev, isReadonly: false }))
-            setMainRaterItems(raterAlbums)
-          })
-        }
-      }
-    }, [artists, items, mode, setState])
+            setMainRaterItems(songItems)
+              }
+            }
+    }, [artists, state.selections, state.mode, setState, state.scoreFilter.start, state.scoreFilter.end])
 
 
-    return <svg preserveAspectRatio="xMidYMin meet" ref={svgRef} id="trackRater" viewBox="0 0 800 700">
+    return <svg className="rater" ref={svgRef} id="trackRater" viewBox="0 0 800 700">
           <defs>
             <clipPath id="clip-path">
               <rect x="0" y="0" width="950" height={950}></rect>
@@ -120,8 +113,8 @@ export const RaterWrapper = ({state, setState, artists, onAlbumClick, items, mod
           {mainRaterItems.length && <Rater 
                 setState={setState}
                 position={{x:RATER_X, y:RATER_Y_BOTTOM}}
-                isReadonly={mode === RaterWrapperMode.ARTIST}
-                onItemClick={handleOnAlbumClick}
+                isReadonly={state.mode !== RaterWrapperMode.SONG}
+                onItemClick={(state.mode === RaterWrapperMode.ALBUM) ? handleOnAlbumClick : handleOnArtistClick}
                 state={state}
                 zoomTarget={gWrapper.current}
                 items={mainRaterItems}
