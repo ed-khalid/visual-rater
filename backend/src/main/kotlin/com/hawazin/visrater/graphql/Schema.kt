@@ -10,7 +10,9 @@ import com.hawazin.visrater.models.graphql.ItemType
 import com.hawazin.visrater.models.graphql.ItemType.MUSIC
 import com.hawazin.visrater.services.ImageService
 import com.hawazin.visrater.services.MusicService
+import com.hawazin.visrater.services.PublisherService
 import com.hawazin.visrater.services.SpotifyApi
+import graphql.GraphqlErrorException
 import graphql.schema.TypeResolver
 import graphql.schema.idl.RuntimeWiring
 import org.reactivestreams.Publisher
@@ -19,7 +21,7 @@ import org.springframework.stereotype.Service
 import java.util.*
 
 @Service
-class SchemaBuilder(private val spotifyService: SpotifyApi, private val musicService: MusicService, private val imageService: ImageService) {
+class SchemaBuilder(private val spotifyService: SpotifyApi, private val musicService: MusicService, private val imageService: ImageService, private val publisherService: PublisherService) {
 
     private val objectMapper = jacksonObjectMapper()
     private var logger  = LoggerFactory.getLogger(javaClass)
@@ -55,9 +57,9 @@ class SchemaBuilder(private val spotifyService: SpotifyApi, private val musicSer
                     }
                     catch (e:Exception) {
                         if (e.message != null) {
-                            throw VisRaterGraphQLError(e.message!!)
+                            throw GraphqlErrorException.Builder().message(e.message).build()
                         } else {
-                            throw VisRaterGraphQLError("Shmidreeni")
+                            throw GraphqlErrorException.Builder().message(e.toString()).build()
                         }
                     }
                     return@dataFetcher musicService.deleteSongById(UUID.fromString(id))
@@ -69,10 +71,8 @@ class SchemaBuilder(private val spotifyService: SpotifyApi, private val musicSer
             }
             .type("Subscription")
             {
-                it.dataFetcher("artistMetadataUpdated") { env ->
-                    val publisher = Publisher<ArtistMetadata>()
-
-
+                it.dataFetcher("artistMetadataUpdated") {
+                    return@dataFetcher publisherService.metadataPublisher
                 }
             }
             .type("Query")
@@ -111,7 +111,7 @@ class SchemaBuilder(private val spotifyService: SpotifyApi, private val musicSer
                 it.dataFetcher("searchExternalArtist") { env ->
                     val name = env.arguments["name"] as String?
                     if (name != null ) {
-                        return@dataFetcher spotifyService.searchArtist(name.toLowerCase())
+                        return@dataFetcher spotifyService.searchArtist(name.lowercase())
                     } else {
                         throw IllegalArgumentException("Needs at least one argument")
                     }

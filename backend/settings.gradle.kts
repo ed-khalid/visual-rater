@@ -1,4 +1,7 @@
 rootProject.name = "visrater"
-pluginManagement {
-    val kotlinVersion:String by settings
+
+pluginManagement.resolutionStrategy.eachPlugin {
+    if (requested.id.id.startsWith("org.jetbrains.kotlin")) {
+        useVersion("1.8.0")
+    }
 }

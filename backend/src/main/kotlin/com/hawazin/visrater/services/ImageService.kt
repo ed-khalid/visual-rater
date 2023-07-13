@@ -41,7 +41,7 @@ class ImageService(val configuration: ImageServiceConfiguration) {
     fun removeDuplicates(similarAlbums:Array<ImageSimilarityResponse>, albums:List<SpotifyAlbum>) : List<SpotifyAlbum> {
         val filteredAlbums:List<SpotifyAlbum> = similarAlbums.map<ImageSimilarityResponse, SpotifyAlbum> { it ->
             var albums = it.similarAlbumIds.map { _it -> albums.find { album -> album.id == _it }!! }
-            albums.minByOrNull { it.name.length!! } ?: albums[0]
+            albums.minByOrNull { it.name.length } ?: albums[0]
         }
         return filteredAlbums
     }

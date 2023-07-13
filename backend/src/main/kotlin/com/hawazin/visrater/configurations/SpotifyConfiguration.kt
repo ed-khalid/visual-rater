@@ -1,10 +1,8 @@
 package com.hawazin.visrater.configurations
 
 import org.springframework.boot.context.properties.ConfigurationProperties
-import org.springframework.boot.context.properties.ConstructorBinding
 
 
-@ConstructorBinding
 @ConfigurationProperties(prefix="spotify")
 data class SpotifyConfiguration (
         val accounts:String, val api:String, val client: SpotifyClientConfiguration

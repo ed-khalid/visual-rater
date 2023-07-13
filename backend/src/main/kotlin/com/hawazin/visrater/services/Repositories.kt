@@ -9,7 +9,7 @@ import java.util.*
 
 interface ArtistRepository: JpaRepository<Artist, UUID>   {
     fun findByName(name:String) : Artist?
-    @Query("SELECT metadata.id, metadata.tier, metadata.totalAlbums, metadata.totalAlbums, metadata.totalSongs, metadata.songs.classic, metadata.songs.great, metadata.songs.good, metadata.songs.mediocre, metadata.songs.terrible FROM Artist artist INNER JOIN Song song ON Artist.id = song.artist.id INNER JOIN ArtistMetadata metadata ON metadata.artist.id = artist.id WHERE song.id = ?1")
+    @Query("SELECT song.artist.metadata FROM Song song JOIN song.artist JOIN song.artist.metadata WHERE song.id = ?1")
     fun findBySongId(songId:UUID): ArtistMetadata?
 }
 

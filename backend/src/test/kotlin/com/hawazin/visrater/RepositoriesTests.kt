@@ -32,7 +32,7 @@ class RepositoriesTests @Autowired constructor(
     fun  `When Persisting Song, Album, Artist Then They All Get Saved`() {
         val metadata = ArtistMetadata(UUID.randomUUID(), songs= ArtistSongMetadata(), totalAlbums = 0, totalSongs = 0, tier =0)
         val artist = Artist(UUID.randomUUID(), "Britney Spears", null, metadata=metadata, score = 0.0)
-        val album = Album(UUID.randomUUID(),"Baby One More Time", null, 1975 , 0.0, artist)
+        val album = Album(UUID.randomUUID(),"Baby One More Time", null, 1975 ,"(0,0,0,0)", 0.0, artist)
         val song = Song(UUID.randomUUID(),"Stronger",1,1, album, artist, 7.3 )
         entityManager.persist(artist)
         entityManager.persist(album)

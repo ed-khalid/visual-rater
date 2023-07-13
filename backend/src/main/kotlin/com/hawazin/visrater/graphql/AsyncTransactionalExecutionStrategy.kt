@@ -4,7 +4,7 @@ import graphql.ExecutionResult
 import graphql.execution.*
 import org.springframework.stereotype.Service
 import java.util.concurrent.CompletableFuture
-import javax.transaction.Transactional
+import jakarta.transaction.Transactional
 
 @Service
 class AsyncTransactionalExecutionStrategy : AsyncExecutionStrategy() {

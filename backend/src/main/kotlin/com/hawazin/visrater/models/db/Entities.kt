@@ -1,9 +1,8 @@
 package com.hawazin.visrater.models.db
 
-import jdk.jfr.Percentage
 import org.hibernate.annotations.GenericGenerator
 import java.util.*
-import javax.persistence.*
+import jakarta.persistence.*
 
 
 @Entity

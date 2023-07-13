@@ -1,15 +1,14 @@
 package com.hawazin.visrater.services
 
-import com.hawazin.visrater.graphql.VisRaterGraphQLError
 import com.hawazin.visrater.models.graphql.NewAlbumInput
 import com.hawazin.visrater.models.graphql.SongInput
 import com.hawazin.visrater.models.db.*
 import com.hawazin.visrater.models.graphql.ArtistInput
+import graphql.GraphqlErrorException
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import java.util.*
-import java.util.concurrent.Flow.Publisher
 
 
 @Service
@@ -25,10 +24,10 @@ class MusicService(private val songRepo:SongRepository , private val albumRepo: 
         }
         catch(e:Exception) {
             if (e.message != null) {
-                throw VisRaterGraphQLError(e.message!!)
+                throw GraphqlErrorException.Builder().message(e.message!!).build()
             }
             else {
-                throw VisRaterGraphQLError("Shmidreeni")
+                throw GraphqlErrorException.Builder().message(e.toString()).build()
             }
         }
         return true
@@ -43,11 +42,10 @@ class MusicService(private val songRepo:SongRepository , private val albumRepo: 
 
     fun notifyOnMetadataUpdate(songId:UUID)
     {
-        val artist = artistRepo.findBySongId(songId)
-        if (artist != null) {
-            publisherService.notify(artist)
+        val metadata = artistRepo.findBySongId(songId)
+        if (metadata != null) {
+            publisherService.notify(metadata)
         }
-
     }
 
 
@@ -62,6 +60,7 @@ class MusicService(private val songRepo:SongRepository , private val albumRepo: 
         song.name = songInput.name ?: song.name
         song.number = songInput.number ?: song.number
         songRepo.save(song)
+        notifyOnMetadataUpdate(song.id)
         return song
     }
 
