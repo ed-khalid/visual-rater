@@ -9,10 +9,11 @@ import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
 import java.util.*
+import java.util.concurrent.Flow.Publisher
 
 
 @Service
-class MusicService(private val songRepo:SongRepository , private val albumRepo: AlbumRepository, private val artistRepo:ArtistRepository) {
+class MusicService(private val songRepo:SongRepository , private val albumRepo: AlbumRepository, private val artistRepo:ArtistRepository, private val publisherService: PublisherService) {
 
     fun readArtists() : Page<Artist> = artistRepo.findAll(PageRequest.of(0,5))
     fun readArtist(name:String) = artistRepo.findByName(name)
@@ -37,6 +38,16 @@ class MusicService(private val songRepo:SongRepository , private val albumRepo: 
     {
         albumRepo.deleteById(id)
         return true
+    }
+
+
+    fun notifyOnMetadataUpdate(songId:UUID)
+    {
+        val artist = artistRepo.findBySongId(songId)
+        if (artist != null) {
+            publisherService.notify(artist)
+        }
+
     }
 
 

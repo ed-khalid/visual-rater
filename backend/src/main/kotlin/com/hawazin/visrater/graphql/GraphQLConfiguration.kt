@@ -1,6 +1,7 @@
 package com.hawazin.visrater.graphql
 
 import graphql.execution.ExecutionStrategy
+import graphql.execution.SubscriptionExecutionStrategy
 import graphql.schema.GraphQLSchema
 import graphql.schema.idl.SchemaGenerator
 import graphql.schema.idl.SchemaParser
@@ -39,6 +40,7 @@ class GraphQLConfiguration(private val schemaBuilder: SchemaBuilder, private val
         ResourceUtils.getFile("classpath:basicTypes.graphqls"),
         ResourceUtils.getFile("classpath:queries.graphqls"),
         ResourceUtils.getFile("classpath:mutations.graphqls"),
+        ResourceUtils.getFile("classpath:subscriptions.graphqls"),
         ResourceUtils.getFile("classpath:schema.graphqls")
     )
 

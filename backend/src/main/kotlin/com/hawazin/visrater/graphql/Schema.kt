@@ -4,6 +4,7 @@ import com.hawazin.visrater.models.api.ArtistPage
 import com.hawazin.visrater.models.graphql.NewAlbumInput
 import com.hawazin.visrater.models.graphql.SongInput
 import com.hawazin.visrater.models.db.Artist
+import com.hawazin.visrater.models.db.ArtistMetadata
 import com.hawazin.visrater.models.graphql.ArtistInput
 import com.hawazin.visrater.models.graphql.ItemType
 import com.hawazin.visrater.models.graphql.ItemType.MUSIC
@@ -12,6 +13,7 @@ import com.hawazin.visrater.services.MusicService
 import com.hawazin.visrater.services.SpotifyApi
 import graphql.schema.TypeResolver
 import graphql.schema.idl.RuntimeWiring
+import org.reactivestreams.Publisher
 import org.slf4j.LoggerFactory
 import org.springframework.stereotype.Service
 import java.util.*
@@ -63,6 +65,14 @@ class SchemaBuilder(private val spotifyService: SpotifyApi, private val musicSer
                 it.dataFetcher("DeleteAlbum") { env ->
                     val id = env.arguments["albumId"] as String
                     return@dataFetcher musicService.deleteAlbumById(UUID.fromString(id))
+                }
+            }
+            .type("Subscription")
+            {
+                it.dataFetcher("artistMetadataUpdated") { env ->
+                    val publisher = Publisher<ArtistMetadata>()
+
+
                 }
             }
             .type("Query")

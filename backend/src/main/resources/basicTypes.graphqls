@@ -67,6 +67,7 @@ type ArtistSongMetadata {
 }
 
 type ArtistMetadata {
+    id:String!
     songs:ArtistSongMetadata!
     totalSongs:Int!
     totalAlbums:Int!

@@ -41,6 +41,9 @@ dependencies {
     // to embed GraphiQL tool
     runtimeOnly ("com.graphql-java-kickstart:graphiql-spring-boot-starter:7.0.1")
 
+    // rx
+    implementation("io.reactivex.rxjava3:rxkotlin:3.0.1")
+
     // db
     runtimeOnly("org.postgresql:postgresql")
 
