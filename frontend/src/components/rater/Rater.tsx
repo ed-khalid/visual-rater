@@ -58,7 +58,7 @@ export const Rater = ({position, state, setState, onItemClick, isReadonly, items
                 if (overlap) {
                     overlap.items.push(curr)
                     overlap.items.sort((a,b) => (a.score > b.score) ? 1 : (a.score < b.score) ? -1 : 0 )
-                    overlap.items.forEach((item, i) => item.tier = ((i+1) % 8))
+                    overlap.items.forEach((item, i) => item.tier = ((i+1)))
                 } else {
                     acc.push({ position, items:[curr], id: '' + acc.length + 1 })
                 }
@@ -107,7 +107,7 @@ export const Rater = ({position, state, setState, onItemClick, isReadonly, items
     const axisSel:Selection<SVGGElement, unknown, null, undefined> = makeAxis(state.scaler.scale) 
 
     return (
-                  <g clipPath="url(#clip-path)"  ref={g} className="rater-container">
+                  <g ref={g} className="rater-container">
  <rect 
                             ref={zoomListener} 
                             id="zoom-listener" 
@@ -124,6 +124,7 @@ export const Rater = ({position, state, setState, onItemClick, isReadonly, items
                                 key={group.items[0].id}
                                 item={group.items[0]}
                                 isReadonly={isReadonly}
+                                shouldDrawScoreline={true}
                                 orientation={group.items[0].orientation}
                                 mainlineX={position.x}
                                 scaler={state.scaler}
