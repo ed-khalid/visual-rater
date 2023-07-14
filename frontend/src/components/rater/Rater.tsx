@@ -10,7 +10,7 @@ import { Position } from '../../models/ui/Position';
 import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
 import React from 'react';
 import './Rater.css'
-import { GlobalRaterState, RATER_Y_TOP, RaterOrientation } from '../../models/ui/RaterTypes';
+import { GlobalRaterState, RATER_Y_TOP, RatedSongItemGrouped } from '../../models/ui/RaterTypes';
 import { ZoomBehavior } from './behaviors/ZoomBehavior';
 
 interface Props {
@@ -20,24 +20,19 @@ interface Props {
     zoomTarget?:SVGGElement|null
     onItemClick?:(item:RatedItem) => void
     setState:Dispatch<SetStateAction<GlobalRaterState>>
-    items: RatedMusicItemUI[];
-    setItems:Dispatch<SetStateAction<RatedMusicItemUI[]>>
+    items: RatedSongItemGrouped[]
+    updateSongScore: (id:string, score:number) => void 
 }
-export type RatedSongItemGrouped  = {
-        id:string
-        position:number
-        ,items:RatedMusicItemUI[]
-    } 
 
 
 
 
-export const Rater = ({position, state, setState, onItemClick, isReadonly, items, setItems }:Props) => {
 
-    const [updateSong]  = useUpdateSongMutation();
-    const [currentItem, setCurrentItem] = useState<RatedItem|null>();  
-    const [groupedItems, setGroupedItems] = useState<RatedSongItemGrouped[]>([])
+export const Rater = ({position, state, setState, onItemClick, updateSongScore, isReadonly, items }:Props) => {
+
+    const [currentItem, setCurrentItem] = useState<{id:string, score:number}|null>();  
     const g = useRef<SVGGElement>(null)
+    const itemsGroupRef = useRef<SVGGElement>(null)
     const zoomTarget= useRef<SVGGElement>(null)
     const zoomListener = useRef<SVGRectElement>(null)
     const [zoomBehavior, setZoomBehavior] = useState<any>() 
@@ -50,49 +45,20 @@ export const Rater = ({position, state, setState, onItemClick, isReadonly, items
         } 
     }, [zoomListener,zoomTarget])
 
-    useEffect(() => {
-        const groupCloseItems = (ratedItems:RatedMusicItemUI[]) => {
-            const groupedItems = ratedItems.reduce((acc:RatedSongItemGrouped[] , curr:RatedMusicItemUI) => {
-                const position =  state.scaler.toPosition(curr.score) 
-                const overlap = acc.find((it:RatedSongItemGrouped) =>  Math.abs(Number(it.position) - position) < 50  )
-                if (overlap) {
-                    overlap.items.push(curr)
-                    overlap.items.sort((a,b) => (a.score > b.score) ? 1 : (a.score < b.score) ? -1 : 0 )
-                    overlap.items.forEach((item, i) => item.tier = ((i+1)))
-                } else {
-                    acc.push({ position, items:[curr], id: '' + acc.length + 1 })
-                }
-                return acc
-            },  [])
-            return groupedItems
-        }  
-        const leftItems = items.filter( it => it.orientation === RaterOrientation.LEFT)
-        const rightItems = items.filter( it => it.orientation === RaterOrientation.RIGHT)
-        const leftGroups =  groupCloseItems(leftItems)
-        const rightGroups =  groupCloseItems(rightItems)
-        setGroupedItems([...leftGroups, ...rightGroups])
-    }, [items, state.scaler])
 
     useEffect(() => {
         switch(state.itemType) {
             case ItemType.MUSIC :
             if (currentItem) {
-                updateSong({variables: {song:  { id : currentItem.id, score: currentItem.score  } }})
+                updateSongScore(currentItem.id, currentItem.score)
                 setCurrentItem(null)
            } 
         }
-    }, [currentItem, state.itemType, updateSong])
+    }, [currentItem, state.itemType])
 
 
     const updateItem =  (itemId:string, newScore:number) => {
-        console.log(newScore)
-        const item = items.find( it => it.id === itemId) 
-        if (item) {
-          item.score = newScore; 
-          const _r = items.filter(_item => _item !== item);
-          setCurrentItem(item);
-          setItems( [..._r, item] )
-        }
+        setCurrentItem({id:itemId, score:newScore})
     }
 
     const makeAxis = (scale:AxisScale<number>) => {
@@ -118,7 +84,8 @@ export const Rater = ({position, state, setState, onItemClick, isReadonly, items
                       <g ref={zoomTarget} className="zoom-target">
                         <g className="rater-axis"></g>
                         <line className="rater-line" x1={position.x} y1={RATER_Y_TOP} x2={position.x} y2={position.y} />
-                      {groupedItems.map(group =>  
+                        <g ref={itemsGroupRef} className="items">
+                      {items.map(group =>  
                        (group.items.length === 1) ? 
                             <SingleRaterItem
                                 key={group.items[0].id}
@@ -141,7 +108,7 @@ export const Rater = ({position, state, setState, onItemClick, isReadonly, items
                             scaler={state.scaler}
                             onDragEnd={updateItem}
                       />)
-                      }
+                      }</g>
                       
                       </g>
                     </g>
