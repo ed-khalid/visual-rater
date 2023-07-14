@@ -9,13 +9,22 @@ spring:
     url: "jdbc:postgresql://localhost:5432/visual_rater"
     username: visual_rater_app
     password: {:default}
-    initialization-mode: always
   application:
     name: visrater-backend
+  graphql:
+    websocket:
+      path: /graphql
+    cors:
+      allowed-origins: http://localhost:3000
+      allowed-methods: GET, POST
+      max-age: 1800s
   servlet:
     multipart:
       enabled: true
       location: /tmp
+  sql:
+    init:
+      mode: always
 server:
   port: 9000
 management:
@@ -23,23 +32,11 @@ management:
     web:
       exposure:
         include: health,info,metrics
-graphql:
-  servlet:
-    actuator-metrics: true
-    corsEnabled: true
-  playground:
-    cdn:
-      version: latest
-graphiql:
-  enabled: true
-  cdn:
-    enabled: true
-    version: 0.17.5
 logging:
   level:
-    root: ERROR
-    org.spingframework.web: ERROR
-    com.hawazin.visrater: DEBUG
+   root: ERROR
+   org.spingframework.web: ERROR
+   com.hawazin.visualraterspring: DEBUG
 spotify:
   client:
     id: 793c68b38b06461d8127f90148edc66a
