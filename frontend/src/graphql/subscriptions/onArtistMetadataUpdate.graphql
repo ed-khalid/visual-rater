@@ -1,24 +1,6 @@
 
-query getArtists {
-  artists {
-    total 
-    pageNumber
-    content
-    {
-      id
-      name 
-      thumbnail
-      albums {
-        id
-        name
-        year
-        dominantColor
-        thumbnail
-        songs {
-          ...SongFields
-        }
-      }
-      metadata {
+subscription onArtistMetadataUpdate {
+    artistMetadataUpdated {
         id
         totalSongs
         totalAlbums
@@ -36,7 +18,6 @@ query getArtists {
           badPercentage
           terriblePercentage
         }
-      }
+
     }
-  }
-}
+}   
