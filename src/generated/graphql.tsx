@@ -45,6 +45,7 @@ export type ArtistInput = {
 
 export type ArtistMetadata = {
   __typename?: 'ArtistMetadata';
+  id: Scalars['String']['output'];
   songs: ArtistSongMetadata;
   totalAlbums: Scalars['Int']['output'];
   totalSongs: Scalars['Int']['output'];
@@ -205,6 +206,11 @@ export type SongInput = {
   score?: InputMaybe<Scalars['Float']['input']>;
 };
 
+export type Subscription = {
+  __typename?: 'Subscription';
+  artistMetadataUpdated?: Maybe<ArtistMetadata>;
+};
+
 export type CreateAlbumMutationVariables = Exact<{
   albumInput?: InputMaybe<NewAlbumInput>;
 }>;
@@ -243,7 +249,7 @@ export type UpdateSongMutation = { __typename?: 'Mutation', UpdateSong?: { __typ
 export type GetArtistsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetArtistsQuery = { __typename?: 'Query', artists: { __typename?: 'ArtistPage', total: number, pageNumber: number, content: Array<{ __typename?: 'Artist', id: string, name: string, thumbnail?: string | null, score?: number | null, albums?: Array<{ __typename?: 'Album', id: string, name: string, year?: number | null, score?: number | null, dominantColor?: string | null, thumbnail?: string | null, songs: Array<{ __typename?: 'Song', id: string, name: string, number: number, discNumber: number, score?: number | null }> } | null> | null, metadata?: { __typename?: 'ArtistMetadata', totalSongs: number, totalAlbums: number, songs: { __typename?: 'ArtistSongMetadata', classic: number, great: number, good: number, mediocre: number, bad: number, terrible: number, classicPercentage: number, greatPercentage: number, goodPercentage: number, mediocrePercentage: number, badPercentage: number, terriblePercentage: number } } | null } | null> } };
+export type GetArtistsQuery = { __typename?: 'Query', artists: { __typename?: 'ArtistPage', total: number, pageNumber: number, content: Array<{ __typename?: 'Artist', id: string, name: string, thumbnail?: string | null, score?: number | null, albums?: Array<{ __typename?: 'Album', id: string, name: string, year?: number | null, score?: number | null, dominantColor?: string | null, thumbnail?: string | null, songs: Array<{ __typename?: 'Song', id: string, name: string, number: number, discNumber: number, score?: number | null }> } | null> | null, metadata?: { __typename?: 'ArtistMetadata', id: string, totalSongs: number, totalAlbums: number, songs: { __typename?: 'ArtistSongMetadata', classic: number, great: number, good: number, mediocre: number, bad: number, terrible: number, classicPercentage: number, greatPercentage: number, goodPercentage: number, mediocrePercentage: number, badPercentage: number, terriblePercentage: number } } | null } | null> } };
 
 export type GetTracksForSearchAlbumQueryVariables = Exact<{
   albumId: Scalars['String']['input'];
@@ -260,6 +266,11 @@ export type SearchByArtistQueryVariables = Exact<{
 export type SearchByArtistQuery = { __typename?: 'Query', searchExternalArtist?: { __typename?: 'ExternalArtistSearchResult', name: string, id: string, thumbnail?: string | null, albums: Array<{ __typename?: 'ExternalAlbumSearchResult', id: string, name: string, thumbnail: string, year?: number | null }> } | null };
 
 export type SongFieldsFragment = { __typename?: 'Song', id: string, name: string, number: number, discNumber: number, score?: number | null };
+
+export type OnArtistMetadataUpdateSubscriptionVariables = Exact<{ [key: string]: never; }>;
+
+
+export type OnArtistMetadataUpdateSubscription = { __typename?: 'Subscription', artistMetadataUpdated?: { __typename?: 'ArtistMetadata', id: string, totalSongs: number, totalAlbums: number, songs: { __typename?: 'ArtistSongMetadata', classic: number, great: number, good: number, mediocre: number, bad: number, terrible: number, classicPercentage: number, greatPercentage: number, goodPercentage: number, mediocrePercentage: number, badPercentage: number, terriblePercentage: number } } | null };
 
 export const SongFieldsFragmentDoc = gql`
     fragment SongFields on Song {
@@ -461,6 +472,7 @@ export const GetArtistsDocument = gql`
         }
       }
       metadata {
+        id
         totalSongs
         totalAlbums
         songs {
@@ -590,3 +602,48 @@ export function useSearchByArtistLazyQuery(baseOptions?: Apollo.LazyQueryHookOpt
 export type SearchByArtistQueryHookResult = ReturnType<typeof useSearchByArtistQuery>;
 export type SearchByArtistLazyQueryHookResult = ReturnType<typeof useSearchByArtistLazyQuery>;
 export type SearchByArtistQueryResult = Apollo.QueryResult<SearchByArtistQuery, SearchByArtistQueryVariables>;
+export const OnArtistMetadataUpdateDocument = gql`
+    subscription onArtistMetadataUpdate {
+  artistMetadataUpdated {
+    id
+    totalSongs
+    totalAlbums
+    songs {
+      classic
+      great
+      good
+      mediocre
+      bad
+      terrible
+      classicPercentage
+      greatPercentage
+      goodPercentage
+      mediocrePercentage
+      badPercentage
+      terriblePercentage
+    }
+  }
+}
+    `;
+
+/**
+ * __useOnArtistMetadataUpdateSubscription__
+ *
+ * To run a query within a React component, call `useOnArtistMetadataUpdateSubscription` and pass it any options that fit your needs.
+ * When your component renders, `useOnArtistMetadataUpdateSubscription` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the subscription, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useOnArtistMetadataUpdateSubscription({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useOnArtistMetadataUpdateSubscription(baseOptions?: Apollo.SubscriptionHookOptions<OnArtistMetadataUpdateSubscription, OnArtistMetadataUpdateSubscriptionVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useSubscription<OnArtistMetadataUpdateSubscription, OnArtistMetadataUpdateSubscriptionVariables>(OnArtistMetadataUpdateDocument, options);
+      }
+export type OnArtistMetadataUpdateSubscriptionHookResult = ReturnType<typeof useOnArtistMetadataUpdateSubscription>;
+export type OnArtistMetadataUpdateSubscriptionResult = Apollo.SubscriptionResult<OnArtistMetadataUpdateSubscription>;
