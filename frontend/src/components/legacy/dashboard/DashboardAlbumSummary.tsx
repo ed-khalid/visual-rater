@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Album, GetArtistsDocument, Song, SongInput, useDeleteAlbumMutation, useUpdateSongMutation } from "../../generated/graphql";
+import { Album, GetArtistsDocument, Song, SongInput, useDeleteAlbumMutation, useUpdateSongMutation } from "../../../generated/graphql";
 import './Dashboard.css'
 
 interface Props {

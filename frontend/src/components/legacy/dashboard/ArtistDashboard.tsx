@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { Album, Artist, Maybe } from "../../generated/graphql"
+import { Album, Artist, Maybe } from "../../../generated/graphql"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faArrowRight, faArrowLeft } from '@fortawesome/free-solid-svg-icons' 
 import { ArtistDashboardAlbumRow } from "./ArtistDashboardAlbumRow"

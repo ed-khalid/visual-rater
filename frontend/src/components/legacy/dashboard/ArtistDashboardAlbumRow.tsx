@@ -1,7 +1,7 @@
 import { useDrag } from "react-dnd"
 import React from 'react'
-import { Album } from "../../generated/graphql"
-import { DragType } from "../../models/ui/DragType"
+import { Album } from "../../../generated/graphql"
+import { DragType } from "../../../models/ui/DragType"
 
 
 export interface ArtistDashboardAlbumRowProps  {
