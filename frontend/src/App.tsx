@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
 import { Scaler } from './functions/scale';
-import {  ExternalAlbumSearchResult, Artist, ExternalArtistSearchResult, GetArtistsDocument, GetArtistsQuery, NewSongInput, useCreateAlbumMutation, useCreateArtistMutation, useGetArtistsQuery , useGetTracksForSearchAlbumQuery, useGetTracksForSearchAlbumLazyQuery, Song, Album } from './generated/graphql';
+import {  ExternalAlbumSearchResult, Artist, ExternalArtistSearchResult, GetArtistsDocument, GetArtistsQuery, NewSongInput, useCreateAlbumMutation, useCreateArtistMutation, useGetArtistsQuery , useGetTracksForSearchAlbumQuery, useGetTracksForSearchAlbumLazyQuery, Song, Album, useOnArtistMetadataUpdateSubscription } from './generated/graphql';
 import { zoomIdentity } from 'd3-zoom'
 import { Search } from './components/search/Search';
 import { ItemType } from './models/domain/ItemTypes';
@@ -37,6 +37,7 @@ export const App = () => {
   const [searchAlbum, setSearchAlbum] = useState<ExternalAlbumSearchResult>()
   const [searchArtist,setSearchArtist] = useState<ExternalArtistSearchResult>()
   const [searchArtistAlbumTracks, setSearchArtistAlbumTracks] = useState<ExternalFullSearchResult>()
+  useOnArtistMetadataUpdateSubscription() 
 
   const [getTracks, getTracksResult ] = useGetTracksForSearchAlbumLazyQuery()
   const [createAlbum, ] = useCreateAlbumMutation() 

@@ -2,6 +2,10 @@
 # TASKS
 - graphql subscription, cache update artist on song update  
 
+
+
+- use name comparision instead of image (iageservice)   
+
 - add navigational breadcrumb
 - animations (graph  shrink / grow) 
 - clicking an album should zoom in first then show album rater
