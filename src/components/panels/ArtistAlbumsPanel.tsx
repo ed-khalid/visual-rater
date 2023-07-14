@@ -3,7 +3,7 @@ import { Album, Artist, Maybe } from "../../generated/graphql"
 import { Panel } from "./Panel"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faArrowLeft, faArrowRight } from "@fortawesome/free-solid-svg-icons"
-import { ArtistDashboardAlbumRow } from "../dashboard/ArtistDashboardAlbumRow"
+import { ArtistDashboardAlbumRow } from "../legacy/dashboard/ArtistDashboardAlbumRow"
 
 interface Props {
     artist:Artist

@@ -1,9 +1,8 @@
 import React from "react";
 import { Scaler } from "../../functions/scale";
 import './MultiRaterItem.css'
-import { RatedSongItemGrouped } from "./Rater";
 import { SingleRaterItem } from "./SingleRaterItem";
-import { RaterOrientation } from "../../models/ui/RaterTypes";
+import { RatedSongItemGrouped, RaterOrientation } from "../../models/ui/RaterTypes";
 
 interface MultiRaterItemProps {
     group:RatedSongItemGrouped

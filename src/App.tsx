@@ -3,7 +3,7 @@ import './App.css';
 import { Scaler } from './functions/scale';
 import {  ExternalAlbumSearchResult, Artist, ExternalArtistSearchResult, GetArtistsDocument, GetArtistsQuery, NewSongInput, useCreateAlbumMutation, useCreateArtistMutation, useGetArtistsQuery , useGetTracksForSearchAlbumQuery, useGetTracksForSearchAlbumLazyQuery, Song, Album, useOnArtistMetadataUpdateSubscription } from './generated/graphql';
 import { zoomIdentity } from 'd3-zoom'
-import { Search } from './components/search/Search';
+import { Search } from './components/legacy/search/Search';
 import { ItemType } from './models/domain/ItemTypes';
 import { ExternalFullSearchResult } from './models/domain/ExternalFullSearchResult';
 import { RaterWrapper, RaterWrapperMode } from './components/rater/RaterWrapper';

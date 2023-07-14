@@ -1,5 +1,5 @@
 import React from "react"
-import { Album, Artist } from "../../generated/graphql"
+import { Album, Artist } from "../../../generated/graphql"
 import { DashboardArtist } from "./ArtistDashboard"
 import { DashboardAlbumSummary } from "./DashboardAlbumSummary"
 import './Dashboard.css'

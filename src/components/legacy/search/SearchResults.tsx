@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { ExternalAlbumSearchResult, ExternalArtistSearchResult } from "../../generated/graphql";
+import { ExternalAlbumSearchResult, ExternalArtistSearchResult } from "../../../generated/graphql";
 import './SearchResults.css'
-import { ListControlNav } from "../ListControlNav";
+import { ListControlNav } from "../../ListControlNav";
 
 interface Props {
     searchArtist:ExternalArtistSearchResult|undefined
