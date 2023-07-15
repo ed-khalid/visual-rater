@@ -6,7 +6,7 @@ import { Scaler } from "../../functions/scale";
 import { DragBehavior } from "./behaviors/DragBehavior";
 import './SingleRaterItem.css' 
 import { RatedItem } from "../../models/domain/ItemTypes";
-import { RATER_TIER_WIDTH, RaterOrientation } from "../../models/ui/RaterTypes";
+import { RATER_TIER_WIDTH, RATER_Y_TOP, RaterOrientation, SVG_HEIGHT, SVG_WIDTH } from "../../models/ui/RaterTypes";
 
 interface SingleRaterItemProps {
     item:RatedMusicItemUI
