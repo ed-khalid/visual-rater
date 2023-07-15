@@ -1,24 +1,24 @@
 import { axisRight } from 'd3-axis'
 import { select } from 'd3-selection';
 import { AxisScale, Selection } from 'd3';
-import { useUpdateSongMutation } from "../../generated/graphql";
 import { ItemType, RatedItem } from "../../models/domain/ItemTypes";
-import { RatedMusicItemUI } from "../../models/ui/ItemTypes";
 import { SingleRaterItem } from "./SingleRaterItem";
 import { MultiRaterItem } from "./MultiRaterItem";
 import { Position } from '../../models/ui/Position';
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
+import { Dispatch, SetStateAction, useEffect, useRef, useState, } from 'react';
 import React from 'react';
 import './Rater.css'
 import { GlobalRaterState, RATER_Y_TOP, RatedSongItemGrouped } from '../../models/ui/RaterTypes';
 import { ZoomBehavior } from './behaviors/ZoomBehavior';
+import { ANIMATION_DURATION } from '../../models/ui/Animation';
+import { Transition, TransitionGroup } from 'react-transition-group';
 
 interface Props {
     position:Position
     state:GlobalRaterState
     isReadonly:boolean
     zoomTarget?:SVGGElement|null
-    onItemClick?:(item:RatedItem) => void
+    onItemClick:(item:RatedItem) => void
     setState:Dispatch<SetStateAction<GlobalRaterState>>
     items: RatedSongItemGrouped[]
     updateSongScore: (id:string, score:number) => void 
@@ -35,8 +35,14 @@ export const Rater = ({position, state, setState, onItemClick, updateSongScore, 
     const itemsGroupRef = useRef<SVGGElement>(null)
     const zoomTarget= useRef<SVGGElement>(null)
     const zoomListener = useRef<SVGRectElement>(null)
+    const [shouldHide, setShouldHide] = useState<boolean>(false)
     const [zoomBehavior, setZoomBehavior] = useState<any>() 
 
+
+    const onItemClickInternal =  (item:RatedItem)  => {
+        setShouldHide(true)
+        setTimeout(() => { onItemClick(item)}, ANIMATION_DURATION )
+    }  
 
     useEffect(() => {
         if (zoomTarget && zoomListener) {
@@ -54,7 +60,7 @@ export const Rater = ({position, state, setState, onItemClick, updateSongScore, 
                 setCurrentItem(null)
            } 
         }
-    }, [currentItem, state.itemType])
+    }, [currentItem, state.itemType, updateSongScore])
 
 
     const updateItem =  (itemId:string, newScore:number) => {
@@ -72,8 +78,20 @@ export const Rater = ({position, state, setState, onItemClick, updateSongScore, 
     }
     const axisSel:Selection<SVGGElement, unknown, null, undefined> = makeAxis(state.scaler.scale) 
 
+    const itemDefaultStyle = {
+        opacity: 0,
+        transition: `all ${ANIMATION_DURATION}ms ease-in-out`
+    } 
+    const itemTransitionStyles= {
+        entering: { opacity: 0.5, },
+        entered: { opacity: 1, transform: `translateX(${2}%)` },
+        exiting: { opacity: 0.5 },
+        exited: { opacity: 0 },
+        unmounted: { opacity: 0}
+    }
+
     return (
-                  <g ref={g} className="rater-container">
+                   <g ref={g} className="rater-container">
  <rect 
                             ref={zoomListener} 
                             id="zoom-listener" 
@@ -85,19 +103,25 @@ export const Rater = ({position, state, setState, onItemClick, updateSongScore, 
                         <g className="rater-axis"></g>
                         <line className="rater-line" x1={position.x} y1={RATER_Y_TOP} x2={position.x} y2={position.y} />
                         <g ref={itemsGroupRef} className="items">
-                      {items.map(group =>  
+                       <TransitionGroup component={null} >
+                      { items.map(group =>  
                        (group.items.length === 1) ? 
-                            <SingleRaterItem
-                                key={group.items[0].id}
-                                item={group.items[0]}
-                                isReadonly={isReadonly}
-                                shouldDrawScoreline={true}
-                                orientation={group.items[0].orientation}
-                                mainlineX={position.x}
-                                scaler={state.scaler}
-                                onClick={onItemClick}
-                                onDragEnd={updateItem}
-                            />:  
+                        <Transition key={'item'+group.items[0].id} in={true} nodeRef={group.items[0].nodeRef} timeout={ANIMATION_DURATION}>
+                            { transitionState => 
+                                (<SingleRaterItem
+                                    item={group.items[0]}
+                                    isReadonly={isReadonly}
+                                    style={{...itemDefaultStyle, ...itemTransitionStyles[transitionState] }}
+                                    shouldDrawScoreline={true}
+                                    orientation={group.items[0].orientation}
+                                    mainlineX={position.x}
+                                    scaler={state.scaler}
+                                    onClick={onItemClickInternal}
+                                    onDragEnd={updateItem}
+                                />)
+                            }
+                          </Transition>
+                          :
                         <MultiRaterItem
                             key={"multi-rater-item-" + group.items[0].id}
                             group={group}
@@ -108,7 +132,9 @@ export const Rater = ({position, state, setState, onItemClick, updateSongScore, 
                             scaler={state.scaler}
                             onDragEnd={updateItem}
                       />)
-                      }</g>
+                      }
+                      </TransitionGroup>
+                      </g>
                       
                       </g>
                     </g>

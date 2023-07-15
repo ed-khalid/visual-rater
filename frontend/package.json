@@ -12,7 +12,8 @@
     "graphql-ws": "^5.14.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "react-scripts": "5.0.1"
+    "react-scripts": "5.0.1",
+    "react-transition-group": "4.4.5"
   },
   "devDependencies": {
     "@graphql-codegen/cli": "4.0.1",
@@ -30,6 +31,7 @@
     "@types/node": "^12.12.47",
     "@types/react": "18.2.14",
     "@types/react-dom": "18.2.6",
+    "@types/react-transition-group": "4.4.6",
     "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^16.0.1",
     "typescript": "^3.7.5"
