@@ -2,7 +2,7 @@ import React, { Dispatch, SetStateAction, useEffect, useRef, useState, createRef
 import { Album, Artist, Song, useUpdateSongMutation } from "../../generated/graphql"
 import { RatedMusicItemUI, RatedSongItemUI } from "../../models/ui/ItemTypes"
 import { Rater } from "./Rater"
-import { GlobalRaterState, RATER_X, RATER_Y_BOTTOM, RatedSongItemGrouped, RaterOrientation, SVG_HEIGHT, SVG_WIDTH } from "../../models/ui/RaterTypes"
+import { GlobalRaterState, RATER_X, RATER_Y_BOTTOM, RATER_Y_TOP, RatedSongItemGrouped, RaterOrientation, SVG_HEIGHT, SVG_WIDTH } from "../../models/ui/RaterTypes"
 import { RatedItem } from "../../models/domain/ItemTypes"
 import { findAlbumAndArtist, findItemsByIds } from "../../functions/music"
 
@@ -133,6 +133,11 @@ export const RaterWrapper = ({state, setState, artists, onArtistClick, onAlbumCl
 
 
     return <svg className="rater" ref={svgRef} id="trackRater" viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}>
+      <defs>
+            <clipPath id="item-clip-path">
+                <rect x={RATER_X} y={RATER_Y_TOP} width={SVG_WIDTH/2} height={SVG_HEIGHT} ></rect>
+            </clipPath>
+      </defs>
           <g ref={gWrapper} id="wrapper">
           {mainRaterItems.length && <Rater 
                 setState={setState}

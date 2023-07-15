@@ -83,10 +83,10 @@ export const Rater = ({position, state, setState, onItemClick, updateSongScore, 
         transition: `all ${ANIMATION_DURATION}ms ease-in-out`
     } 
     const itemTransitionStyles= {
-        entering: { opacity: 0.5, },
-        entered: { opacity: 1, transform: `translateX(${2}%)` },
-        exiting: { opacity: 0.5 },
-        exited: { opacity: 0 },
+        entering: { opacity: 0.2  },
+        entered: { opacity: 1, transform: `translateX(${10}%)`  },
+        exiting: { opacity: 0.2 },
+        exited: { opacity: 0, transform: `translateX(${-10}%)` },
         unmounted: { opacity: 0}
     }
 
