@@ -12,7 +12,9 @@ interface SingleRaterItemProps {
     item:RatedMusicItemUI
     mainlineX:number
     isReadonly:boolean
+    nodeRef?:any
     onClick?:any
+    style:any
     shouldDrawScoreline:boolean
     onDragEnd?:any
     scaler:Scaler
@@ -20,7 +22,7 @@ interface SingleRaterItemProps {
     orientation:RaterOrientation
 } 
 
-export const SingleRaterItem = ({item, orientation , shouldDrawScoreline, isReadonly, mainlineX, scale=1, scaler, onClick, onDragEnd}:SingleRaterItemProps) =>  {
+export const SingleRaterItem = ({item, orientation , shouldDrawScoreline,nodeRef, style, isReadonly, mainlineX, scale=1, scaler, onClick, onDragEnd}:SingleRaterItemProps) =>  {
     const y = scaler.toPosition(item.score) 
     const tierOffset = RATER_TIER_WIDTH * item.tier 
     const tierLineOpacityOffset = 0.7 
@@ -55,7 +57,7 @@ export const SingleRaterItem = ({item, orientation , shouldDrawScoreline, isRead
     const imageSize = 25 
         const lineDistance = x 
         const imageDimensions =  {
-            x: lineDistance,
+            x: mainlineX-imageSize/2,
             y: y - imageSize/2,
             size:imageSize
         }  
@@ -134,12 +136,9 @@ export const SingleRaterItem = ({item, orientation , shouldDrawScoreline, isRead
         const cursor = (isReadonly) ? "pointer" : "move"  
         
         return <g onClick={handleOnClick} ref={g} className="item" key={item.name}>
-                        <g className="draggable"> 
-                            <filter id="shadow">
-                                <feDropShadow dx="0.2" dy="0.4" stdDeviation={0.2} />
-                            </filter>
+                        <g ref={nodeRef}  style={style} className="draggable"> 
                             {shouldDrawScoreline && <line className="item-scoreline" x1={lineDimensions.x1} y1={lineDimensions.y1} x2={lineDimensions.x2} y2={lineDimensions.y2} stroke={"black"} opacity={0.2} />}
-                            <circle className="item-thumbnail-overlay" cx={imageDimensions.x+imageDimensions.size/2} cy={imageDimensions.y+imageDimensions.size/2} r={imageDimensions.size/2} fill={color} stroke={color}></circle>
+                            <circle  className="item-thumbnail-overlay" cx={imageDimensions.x+imageDimensions.size/2} cy={imageDimensions.y+imageDimensions.size/2} r={imageDimensions.size/2} fill={color} stroke={color}></circle>
                             <image fill={"rgba"+item.overlay} opacity={0.5} xlinkHref={item.thumbnail} clipPath="inset(0% round 15px)" cursor={cursor} className="item-thumbnail" width={imageDimensions.size} x={imageDimensions.x} y={imageDimensions.y} height={imageDimensions.size} href={item.thumbnail}/>
                             <text textAnchor="middle" className="item-name" cursor={cursor} fontSize={6*scale} fill="black" x={songNameDimensions.x} y={songNameDimensions.y} dy=".35em">{formatName(item.name)}</text>
                             <text textAnchor="middle" className="item-score" cursor={cursor} fontSize={10*scale} fontWeight="bold" fill={determineTextColor(item.overlay)} x={songScoreDimensions.x} y={songScoreDimensions.y} dy=".35em">{item.score.toFixed(2)}</text>

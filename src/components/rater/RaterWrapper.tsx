@@ -1,8 +1,8 @@
-import React, { Dispatch, SetStateAction, useEffect, useRef, useState } from "react"
+import React, { Dispatch, SetStateAction, useEffect, useRef, useState, createRef } from "react"
 import { Album, Artist, Song, useUpdateSongMutation } from "../../generated/graphql"
 import { RatedMusicItemUI, RatedSongItemUI } from "../../models/ui/ItemTypes"
 import { Rater } from "./Rater"
-import { GlobalRaterState, RATER_X, RATER_Y_BOTTOM, RatedSongItemGrouped, RaterOrientation } from "../../models/ui/RaterTypes"
+import { GlobalRaterState, RATER_X, RATER_Y_BOTTOM, RatedSongItemGrouped, RaterOrientation, SVG_HEIGHT, SVG_WIDTH } from "../../models/ui/RaterTypes"
 import { RatedItem } from "../../models/domain/ItemTypes"
 import { findAlbumAndArtist, findItemsByIds } from "../../functions/music"
 
@@ -18,9 +18,9 @@ interface Props {
     state:GlobalRaterState
     setState:Dispatch<SetStateAction<GlobalRaterState>>
 }
-const mapSongToRatedItem  = (song:any, artist:Artist, album:Album, orientation:RaterOrientation) : RatedSongItemUI => new RatedSongItemUI({ id: song.id, name: song.name },song.score!, album.thumbnail!, orientation,1, album.dominantColor,song.number,artist.name, album.name);
-const mapAlbumToRatedItem  = (album:Album, artist:Artist, orientation:RaterOrientation) : RatedMusicItemUI => new RatedMusicItemUI({ id: album.id, name:album.name}, album.score!, album.thumbnail!, orientation, 1, album.dominantColor)    
-const mapArtistToRatedItem  = (artist:Artist, orientation:RaterOrientation) : RatedMusicItemUI => new RatedMusicItemUI({ id: artist.id, name:artist.name}, artist.score!, artist.thumbnail!, orientation, 1, '(0,0,0)')    
+const mapSongToRatedItem  = (song:any, artist:Artist, album:Album, orientation:RaterOrientation) : RatedSongItemUI => new RatedSongItemUI({ id: song.id, name: song.name },song.score!, album.thumbnail!, orientation,1, album.dominantColor,song.number,artist.name, createRef(), album.name);
+const mapAlbumToRatedItem  = (album:Album, artist:Artist, orientation:RaterOrientation) : RatedMusicItemUI => new RatedMusicItemUI({ id: album.id, name:album.name}, album.score!, album.thumbnail!, orientation, 1, createRef(), album.dominantColor)    
+const mapArtistToRatedItem  = (artist:Artist, orientation:RaterOrientation) : RatedMusicItemUI => new RatedMusicItemUI({ id: artist.id, name:artist.name}, artist.score!, artist.thumbnail!, orientation, 1, createRef(), '(0,0,0)')    
 
 export const RaterWrapper = ({state, setState, artists, onArtistClick, onAlbumClick}:Props) =>  {
     const gWrapper = useRef<SVGGElement>(null)
@@ -132,12 +132,7 @@ export const RaterWrapper = ({state, setState, artists, onArtistClick, onAlbumCl
     }, [artists, state.selections, state.mode, setState, state.scoreFilter.start, state.scoreFilter.end])
 
 
-    return <svg className="rater" ref={svgRef} id="trackRater" viewBox="0 0 800 700">
-          <defs>
-            <clipPath id="clip-path">
-              <rect x="0" y="0" width="950" height={950}></rect>
-            </clipPath>
-          </defs>
+    return <svg className="rater" ref={svgRef} id="trackRater" viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}>
           <g ref={gWrapper} id="wrapper">
           {mainRaterItems.length && <Rater 
                 setState={setState}
