@@ -131,7 +131,7 @@ export const App = () => {
         return [...acc, ...ids ]
       }, [])   
       if (selectedArtists.length === 1) {
-        setBreadcrumbs([breadcrumbs[0], { title: selectedArtists[0].name, action: () => setSelectedArtists([selectedArtists[0]])      } ])
+        setBreadcrumbs(breadcrumbs => [breadcrumbs[0], { title: selectedArtists[0].name, action: () => setSelectedArtists([selectedArtists[0]])      } ])
       }
       setRaterState(prev => ({...prev, mode: RaterWrapperMode.ALBUM, selections:albumIds }) )
     }
