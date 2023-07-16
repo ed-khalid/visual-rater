@@ -1,0 +1,6 @@
+query getSongs($albumId:String!) {
+    songs(albumId:$albumId) {
+        ...SongFields
+    }
+
+}

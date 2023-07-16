@@ -1,44 +1,10 @@
-
 query getArtists {
   artists {
     total 
     pageNumber
     content
     {
-      id
-      name 
-      thumbnail
-      score
-      albums {
-        id
-        name
-        year
-        score
-        dominantColor
-        thumbnail
-        songs {
-          ...SongFields
-        }
-      }
-      metadata {
-        id
-        totalSongs
-        totalAlbums
-        songs {
-          classic
-          great
-          good
-          mediocre
-          bad
-          terrible
-          classicPercentage
-          greatPercentage
-          goodPercentage
-          mediocrePercentage
-          badPercentage
-          terriblePercentage
-        }
-      }
+      ...ArtistFields
     }
   }
 }

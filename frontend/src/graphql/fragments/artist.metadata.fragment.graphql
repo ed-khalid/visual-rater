@@ -1,0 +1,10 @@
+
+
+fragment ArtistMetadataFields on ArtistMetadata {
+        id
+        totalSongs
+        totalAlbums
+        songs {
+            ...ArtistSongMetadataFields
+        }
+} 

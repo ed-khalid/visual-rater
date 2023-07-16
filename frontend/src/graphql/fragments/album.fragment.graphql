@@ -1,0 +1,10 @@
+
+fragment AlbumFields on Album {
+        id
+        artistId
+        name
+        year
+        score
+        dominantColor
+        thumbnail
+}  

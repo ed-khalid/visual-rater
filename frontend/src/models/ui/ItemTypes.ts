@@ -30,7 +30,6 @@ export class RatedMusicItemUI extends RatedItem implements RaterItemUI {
 export class RatedSongItemUI extends RatedMusicItemUI {
     public constructor(item:Item, public score:number, public thumbnail:string, public orientation:RaterOrientation, public tier:RaterTier, public overlay:Maybe<string>|undefined,
         public number:number, 
-        public artistName:string, 
         public nodeRef:any, 
         public albumName:string
         ) {

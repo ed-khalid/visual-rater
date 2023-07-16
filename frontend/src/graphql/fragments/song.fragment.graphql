@@ -1,6 +1,8 @@
 
 fragment SongFields on Song {
     id
+    albumId
+    artistId
     name
     number
     discNumber
