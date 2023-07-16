@@ -1,37 +1,29 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useReducer, useState } from 'react';
 import './App.css';
 import { Scaler } from './functions/scale';
-import {  ExternalAlbumSearchResult, Artist, ExternalArtistSearchResult, GetArtistsDocument, GetArtistsQuery, NewSongInput, useCreateAlbumMutation, useCreateArtistMutation, useGetArtistsQuery , useGetTracksForSearchAlbumQuery, useGetTracksForSearchAlbumLazyQuery, Song, Album, useOnArtistMetadataUpdateSubscription } from './generated/graphql';
-import { zoomIdentity } from 'd3-zoom'
+import {  ExternalAlbumSearchResult, Artist, ExternalArtistSearchResult, GetArtistsDocument, GetArtistsQuery, NewSongInput, useCreateAlbumMutation, useCreateArtistMutation, useGetArtistsQuery , useGetTracksForSearchAlbumLazyQuery, Song, Album, useOnArtistMetadataUpdateSubscription, useGetAlbumsLazyQuery, useGetSongsLazyQuery } from './generated/graphql';
 import { Search } from './components/legacy/search/Search';
-import { ItemType } from './models/domain/ItemTypes';
 import { ExternalFullSearchResult } from './models/domain/ExternalFullSearchResult';
-import { RaterWrapper, RaterWrapperMode } from './components/rater/RaterWrapper';
+import { RaterWrapper } from './components/rater/RaterWrapper';
 import { DragType } from './models/ui/DragType';
 import { useDrop } from 'react-dnd';
-import { GlobalRaterState } from './models/ui/RaterTypes';
+import { RaterState } from './models/ui/RaterTypes';
 import { ArtistPanel } from './components/panels/ArtistPanel';
 import { AlbumPanel } from './components/panels/AlbumPanel';
-import { getAllSongs } from './functions/music';
 import { Breadcrumb, BreadcrumbPanel } from './components/panels/BreadcrumbPanel';
+import { RaterAction, raterReducer } from './reducers/raterReducer';
+import { MusicState, MusicStore } from './models/domain/MusicState';
+import { MusicAction, musicReducer } from './reducers/musicReducer';
 
-
-
-export const initialRaterState:GlobalRaterState = {
+export const initialRaterState:RaterState = {
    start: 0
   ,end: 5
   ,isReadonly: true
-  ,mode: RaterWrapperMode.ARTIST
-  ,scoreFilter: { start:0, end:5}
-  ,selections: []
   ,scaler : new Scaler() 
-  ,itemType: ItemType.MUSIC
 } 
 
 export const App = () => {
 
-
-  //breadcrumbs
 
   // search
   const [searchAlbum, setSearchAlbum] = useState<ExternalAlbumSearchResult>()
@@ -44,98 +36,77 @@ export const App = () => {
   const [createArtist, ] = useCreateArtistMutation() 
 
   // main data 
-  const artistsFull =  useGetArtistsQuery()
-  const [selectedArtists, setSelectedArtists] = useState<Array<Artist>>([])
-  const [selectedAlbums, setSelectedAlbums] = useState<Array<Album>>([])
+  const $artists  =  useGetArtistsQuery()
+  const [$getAlbums, $albums]  = useGetAlbumsLazyQuery() 
+  const [$getSongs, $songs]  = useGetSongsLazyQuery() 
+  const [musicState, musicDispatch] = useReducer<React.Reducer<MusicState,MusicAction>>(musicReducer, { data: { artists: [], albums:[], songs:[] } , filters: { artistIds: [] , albumIds:[], songIds: [], scoreFilter:{start:0, end:5} }  })
 
-  // const 
-  const [breadcrumbs, setBreadcrumbs] = useState<Array<Breadcrumb>>([{ title: 'ARTISTS' , action: () => setRaterState((state) => ({...state, mode: RaterWrapperMode.ARTIST  }) )  }]) 
+  // breadcrumbs 
+  const [breadcrumbs, setBreadcrumbs] = useState<Array<Breadcrumb>>([{ title: 'ARTISTS' , action: () => musicDispatch({type: 'FILTER_CHANGE', variables: { filters: { artistIds:[], albumIds:[], songIds:[], scoreFilter: { start:0, end:5 } } }  })}]) 
 
   // rater 
-  const [raterState, setRaterState] = useState<GlobalRaterState>(initialRaterState)
+  const [raterState, dispatch] = useReducer<React.Reducer<RaterState,RaterAction>>(raterReducer, initialRaterState )
+
 
   const [, drop] = useDrop(() => ({
     accept: [DragType.ALBUM, DragType.ARTIST]
-    ,drop(item:{album?:Album, artist?:Artist},_) {
+    ,drop(item:{album:Album, artist:Artist},_) {
       if (item.album) {
-        onAlbumSelect([item.album], undefined)
+        addAlbum(item.album)
       }
-      if (item.artist) {
-        onArtistSelect(item.artist)
+      else if (item.artist) {
+        addArtist(item.artist)
       }
     }
   }), [])
 
-  const onArtistPanelSongsClick = (artist:Artist, scoreFilter:{start:number,end:number}, mode:RaterWrapperMode ) => {
-    const songIds = getAllSongs(artistsFull.data?.artists.content as Artist[]).filter(it => it.artist.id === artist.id).map(it => it.song.id)
-    setRaterState(prev => ({ ...prev, mode, scoreFilter, selections:songIds  }))
-  }  
-
-  const onArtistSelect = (artist:Artist|undefined) => {
-    if (artist) {
-      const found = selectedArtists.find(it => it.id === artist.id) 
-      if (found) {
-        setSelectedArtists([artist])
-      } else {
-        setSelectedArtists([...selectedArtists, artist])
-      }
-    } else {
-      setSelectedArtists([])
+  useEffect(()  => {
+    if (!$artists.loading && $artists.data) {
+      musicDispatch({ type: 'DATA_CHANGE', variables: { data: { artists: $artists.data.artists.content as Artist[]   }}})
     }
-  } 
+  }, [$artists.loading, $artists.data] )
 
-
-
-  const onAlbumSelect = (albums:Array<Album>|undefined, artist:Artist|undefined) => {
-    if (albums) {
-      if (albums.length === 1) {
-        const album = albums[0]
-        const found = selectedAlbums.find(it => it.id === album.id)
-        if (found) {
-          setSelectedAlbums([album])
-        } else {
-          setSelectedAlbums([...selectedAlbums, album])
-        }
-      } else {
-        setSelectedAlbums(albums)
+  const onArtistSelect = (artist:Artist) => {
+      setBreadcrumbs(breadcrumbs => [breadcrumbs[0], { title: artist.name, action: () => musicDispatch({ type: 'FILTER_CHANGE', variables: { filters: {artistIds: [artist.id], albumIds:[], songIds:[], scoreFilter:{start:0, end:5}} }})} ])
+      $getAlbums({variables: { artistId: artist.id }})
+  }
+  useEffect(() => {
+    if (!$albums.loading && $albums.data) {
+      const albums = $albums.data?.albums
+      if (albums) {
+        const artistId = albums[0].artistId 
+        musicDispatch({ type: 'DATA_CHANGE', variables: { data: { albums: albums as Album[]}, filters:  { artistIds : [artistId] }   } })
       }
-    } else {
-      setRaterState(prev => ({...prev, selections: []}))
     }
+  }, [$albums.loading, $albums.data])
+
+  const addAlbum = (album:Album) => {
+    musicDispatch({type:'FILTER_CHANGE', variables: { filters: { albumIds: [album.id] } }} )
+  }
+  const addArtist = (artist:Artist) => {
+    musicDispatch({type:'FILTER_CHANGE', variables: { filters: { artistIds: [artist.id] } }} )
   }
 
-  useEffect(()  => {
-    if (raterState.mode === RaterWrapperMode.ARTIST && artistsFull.data?.artists.content) {
-      const artistIds = artistsFull.data.artists.content.map(it => it!.id) 
-      setRaterState(prev => ({...prev, selections: artistIds}))
-    }
-  }, [artistsFull.data?.artists.content, raterState.mode] )
-
+  const onAlbumSelect = (album:Album) => {
+    setBreadcrumbs(breadcrumbs => [breadcrumbs[0], breadcrumbs[1], { title: album.name, action: () => musicDispatch({ type: 'FILTER_CHANGE', variables: { filters: {albumIds: [album.id], songIds:[], scoreFilter:{start:0,end:5}} }})} ])
+    $getSongs({variables: { albumId: album.id }})
+  }
   useEffect(() => {
-    if (selectedAlbums.length) {
-      const songIds = selectedAlbums.reduce<Array<string>>((acc, curr) => {
-        const ids = curr.songs.map(it => it.id)
-        return [...acc, ...ids ]
-      }, [])   
-      if (selectedAlbums.length === 1) {
-        setBreadcrumbs([breadcrumbs[0], breadcrumbs[1], { title: selectedAlbums[0].name, action: () => setSelectedAlbums([selectedAlbums[0]])      } ])
+    if (!$songs.loading && $songs.data) {
+      const songs = $songs.data.songs
+      if (songs) {
+        const artistId = songs[0].artistId 
+        const albumId = songs[0].albumId 
+        musicDispatch({ type: 'DATA_CHANGE', variables: { data: { songs: songs as Song[]}, filters:  { artistIds : [artistId], albumIds:[albumId] }   } })
       }
-      setRaterState(prev => ({...prev, mode: RaterWrapperMode.SONG, selections: songIds }) )
     }
-  }, [selectedAlbums])
+  }, [$songs.loading, $songs.data])
 
-  useEffect(() => {
-    if (selectedArtists.length) {
-      const albumIds = selectedArtists.reduce<Array<string>>((acc, curr) => {
-        const ids = curr.albums!.map(it => it!.id)
-        return [...acc, ...ids ]
-      }, [])   
-      if (selectedArtists.length === 1) {
-        setBreadcrumbs(breadcrumbs => [breadcrumbs[0], { title: selectedArtists[0].name, action: () => setSelectedArtists([selectedArtists[0]])      } ])
-      }
-      setRaterState(prev => ({...prev, mode: RaterWrapperMode.ALBUM, selections:albumIds }) )
-    }
-  }, [selectedArtists])
+  const onArtistPanelSongsClick = (artist:Artist, scoreFilter:{start:number,end:number}) => {
+    musicDispatch({ type: 'FILTER_CHANGE', variables: { filters: { artistIds: [artist.id], albumIds:[], scoreFilter: scoreFilter }  }})
+  }  
+
+
 
   const onExternalAlbumSearchClick =  (artist:ExternalArtistSearchResult, album:ExternalAlbumSearchResult) => {
     setSearchArtist(artist)
@@ -147,10 +118,9 @@ export const App = () => {
     }
   }, [searchAlbum, getTracks])
 
-  const onZoomResetClick = () => {
-    const resetScale = zoomIdentity.rescaleY(raterState.scaler.yScale) 
-    setRaterState(prev => ({...prev, scaler: new Scaler(resetScale)})) 
-  }
+  // const onZoomResetClick = () => {
+  //   dispatch({ type: 'ZOOM_RESET'})
+  // }
 
   // const updateScale = (newStart?:string, newEnd?:string) => {
   //   if (newStart === '') {
@@ -214,7 +184,7 @@ export const App = () => {
       })
      }
 
-      const artist = artistsFull.data?.artists?.content?.find(it => it?.name === searchArtistAlbumTracks.artist.name)   
+      const artist = $artists.data?.artists?.content?.find(it => it?.name === searchArtistAlbumTracks.artist.name)   
       if (!artist) {
         createArtist({
           variables: {
@@ -235,9 +205,6 @@ export const App = () => {
   [searchArtistAlbumTracks])
 
 
-
-
-
   return (
     <div className="App">
       <div className="main">
@@ -250,15 +217,15 @@ export const App = () => {
             <button onClick={onZoomResetClick}>Reset</button>
           </div>
         </div> */}
-        {artistsFull.data?.artists.content.filter(artist => selectedArtists.map(it => it.id).includes(artist!.id) ).map(artist => <ArtistPanel onSongCategoryClick={onArtistPanelSongsClick} key={artist!.id} artist={artist!}/>)}
-        {selectedAlbums.map(album => <AlbumPanel key={album.id} album={album} artistName={undefined} onClose={() => {}}  />)}
+        {musicState.data.artists.length !== 0 && musicState.data.artists.filter(artist => musicState.filters.artistIds.includes(artist!.id)).map(artist => <ArtistPanel onSongCategoryClick={onArtistPanelSongsClick} key={artist!.id} artist={artist!}/>)}
+        {musicState.data.albums.length !== 0 && musicState.data.albums.filter(it => musicState.filters.albumIds.includes(it.id)).map(album => <AlbumPanel key={album.id} album={album} artistName={undefined} onClose={() => {}}  />)}
         <div id="rater" className="viz drop-target" ref={drop}>
           <RaterWrapper
-          artists={artistsFull.data?.artists.content as Artist[]}
           onAlbumClick={onAlbumSelect}
           onArtistClick={onArtistSelect}
           state={raterState}
-          setState={setRaterState}
+          musicState={musicState}
+          stateDispatch={dispatch}
           />
         </div>
       </div>

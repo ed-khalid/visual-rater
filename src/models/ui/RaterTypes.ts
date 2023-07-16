@@ -1,18 +1,11 @@
-
-import { RaterWrapperMode } from '../../components/rater/RaterWrapper'
 import { Scaler } from '../../functions/scale'
-import { ItemType } from '../domain/ItemTypes'
 import { RatedMusicItemUI } from './ItemTypes'
 
-export type GlobalRaterState = {
+export type RaterState = {
     scaler:Scaler
     start:number
     end:number
-    mode:RaterWrapperMode,
-    scoreFilter:{start:number, end:number}
-    selections:Array<string>
     isReadonly:boolean
-    itemType:ItemType
 }
 export enum RaterOrientation {
     RIGHT, LEFT

@@ -1,0 +1,16 @@
+
+fragment ArtistSongMetadataFields on ArtistSongMetadata {
+          classic
+          great
+          good
+          mediocre
+          bad
+          terrible
+          classicPercentage
+          greatPercentage
+          goodPercentage
+          mediocrePercentage
+          badPercentage
+          terriblePercentage
+
+}

@@ -1,25 +1,26 @@
 import { axisRight } from 'd3-axis'
 import { select } from 'd3-selection';
 import { AxisScale, Selection } from 'd3';
-import { ItemType, RatedItem } from "../../models/domain/ItemTypes";
+import { RatedItem } from "../../models/domain/ItemTypes";
 import { SingleRaterItem } from "./SingleRaterItem";
 import { MultiRaterItem } from "./MultiRaterItem";
 import { Position } from '../../models/ui/Position';
-import { Dispatch, SetStateAction, useEffect, useRef, useState, } from 'react';
+import { Dispatch, useEffect, useRef, useState, } from 'react';
 import React from 'react';
 import './Rater.css'
-import { GlobalRaterState, RATER_Y_TOP, RatedSongItemGrouped } from '../../models/ui/RaterTypes';
+import { RaterState, RATER_Y_TOP, RatedSongItemGrouped } from '../../models/ui/RaterTypes';
 import { ZoomBehavior } from './behaviors/ZoomBehavior';
 import { ANIMATION_DURATION } from '../../models/ui/Animation';
 import { Transition, TransitionGroup } from 'react-transition-group';
+import { RaterAction } from '../../reducers/raterReducer';
 
 interface Props {
     position:Position
-    state:GlobalRaterState
+    state:RaterState
     isReadonly:boolean
     zoomTarget?:SVGGElement|null
     onItemClick:(item:RatedItem) => void
-    setState:Dispatch<SetStateAction<GlobalRaterState>>
+    stateDispatch:Dispatch<RaterAction>
     items: RatedSongItemGrouped[]
     updateSongScore: (id:string, score:number) => void 
 }
@@ -28,39 +29,30 @@ interface Props {
 
 
 
-export const Rater = ({position, state, setState, onItemClick, updateSongScore, isReadonly, items }:Props) => {
+export const Rater = ({position, state, stateDispatch, onItemClick, updateSongScore, isReadonly, items }:Props) => {
 
     const [currentItem, setCurrentItem] = useState<{id:string, score:number}|null>();  
     const g = useRef<SVGGElement>(null)
     const itemsGroupRef = useRef<SVGGElement>(null)
     const zoomTarget= useRef<SVGGElement>(null)
     const zoomListener = useRef<SVGRectElement>(null)
-    const [shouldHide, setShouldHide] = useState<boolean>(false)
-    const [zoomBehavior, setZoomBehavior] = useState<any>() 
-
-
-    const onItemClickInternal =  (item:RatedItem)  => {
-        setShouldHide(true)
-        setTimeout(() => { onItemClick(item)}, ANIMATION_DURATION )
-    }  
+    // const [shouldHide, setShouldHide] = useState<boolean>(false)
+    const [, setZoomBehavior] = useState<any>() 
 
     useEffect(() => {
         if (zoomTarget && zoomListener) {
-            const z = ZoomBehavior({listener: zoomListener.current, target: zoomTarget.current,axis: axisSel ,scale:state.scaler.yScale, setState  })
+            const z = ZoomBehavior({listener: zoomListener.current, target: zoomTarget.current,axis: axisSel ,scale:state.scaler.yScale, stateDispatch  })
             setZoomBehavior(z)
         } 
     }, [zoomListener,zoomTarget])
 
 
     useEffect(() => {
-        switch(state.itemType) {
-            case ItemType.MUSIC :
             if (currentItem) {
                 updateSongScore(currentItem.id, currentItem.score)
                 setCurrentItem(null)
-           } 
         }
-    }, [currentItem, state.itemType, updateSongScore])
+    }, [currentItem, updateSongScore])
 
 
     const updateItem =  (itemId:string, newScore:number) => {
@@ -116,7 +108,7 @@ export const Rater = ({position, state, setState, onItemClick, updateSongScore, 
                                     orientation={group.items[0].orientation}
                                     mainlineX={position.x}
                                     scaler={state.scaler}
-                                    onClick={onItemClickInternal}
+                                    onClick={onItemClick}
                                     onDragEnd={updateItem}
                                 />)
                             }

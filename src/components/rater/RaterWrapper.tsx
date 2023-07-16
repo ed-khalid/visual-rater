@@ -1,49 +1,43 @@
-import React, { Dispatch, SetStateAction, useEffect, useRef, useState, createRef } from "react"
+import React, { Dispatch, useEffect, useRef, useState, createRef } from "react"
 import { Album, Artist, Song, useUpdateSongMutation } from "../../generated/graphql"
 import { RatedMusicItemUI, RatedSongItemUI } from "../../models/ui/ItemTypes"
 import { Rater } from "./Rater"
-import { GlobalRaterState, RATER_X, RATER_Y_BOTTOM, RATER_Y_TOP, RatedSongItemGrouped, RaterOrientation, SVG_HEIGHT, SVG_WIDTH } from "../../models/ui/RaterTypes"
+import { RaterState, RATER_X, RATER_Y_BOTTOM, RATER_Y_TOP, RatedSongItemGrouped, RaterOrientation, SVG_HEIGHT, SVG_WIDTH } from "../../models/ui/RaterTypes"
 import { RatedItem } from "../../models/domain/ItemTypes"
-import { findAlbumAndArtist, findItemsByIds } from "../../functions/music"
-
-export enum RaterWrapperMode {
-  ARTIST,ALBUM,SONG
-} 
-
+import { RaterAction } from "../../reducers/raterReducer"
+import { MusicData, MusicFilters, MusicScope, MusicState, MusicStore } from "../../models/domain/MusicState"
 
 interface Props {
-    artists:Artist[]|undefined
-    onAlbumClick:(albums:Array<Album>|undefined, artist:Artist|undefined) => void 
-    onArtistClick:(artist:Artist|undefined) => void
-    state:GlobalRaterState
-    setState:Dispatch<SetStateAction<GlobalRaterState>>
+    onAlbumClick:(albums:Album) => void 
+    onArtistClick:(artist:Artist) => void
+    state:RaterState
+    musicState:MusicState
+    stateDispatch:Dispatch<RaterAction>
 }
-const mapSongToRatedItem  = (song:any, artist:Artist, album:Album, orientation:RaterOrientation) : RatedSongItemUI => new RatedSongItemUI({ id: song.id, name: song.name },song.score!, album.thumbnail!, orientation,1, album.dominantColor,song.number,artist.name, createRef(), album.name);
-const mapAlbumToRatedItem  = (album:Album, artist:Artist, orientation:RaterOrientation) : RatedMusicItemUI => new RatedMusicItemUI({ id: album.id, name:album.name}, album.score!, album.thumbnail!, orientation, 1, createRef(), album.dominantColor)    
-const mapArtistToRatedItem  = (artist:Artist, orientation:RaterOrientation) : RatedMusicItemUI => new RatedMusicItemUI({ id: artist.id, name:artist.name}, artist.score!, artist.thumbnail!, orientation, 1, createRef(), '(0,0,0)')    
 
-export const RaterWrapper = ({state, setState, artists, onArtistClick, onAlbumClick}:Props) =>  {
+export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, onAlbumClick}:Props) =>  {
     const gWrapper = useRef<SVGGElement>(null)
     const svgRef = useRef<SVGSVGElement>(null) 
     const [updateSong]  = useUpdateSongMutation();
+    const [scope, setScope]= useState<MusicScope>(MusicScope.ALL)
     const [groupedItems, setGroupedItems] = useState<RatedSongItemGrouped[]>([])
     const [mainRaterItems, setMainRaterItems] = useState<RatedMusicItemUI[]>([])
 
-    const mouseLocationListener =  (svg:SVGSVGElement) => {
-        const pt = svg.createSVGPoint() 
+    // const mouseLocationListener =  (svg:SVGSVGElement) => {
+    //     const pt = svg.createSVGPoint() 
 
-        const cursorPoint = (evt:MouseEvent) => {
-          pt.x = evt.clientX
-          pt.y = evt.clientY
-          return pt.matrixTransform(svgRef.current?.getScreenCTM()?.inverse())
-        }
+    //     const cursorPoint = (evt:MouseEvent) => {
+    //       pt.x = evt.clientX
+    //       pt.y = evt.clientY
+    //       return pt.matrixTransform(svgRef.current?.getScreenCTM()?.inverse())
+    //     }
 
-        svg.addEventListener('mousemove', (evt) => {
-          const loc = cursorPoint(evt)
-          console.log(`{ x: ${loc.x}, y: ${loc.y}`)
-        })
+    //     svg.addEventListener('mousemove', (evt) => {
+    //       const loc = cursorPoint(evt)
+    //       console.log(`{ x: ${loc.x}, y: ${loc.y}`)
+    //     })
 
-    } 
+    // } 
 
     const onSongScoreUpdate = (id:string, score:number) => {
           updateSong({variables: {song:  { id , score} }})
@@ -54,16 +48,18 @@ export const RaterWrapper = ({state, setState, artists, onArtistClick, onAlbumCl
     }
 
     const handleOnAlbumClick =  (item:RatedItem) => {
-      const [album,artist] = findAlbumAndArtist(item.id, artists)  
+      const album = musicState.data.albums.find(it => it.id === item.id )
       if (album) {
-        onAlbumClick([album], artist)
+        onAlbumClick(album)
       } else {
-        onAlbumClick(undefined, artist)
+        console.log('couldnt find album in music state ')
       }
     }
     const handleOnArtistClick =  (item:RatedItem) => {
-      const artist = artists!.find(it => it.id === item.id) 
-      onArtistClick(artist)
+      const artist = musicState.data.artists.find(it => it.id === item.id) 
+      if (artist) {
+        onArtistClick(artist)
+      }
     }
 
     useEffect(() => {
@@ -91,45 +87,14 @@ export const RaterWrapper = ({state, setState, artists, onArtistClick, onAlbumCl
     }, [mainRaterItems, state.scaler])
 
     useEffect(() => {
-      if (artists && state.selections) {
-        let whichOrientation = RaterOrientation.LEFT  
-
-        if (state.mode === RaterWrapperMode.ARTIST) {
-          const selectedArtists = findItemsByIds(state.selections, state.mode, artists) as Array<Artist>  
-          const newItems = selectedArtists.map( it => {
-            whichOrientation = switchOrientation(whichOrientation)
-            return mapArtistToRatedItem(it, whichOrientation)
-          })
-          setState(prev =>  ({...prev, isReadonly: true}))
-          setMainRaterItems(newItems)
-        }
-
-        if (state.mode === RaterWrapperMode.ALBUM) {
-          let  newItems:Array<RatedMusicItemUI> = []  
-          const albums = findItemsByIds(state.selections, state.mode, artists) as Array<{album:Album, artist:Artist}>
-          const albumItems = albums.filter(it => it!.album.score! >= state.scoreFilter.start && it!.album.score! <= state.scoreFilter.end )
-                 .map(it =>{ 
-                whichOrientation = switchOrientation(whichOrientation)
-                return mapAlbumToRatedItem(it.album, it.artist,whichOrientation )
-            })  
-              newItems = [ ...newItems, ...albumItems ] 
-          setState(prev => ({ ...prev, isReadonly: true }))
-          setMainRaterItems(newItems)
-        }  
-        if (state.mode === RaterWrapperMode.SONG) {
-          const songs = findItemsByIds(state.selections, state.mode, artists) as Array<{song:Song, album:Album, artist:Artist}> 
-          const songItems = songs
-                .filter(it => it.song.score && (it!.song.score! >= state.scoreFilter.start && it!.song.score! <= state.scoreFilter.end ))
-                .map(it =>  {
-                  const retv = mapSongToRatedItem(it.song, it.artist, it.album, whichOrientation)
-                  whichOrientation = switchOrientation(whichOrientation) 
-                  return retv
-                })
-            setState(prev => ({ ...prev, isReadonly: false }))
-            setMainRaterItems(songItems)
-              }
-            }
-    }, [artists, state.selections, state.mode, setState, state.scoreFilter.start, state.scoreFilter.end])
+      if (!musicState.data.artists.length) {
+        return
+      }
+      const store = new MusicStore(new MusicData(musicState.data), new MusicFilters(musicState.filters))  
+      const items = store.getItems() 
+      setScope(store.scope)
+      setMainRaterItems(items)
+    }, [musicState.data, musicState.filters])
 
 
     return <svg className="rater" ref={svgRef} id="trackRater" viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}>
@@ -140,10 +105,10 @@ export const RaterWrapper = ({state, setState, artists, onArtistClick, onAlbumCl
       </defs>
           <g ref={gWrapper} id="wrapper">
           {mainRaterItems.length && <Rater 
-                setState={setState}
+                stateDispatch={stateDispatch}
                 position={{x:RATER_X, y:RATER_Y_BOTTOM}}
-                isReadonly={state.mode !== RaterWrapperMode.SONG}
-                onItemClick={(state.mode === RaterWrapperMode.ALBUM) ? handleOnAlbumClick : handleOnArtistClick}
+                isReadonly={scope !== MusicScope.SONG}
+                onItemClick={(scope === MusicScope.ALBUM) ? handleOnAlbumClick : handleOnArtistClick}
                 updateSongScore={onSongScoreUpdate}
                 state={state}
                 zoomTarget={gWrapper.current}
