@@ -1,6 +1,7 @@
 package com.hawazin.visualrater.controllers
 
 import com.hawazin.visualrater.models.db.Album
+import com.hawazin.visualrater.models.db.Song
 import com.hawazin.visualrater.models.graphql.NewAlbumInput
 import com.hawazin.visualrater.services.ImageService
 import com.hawazin.visualrater.services.MusicService
@@ -20,8 +21,17 @@ class AlbumController(val musicService: MusicService, val imageService:ImageServ
     }
 
     @SchemaMapping
+    fun songs(album:Album) : Iterable<Song>  {
+        return emptyList()
+    }
+
+    @SchemaMapping
     fun artistId(album:Album) : String {
         return album.artist.id.toString()
+    }
+    @SchemaMapping
+    fun artistName(album: Album): String {
+        return album.artist?.name.toString()
     }
 
     @MutationMapping

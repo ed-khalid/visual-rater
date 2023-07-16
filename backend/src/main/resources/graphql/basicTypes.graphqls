@@ -21,6 +21,7 @@ type Song implements Item {
 type Album {
     id: String!
     artistId:String!
+    artistName:String!
     name: String!
     year: Int
     thumbnail: String
