@@ -5,10 +5,9 @@ import { Album, GetArtistsDocument, Song, SongInput, useDeleteAlbumMutation, use
 interface Props {
     album:Album
     onClose:any
-    artistName:string|undefined
 }
 
-export const AlbumPanel = ({album, onClose, artistName}:Props) => {
+export const AlbumPanel = ({album, onClose}:Props) => {
 
     const [updateSong] = useUpdateSongMutation()
     const [songs, setSongs] = useState<Song[]>(album.songs)    
@@ -46,6 +45,7 @@ export const AlbumPanel = ({album, onClose, artistName}:Props) => {
         deleteAlbum({variables: { albumId: album.id}, refetchQueries: [{query: GetArtistsDocument}]})
         onClose()
     }
+
     const onEdit = (field:string, val:string) => {
         if (field === 'number') {
           setSongUnderEdit({...songUnderEdit, number:val})
@@ -70,6 +70,9 @@ export const AlbumPanel = ({album, onClose, artistName}:Props) => {
               <button onClick={() => onAlbumDelete(album)}>DELETE</button>
           </div>
           <div className="dashboard-album-title-wrapper">
+              <div className="dashboard-album-artist-name">
+                 {album.artistName}
+              </div>
               <div className="dashboard-album-year">
                  {album.year}
               </div>
