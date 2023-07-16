@@ -71,10 +71,11 @@ export const App = () => {
   const onArtistSelect = (artist:Artist) => {
       setBreadcrumbs(breadcrumbs => [breadcrumbs[0], { title: artist.name, action: () => musicDispatch({ type: 'FILTER_CHANGE', variables: { filters: {artistIds: [artist.id], albumIds:[], songIds:[], scoreFilter:{start:0, end:5}} }})} ])
       $getAlbums({variables: { artistId: artist.id }})
+      musicDispatch({ type: 'FILTER_CHANGE', variables: { filters: { artistIds:[artist.id]  }} })
   }
   useEffect(() => {
     if (!$albums.loading && $albums.data) {
-      const albums = $albums.data?.albums
+      const albums = $albums.data.albums
       if (albums) {
         const artistId = albums[0].artistId 
         const cache = client.cache
@@ -97,8 +98,7 @@ export const App = () => {
             }
           } 
         });
-        (client as any).queryManager.broadcastQueries()
-        musicDispatch({ type: 'DATA_CHANGE', variables: { data: { albums: albums as Album[]}, filters:  { artistIds : [artistId] }   } })
+        musicDispatch({ type: 'DATA_CHANGE', variables: { data: { albums: albums as Album[]}  } })
       }
     }
   }, [$albums.loading, $albums.data])
@@ -113,12 +113,12 @@ export const App = () => {
   const onAlbumSelect = (album:Album) => {
     setBreadcrumbs(breadcrumbs => [breadcrumbs[0], breadcrumbs[1], { title: album.name, action: () => musicDispatch({ type: 'FILTER_CHANGE', variables: { filters: {albumIds: [album.id], songIds:[], scoreFilter:{start:0,end:5}} }})} ])
     $getSongs({variables: { albumId: album.id }})
+    musicDispatch({type: 'FILTER_CHANGE', variables: { filters: { albumIds:[album.id] } }})
   }
   useEffect(() => {
     if (!$songs.loading && $songs.data) {
       const songs = $songs.data.songs
       if (songs) {
-        const artistId = songs[0].artistId 
         const albumId = songs[0].albumId 
         const refs = songs.map(song => client.writeFragment({ data: song, fragment: SongFieldsFragmentDoc}))
         client.cache.modify({
@@ -140,7 +140,7 @@ export const App = () => {
           } 
         });
 
-        musicDispatch({ type: 'DATA_CHANGE', variables: { data: { songs: songs as Song[]}, filters:  { artistIds : [artistId], albumIds:[albumId] }   } })
+        musicDispatch({ type: 'DATA_CHANGE', variables: { data: { songs: songs as Song[]} }})
       }
     }
   }, [$songs.loading, $songs.data])
