@@ -3,6 +3,8 @@ type Query {
     searchExternalArtist(name:String): ExternalArtistSearchResult
     searchExternalAlbumTracks(albumId:String): [ExternalTrackSearchResult!]!
     artists: ArtistPage!
+    albums(artistId:String!): [Album!]
+    songs(albumId:String!): [Song!]
     artist(name:String): Artist
 }
 

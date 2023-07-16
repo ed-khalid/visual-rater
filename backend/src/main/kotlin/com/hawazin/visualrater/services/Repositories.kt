@@ -20,4 +20,5 @@ interface AlbumRepository: CrudRepository<Album, UUID> {
 
 interface SongRepository:CrudRepository<Song,UUID> {
     fun findByName(name:String) : Song?
+    fun findByAlbumId(albumId:UUID): Iterable<Song>?
 }

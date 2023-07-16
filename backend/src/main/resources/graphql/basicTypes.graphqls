@@ -10,6 +10,8 @@ MUSIC
 
 type Song implements Item {
     id:String!
+    albumId:String!
+    artistId:String!
     score:Float
     name: String!
     number:Int!
@@ -18,6 +20,7 @@ type Song implements Item {
 
 type Album {
     id: String!
+    artistId:String!
     name: String!
     year: Int
     thumbnail: String
