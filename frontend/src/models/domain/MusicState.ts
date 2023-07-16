@@ -3,6 +3,7 @@ import { Album, Artist, Song } from "../../generated/graphql"
 import { RatedMusicItemUI, RatedSongItemUI } from "../ui/ItemTypes";
 import { RaterOrientation } from "../ui/RaterTypes";
 
+export type MusicEntity = Artist | Album | Song 
 type ScoreFilter = { start: number, end: number }
 export enum MusicScope {
   ALL, ARTIST, ALBUM, SONG
@@ -64,11 +65,8 @@ export class MusicFilters {
     return this.hasArtistsFilter() && !this.hasAlbumsFilter() && this.hasSongsFilter()
   }
 
-  private filterByScore = (score: number) => (this.scoreFilter) ? score >= this.scoreFilter.start && score <= this.scoreFilter.end : true
+  public filterByScore = <T extends MusicEntity> (arr: Array<T>) => arr.filter(it => ( this.scoreFilter && it.score) ? it.score >= this.scoreFilter.start && it.score <= this.scoreFilter.end : true)
   private filterById = (id:string, arr?:String[]) => (arr) ? arr.includes(id) : true
-  public filterArtistsbyScore = (artists: Artist[]) => artists.filter(it => this.filterByScore(it.score!))
-  public filterAlbumsByScore = (albums: Album[]) => albums.filter(it => this.filterByScore(it.score!))
-  public filterSongsByScore = (songs: Song[]) => songs.filter(it => this.filterByScore(it.score!))
   public filterArtists = (artists: Artist[]) => artists.filter(it => this.filterById(it.id, this.artistIds))
   public filterAlbums = (albums: Album[]) => albums.filter(it => this.filterById(it.id, this.albumIds))
   public filterAlbumsByArtist = (albums: Album[]) => albums.filter(it => this.filterById(it.artistId, this.artistIds))
@@ -89,24 +87,18 @@ export class MusicStore {
   public getSelectedArtists(): Artist[] {
     return this.filters.filterArtists(this.data.artists)
   }  
-  public getSelectedAlbumsWithSongs(): Album[] {
-    const selectedAlbums = this.filters.filterAlbums(this.data.albums)
-    const songs = this.filters.filterSongsByAlbum(this.data.songs) 
-    songs.forEach(song => {
-      const album = selectedAlbums.find(it => it.id === song.albumId)
-      if (album) {
-        album.songs = [...album.songs, song]
-      }
-    })
-    return selectedAlbums
+  public getSelectedAlbums(): Album[] {
+    const albums = this.filters.filterAlbums(this.data.albums)
+    console.log('filtered albums', JSON.stringify(albums.map(it => it.id)))
+    return albums
   }  
 
   public hasNoFilters(): boolean {
     return this.filters.areEmpty()
   }
-  public filterArtistsByScore = () => this.filters.filterArtistsbyScore(this.data.artists)
-  public filterAlbumsByScore = () => this.filters.filterAlbumsByScore(this.data.albums)
-  public filterSongsByScore = () => this.filters.filterSongsByScore(this.data.songs)
+  public filterArtistsByScore = () => this.filters.filterByScore<Artist>(this.data.artists)
+  public filterAlbumsByScore = () => this.filters.filterByScore<Album>(this.data.albums)
+  public filterSongsByScore = () => this.filters.filterByScore<Song>(this.data.songs)
 
   public getItems() {
     let whichOrientation = RaterOrientation.LEFT

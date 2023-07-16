@@ -1,21 +1,34 @@
 import { Album, Artist, Song } from "../generated/graphql";
-import { MusicState } from "../models/domain/MusicState";
+import { MusicEntity, MusicState } from "../models/domain/MusicState";
 
 
 export const musicReducer: React.Reducer<MusicState, MusicAction> = (state: MusicState, action: MusicAction) => {
+    console.log('action' + JSON.stringify(action))
+
+    const reconcileData = <T extends MusicEntity> (oldData:Array<T>, newData:Array<T>|undefined) => {
+        if (!newData) {
+            return oldData
+        }
+        const newDataIds = newData.map(it => it.id) 
+        const data = oldData.filter(it => !newDataIds.includes(it.id)  )
+        return [...data, ...newData]
+    }
+
     switch (action.type) {
         case 'DATA_CHANGE': {
             const newData = action.variables?.data
             const newFilters = action.variables?.filters || state.filters
             if (newData) {
+
                 const artistIds = newFilters?.artistIds || state.filters.artistIds
                 const albumIds = newFilters?.albumIds || state.filters.albumIds
                 const songIds = newFilters?.songIds || state.filters.songIds
                 const scoreFilter = newFilters?.scoreFilter || state.filters.scoreFilter
                 const filters = { artistIds, albumIds, songIds, scoreFilter }
-                const artists = (newData.artists) ? [...state.data.artists, ...newData.artists] : state.data.artists
-                const albums = (newData.albums) ? [...state.data.albums, ...newData.albums] : state.data.albums
-                const songs = (newData.songs) ? [...state.data.songs, ...newData.songs] : state.data.songs
+
+                const artists = reconcileData<Artist>(state.data.artists, newData.artists) 
+                const albums = reconcileData<Album>(state.data.albums, newData.albums)
+                const songs = reconcileData<Song>(state.data.songs, newData.songs)
                 return { ...state, data: { artists, albums, songs }, filters }
             }
             return state
