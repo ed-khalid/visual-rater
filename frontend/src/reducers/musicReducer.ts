@@ -2,7 +2,7 @@ import { Album, Artist, Song } from "../generated/graphql";
 import { MusicEntity, MusicState } from "../models/domain/MusicState";
 
 
-export const musicReducer: React.Reducer<MusicState, MusicAction> = (state: MusicState, action: MusicAction) => {
+export const musicReducer: React.Reducer<MusicState, MusicAction> =  (state: MusicState, action: MusicAction) : MusicState => {
     console.log('action' + JSON.stringify(action))
 
     const reconcileData = <T extends MusicEntity> (oldData:Array<T>, newData:Array<T>|undefined) => {
@@ -17,15 +17,8 @@ export const musicReducer: React.Reducer<MusicState, MusicAction> = (state: Musi
     switch (action.type) {
         case 'DATA_CHANGE': {
             const newData = action.variables?.data
-            const newFilters = action.variables?.filters || state.filters
+            const filters = state.filters 
             if (newData) {
-
-                const artistIds = newFilters?.artistIds || state.filters.artistIds
-                const albumIds = newFilters?.albumIds || state.filters.albumIds
-                const songIds = newFilters?.songIds || state.filters.songIds
-                const scoreFilter = newFilters?.scoreFilter || state.filters.scoreFilter
-                const filters = { artistIds, albumIds, songIds, scoreFilter }
-
                 const artists = reconcileData<Artist>(state.data.artists, newData.artists) 
                 const albums = reconcileData<Album>(state.data.albums, newData.albums)
                 const songs = reconcileData<Song>(state.data.songs, newData.songs)
@@ -36,11 +29,11 @@ export const musicReducer: React.Reducer<MusicState, MusicAction> = (state: Musi
         case 'FILTER_CHANGE': {
             const filters = action.variables?.filters
             if (filters) {
-                const artistIds = filters?.artistIds || state.filters.artistIds
-                const albumIds = filters?.albumIds || state.filters.albumIds
-                const songIds = filters?.songIds || state.filters.songIds
-                const scoreFilter = filters?.scoreFilter || state.filters.scoreFilter
-                return { ...state, filters: { artistIds, albumIds, songIds, scoreFilter } }
+                const artistIds = (filters.artistIds) ? filters.artistIds : state.filters.artistIds
+                const albumIds = (filters.albumIds) ? filters.albumIds : state.filters.albumIds
+                const songIds = (filters.songIds) ? filters.songIds : state.filters.songIds
+                const scoreFilter = (filters.scoreFilter) ? filters.scoreFilter : state.filters.scoreFilter
+                return { ...state, filters: { artistIds, albumIds, songIds, scoreFilter } } 
             }
             return state
         }
