@@ -85,6 +85,22 @@ export class MusicStore {
 
   public scope:MusicScope = MusicScope.ALL 
 
+
+  public getSelectedArtists(): Artist[] {
+    return this.filters.filterArtists(this.data.artists)
+  }  
+  public getSelectedAlbumsWithSongs(): Album[] {
+    const selectedAlbums = this.filters.filterAlbums(this.data.albums)
+    const songs = this.filters.filterSongsByAlbum(this.data.songs) 
+    songs.forEach(song => {
+      const album = selectedAlbums.find(it => it.id === song.albumId)
+      if (album) {
+        album.songs = [...album.songs, song]
+      }
+    })
+    return selectedAlbums
+  }  
+
   public hasNoFilters(): boolean {
     return this.filters.areEmpty()
   }
@@ -100,12 +116,14 @@ export class MusicStore {
         whichOrientation = switchOrientation(whichOrientation)
         return mapArtistToRatedItem(it, whichOrientation)
       })
+      this.scope = MusicScope.ARTIST
     }
     else if (this.filters.onlyArtists()) {
       items = this.filters.filterAlbumsByArtist(this.data.albums).map(it => {
         whichOrientation = switchOrientation(whichOrientation)
         return mapAlbumToRatedItem(it, whichOrientation)
       })
+      this.scope = MusicScope.ALBUM
 
     }
     else if (this.filters.onlyArtistsAndAlbums()) {
@@ -119,6 +137,7 @@ export class MusicStore {
             throw Error(`cannot find album for song ${song}`)
           }
         })
+      this.scope = MusicScope.SONG
     }
     else if (this.filters.onlyArtistsAndSongs()) {
       items = this.filters.filterSongsByArtist(this.data.songs)
@@ -131,6 +150,7 @@ export class MusicStore {
             throw Error(`cannot find album for song ${song}`)
           }
         })
+      this.scope = MusicScope.SONG
     }
       return items
   }

@@ -4,6 +4,9 @@ fragment ArtistFields on Artist {
       name 
       thumbnail
       score
+      albums {
+        ...AlbumFields
+      }
       metadata {
         ...ArtistMetadataFields
       }

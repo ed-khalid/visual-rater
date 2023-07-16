@@ -1,7 +1,7 @@
 import React, { useEffect, useReducer, useState } from 'react';
 import './App.css';
 import { Scaler } from './functions/scale';
-import {  ExternalAlbumSearchResult, Artist, ExternalArtistSearchResult, GetArtistsDocument, GetArtistsQuery, NewSongInput, useCreateAlbumMutation, useCreateArtistMutation, useGetArtistsQuery , useGetTracksForSearchAlbumLazyQuery, Song, Album, useOnArtistMetadataUpdateSubscription, useGetAlbumsLazyQuery, useGetSongsLazyQuery } from './generated/graphql';
+import {  ExternalAlbumSearchResult, Artist, ExternalArtistSearchResult, GetArtistsDocument, GetArtistsQuery, NewSongInput, useCreateAlbumMutation, useCreateArtistMutation, useGetArtistsQuery , useGetTracksForSearchAlbumLazyQuery, Song, Album, useOnArtistMetadataUpdateSubscription, useGetAlbumsLazyQuery, useGetSongsLazyQuery, AlbumFieldsFragmentDoc, SongFieldsFragmentDoc } from './generated/graphql';
 import { Search } from './components/legacy/search/Search';
 import { ExternalFullSearchResult } from './models/domain/ExternalFullSearchResult';
 import { RaterWrapper } from './components/rater/RaterWrapper';
@@ -12,8 +12,9 @@ import { ArtistPanel } from './components/panels/ArtistPanel';
 import { AlbumPanel } from './components/panels/AlbumPanel';
 import { Breadcrumb, BreadcrumbPanel } from './components/panels/BreadcrumbPanel';
 import { RaterAction, raterReducer } from './reducers/raterReducer';
-import { MusicState, MusicStore } from './models/domain/MusicState';
+import { MusicData, MusicFilters, MusicState, MusicStore } from './models/domain/MusicState';
 import { MusicAction, musicReducer } from './reducers/musicReducer';
+import { client } from './setupApollo';
 
 export const initialRaterState:RaterState = {
    start: 0
@@ -75,6 +76,17 @@ export const App = () => {
       const albums = $albums.data?.albums
       if (albums) {
         const artistId = albums[0].artistId 
+        const cache = client.cache
+        const refs = albums.map(it => client.writeFragment({ data: it, fragment: AlbumFieldsFragmentDoc, fragmentName: 'AlbumFields'}))
+        cache.modify({
+          broadcast: false,
+          id: `Artist:${artistId}`,
+          fields: {
+            albums(existing, _ ) {
+              return [...existing, ...refs ]
+            }
+          } 
+        })
         musicDispatch({ type: 'DATA_CHANGE', variables: { data: { albums: albums as Album[]}, filters:  { artistIds : [artistId] }   } })
       }
     }
@@ -97,6 +109,17 @@ export const App = () => {
       if (songs) {
         const artistId = songs[0].artistId 
         const albumId = songs[0].albumId 
+        const cache = client.cache
+        const refs = songs.map(song => client.writeFragment({ data: song, fragment: SongFieldsFragmentDoc}))
+        cache.modify({
+          broadcast: false,
+          id: `Album:${albumId}`,
+          fields: {
+            songs(existing, _ ) {
+              return [...existing, ...refs ]
+            }
+          } 
+        })
         musicDispatch({ type: 'DATA_CHANGE', variables: { data: { songs: songs as Song[]}, filters:  { artistIds : [artistId], albumIds:[albumId] }   } })
       }
     }
@@ -204,6 +227,8 @@ export const App = () => {
     }},
   [searchArtistAlbumTracks])
 
+  const store = new MusicStore(new MusicData(musicState.data), new MusicFilters(musicState.filters))
+
 
   return (
     <div className="App">
@@ -217,8 +242,8 @@ export const App = () => {
             <button onClick={onZoomResetClick}>Reset</button>
           </div>
         </div> */}
-        {musicState.data.artists.length !== 0 && musicState.data.artists.filter(artist => musicState.filters.artistIds.includes(artist!.id)).map(artist => <ArtistPanel onSongCategoryClick={onArtistPanelSongsClick} key={artist!.id} artist={artist!}/>)}
-        {musicState.data.albums.length !== 0 && musicState.data.albums.filter(it => musicState.filters.albumIds.includes(it.id)).map(album => <AlbumPanel key={album.id} album={album} artistName={undefined} onClose={() => {}}  />)}
+        {store.getSelectedArtists().map(artist => <ArtistPanel onSongCategoryClick={onArtistPanelSongsClick} key={artist!.id} artist={artist!}/>)}
+        {store.getSelectedAlbumsWithSongs().map(album => <AlbumPanel key={album.id} album={album} onClose={() => {}}  />)}
         <div id="rater" className="viz drop-target" ref={drop}>
           <RaterWrapper
           onAlbumClick={onAlbumSelect}
