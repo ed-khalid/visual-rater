@@ -81,6 +81,7 @@ export const App = () => {
         const cache = client.cache
         const refs = albums.map(it => client.writeFragment({ data: it, fragment: AlbumFieldsFragmentDoc, fragmentName: 'AlbumFields'}))
         cache.modify({
+          broadcast: false,
           id: `Artist:${artistId}`,
           fields: {
             albums(existing:Reference[], {readField} ) {
@@ -123,6 +124,7 @@ export const App = () => {
         const refs = songs.map(song => client.writeFragment({ data: song, fragment: SongFieldsFragmentDoc}))
         client.cache.modify({
           id: `Album:${albumId}`,
+          broadcast: false,
           fields: {
             songs(existing:Reference[], {readField} ) {
               const newRefs = refs.reduce<Reference[]>((acc,curr) => {
@@ -160,29 +162,6 @@ export const App = () => {
       getTracks({ variables: { albumId: searchAlbum.id} })
     }
   }, [searchAlbum, getTracks])
-
-  // const onZoomResetClick = () => {
-  //   dispatch({ type: 'ZOOM_RESET'})
-  // }
-
-  // const updateScale = (newStart?:string, newEnd?:string) => {
-  //   if (newStart === '') {
-  //     newStart = '0'
-  //   }
-  //   if (newEnd === '') {
-  //     newEnd = '0'
-  //   }
-  //   const start = newStart || raterState.start + ''   
-  //   const end = newEnd || raterState.end  + ''  
-  //   const allowed = new RegExp('^([0-5]+([.][0-9]*)?)$') 
-  //   if (allowed.test(start) && allowed.test(end) ) {
-  //     const startNumber = Number(start)
-  //     const endNumber = Number(end) 
-  //     if (startNumber >= 0 && startNumber < 5 && startNumber < endNumber && endNumber <= 5) {
-  //       setRaterState({...raterState,start,end})
-  //     }
-  //   }
-  // }
 
   useEffect(() => {
     if (getTracksResult.data?.searchExternalAlbumTracks && searchArtist && searchAlbum) {
@@ -262,8 +241,8 @@ export const App = () => {
             <button onClick={onZoomResetClick}>Reset</button>
           </div>
         </div> */}
-        {store.getSelectedArtists().map(artist => <ArtistPanel onSongCategoryClick={onArtistPanelSongsClick} key={artist!.id} artist={artist!}/>)}
-        {store.getSelectedAlbums().map(album => <AlbumPanel key={album.id} album={album} onClose={() => {}}  />)}
+        {store.getSelectedArtists().map(artist => <ArtistPanel onSongCategoryClick={onArtistPanelSongsClick} key={artist!.name+ '-panel'} artist={artist!}/>)}
+        {store.getSelectedAlbums().map(album => <AlbumPanel key={album.name+'-panel'} album={album} onClose={() => {}}  />)}
         <div id="rater" className="viz drop-target" ref={drop}>
           <RaterWrapper
           onAlbumClick={onAlbumSelect}

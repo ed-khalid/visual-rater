@@ -19,7 +19,7 @@ export const ArtistDashboardAlbumRow = ({album, onAlbumSelect}:ArtistDashboardAl
 
 
 
-    return <div ref={drag} key={album.id} onClick={() => onAlbumSelect(album) } className="dashboard-album draggable">
+    return <div ref={drag} key={'album-row'+album.name} onClick={() => onAlbumSelect(album) } className="dashboard-album draggable">
                                 <img alt={album?.name} src={album?.thumbnail || ''} />
             </div> 
 }

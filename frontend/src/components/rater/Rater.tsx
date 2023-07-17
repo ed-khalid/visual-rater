@@ -86,7 +86,7 @@ export const Rater = ({position, state, stateDispatch, onItemClick, updateSongSc
                         <g ref={itemsGroupRef} className="items">
                        <TransitionGroup component={null} >
                       { items.map(item =>  
-                        <Transition key={'item'+item.id} onEnter={()=> animateOnEnter(item,position.x)} onExit={() => animateOnExit(item, position.x)}  nodeRef={item.nodeRef} timeout={ANIMATION_DURATION}>
+                        <Transition key={'single-rater-item'+item.name} onEnter={()=> animateOnEnter(item,position.x)} onExit={() => animateOnExit(item, position.x)}  nodeRef={item.nodeRef} timeout={ANIMATION_DURATION}>
                                 <SingleRaterItem
                                     item={item}
                                     isReadonly={isReadonly}
