@@ -44,7 +44,7 @@ export const App = () => {
   const [musicState, musicDispatch] = useReducer<React.Reducer<MusicState,MusicAction>>(musicReducer, { data: { artists: [], albums:[], songs:[] } , filters: { artistIds: [] , albumIds:[], songIds: [], scoreFilter:{start:0, end:5} }  })
 
   // breadcrumbs 
-  const [breadcrumbs, setBreadcrumbs] = useState<Array<Breadcrumb>>([{ title: 'ARTISTS' , action: () => musicDispatch({type: 'FILTER_CHANGE', variables: { filters: { artistIds:[], albumIds:[], songIds:[], scoreFilter: { start:0, end:5 } } }  })}]) 
+  const [breadcrumbs, setBreadcrumbs] = useState<Array<Breadcrumb>>([{ title: 'ARTISTS' , action: () => { setBreadcrumbs(breadcrumbs => ([breadcrumbs[0]])); musicDispatch({type: 'FILTER_CHANGE', variables: { filters: { artistIds:[], albumIds:[], songIds:[], scoreFilter: { start:0, end:5 } } }  })}}]) 
 
   // rater 
   const [raterState, dispatch] = useReducer<React.Reducer<RaterState,RaterAction>>(raterReducer, initialRaterState )
@@ -69,7 +69,7 @@ export const App = () => {
   }, [$artists.loading, $artists.data] )
 
   const onArtistSelect = (artist:Artist) => {
-      setBreadcrumbs(breadcrumbs => [breadcrumbs[0], { title: artist.name, action: () => musicDispatch({ type: 'FILTER_CHANGE', variables: { filters: {artistIds: [artist.id], albumIds:[], songIds:[], scoreFilter:{start:0, end:5}} }})} ])
+      setBreadcrumbs(breadcrumbs => [breadcrumbs[0], { title: artist.name, action: () => { setBreadcrumbs((breadcrumbs) => ([breadcrumbs[0], breadcrumbs[1]])); musicDispatch({ type: 'FILTER_CHANGE', variables: { filters: {artistIds: [artist.id], albumIds:[], songIds:[], scoreFilter:{start:0, end:5}} }})}} ])
       $getAlbums({variables: { artistId: artist.id }})
       musicDispatch({ type: 'FILTER_CHANGE', variables: { filters: { artistIds:[artist.id]  }} })
   }
@@ -81,7 +81,6 @@ export const App = () => {
         const cache = client.cache
         const refs = albums.map(it => client.writeFragment({ data: it, fragment: AlbumFieldsFragmentDoc, fragmentName: 'AlbumFields'}))
         cache.modify({
-          broadcast: false,
           id: `Artist:${artistId}`,
           fields: {
             albums(existing:Reference[], {readField} ) {
@@ -124,7 +123,6 @@ export const App = () => {
         const refs = songs.map(song => client.writeFragment({ data: song, fragment: SongFieldsFragmentDoc}))
         client.cache.modify({
           id: `Album:${albumId}`,
-          broadcast: false,
           fields: {
             songs(existing:Reference[], {readField} ) {
               const newRefs = refs.reduce<Reference[]>((acc,curr) => {
