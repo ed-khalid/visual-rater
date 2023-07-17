@@ -21,8 +21,8 @@ export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, o
     const svgRef = useRef<SVGSVGElement>(null) 
     const [updateSong]  = useUpdateSongMutation();
     const [scope, setScope]= useState<MusicScope>(MusicScope.ALL)
-    const [finalItems, setFinalItems] = useState<RatedMusicItemUI[]>([])
-    const [mainRaterItems, setMainRaterItems] = useState<RatedMusicItemUI[]>([])
+    const [items, setItems] = useState<RatedMusicItemUI[]>([])
+
 
     // const mouseLocationListener =  (svg:SVGSVGElement) => {
     //     const pt = svg.createSVGPoint() 
@@ -59,8 +59,19 @@ export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, o
       }
     }
 
+    const unwrapGroups = (groups:Array<RatedSongItemGrouped>) => {
+      return groups.reduce<RatedMusicItemUI[]>((acc,curr)=> {
+        return [...acc, ...curr.items ]
+      }, [])
+    } 
+
     useEffect(() => {
- 
+      if (!musicState.data.artists.length) {
+        return
+      }
+      const store = new MusicStore(new MusicData(musicState.data), new MusicFilters(musicState.filters))  
+      const items = store.getItems() 
+      setScope(store.scope)
        const groupCloseItems = (ratedItems:RatedMusicItemUI[]) => {
             const groupedItems = ratedItems.reduce((acc:RatedSongItemGrouped[] , curr:RatedMusicItemUI) => {
                 const position =  state.scaler.toPosition(curr.score) 
@@ -76,29 +87,13 @@ export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, o
             },  [])
             return groupedItems
         }  
-        const leftItems = mainRaterItems.filter( it => it.orientation === RaterOrientation.LEFT)
-        const rightItems = mainRaterItems.filter( it => it.orientation === RaterOrientation.RIGHT)
+        const leftItems = items.filter( it => it.orientation === RaterOrientation.LEFT)
+        const rightItems = items.filter( it => it.orientation === RaterOrientation.RIGHT)
         const leftGroups =  groupCloseItems(leftItems)
         const rightGroups =  groupCloseItems(rightItems)
-        const items = unwrapGroups([...leftGroups, ...rightGroups]) 
-        setFinalItems(items)
-    }, [mainRaterItems, state.scaler])
-
-    const unwrapGroups = (groups:Array<RatedSongItemGrouped>) => {
-      return groups.reduce<RatedMusicItemUI[]>((acc,curr)=> {
-        return [...acc, ...curr.items ]
-      }, [])
-    } 
-
-    useEffect(() => {
-      if (!musicState.data.artists.length) {
-        return
-      }
-      const store = new MusicStore(new MusicData(musicState.data), new MusicFilters(musicState.filters))  
-      const items = store.getItems() 
-      setScope(store.scope)
-      setMainRaterItems(items)
-    }, [musicState.data, musicState.filters])
+        const finalItems = unwrapGroups([...leftGroups, ...rightGroups]) 
+        setItems(finalItems)
+    }, [musicState.data, musicState.filters, state.scaler])
 
 
     return <svg className="rater" ref={svgRef} id="trackRater" viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}>
@@ -119,7 +114,7 @@ export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, o
                 updateSongScore={onSongScoreUpdate}
                 state={state}
                 zoomTarget={gWrapper.current}
-                items={finalItems}
+                items={items}
           />
           </g>
         </svg>
