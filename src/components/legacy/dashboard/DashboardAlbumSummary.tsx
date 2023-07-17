@@ -114,7 +114,7 @@ export const DashboardAlbumSummary =  ({onClose, artistName, album }:Props) => {
 
             </thead>
             <tbody>
-                {sort(songs).map(song =><tr key={song.id}>
+                {sort(songs).map(song =><tr key={'dashboard-summary'+song.name}>
                     <td className="action-cell">
                         {!(songUnderEdit.id === song.id) && <div onClick={() => setSongUnderEdit({ id: song.id, name: song.name,number:song.number.toString()}) }>
                           edit

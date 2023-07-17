@@ -14,7 +14,7 @@ export const ListControlNav =  ({setPageNumber, numberOfPages}:{setPageNumber:an
   const navButtons = []  
   if (numberOfPages > 1 ) {
     for (let i= 1 ;  i <= numberOfPages ; i++) {
-        navButtons.push(<FontAwesomeIcon size="xs" icon={(clickedNavButtonIndex === i )?faDotCircle:faCircle} key={i} onClick={() => handleNavButtonClick(i)} className={(clickedNavButtonIndex === i )? "selected" : ""}/>)
+        navButtons.push(<FontAwesomeIcon size="xs" icon={(clickedNavButtonIndex === i )?faDotCircle:faCircle} key={'listicon'+i} onClick={() => handleNavButtonClick(i)} className={(clickedNavButtonIndex === i )? "selected" : ""}/>)
     }
     return <div className="list-control-nav">
                 {navButtons}

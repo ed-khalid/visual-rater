@@ -39,10 +39,10 @@ export const SearchResults =  ({searchArtist, setSearchAlbum}:Props) => {
         return (
             <React.Fragment>
                 <div id="artist" className="wrapper" style={artistDivStyle}>
-                    <div id="artist-title" className="font-title" key={"artist" + searchArtist.id}>{searchArtist.name}</div>
+                    <div id="artist-title" className="font-title" key={"external-artist" + searchArtist.name}>{searchArtist.name}</div>
                     <div id="albums" className="grid album-row" >
                             {searchArtist.albums.slice(ALBUMS_PER_PAGE *(pageNumber-1), Math.min(pageNumber *(ALBUMS_PER_PAGE), searchArtist.albums.length) ).map(album => 
-                            <div className={"album-result"} key={album.id}>
+                            <div className={"album-result"} key={'external-album'+album.name}>
                                 <img alt={album.name} onClick={() => onAlbumClick(album)} src={album.thumbnail || '' } />
                             </div>
                             )}

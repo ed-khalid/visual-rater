@@ -89,7 +89,7 @@ export const AlbumPanel = ({album, onClose}:Props) => {
 
             </thead>
             <tbody>
-                {sort(songs).map(song =><tr key={song.id}>
+                {sort(songs).map(song =><tr key={'album-panel-song-'+song.name}>
                     <td className="number-cell">
                         <div className="flex-column">
                             {!(songUnderEdit.id === song.id) && 

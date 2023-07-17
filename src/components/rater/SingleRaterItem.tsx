@@ -109,7 +109,7 @@ export const SingleRaterItem = ({item, nodeRef, isReadonly, mainlineX, scale=1, 
         const color = "rgb" + item.overlay   
         const cursor = (isReadonly) ? "pointer" : "move"  
         
-        return <g onClick={handleOnClick} ref={g} className="item" key={item.name}>
+        return <g onClick={handleOnClick} ref={g} className="item" key={'single-rater-item-svg-g-'+item.name}>
                         <g clipPath={ (item.orientation === RaterOrientation.LEFT) ? "url(#item-clip-path-left)" : "url(#item-clip-path-right)"  } ref={nodeRef}  className="draggable"> 
                             <line className="item-scoreline" x1={lineDimensions.x1} y1={lineDimensions.y1} x2={lineDimensions.x2} y2={lineDimensions.y2} stroke={"black"} opacity={0.2} />
                             <circle  className="item-thumbnail-overlay" cx={imageDimensions.x+imageDimensions.size/2} cy={imageDimensions.y+imageDimensions.size/2} r={imageDimensions.size/2} fill={color} stroke={color}></circle>

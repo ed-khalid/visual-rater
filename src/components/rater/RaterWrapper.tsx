@@ -15,6 +15,7 @@ interface Props {
     stateDispatch:Dispatch<RaterAction>
 }
 
+
 export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, onAlbumClick}:Props) =>  {
     const gWrapper = useRef<SVGGElement>(null)
     const svgRef = useRef<SVGSVGElement>(null) 
@@ -109,8 +110,8 @@ export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, o
                 <rect x={RATER_X} y={RATER_Y_TOP} width={SVG_WIDTH/2} height={SVG_HEIGHT} ></rect>
             </clipPath>
       </defs>
-          <g ref={gWrapper} id="wrapper">
-          {mainRaterItems.length && <Rater 
+          <g key={"rater-wrapper"}  ref={gWrapper} id="wrapper">
+          <Rater 
                 stateDispatch={stateDispatch}
                 position={{x:RATER_X, y:RATER_Y_BOTTOM}}
                 isReadonly={scope !== MusicScope.SONG}
@@ -120,7 +121,6 @@ export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, o
                 zoomTarget={gWrapper.current}
                 items={finalItems}
           />
-          }
           </g>
         </svg>
 
