@@ -6,7 +6,7 @@ import { Scaler } from "../../functions/scale";
 import { DragBehavior } from "./behaviors/DragBehavior";
 import './SingleRaterItem.css' 
 import { RatedItem } from "../../models/domain/ItemTypes";
-import { RATER_TIER_WIDTH, RATER_Y_TOP, RaterOrientation, SVG_HEIGHT, SVG_WIDTH } from "../../models/ui/RaterTypes";
+import { RATER_TIER_WIDTH, RaterOrientation } from "../../models/ui/RaterTypes";
 
 interface SingleRaterItemProps {
     item:RatedMusicItemUI
@@ -14,19 +14,15 @@ interface SingleRaterItemProps {
     isReadonly:boolean
     nodeRef?:any
     onClick?:any
-    style:any
-    shouldDrawScoreline:boolean
     onDragEnd?:any
     scaler:Scaler
     scale?:number
-    orientation:RaterOrientation
 } 
 
-export const SingleRaterItem = ({item, orientation , shouldDrawScoreline,nodeRef, style, isReadonly, mainlineX, scale=1, scaler, onClick, onDragEnd}:SingleRaterItemProps) =>  {
+export const SingleRaterItem = ({item, nodeRef, isReadonly, mainlineX, scale=1, scaler, onClick, onDragEnd}:SingleRaterItemProps) =>  {
     const y = scaler.toPosition(item.score) 
     const tierOffset = RATER_TIER_WIDTH * item.tier 
-    const tierLineOpacityOffset = 0.7 
-    const x = (orientation === RaterOrientation.LEFT) ?(mainlineX - tierOffset) : (mainlineX + tierOffset) 
+    const x = (item.orientation === RaterOrientation.LEFT) ?(mainlineX - tierOffset) : (mainlineX + tierOffset) 
     const g = useRef<SVGGElement>(null)
 
     useEffect(() => {
@@ -70,7 +66,7 @@ export const SingleRaterItem = ({item, orientation , shouldDrawScoreline,nodeRef
             y: imageDimensions.y + imageSize/2   
         }  
         const lineDimensions = {
-                x1: (orientation === RaterOrientation.LEFT) ? (imageDimensions.x + imageDimensions.size) : imageDimensions.x + imageDimensions.size, 
+                x1: (item.orientation === RaterOrientation.LEFT) ? (imageDimensions.x + imageDimensions.size) : imageDimensions.x + imageDimensions.size, 
                 y1: y, 
                 x2: mainlineX,
                 y2: y
@@ -110,39 +106,17 @@ export const SingleRaterItem = ({item, orientation , shouldDrawScoreline,nodeRef
             }
         }
 
-        
-        const drawArc = (x:number, y:number, radius:number, startAngle:number, endAngle:number) => {
-
-            const polarToCarestian = (centerX:number, centerY:number, radius:number,angleInDegrees:number) => {
-                const angleRadians = (angleInDegrees - 90) * Math.PI / 180.0 ; 
-                return {
-                    x : centerX + (radius * Math.cos(angleRadians)),
-                    y : centerY + (radius * Math.sin(angleRadians))
-                }
-            } 
-
-            const start = polarToCarestian(x,y,radius,endAngle) 
-            const end = polarToCarestian(x,y,radius,startAngle) 
-            const largeArcFlag =  endAngle - startAngle <= 180 ? "0" : "1"
-            const d = [
-                "M", start.x, start.y,
-                "A", radius, radius, 0, largeArcFlag, 0, end.x, end.y
-            ].join(" ") 
-            return d
-
-        }
         const color = "rgb" + item.overlay   
-        const arcPath = drawArc(imageDimensions.x, imageDimensions.y, imageDimensions.size/2, 180, 0)  
         const cursor = (isReadonly) ? "pointer" : "move"  
         
         return <g onClick={handleOnClick} ref={g} className="item" key={item.name}>
-                        <g ref={nodeRef}  style={style} className="draggable"> 
-                            {shouldDrawScoreline && <line className="item-scoreline" x1={lineDimensions.x1} y1={lineDimensions.y1} x2={lineDimensions.x2} y2={lineDimensions.y2} stroke={"black"} opacity={0.2} />}
+                        <g clipPath={ (item.orientation === RaterOrientation.LEFT) ? "url(#item-clip-path-left)" : "url(#item-clip-path-right)"  } ref={nodeRef}  className="draggable"> 
+                            <line className="item-scoreline" x1={lineDimensions.x1} y1={lineDimensions.y1} x2={lineDimensions.x2} y2={lineDimensions.y2} stroke={"black"} opacity={0.2} />
                             <circle  className="item-thumbnail-overlay" cx={imageDimensions.x+imageDimensions.size/2} cy={imageDimensions.y+imageDimensions.size/2} r={imageDimensions.size/2} fill={color} stroke={color}></circle>
                             <image fill={"rgba"+item.overlay} opacity={0.5} xlinkHref={item.thumbnail} clipPath="inset(0% round 15px)" cursor={cursor} className="item-thumbnail" width={imageDimensions.size} x={imageDimensions.x} y={imageDimensions.y} height={imageDimensions.size} href={item.thumbnail}/>
                             <text textAnchor="middle" className="item-name" cursor={cursor} fontSize={6*scale} fill="black" x={songNameDimensions.x} y={songNameDimensions.y} dy=".35em">{formatName(item.name)}</text>
                             <text textAnchor="middle" className="item-score" cursor={cursor} fontSize={10*scale} fontWeight="bold" fill={determineTextColor(item.overlay)} x={songScoreDimensions.x} y={songScoreDimensions.y} dy=".35em">{item.score.toFixed(2)}</text>
-                            <circle className="item-thumbnail-border" cx={imageDimensions.x+imageDimensions.size/2} cy={imageDimensions.y+imageDimensions.size/2} r={imageDimensions.size/2} fill="none" stroke={color}></circle>
+                            <circle className="item-thumbnail-border" cx={imageDimensions.x+imageDimensions.size/2} cy={imageDimensions.y+imageDimensions.size/2} r={imageDimensions.size/2+2} fill="none" stroke={color}></circle>
                         </g>
                 </g>
 

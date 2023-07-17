@@ -3,7 +3,6 @@ import { select } from 'd3-selection';
 import { AxisScale, Selection } from 'd3';
 import { RatedItem } from "../../models/domain/ItemTypes";
 import { SingleRaterItem } from "./SingleRaterItem";
-import { MultiRaterItem } from "./MultiRaterItem";
 import { Position } from '../../models/ui/Position';
 import { Dispatch, useEffect, useRef, useState, } from 'react';
 import React from 'react';
@@ -13,6 +12,8 @@ import { ZoomBehavior } from './behaviors/ZoomBehavior';
 import { ANIMATION_DURATION } from '../../models/ui/Animation';
 import { Transition, TransitionGroup } from 'react-transition-group';
 import { RaterAction } from '../../reducers/raterReducer';
+import { RatedMusicItemUI } from '../../models/ui/ItemTypes';
+import { animateOnEnter, animateOnExit } from './ItemAnimation';
 
 interface Props {
     position:Position
@@ -21,7 +22,7 @@ interface Props {
     zoomTarget?:SVGGElement|null
     onItemClick:(item:RatedItem) => void
     stateDispatch:Dispatch<RaterAction>
-    items: RatedSongItemGrouped[]
+    items: RatedMusicItemUI[]
     updateSongScore: (id:string, score:number) => void 
 }
 
@@ -70,21 +71,9 @@ export const Rater = ({position, state, stateDispatch, onItemClick, updateSongSc
     }
     const axisSel:Selection<SVGGElement, unknown, null, undefined> = makeAxis(state.scaler.scale) 
 
-    const itemDefaultStyle = {
-        opacity: 0,
-        transition: `all ${ANIMATION_DURATION}ms ease-in-out`
-    } 
-    const itemTransitionStyles= {
-        entering: { opacity: 0.2  },
-        entered: { opacity: 1, transform: `translateX(${10}%)`  },
-        exiting: { opacity: 0.2 },
-        exited: { opacity: 0, transform: `translateX(${-10}%)` },
-        unmounted: { opacity: 0}
-    }
-
     return (
                    <g ref={g} className="rater-container">
- <rect 
+                        <rect 
                             ref={zoomListener} 
                             id="zoom-listener" 
                             x={position.x+5} 
@@ -96,35 +85,19 @@ export const Rater = ({position, state, stateDispatch, onItemClick, updateSongSc
                         <line className="rater-line" x1={position.x} y1={RATER_Y_TOP} x2={position.x} y2={position.y} />
                         <g ref={itemsGroupRef} className="items">
                        <TransitionGroup component={null} >
-                      { items.map(group =>  
-                       (group.items.length === 1) ? 
-                        <Transition key={'item'+group.items[0].id} in={true} nodeRef={group.items[0].nodeRef} timeout={ANIMATION_DURATION}>
-                            { transitionState => 
-                                (<SingleRaterItem
-                                    item={group.items[0]}
+                      { items.map(item =>  
+                        <Transition key={'item'+item.id} onEnter={()=> animateOnEnter(item,position.x)} onExit={() => animateOnExit(item, position.x)}  nodeRef={item.nodeRef} timeout={ANIMATION_DURATION}>
+                                <SingleRaterItem
+                                    item={item}
                                     isReadonly={isReadonly}
-                                    style={{...itemDefaultStyle, ...itemTransitionStyles[transitionState] }}
-                                    shouldDrawScoreline={true}
-                                    orientation={group.items[0].orientation}
+                                    nodeRef={item.nodeRef}
                                     mainlineX={position.x}
                                     scaler={state.scaler}
                                     onClick={onItemClick}
                                     onDragEnd={updateItem}
-                                />)
-                            }
+                                />
                           </Transition>
-                          :
-                        <MultiRaterItem
-                            key={"multi-rater-item-" + group.items[0].id}
-                            group={group}
-                            isReadonly={isReadonly}
-                            orientation={group.items[0].orientation}
-                            onClick={onItemClick}
-                            mainlineX={position.x}
-                            scaler={state.scaler}
-                            onDragEnd={updateItem}
-                      />)
-                      }
+                      )}
                       </TransitionGroup>
                       </g>
                       

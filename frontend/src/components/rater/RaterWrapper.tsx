@@ -1,6 +1,6 @@
-import React, { Dispatch, useEffect, useRef, useState, createRef } from "react"
-import { Album, Artist, Song, useUpdateSongMutation } from "../../generated/graphql"
-import { RatedMusicItemUI, RatedSongItemUI } from "../../models/ui/ItemTypes"
+import React, { Dispatch, useEffect, useRef, useState } from "react"
+import { Album, Artist, useUpdateSongMutation } from "../../generated/graphql"
+import { RatedMusicItemUI } from "../../models/ui/ItemTypes"
 import { Rater } from "./Rater"
 import { RaterState, RATER_X, RATER_Y_BOTTOM, RATER_Y_TOP, RatedSongItemGrouped, RaterOrientation, SVG_HEIGHT, SVG_WIDTH } from "../../models/ui/RaterTypes"
 import { RatedItem } from "../../models/domain/ItemTypes"
@@ -20,7 +20,7 @@ export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, o
     const svgRef = useRef<SVGSVGElement>(null) 
     const [updateSong]  = useUpdateSongMutation();
     const [scope, setScope]= useState<MusicScope>(MusicScope.ALL)
-    const [groupedItems, setGroupedItems] = useState<RatedSongItemGrouped[]>([])
+    const [finalItems, setFinalItems] = useState<RatedMusicItemUI[]>([])
     const [mainRaterItems, setMainRaterItems] = useState<RatedMusicItemUI[]>([])
 
     // const mouseLocationListener =  (svg:SVGSVGElement) => {
@@ -42,10 +42,6 @@ export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, o
     const onSongScoreUpdate = (id:string, score:number) => {
           updateSong({variables: {song:  { id , score} }})
     }  
-
-    const switchOrientation = (orientation:RaterOrientation) => {
-      return orientation === RaterOrientation.LEFT ? RaterOrientation.RIGHT : RaterOrientation.LEFT  
-    }
 
     const handleOnAlbumClick =  (item:RatedItem) => {
       const album = musicState.data.albums.find(it => it.id === item.id )
@@ -83,8 +79,15 @@ export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, o
         const rightItems = mainRaterItems.filter( it => it.orientation === RaterOrientation.RIGHT)
         const leftGroups =  groupCloseItems(leftItems)
         const rightGroups =  groupCloseItems(rightItems)
-        setGroupedItems([...leftGroups, ...rightGroups])
+        const items = unwrapGroups([...leftGroups, ...rightGroups]) 
+        setFinalItems(items)
     }, [mainRaterItems, state.scaler])
+
+    const unwrapGroups = (groups:Array<RatedSongItemGrouped>) => {
+      return groups.reduce<RatedMusicItemUI[]>((acc,curr)=> {
+        return [...acc, ...curr.items ]
+      }, [])
+    } 
 
     useEffect(() => {
       if (!musicState.data.artists.length) {
@@ -99,7 +102,10 @@ export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, o
 
     return <svg className="rater" ref={svgRef} id="trackRater" viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}>
       <defs>
-            <clipPath id="item-clip-path">
+            <clipPath id="item-clip-path-left">
+                <rect x={0} y={0} width={SVG_WIDTH/2} height={SVG_HEIGHT} ></rect>
+            </clipPath>
+            <clipPath id="item-clip-path-right">
                 <rect x={RATER_X} y={RATER_Y_TOP} width={SVG_WIDTH/2} height={SVG_HEIGHT} ></rect>
             </clipPath>
       </defs>
@@ -112,7 +118,7 @@ export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, o
                 updateSongScore={onSongScoreUpdate}
                 state={state}
                 zoomTarget={gWrapper.current}
-                items={groupedItems}
+                items={finalItems}
           />
           }
           </g>
