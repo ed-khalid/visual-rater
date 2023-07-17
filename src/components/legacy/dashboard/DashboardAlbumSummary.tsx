@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { Album, GetArtistsDocument, Song, SongInput, useDeleteAlbumMutation, useUpdateSongMutation } from "../../generated/graphql";
-import './DashboardAlbumSummary.css'
+import { Album, GetArtistsDocument, Song, SongInput, useDeleteAlbumMutation, useUpdateSongMutation } from "../../../generated/graphql";
+import './Dashboard.css'
 
 interface Props {
     album:Album;
@@ -103,7 +103,7 @@ export const DashboardAlbumSummary =  ({onClose, artistName, album }:Props) => {
           </div>
         </div>
         <div id="table-wrapper">
-        <table>
+        <table className="dashboard-summary-table">
             <thead>
                 <tr>
                     <td className="header-cell action-cell">actions</td> 

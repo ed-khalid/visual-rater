@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useSearchByArtistLazyQuery } from "../../generated/graphql";
+import { useSearchByArtistLazyQuery } from "../../../generated/graphql";
 import { SearchInputField } from "./SearchInputField";
 import { SearchResults } from "./SearchResults";
 import './Search.css'

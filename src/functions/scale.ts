@@ -1,6 +1,6 @@
 
 import { scaleLinear, ScaleLinear } from 'd3-scale';
-import { RATER_Y_BOTTOM } from '../models/ui/RaterTypes';
+import { RATER_Y_BOTTOM, RATER_Y_TOP } from '../models/ui/RaterTypes';
 
 export class Scaler {
 
@@ -9,7 +9,7 @@ export class Scaler {
         ,end: 5
     }     
     private line  = {
-        start: 5
+        start: RATER_Y_TOP 
         ,end: RATER_Y_BOTTOM 
     } 
     public scale:ScaleLinear<number,number>;

@@ -1,0 +1,104 @@
+
+.rightside-panel {
+    width:20vw;
+}
+
+div#breadcrumb .panel-content {
+    padding: 4px;
+
+}
+
+div#breadcrumb {
+    z-index:5;
+    top: 4px;
+    left: 0;
+    right:0;
+    margin-left: auto;
+    margin-right: auto;
+    width: 200px;
+    border-top: 1px solid black; 
+    height: 30px; 
+    overflow: hidden;
+    border-radius: 15px;
+}
+div#breadcrumb .panel-header  {
+    visibility: hidden;
+}
+div#breadcrumb #breadcrumb-wrapper {
+    display:flex;
+    flex-direction:row;
+}
+div#breadcrumb .breadcrumb-text {
+    cursor:pointer;
+    font-size: 10px; 
+}
+div#breadcrumb .breadcrumb-slash {
+    cursor:pointer;
+    font-size: 9px; 
+    font-weight:bold;
+    margin-left: 2px;
+    margin-right:2px;
+}
+div#breadcrumb span:hover   {
+    text-decoration: underline;
+}
+
+div#artists-panel {
+    align-items:center;
+    justify-content: center;
+    top: 4px;
+    height:85px; 
+    right: 2px;
+}
+
+
+div#artists-panel img.artist-thumbnail {
+    width: 1.5em;
+    height: 1.5em;
+    border-radius:15px;
+    cursor: pointer;
+}
+div#artists-panel div.artist-name {
+    font-size:0.4em;
+}
+
+
+div.artist-albums {
+    top: 95px;
+    right:2px;
+}
+div.artist-albums .albums {
+    display:flex;
+    justify-content: space-evenly;
+    align-items:center;
+    flex-direction: row;
+    flex-wrap: wrap ;
+}
+div.artist-albums .albums .album {
+    width: 4em;
+}
+div.artist-albums .albums .album .album-thumbnail img {
+    width: 1.5em;
+    height: 1.5em;
+    border-radius:15px;
+    cursor: pointer;
+
+} 
+div.artist-albums .albums .album .album-title {
+    font-size:0.4em;
+} 
+div.album-panel {
+    top: 210px; 
+    right:2px;
+}
+div.album-panel .panel-content {
+    font-size: 0.4em;
+}
+div.album-panel .album-header {
+    font-size:2em;
+} 
+div.album-panel div.album-thumbnail img {
+    width: 3em;
+    height: 2em;
+    border-radius:15px;
+} 

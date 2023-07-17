@@ -12,4 +12,3 @@ image.item-thumbnail:hover ~ circle.item-thumbnail-border  {
 .item-score:hover ~ circle.item-thumbnail-border  {
     visibility: visible;
 }
-
