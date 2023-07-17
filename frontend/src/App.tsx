@@ -1,28 +1,33 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useReducer, useState } from 'react';
 import './App.css';
 import { Scaler } from './functions/scale';
-import {  ExternalAlbumSearchResult, Artist, ExternalArtistSearchResult, GetArtistsDocument, GetArtistsQuery, NewSongInput, useCreateAlbumMutation, useCreateArtistMutation, useGetArtistsQuery , useGetTracksForSearchAlbumQuery, useGetTracksForSearchAlbumLazyQuery, Song, Album, useOnArtistMetadataUpdateSubscription } from './generated/graphql';
-import { zoomIdentity } from 'd3-zoom'
-import { Dashboard } from './components/dashboard/Dashboard';
-import { Search } from './components/search/Search';
-import { ItemType } from './models/domain/ItemTypes';
+import {  ExternalAlbumSearchResult, Artist, ExternalArtistSearchResult, GetArtistsDocument, GetArtistsQuery, NewSongInput, useCreateAlbumMutation, useCreateArtistMutation, useGetArtistsQuery , useGetTracksForSearchAlbumLazyQuery, Song, Album, useOnArtistMetadataUpdateSubscription, useGetAlbumsLazyQuery, useGetSongsLazyQuery, AlbumFieldsFragmentDoc, SongFieldsFragmentDoc, GetAlbumsQuery, GetAlbumsDocument } from './generated/graphql';
+import { Search } from './components/legacy/search/Search';
 import { ExternalFullSearchResult } from './models/domain/ExternalFullSearchResult';
 import { RaterWrapper } from './components/rater/RaterWrapper';
 import { DragType } from './models/ui/DragType';
 import { useDrop } from 'react-dnd';
-import { GlobalRaterState } from './models/ui/RaterTypes';
+import { RaterState } from './models/ui/RaterTypes';
+import { ArtistPanel } from './components/panels/ArtistPanel';
+import { AlbumPanel } from './components/panels/AlbumPanel';
+import { Breadcrumb, BreadcrumbPanel } from './components/panels/BreadcrumbPanel';
+import { RaterAction, raterReducer } from './reducers/raterReducer';
+import { MusicData, MusicFilters, MusicState, MusicStore } from './models/domain/MusicState';
+import { MusicAction, musicReducer } from './reducers/musicReducer';
+import { client } from './setupApollo';
+import { Reference } from '@apollo/client/cache';
 
-
-
-export const initialRaterState:GlobalRaterState = {
-   start: '0'
-  ,end: '5'
+export const initialRaterState:RaterState = {
+   start: 0
+  ,end: 5
+  ,isReadonly: true
   ,scaler : new Scaler() 
-  ,itemType: ItemType.MUSIC
 } 
 
 export const App = () => {
 
+
+  // search
   const [searchAlbum, setSearchAlbum] = useState<ExternalAlbumSearchResult>()
   const [searchArtist,setSearchArtist] = useState<ExternalArtistSearchResult>()
   const [searchArtistAlbumTracks, setSearchArtistAlbumTracks] = useState<ExternalFullSearchResult>()
@@ -32,22 +37,118 @@ export const App = () => {
   const [createAlbum, ] = useCreateAlbumMutation() 
   const [createArtist, ] = useCreateArtistMutation() 
 
-  const artistsFull =  useGetArtistsQuery()
+  // main data 
+  const $artists  =  useGetArtistsQuery()
+  const [$getAlbums, $albums]  = useGetAlbumsLazyQuery() 
+  const [$getSongs, $songs]  = useGetSongsLazyQuery() 
+  const [musicState, musicDispatch] = useReducer<React.Reducer<MusicState,MusicAction>>(musicReducer, { data: { artists: [], albums:[], songs:[] } , filters: { artistIds: [] , albumIds:[], songIds: [], scoreFilter:{start:0, end:5} }  })
 
-  // dashboard
-  const [dashboardArtist,setDashboardArtist] = useState<Artist>()
-  const [dashboardAlbum,setDashboardAlbum] = useState<Album>()
+  // breadcrumbs 
+  const [breadcrumbs, setBreadcrumbs] = useState<Array<Breadcrumb>>([{ title: 'ARTISTS' , action: () => musicDispatch({type: 'FILTER_CHANGE', variables: { filters: { artistIds:[], albumIds:[], songIds:[], scoreFilter: { start:0, end:5 } } }  })}]) 
 
-  // rater items
-  const [raterState, setRaterState] = useState<GlobalRaterState>(initialRaterState)
-  const [raterAlbums, setRaterAlbums] = useState<Array<Album>>([]) 
+  // rater 
+  const [raterState, dispatch] = useReducer<React.Reducer<RaterState,RaterAction>>(raterReducer, initialRaterState )
+
 
   const [, drop] = useDrop(() => ({
-    accept: DragType.ALBUM
-    ,drop(item:{album:Album},_) {
-      setRaterAlbums([...raterAlbums, item.album])
+    accept: [DragType.ALBUM, DragType.ARTIST]
+    ,drop(item:{album:Album, artist:Artist},_) {
+      if (item.album) {
+        addAlbum(item.album)
+      }
+      else if (item.artist) {
+        addArtist(item.artist)
+      }
     }
-  }), [raterAlbums])
+  }), [])
+
+  useEffect(()  => {
+    if (!$artists.loading && $artists.data) {
+      musicDispatch({ type: 'DATA_CHANGE', variables: { data: { artists: $artists.data.artists.content as Artist[]   }}})
+    }
+  }, [$artists.loading, $artists.data] )
+
+  const onArtistSelect = (artist:Artist) => {
+      setBreadcrumbs(breadcrumbs => [breadcrumbs[0], { title: artist.name, action: () => musicDispatch({ type: 'FILTER_CHANGE', variables: { filters: {artistIds: [artist.id], albumIds:[], songIds:[], scoreFilter:{start:0, end:5}} }})} ])
+      $getAlbums({variables: { artistId: artist.id }})
+      musicDispatch({ type: 'FILTER_CHANGE', variables: { filters: { artistIds:[artist.id]  }} })
+  }
+  useEffect(() => {
+    if (!$albums.loading && $albums.data) {
+      const albums = $albums.data.albums
+      if (albums) {
+        const artistId = albums[0].artistId 
+        const cache = client.cache
+        const refs = albums.map(it => client.writeFragment({ data: it, fragment: AlbumFieldsFragmentDoc, fragmentName: 'AlbumFields'}))
+        cache.modify({
+          id: `Artist:${artistId}`,
+          fields: {
+            albums(existing:Reference[], {readField} ) {
+              const newRefs = refs.reduce<Reference[]>((acc,curr) => {
+                if (!curr) {
+                  return acc
+                }
+                else if (existing.some(it => readField('id',it) ===  readField('id', curr))) {
+                  return acc
+                } else {
+                  return [...acc, curr]
+                }
+              }, [])
+              return [...existing, ...newRefs ]
+            }
+          } 
+        });
+        musicDispatch({ type: 'DATA_CHANGE', variables: { data: { albums: albums as Album[]}  } })
+      }
+    }
+  }, [$albums.loading, $albums.data])
+
+  const addAlbum = (album:Album) => {
+    musicDispatch({type:'FILTER_CHANGE', variables: { filters: { albumIds: [album.id] } }} )
+  }
+  const addArtist = (artist:Artist) => {
+    musicDispatch({type:'FILTER_CHANGE', variables: { filters: { artistIds: [artist.id] } }} )
+  }
+
+  const onAlbumSelect = (album:Album) => {
+    setBreadcrumbs(breadcrumbs => [breadcrumbs[0], breadcrumbs[1], { title: album.name, action: () => musicDispatch({ type: 'FILTER_CHANGE', variables: { filters: {albumIds: [album.id], songIds:[], scoreFilter:{start:0,end:5}} }})} ])
+    $getSongs({variables: { albumId: album.id }})
+    musicDispatch({type: 'FILTER_CHANGE', variables: { filters: { albumIds:[album.id] } }})
+  }
+  useEffect(() => {
+    if (!$songs.loading && $songs.data) {
+      const songs = $songs.data.songs
+      if (songs) {
+        const albumId = songs[0].albumId 
+        const refs = songs.map(song => client.writeFragment({ data: song, fragment: SongFieldsFragmentDoc}))
+        client.cache.modify({
+          id: `Album:${albumId}`,
+          fields: {
+            songs(existing:Reference[], {readField} ) {
+              const newRefs = refs.reduce<Reference[]>((acc,curr) => {
+                if (!curr) {
+                  return acc
+                }
+                else if (existing.some(it => readField('id',it) ===  readField('id', curr))) {
+                  return acc
+                } else {
+                  return [...acc, curr]
+                }
+              }, [])
+              return [...existing, ...newRefs ]
+            }
+          } 
+        });
+
+        musicDispatch({ type: 'DATA_CHANGE', variables: { data: { songs: songs as Song[]} }})
+      }
+    }
+  }, [$songs.loading, $songs.data])
+
+  const onArtistPanelSongsClick = (artist:Artist, scoreFilter:{start:number,end:number}) => {
+    musicDispatch({ type: 'FILTER_CHANGE', variables: { filters: { artistIds: [artist.id], albumIds:[], scoreFilter: scoreFilter }  }})
+  }  
+
 
 
   const onExternalAlbumSearchClick =  (artist:ExternalArtistSearchResult, album:ExternalAlbumSearchResult) => {
@@ -60,10 +161,9 @@ export const App = () => {
     }
   }, [searchAlbum, getTracks])
 
-  const onZoomResetClick = useCallback(() => {
-    const resetScale = zoomIdentity.rescaleY(raterState.scaler.yScale) 
-    setRaterState(prev => ({...prev, scaler: new Scaler(resetScale)})) 
-  }, []) 
+  // const onZoomResetClick = () => {
+  //   dispatch({ type: 'ZOOM_RESET'})
+  // }
 
   // const updateScale = (newStart?:string, newEnd?:string) => {
   //   if (newStart === '') {
@@ -127,7 +227,7 @@ export const App = () => {
       })
      }
 
-      const artist = artistsFull.data?.artists?.content?.find(it => it?.name === searchArtistAlbumTracks.artist.name)   
+      const artist = $artists.data?.artists?.content?.find(it => it?.name === searchArtistAlbumTracks.artist.name)   
       if (!artist) {
         createArtist({
           variables: {
@@ -147,51 +247,32 @@ export const App = () => {
     }},
   [searchArtistAlbumTracks])
 
-
-
-  const updateRaterAlbums = (album:Album|undefined, artist:Artist|undefined) => {
-    if (artist) {
-      setDashboardArtist(artist)
-    }
-    else {
-      setDashboardArtist(undefined)
-    }
-    if (album) {
-      setDashboardAlbum(album)
-      setRaterAlbums([album])
-    } else {
-      setDashboardAlbum(undefined)
-      setRaterAlbums([])
-    }
-  }
+  const store = new MusicStore(new MusicData(musicState.data), new MusicFilters(musicState.filters))
 
 
   return (
     <div className="App">
-      <header className="font-title">VisRater</header>
-      <div className="main grid">
-        <div className="empty-cell" style={{maxWidth: '450px'}}></div> 
-        <div id="top-controls" className="flex">
+      <div className="main">
+        <div className='panel noborder top left' id="search">
+          <Search onAlbumSelect={onExternalAlbumSearchClick}/>
+        </div>
+        <BreadcrumbPanel breadcrumbs={breadcrumbs}/>
+        {/* <div id="top-controls" className="panel">
           <div>
             <button onClick={onZoomResetClick}>Reset</button>
           </div>
-        </div>
-        <div className="empty-cell"></div> 
-        <Search onAlbumSelect={onExternalAlbumSearchClick}/>
-        <div id="rater" className="drop-target" ref={drop}>
-        <RaterWrapper
-          artists={artistsFull.data?.artists.content as Artist[]}
-          albums={raterAlbums}
+        </div> */}
+        {store.getSelectedArtists().map(artist => <ArtistPanel onSongCategoryClick={onArtistPanelSongsClick} key={artist!.id} artist={artist!}/>)}
+        {store.getSelectedAlbums().map(album => <AlbumPanel key={album.id} album={album} onClose={() => {}}  />)}
+        <div id="rater" className="viz drop-target" ref={drop}>
+          <RaterWrapper
+          onAlbumClick={onAlbumSelect}
+          onArtistClick={onArtistSelect}
           state={raterState}
-          setState={setRaterState}
-        />
+          musicState={musicState}
+          stateDispatch={dispatch}
+          />
         </div>
-        <Dashboard 
-          onAlbumSelect={updateRaterAlbums} 
-          artist={dashboardArtist}
-          album={dashboardAlbum}
-          artists={artistsFull.data?.artists?.content as Artist[]}
-        />
       </div>
     </div>
   );

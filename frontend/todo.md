@@ -1,10 +1,6 @@
 
 # TASKS
-- graphql subscription, cache update artist on song update  
-
-
-
-- use name comparision instead of image (iageservice)   
+- use name comparison instead of image (iageservice)   
 
 - add navigational breadcrumb
 - animations (graph  shrink / grow) 
@@ -26,10 +22,7 @@
 
 - fix create album bug
 - fix create artist bug
-- add zoom back
-
-- add artist metadata
-- calculate artist tier
 
 - add coloring to rater (good, great, bad)
-- improve dashboard summary editing
+- add graph of album progress   
+- add review panel

@@ -1,96 +1,63 @@
 import { axisRight } from 'd3-axis'
 import { select } from 'd3-selection';
 import { AxisScale, Selection } from 'd3';
-import { useUpdateSongMutation } from "../../generated/graphql";
-import { ItemType, RatedItem } from "../../models/domain/ItemTypes";
-import { RatedSongItemUI } from "../../models/ui/ItemTypes";
+import { RatedItem } from "../../models/domain/ItemTypes";
 import { SingleRaterItem } from "./SingleRaterItem";
-import { MultiRaterItem } from "./MultiRaterItem";
 import { Position } from '../../models/ui/Position';
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react';
+import { Dispatch, useEffect, useRef, useState, } from 'react';
 import React from 'react';
 import './Rater.css'
-import { GlobalRaterState, RaterOrientation } from '../../models/ui/RaterTypes';
+import { RaterState, RATER_Y_TOP, RatedSongItemGrouped } from '../../models/ui/RaterTypes';
 import { ZoomBehavior } from './behaviors/ZoomBehavior';
+import { ANIMATION_DURATION } from '../../models/ui/Animation';
+import { Transition, TransitionGroup } from 'react-transition-group';
+import { RaterAction } from '../../reducers/raterReducer';
+import { RatedMusicItemUI } from '../../models/ui/ItemTypes';
+import { animateOnEnter, animateOnExit } from './ItemAnimation';
 
 interface Props {
     position:Position
-    state:GlobalRaterState
+    state:RaterState
+    isReadonly:boolean
     zoomTarget?:SVGGElement|null
-    setState:Dispatch<SetStateAction<GlobalRaterState>>
-    items: RatedSongItemUI[];
-    setItems:Dispatch<SetStateAction<RatedSongItemUI[]>>
+    onItemClick:(item:RatedItem) => void
+    stateDispatch:Dispatch<RaterAction>
+    items: RatedMusicItemUI[]
+    updateSongScore: (id:string, score:number) => void 
 }
-export type RatedSongItemGrouped  = {
-        id:string
-        position:number
-        ,items:RatedSongItemUI[]
-    } 
 
 
 
 
-export const Rater = ({position, state, setState, items, setItems }:Props) => {
 
-    const [updateSong]  = useUpdateSongMutation();
-    const [currentItem, setCurrentItem] = useState<RatedItem|null>();  
-    const [groupedItems, setGroupedItems] = useState<RatedSongItemGrouped[]>([])
+export const Rater = ({position, state, stateDispatch, onItemClick, updateSongScore, isReadonly, items }:Props) => {
+
+    const [currentItem, setCurrentItem] = useState<{id:string, score:number}|null>();  
     const g = useRef<SVGGElement>(null)
+    const itemsGroupRef = useRef<SVGGElement>(null)
     const zoomTarget= useRef<SVGGElement>(null)
     const zoomListener = useRef<SVGRectElement>(null)
-    const [zoomBehavior, setZoomBehavior] = useState<any>() 
-
+    // const [shouldHide, setShouldHide] = useState<boolean>(false)
+    const [, setZoomBehavior] = useState<any>() 
 
     useEffect(() => {
         if (zoomTarget && zoomListener) {
-            const z = ZoomBehavior({listener: zoomListener.current, target: zoomTarget.current,axis: axisSel ,scale:state.scaler.yScale, setState  })
+            const z = ZoomBehavior({listener: zoomListener.current, target: zoomTarget.current,axis: axisSel ,scale:state.scaler.yScale, stateDispatch  })
             setZoomBehavior(z)
         } 
     }, [zoomListener,zoomTarget])
 
-    useEffect(() => {
-        const groupCloseItems = (ratedItems:RatedSongItemUI[]) => {
-            const groupedItems = ratedItems.reduce((acc:RatedSongItemGrouped[] , curr:RatedSongItemUI) => {
-                const position =  state.scaler.toPosition(curr.score) 
-                const overlap = acc.find((it:RatedSongItemGrouped) =>  Math.abs(Number(it.position) - position) < 50  )
-                if (overlap) {
-                    overlap.items.push(curr)
-                    overlap.items.sort((a,b) => (a.score > b.score) ? 1 : (a.score < b.score) ? -1 : 0 )
-                    overlap.items.forEach((item, i) => item.tier = ((i+1) % 3) + 1)
-                } else {
-                    acc.push({ position, items:[curr], id: '' + acc.length + 1 })
-                }
-                return acc
-            },  [])
-            return groupedItems
-        }  
-        const leftItems = items.filter( it => it.orientation === RaterOrientation.LEFT)
-        const rightItems = items.filter( it => it.orientation === RaterOrientation.RIGHT)
-        const leftGroups =  groupCloseItems(leftItems)
-        const rightGroups =  groupCloseItems(rightItems)
-        setGroupedItems([...leftGroups, ...rightGroups])
-    }, [items, state.scaler])
 
     useEffect(() => {
-        switch(state.itemType) {
-            case ItemType.MUSIC :
             if (currentItem) {
-                updateSong({variables: {song:  { id : currentItem.id, score: currentItem.score  } }})
+                updateSongScore(currentItem.id, currentItem.score)
                 setCurrentItem(null)
-           } 
         }
-    }, [currentItem, state.itemType, updateSong])
+    }, [currentItem, updateSongScore])
 
 
     const updateItem =  (itemId:string, newScore:number) => {
-        console.log(newScore)
-        const item = items.find( it => it.id === itemId) 
-        if (item) {
-          item.score = newScore; 
-          const _r = items.filter(_item => _item !== item);
-          setCurrentItem(item);
-          setItems( [..._r, item] )
-        }
+        setCurrentItem({id:itemId, score:newScore})
     }
 
     const makeAxis = (scale:AxisScale<number>) => {
@@ -105,8 +72,8 @@ export const Rater = ({position, state, setState, items, setItems }:Props) => {
     const axisSel:Selection<SVGGElement, unknown, null, undefined> = makeAxis(state.scaler.scale) 
 
     return (
-                  <g clipPath="url(#clip-path)"  ref={g} className="rater-container">
- <rect 
+                   <g ref={g} className="rater-container">
+                        <rect 
                             ref={zoomListener} 
                             id="zoom-listener" 
                             x={position.x+5} 
@@ -115,26 +82,24 @@ export const Rater = ({position, state, setState, items, setItems }:Props) => {
                         </rect>
                       <g ref={zoomTarget} className="zoom-target">
                         <g className="rater-axis"></g>
-                        <line className="rater-line" x1={position.x} y1={0} x2={position.x} y2={position.y} />
-                      {groupedItems.map(group =>  
-                       (group.items.length === 1) ? 
-                            <SingleRaterItem
-                                key={group.items[0].id}
-                                item={group.items[0]}
-                                orientation={group.items[0].orientation}
-                                mainlineX={position.x}
-                                scaler={state.scaler}
-                                onDragEnd={updateItem}
-                            />:
-                        <MultiRaterItem
-                            key={"multi-rater-item-" + group.id}
-                            group={group}
-                            orientation={group.items[0].orientation}
-                            mainlineX={position.x}
-                            scaler={state.scaler}
-                            onDragEnd={updateItem}
-                      />)
-                      }
+                        <line className="rater-line" x1={position.x} y1={RATER_Y_TOP} x2={position.x} y2={position.y} />
+                        <g ref={itemsGroupRef} className="items">
+                       <TransitionGroup component={null} >
+                      { items.map(item =>  
+                        <Transition key={'item'+item.id} onEnter={()=> animateOnEnter(item,position.x)} onExit={() => animateOnExit(item, position.x)}  nodeRef={item.nodeRef} timeout={ANIMATION_DURATION}>
+                                <SingleRaterItem
+                                    item={item}
+                                    isReadonly={isReadonly}
+                                    nodeRef={item.nodeRef}
+                                    mainlineX={position.x}
+                                    scaler={state.scaler}
+                                    onClick={onItemClick}
+                                    onDragEnd={updateItem}
+                                />
+                          </Transition>
+                      )}
+                      </TransitionGroup>
+                      </g>
                       
                       </g>
                     </g>

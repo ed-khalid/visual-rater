@@ -1,0 +1,13 @@
+
+fragment ArtistFields on Artist {
+      id
+      name 
+      thumbnail
+      score
+      albums {
+        ...AlbumFields
+      }
+      metadata {
+        ...ArtistMetadataFields
+      }
+}  

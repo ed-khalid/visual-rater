@@ -1,5 +1,6 @@
 
 
 export const DragType = {
-    ALBUM: 'album'
+    ALBUM: 'album',
+    ARTIST: 'artist'
 }
