@@ -18,9 +18,11 @@ class MusicService(private val songRepo: SongRepository, private val albumRepo: 
     @Transactional
     fun readArtists() : Page<Artist> = artistRepo.findAll(PageRequest.of(0,5))
     @Transactional
-    fun readArtist(name:String) = artistRepo.findByName(name)
+    fun readArtistByName(name:String) = artistRepo.findByName(name)
     @Transactional
-    fun readAlbumsForArtist(artistId:String) : Iterable<Album> = albumRepo.findByArtistId(UUID.fromString(artistId))
+    fun readArtistById(id:UUID) = artistRepo.findById(id)
+    @Transactional
+    fun readAlbumsForArtist(artistId:UUID) : Iterable<Album> = albumRepo.findByArtistId(artistId)
     @Transactional
     fun readSongsForAlbum(albumId:String) : Iterable<Song>? = songRepo.findByAlbumId(UUID.fromString(albumId))
     @Transactional

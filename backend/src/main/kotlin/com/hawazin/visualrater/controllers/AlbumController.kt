@@ -5,10 +5,10 @@ import com.hawazin.visualrater.models.db.Song
 import com.hawazin.visualrater.models.graphql.NewAlbumInput
 import com.hawazin.visualrater.services.ImageService
 import com.hawazin.visualrater.services.MusicService
+import jakarta.persistence.*
 import org.springframework.graphql.data.method.annotation.Argument
 import org.springframework.graphql.data.method.annotation.MutationMapping
 import org.springframework.graphql.data.method.annotation.QueryMapping
-import org.springframework.graphql.data.method.annotation.SchemaMapping
 import org.springframework.stereotype.Controller
 import java.util.*
 
@@ -16,19 +16,12 @@ import java.util.*
 class AlbumController(val musicService: MusicService, val imageService:ImageService) {
 
     @QueryMapping
-    fun albums(@Argument artistId:String) : Iterable<Album>  {
-        val albums =  musicService.readAlbumsForArtist(artistId)
-        albums.forEach { it.songs = mutableListOf()  }
-        return albums
-    }
-
-    @SchemaMapping
-    fun artistId(album:Album) : String {
-        return album.artist.id.toString()
-    }
-    @SchemaMapping
-    fun artistName(album: Album): String {
-        return album.artist?.name.toString()
+    fun albums(@Argument artistId:String) : Iterable<AlbumWithArtistName>  {
+        val albums =  musicService.readAlbumsForArtist(UUID.fromString(artistId))
+        val artist = musicService.readArtistById(UUID.fromString(artistId))
+        return albums.map {
+            AlbumWithArtistName(it.id, it.name, it.thumbnail, it.year, it.dominantColor, it.score, it.artistId, listOf() , if (artist.isPresent) artist.get().name else "" )
+        }
     }
 
     @MutationMapping
@@ -45,3 +38,15 @@ class AlbumController(val musicService: MusicService, val imageService:ImageServ
     }
 
 }
+
+data class AlbumWithArtistName(
+    val id:UUID,
+    val name:String,
+    val thumbnail:String?,
+    val year:Int,
+    val dominantColor:String?,
+    val score:Double,
+    val artistId:UUID,
+    val songs:List<Song>?,
+    val artistName:String
+)

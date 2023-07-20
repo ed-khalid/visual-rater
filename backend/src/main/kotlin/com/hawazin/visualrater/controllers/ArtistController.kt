@@ -22,7 +22,7 @@ class ArtistController(val musicService: MusicService, val publisherService: Pub
 
     @QueryMapping
     fun artist(@Argument name:String) : Artist? {
-        val maybeArtist = musicService.readArtist(name)
+        val maybeArtist = musicService.readArtistByName(name)
         return if (maybeArtist.isPresent) {
             val artist = maybeArtist.get()
             artist
