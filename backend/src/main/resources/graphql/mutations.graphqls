@@ -17,8 +17,9 @@ input NewAlbumInput {
     name: String!
     thumbnail:String
     year: Int
-    artistId:String!
+    vendorId:String
     songs:[NewSongInput!]
+    artist:ArtistInput!
 }
 
 

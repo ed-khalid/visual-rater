@@ -5,6 +5,7 @@ import com.hawazin.visualrater.models.graphql.SongInput
 import com.hawazin.visualrater.models.db.*
 import com.hawazin.visualrater.models.graphql.ArtistInput
 import graphql.GraphqlErrorException
+import jakarta.transaction.Transactional
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
@@ -14,10 +15,15 @@ import java.util.*
 @Service
 class MusicService(private val songRepo: SongRepository, private val albumRepo: AlbumRepository, private val artistRepo: ArtistRepository, private val publisherService: PublisherService) {
 
+    @Transactional
     fun readArtists() : Page<Artist> = artistRepo.findAll(PageRequest.of(0,5))
+    @Transactional
     fun readArtist(name:String) = artistRepo.findByName(name)
+    @Transactional
     fun readAlbumsForArtist(artistId:String) : Iterable<Album> = albumRepo.findByArtistId(UUID.fromString(artistId))
+    @Transactional
     fun readSongsForAlbum(albumId:String) : Iterable<Song>? = songRepo.findByAlbumId(UUID.fromString(albumId))
+    @Transactional
     fun deleteSongById(id:UUID) : Boolean
     {
         try {
@@ -34,6 +40,7 @@ class MusicService(private val songRepo: SongRepository, private val albumRepo: 
         return true
     }
 
+    @Transactional
     fun deleteAlbumById(id:UUID): Boolean
     {
         albumRepo.deleteById(id)
@@ -41,15 +48,17 @@ class MusicService(private val songRepo: SongRepository, private val albumRepo: 
     }
 
 
-    fun notifyOnMetadataUpdate(songId:UUID)
+    @Transactional
+    fun notifyOnMetadataUpdate(song:Song)
     {
-        val metadata = artistRepo.findMetadataBySongId(songId)
+        val metadata = artistRepo.findMetadataBySong(song.artistId)
         if (metadata != null) {
             publisherService.notify(metadata)
         }
     }
 
 
+    @Transactional
     fun updateSong(songInput: SongInput) : Song
     {
         val song = songRepo.findById(songInput.id).get()
@@ -64,25 +73,24 @@ class MusicService(private val songRepo: SongRepository, private val albumRepo: 
         return song
     }
 
+    @Transactional
     fun createArtist(artistInput: ArtistInput): Artist
     {
-        var artist:Artist = artistInput.let { Artist(id = null, name= it.name,thumbnail = it.thumbnail, score  = 0.0, metadata = ArtistMetadata(id = null, tier = 0, songs = ArtistSongMetadata(), totalAlbums = 0, totalSongs = 0  ) )   }
+        var artist:Artist = artistInput.let { Artist(id = null, vendorId= it.vendorId,  name= it.name,thumbnail = it.thumbnail, score  = 0.0, metadata = ArtistMetadata(id = null, tier = 0, songs = ArtistSongMetadata(), totalAlbums = 0, totalSongs = 0  ) )   }
         return artistRepo.save(artist)
     }
 
+    @Transactional
     fun createAlbum(albumInput: NewAlbumInput) : Album
     {
-        val artist = artistRepo.findById(albumInput.artistId)
-        if (artist.isPresent) {
-            var album = albumInput.let  { Album(id = UUID.randomUUID(),name = it.name, year= it.year, artist = artist.get(), thumbnail = it.thumbnail, score = 0.0, dominantColor = it.dominantColor  ) }
-            albumRepo.save(album)
-            var songs = albumInput.songs.map { Song( id =  UUID.randomUUID(), name = it.name, album = album, artist = artist.get(), score = it.score, number= it.number, discNumber = it.discNumber   ) }
-            songRepo.saveAll(songs)
-            album.songs = songs.toMutableList()
-            return album
-        } else {
-            throw Error("Artist ${albumInput.artistId} not found ")
-        }
+        val maybeArtist = artistRepo.findByName(albumInput.artist.name)
+        val artist = if (!maybeArtist.isPresent) createArtist(albumInput.artist) else maybeArtist.get()
+        var album = albumInput.let  { Album(id = UUID.randomUUID(),name = it.name, year= it.year, artistId = artist.id!!, thumbnail = it.thumbnail, score = 0.0, dominantColor = it.dominantColor, songs = null  ) }
+        albumRepo.save(album)
+        var songs = albumInput.songs.map { Song( id =  UUID.randomUUID(), name = it.name, albumId = album.id!!, artistId = artist.id!!, score = it.score, number= it.number, discNumber = it.discNumber ) }
+        songRepo.saveAll(songs)
+        album.songs = songs
+        return album
     }
 
 //    fun createSong(spotifySong:NewSongInput) : Song
