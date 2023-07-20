@@ -185,19 +185,24 @@ export const App = () => {
             vendorId: searchArtistAlbumTracks.artist.id 
           }, 
           songs
-        }}, 
-      })
-      setSearchArtist(undefined)
-      setSearchAlbum(undefined)
-      $getSingleArtist({ variables: { artistName: searchArtistAlbumTracks.artist.name }})
+        }},  update: () => {
+            $getSingleArtist({ variables: { artistName: searchArtistAlbumTracks.artist.name }})
+        } 
+      }, )
     }
   }, [getTracksResult.data?.searchExternalAlbumTracks, searchArtist, searchAlbum, createAlbum, $getSingleArtist ] )
 
   useEffect(() => {
     if (!$singleArtist.loading && $singleArtist.data) {
       musicDispatch({ type: 'DATA_CHANGE', variables: { data: { artists: [$singleArtist.data.artist] as Artist[], albums: $singleArtist.data.artist?.albums as Album[]    }}})
+      const newAlbum = $singleArtist.data.artist?.albums?.find(it => it?.name === searchAlbum?.name )
+      if (newAlbum) {
+        musicDispatch({ type: 'FILTER_CHANGE', variables: {  data: { albums: [newAlbum] as Album[]  } }})
+      }
+      setSearchArtist(undefined)
+      setSearchAlbum(undefined)
     }
-  }, [$singleArtist.loading, $singleArtist.data])
+  }, [$singleArtist.loading, $singleArtist.data, searchAlbum])
 
   const store = new MusicStore(new MusicData(musicState.data), new MusicFilters(musicState.filters))
 
