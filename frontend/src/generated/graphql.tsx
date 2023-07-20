@@ -43,6 +43,7 @@ export type Artist = Pageable & {
 export type ArtistInput = {
   name: Scalars['String']['input'];
   thumbnail?: InputMaybe<Scalars['String']['input']>;
+  vendorId?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type ArtistMetadata = {
@@ -147,7 +148,7 @@ export type MutationUpdateSongArgs = {
 export type NewAlbumInput = {
   artist: ArtistInput;
   name: Scalars['String']['input'];
-  songs?: InputMaybe<Array<NewSongInput>>;
+  songs: Array<NewSongInput>;
   thumbnail?: InputMaybe<Scalars['String']['input']>;
   vendorId?: InputMaybe<Scalars['String']['input']>;
   year?: InputMaybe<Scalars['Int']['input']>;
