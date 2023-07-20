@@ -17,12 +17,9 @@ class AlbumController(val musicService: MusicService, val imageService:ImageServ
 
     @QueryMapping
     fun albums(@Argument artistId:String) : Iterable<Album>  {
-        return musicService.readAlbumsForArtist(artistId)
-    }
-
-    @SchemaMapping
-    fun songs(album:Album) : Iterable<Song>  {
-        return emptyList()
+        val albums =  musicService.readAlbumsForArtist(artistId)
+        albums.forEach { it.songs = mutableListOf()  }
+        return albums
     }
 
     @SchemaMapping
@@ -35,12 +32,12 @@ class AlbumController(val musicService: MusicService, val imageService:ImageServ
     }
 
     @MutationMapping
-    fun createAlbum(@Argument albumInput:NewAlbumInput) : Album {
-        if (albumInput.thumbnail != null) {
-            val dominantColorResponse = imageService.getDominantColor(albumInput.thumbnail)
-            albumInput.dominantColor = dominantColorResponse.colorString
+    fun CreateAlbum(@Argument album:NewAlbumInput) : Album {
+        if (album.thumbnail != null) {
+            val dominantColorResponse = imageService.getDominantColor(album.thumbnail)
+            album.dominantColor = dominantColorResponse.colorString
         }
-        return musicService.createAlbum(albumInput)
+        return musicService.createAlbum(album)
     }
     @MutationMapping
     fun deleteAlbum(@Argument albumId:String) : Boolean {

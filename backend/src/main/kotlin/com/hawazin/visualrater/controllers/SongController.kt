@@ -22,17 +22,17 @@ class SongController(val musicService: MusicService) {
 
     @SchemaMapping
     fun artistId(song:Song): String {
-        return song.artist?.id.toString()
+        return song.artistId.toString()
     }
     @SchemaMapping
     fun albumId(song:Song): String {
-        return song.album?.id.toString()
+        return song.albumId.toString()
     }
 
     @MutationMapping
     fun UpdateSong(@Argument song: SongInput) : Song {
         val song = musicService.updateSong(song)
-        musicService.notifyOnMetadataUpdate(song.id)
+        musicService.notifyOnMetadataUpdate(song)
         return song
     }
 

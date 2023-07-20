@@ -4,20 +4,86 @@ import org.hibernate.annotations.GenericGenerator
 import java.util.*
 import jakarta.persistence.*
 
-
 @Entity
-class Artist(
+data class Artist(
     @Id
     @GeneratedValue(generator = "UUID") @GenericGenerator( name="UUID", strategy =  "org.hibernate.id.UUIDGenerator")
     var id: UUID?,
+    var vendorId:String?,
     var name:String,
     var thumbnail:String?,
-    @OneToMany(mappedBy = "artist", cascade = [CascadeType.REMOVE])
+    @OneToMany(cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
+    @JoinColumn(name = "artistId")
     var albums:MutableList<Album>? = null,
     @OneToOne(cascade=[CascadeType.REMOVE, CascadeType.PERSIST])
     var metadata: ArtistMetadata,
     var score:Double
-)
+) {
+
+    override fun equals(other: Any?): Boolean {
+        return when (other) {
+            is Artist -> name == other.name
+            else -> false
+        }
+    }
+    override fun hashCode(): Int {
+        return name.hashCode() * 17;
+    }
+
+}
+
+@Entity
+data class Album(
+    @Id var id:UUID,
+    var name:String,
+    var thumbnail:String?,
+    var year:Int,
+    var dominantColor:String?,
+    var score:Double,
+    val artistId:UUID,
+    @OneToMany(cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
+    @OrderBy("number ASC")
+    @JoinColumn(name = "albumId")
+    var songs:List<Song>?
+) {
+
+    override fun equals(other: Any?): Boolean {
+        return when (other) {
+            is Album ->  id == other.id
+            else -> false
+        }
+    }
+
+    override fun hashCode(): Int {
+        return id.hashCode() * 17
+    }
+
+}
+
+@Entity
+data class Song(
+    @Id var id:UUID,
+    var name:String? = null,
+    var number:Int,
+    var discNumber:Int,
+    val albumId:UUID,
+    @JoinColumn(name = "artist_id")
+    val artistId:UUID,
+    var score:Double?
+) {
+
+    override fun equals(other: Any?): Boolean {
+        return when(other) {
+            is Song ->  other.id == id
+            else -> false
+        }
+    }
+
+    override fun hashCode(): Int {
+        return id.hashCode() * 17
+    }
+
+}
 
 @Entity
 class ArtistMetadata (
@@ -61,30 +127,4 @@ class ArtistSongMetadata (
     var mediocrePercentage:Double = 0.0,
     var badPercentage:Double = 0.0,
     var terriblePercentage:Double = 0.0
-)
-
-@Entity
-class Album(
-    @Id var id:UUID,
-    var name:String,
-    var thumbnail:String?,
-    var year:Int,
-    var dominantColor:String?,
-    var score:Double,
-    @ManyToOne @JoinColumn(name="artist_id")
-    var artist: Artist,
-    @OneToMany(mappedBy="album", cascade = [CascadeType.REMOVE])
-    @OrderBy("number ASC")
-    var songs:MutableList<Song>? = null
-)
-
-@Entity
-class Song(
-    @Id var id:UUID,
-    var name:String? = null,
-    var number:Int,
-    var discNumber:Int,
-    @ManyToOne @JoinColumn(name="album_id") var album: Album? =null,
-    @ManyToOne @JoinColumn(name="artist_id") var artist: Artist? = null,
-    var score:Double?
 )
