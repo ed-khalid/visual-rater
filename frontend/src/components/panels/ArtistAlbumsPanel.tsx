@@ -1,9 +1,6 @@
-import React, { useState } from "react"
+import React from "react"
 import { Album, Artist, Maybe } from "../../generated/graphql"
 import { Panel } from "./Panel"
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faArrowLeft, faArrowRight } from "@fortawesome/free-solid-svg-icons"
-import { ArtistDashboardAlbumRow } from "../legacy/dashboard/ArtistDashboardAlbumRow"
 
 interface Props {
     artist:Artist
@@ -12,8 +9,6 @@ interface Props {
 
 
 export const ArtistAlbumsPanel =  ({artist, onAlbumSelect}:Props) => {
-    const ALBUMS_PER_ARTIST = 6 
-    const [pageNumber, setPageNumber] = useState<number>(1)
     const onAlbumSelectInternal = (album:Album) => {
         onAlbumSelect(album, artist)
     } 
