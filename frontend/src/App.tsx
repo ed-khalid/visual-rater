@@ -1,8 +1,7 @@
 import React, { useEffect, useReducer, useState } from 'react';
 import './App.css';
 import { Scaler } from './functions/scale';
-import {  ExternalAlbumSearchResult, Artist, ExternalArtistSearchResult, GetArtistsDocument, GetArtistsQuery, NewSongInput, useCreateAlbumMutation, useCreateArtistMutation, useGetArtistsQuery , useGetTracksForSearchAlbumLazyQuery, Song, Album, useOnArtistMetadataUpdateSubscription, useGetAlbumsLazyQuery, useGetSongsLazyQuery, AlbumFieldsFragmentDoc, SongFieldsFragmentDoc, GetAlbumsQuery, GetAlbumsDocument } from './generated/graphql';
-import { Search } from './components/legacy/search/Search';
+import {  ExternalAlbumSearchResult, Artist, ExternalArtistSearchResult, NewSongInput, useCreateAlbumMutation, useGetArtistsQuery , useGetTracksForSearchAlbumLazyQuery, Song, Album, useOnArtistMetadataUpdateSubscription, useGetAlbumsLazyQuery, useGetSongsLazyQuery, AlbumFieldsFragmentDoc, SongFieldsFragmentDoc, GetAlbumsQuery, GetAlbumsDocument, useGetSingleArtistLazyQuery } from './generated/graphql';
 import { ExternalFullSearchResult } from './models/domain/ExternalFullSearchResult';
 import { RaterWrapper } from './components/rater/RaterWrapper';
 import { DragType } from './models/ui/DragType';
@@ -16,6 +15,7 @@ import { MusicData, MusicFilters, MusicState, MusicStore } from './models/domain
 import { MusicAction, musicReducer } from './reducers/musicReducer';
 import { client } from './setupApollo';
 import { Reference } from '@apollo/client/cache';
+import { SearchPanel } from './components/panels/search/SearchPanel';
 
 export const initialRaterState:RaterState = {
    start: 0
@@ -30,12 +30,11 @@ export const App = () => {
   // search
   const [searchAlbum, setSearchAlbum] = useState<ExternalAlbumSearchResult>()
   const [searchArtist,setSearchArtist] = useState<ExternalArtistSearchResult>()
-  const [searchArtistAlbumTracks, setSearchArtistAlbumTracks] = useState<ExternalFullSearchResult>()
+  const [ $getSingleArtist, $singleArtist ] = useGetSingleArtistLazyQuery()
   useOnArtistMetadataUpdateSubscription() 
 
   const [getTracks, getTracksResult ] = useGetTracksForSearchAlbumLazyQuery()
   const [createAlbum, ] = useCreateAlbumMutation() 
-  const [createArtist, ] = useCreateArtistMutation() 
 
   // main data 
   const $artists  =  useGetArtistsQuery()
@@ -67,6 +66,13 @@ export const App = () => {
       musicDispatch({ type: 'DATA_CHANGE', variables: { data: { artists: $artists.data.artists.content as Artist[]   }}})
     }
   }, [$artists.loading, $artists.data] )
+
+  useEffect(() => {
+    if (!$singleArtist.loading && $singleArtist.data) {
+      musicDispatch({ type: 'DATA_CHANGE', variables: { data: { artists: [$singleArtist.data.artist] as Artist[], albums: $singleArtist.data.artist?.albums as Album[]    }}})
+    }
+
+  }, [$singleArtist])
 
   const onArtistSelect = (artist:Artist) => {
       setBreadcrumbs(breadcrumbs => [breadcrumbs[0], { title: artist.name, action: () => { setBreadcrumbs((breadcrumbs) => ([breadcrumbs[0], breadcrumbs[1]])); musicDispatch({ type: 'FILTER_CHANGE', variables: { filters: {artistIds: [artist.id], albumIds:[], songIds:[], scoreFilter:{start:0, end:5}} }})}} ])
@@ -163,19 +169,11 @@ export const App = () => {
 
   useEffect(() => {
     if (getTracksResult.data?.searchExternalAlbumTracks && searchArtist && searchAlbum) {
-      setSearchArtistAlbumTracks({
+      const searchArtistAlbumTracks:ExternalFullSearchResult =  {
         artist: searchArtist,
         album: searchAlbum,
         tracks: getTracksResult.data?.searchExternalAlbumTracks 
-      })
-      setSearchArtist(undefined)
-      setSearchAlbum(undefined)
-    }
-  }, [getTracksResult.data?.searchExternalAlbumTracks, searchArtist, searchAlbum ] )
-
-  useEffect(() => { 
-    if (searchArtistAlbumTracks) {
-    const doCreateAlbum = (frozenArtist:any) => { 
+      }
       const songs:NewSongInput[] = searchArtistAlbumTracks.tracks.map((it,index) => 
         ({ 
           name: it.name, 
@@ -186,43 +184,20 @@ export const App = () => {
         createAlbum({ variables: { albumInput: {
           name: searchArtistAlbumTracks.album.name,
           year: searchArtistAlbumTracks.album.year,
+          vendorId: searchArtistAlbumTracks.album.id,  
           thumbnail: searchArtistAlbumTracks.album.thumbnail,
-          artistId:frozenArtist.id,
+          artist: {
+            name: searchArtistAlbumTracks.artist.name,
+            thumbnail: searchArtistAlbumTracks.artist.thumbnail 
+          }, 
           songs
-        }}, update: (cache, data)=> { 
-          const artist = {
-            ...frozenArtist
-          }  
-          const result = cache.readQuery<GetArtistsQuery>({query: GetArtistsDocument})
-          const newAlbum = data.data?.CreateAlbum!
-          const queryArtists = [...result!.artists!.content!] 
-          const otherArtists = queryArtists.filter( it => it?.name !== searchArtistAlbumTracks!.album.name)
-          const albums = [...artist.albums!]
-          artist.albums = [...albums!, newAlbum] 
-          cache.writeQuery<GetArtistsQuery>({ query: GetArtistsDocument, data : { artists : { total: (result?.artists.total)|| 0, pageNumber: result?.artists.pageNumber || 0,  content: [...otherArtists, artist]} }    })
-        }
+        }}, 
       })
-     }
-
-      const artist = $artists.data?.artists?.content?.find(it => it?.name === searchArtistAlbumTracks.artist.name)   
-      if (!artist) {
-        createArtist({
-          variables: {
-            artistInput: {
-              name: searchArtistAlbumTracks.artist.name, 
-              thumbnail: searchArtistAlbumTracks.artist.thumbnail
-            }
-          }, update:  (cache, data) => {
-             const artist = data.data?.CreateArtist
-             doCreateAlbum(artist)
-          }
-        })
-      } else {
-        doCreateAlbum(artist)
-      }
-      setSearchArtistAlbumTracks(undefined)
-    }},
-  [searchArtistAlbumTracks])
+      setSearchArtist(undefined)
+      setSearchAlbum(undefined)
+      $getSingleArtist()
+    }
+  }, [getTracksResult.data?.searchExternalAlbumTracks, searchArtist, searchAlbum, createAlbum ] )
 
   const store = new MusicStore(new MusicData(musicState.data), new MusicFilters(musicState.filters))
 
@@ -230,9 +205,7 @@ export const App = () => {
   return (
     <div className="App">
       <div className="main">
-        <div className='panel noborder top left' id="search">
-          <Search onAlbumSelect={onExternalAlbumSearchClick}/>
-        </div>
+        <SearchPanel onExternalAlbumSelect={onExternalAlbumSearchClick} />
         <BreadcrumbPanel breadcrumbs={breadcrumbs}/>
         {/* <div id="top-controls" className="panel">
           <div>

@@ -1,0 +1,9 @@
+
+query getSingleArtist($artistName:String) {
+  artist {
+      ...ArtistFields
+      albums {
+        ...AlbumFields
+      }
+  }
+}
