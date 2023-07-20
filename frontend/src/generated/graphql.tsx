@@ -629,7 +629,7 @@ export type GetArtistsLazyQueryHookResult = ReturnType<typeof useGetArtistsLazyQ
 export type GetArtistsQueryResult = Apollo.QueryResult<GetArtistsQuery, GetArtistsQueryVariables>;
 export const GetSingleArtistDocument = gql`
     query getSingleArtist($artistName: String) {
-  artist {
+  artist(name: $artistName) {
     ...ArtistFields
     albums {
       ...AlbumFields
