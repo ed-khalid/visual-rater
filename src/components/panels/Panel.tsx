@@ -1,17 +1,17 @@
 import React, { ReactElement } from 'react'
 
 interface PanelProps {
-    title:string
+    title?:string
     className?:string
     id?:string
     children:ReactElement
-    isDraggable?:boolean
+    isMoveable?:boolean
     isResizable?:boolean
     isCloseable?:boolean
     isCollapsible?:boolean
 }
 
-export const Panel = ({title, id, className, children}:PanelProps) => {
+export const Panel = ({title, id, className, children, isMoveable=true, isResizable=false, isCloseable=true, isCollapsible=false }:PanelProps) => {
 
     let classes = 'panel' 
     if (className) {
@@ -20,9 +20,9 @@ export const Panel = ({title, id, className, children}:PanelProps) => {
 
     return <div className={classes} id={id} >
     <div className="panel-wrapper">
-        <div className="panel-header">
+        {title && <div className="panel-header">
             <div className="panel-title">{title}</div> 
-        </div>
+        </div>}
           <div className="panel-content">
             {children}
           </div>
