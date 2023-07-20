@@ -1128,14 +1128,14 @@
         "fields": null,
         "inputFields": [
           {
-            "name": "artistId",
+            "name": "artist",
             "description": null,
             "type": {
               "kind": "NON_NULL",
               "name": null,
               "ofType": {
-                "kind": "SCALAR",
-                "name": "String",
+                "kind": "INPUT_OBJECT",
+                "name": "ArtistInput",
                 "ofType": null
               }
             },
@@ -1181,6 +1181,18 @@
           },
           {
             "name": "thumbnail",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "vendorId",
             "description": null,
             "type": {
               "kind": "SCALAR",

@@ -145,10 +145,11 @@ export type MutationUpdateSongArgs = {
 };
 
 export type NewAlbumInput = {
-  artistId: Scalars['String']['input'];
+  artist: ArtistInput;
   name: Scalars['String']['input'];
   songs?: InputMaybe<Array<NewSongInput>>;
   thumbnail?: InputMaybe<Scalars['String']['input']>;
+  vendorId?: InputMaybe<Scalars['String']['input']>;
   year?: InputMaybe<Scalars['Int']['input']>;
 };
 
@@ -283,6 +284,13 @@ export type GetArtistsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type GetArtistsQuery = { __typename?: 'Query', artists: { __typename?: 'ArtistPage', total: number, pageNumber: number, content: Array<{ __typename?: 'Artist', id: string, name: string, thumbnail?: string | null, score?: number | null, albums?: Array<{ __typename?: 'Album', id: string, artistId: string, name: string, year?: number | null, score?: number | null, dominantColor?: string | null, thumbnail?: string | null, songs: Array<{ __typename?: 'Song', id: string, albumId: string, artistId: string, name: string, number: number, discNumber: number, score?: number | null }> } | null> | null, metadata?: { __typename?: 'ArtistMetadata', id: string, totalSongs: number, totalAlbums: number, songs: { __typename?: 'ArtistSongMetadata', classic: number, great: number, good: number, mediocre: number, bad: number, terrible: number, classicPercentage: number, greatPercentage: number, goodPercentage: number, mediocrePercentage: number, badPercentage: number, terriblePercentage: number } } | null } | null> } };
+
+export type GetSingleArtistQueryVariables = Exact<{
+  artistName?: InputMaybe<Scalars['String']['input']>;
+}>;
+
+
+export type GetSingleArtistQuery = { __typename?: 'Query', artist?: { __typename?: 'Artist', id: string, name: string, thumbnail?: string | null, score?: number | null, albums?: Array<{ __typename?: 'Album', id: string, artistId: string, name: string, year?: number | null, score?: number | null, dominantColor?: string | null, thumbnail?: string | null, songs: Array<{ __typename?: 'Song', id: string, albumId: string, artistId: string, name: string, number: number, discNumber: number, score?: number | null }> } | null> | null, metadata?: { __typename?: 'ArtistMetadata', id: string, totalSongs: number, totalAlbums: number, songs: { __typename?: 'ArtistSongMetadata', classic: number, great: number, good: number, mediocre: number, bad: number, terrible: number, classicPercentage: number, greatPercentage: number, goodPercentage: number, mediocrePercentage: number, badPercentage: number, terriblePercentage: number } } | null } | null };
 
 export type GetSongsQueryVariables = Exact<{
   albumId: Scalars['String']['input'];
@@ -618,6 +626,45 @@ export function useGetArtistsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions
 export type GetArtistsQueryHookResult = ReturnType<typeof useGetArtistsQuery>;
 export type GetArtistsLazyQueryHookResult = ReturnType<typeof useGetArtistsLazyQuery>;
 export type GetArtistsQueryResult = Apollo.QueryResult<GetArtistsQuery, GetArtistsQueryVariables>;
+export const GetSingleArtistDocument = gql`
+    query getSingleArtist($artistName: String) {
+  artist {
+    ...ArtistFields
+    albums {
+      ...AlbumFields
+    }
+  }
+}
+    ${ArtistFieldsFragmentDoc}
+${AlbumFieldsFragmentDoc}`;
+
+/**
+ * __useGetSingleArtistQuery__
+ *
+ * To run a query within a React component, call `useGetSingleArtistQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetSingleArtistQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetSingleArtistQuery({
+ *   variables: {
+ *      artistName: // value for 'artistName'
+ *   },
+ * });
+ */
+export function useGetSingleArtistQuery(baseOptions?: Apollo.QueryHookOptions<GetSingleArtistQuery, GetSingleArtistQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetSingleArtistQuery, GetSingleArtistQueryVariables>(GetSingleArtistDocument, options);
+      }
+export function useGetSingleArtistLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetSingleArtistQuery, GetSingleArtistQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetSingleArtistQuery, GetSingleArtistQueryVariables>(GetSingleArtistDocument, options);
+        }
+export type GetSingleArtistQueryHookResult = ReturnType<typeof useGetSingleArtistQuery>;
+export type GetSingleArtistLazyQueryHookResult = ReturnType<typeof useGetSingleArtistLazyQuery>;
+export type GetSingleArtistQueryResult = Apollo.QueryResult<GetSingleArtistQuery, GetSingleArtistQueryVariables>;
 export const GetSongsDocument = gql`
     query getSongs($albumId: String!) {
   songs(albumId: $albumId) {
