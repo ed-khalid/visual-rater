@@ -3,7 +3,6 @@ import { MusicEntity, MusicState } from "../models/domain/MusicState";
 
 
 export const musicReducer: React.Reducer<MusicState, MusicAction> =  (state: MusicState, action: MusicAction) : MusicState => {
-    console.log('action' + JSON.stringify(action))
 
     const reconcileData = <T extends MusicEntity> (oldData:Array<T>, newData:Array<T>|undefined) => {
         if (!newData) {

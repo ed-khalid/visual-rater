@@ -67,13 +67,6 @@ export const App = () => {
     }
   }, [$artists.loading, $artists.data] )
 
-  useEffect(() => {
-    if (!$singleArtist.loading && $singleArtist.data) {
-      musicDispatch({ type: 'DATA_CHANGE', variables: { data: { artists: [$singleArtist.data.artist] as Artist[], albums: $singleArtist.data.artist?.albums as Album[]    }}})
-    }
-
-  }, [$singleArtist])
-
   const onArtistSelect = (artist:Artist) => {
       setBreadcrumbs(breadcrumbs => [breadcrumbs[0], { title: artist.name, action: () => { setBreadcrumbs((breadcrumbs) => ([breadcrumbs[0], breadcrumbs[1]])); musicDispatch({ type: 'FILTER_CHANGE', variables: { filters: {artistIds: [artist.id], albumIds:[], songIds:[], scoreFilter:{start:0, end:5}} }})}} ])
       $getAlbums({variables: { artistId: artist.id }})
@@ -176,28 +169,35 @@ export const App = () => {
       }
       const songs:NewSongInput[] = searchArtistAlbumTracks.tracks.map((it,index) => 
         ({ 
-          name: it.name, 
-          discNumber: it.discNumber, 
-          number: it.trackNumber, 
-          score: 3.5 - ((index)*0.1)    
+          name: it.name,
+          discNumber: it.discNumber,
+          number: it.trackNumber,
+          score: 3.5 - ((index)*0.1)
         }))
         createAlbum({ variables: { albumInput: {
           name: searchArtistAlbumTracks.album.name,
           year: searchArtistAlbumTracks.album.year,
-          vendorId: searchArtistAlbumTracks.album.id,  
+          vendorId: searchArtistAlbumTracks.album.id,
           thumbnail: searchArtistAlbumTracks.album.thumbnail,
           artist: {
             name: searchArtistAlbumTracks.artist.name,
-            thumbnail: searchArtistAlbumTracks.artist.thumbnail 
+            thumbnail: searchArtistAlbumTracks.artist.thumbnail,
+            vendorId: searchArtistAlbumTracks.artist.id 
           }, 
           songs
         }}, 
       })
       setSearchArtist(undefined)
       setSearchAlbum(undefined)
-      $getSingleArtist()
+      $getSingleArtist({ variables: { artistName: searchArtistAlbumTracks.artist.name }})
     }
-  }, [getTracksResult.data?.searchExternalAlbumTracks, searchArtist, searchAlbum, createAlbum ] )
+  }, [getTracksResult.data?.searchExternalAlbumTracks, searchArtist, searchAlbum, createAlbum, $getSingleArtist ] )
+
+  useEffect(() => {
+    if (!$singleArtist.loading && $singleArtist.data) {
+      musicDispatch({ type: 'DATA_CHANGE', variables: { data: { artists: [$singleArtist.data.artist] as Artist[], albums: $singleArtist.data.artist?.albums as Album[]    }}})
+    }
+  }, [$singleArtist.loading, $singleArtist.data])
 
   const store = new MusicStore(new MusicData(musicState.data), new MusicFilters(musicState.filters))
 
