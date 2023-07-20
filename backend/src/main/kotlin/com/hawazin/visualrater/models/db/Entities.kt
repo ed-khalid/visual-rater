@@ -41,6 +41,7 @@ data class Album(
     var dominantColor:String?,
     var score:Double,
     val artistId:UUID,
+    val vendorId:String?,
     @OneToMany(cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
     @OrderBy("number ASC")
     @JoinColumn(name = "albumId")
