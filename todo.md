@@ -1,14 +1,18 @@
 ### CURRENT 
-- lazy load albums for get artists and full load on get single artist 
-- fix create album bug
-- fix create artist bug
+-- update breadcrumb on new album/artist (working but buggy)
+
+
+## SEARCH
+### FEATURE
+-- disable already existing albums in search
+### ENHACNEMENT
+-- use name comparison instead of image (imageservice)
 
 
 ###### FEATURE
 - calculate artist tier
 
 ###### ENHANCEMENTS
-- use name comparison instead of image (imageservice)
 - improve breadcrumbs
 - search results hover slightly increases width due to border appearing on hover (already tried existing transparent border but need to solve for text being bold)   
 

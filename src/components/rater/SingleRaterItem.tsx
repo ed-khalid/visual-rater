@@ -1,4 +1,4 @@
-import React, {useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import { select } from 'd3-selection'
 import { drag } from 'd3-drag'
 import { RatedMusicItemUI } from "../../models/ui/ItemTypes";
@@ -11,6 +11,7 @@ import { RATER_TIER_WIDTH, RaterOrientation } from "../../models/ui/RaterTypes";
 interface SingleRaterItemProps {
     item:RatedMusicItemUI
     mainlineX:number
+    highlightOnDrag:(item:SVGGElement, toggleOn:boolean) => void
     isReadonly:boolean
     nodeRef?:any
     onClick?:any
@@ -19,25 +20,24 @@ interface SingleRaterItemProps {
     scale?:number
 } 
 
-export const SingleRaterItem = ({item, nodeRef, isReadonly, mainlineX, scale=1, scaler, onClick, onDragEnd}:SingleRaterItemProps) =>  {
+export const SingleRaterItem = ({item, nodeRef, isReadonly, highlightOnDrag, mainlineX, scale=1, scaler, onClick, onDragEnd}:SingleRaterItemProps) =>  {
     const y = scaler.toPosition(item.score) 
     const tierOffset = RATER_TIER_WIDTH * item.tier 
     const x = (item.orientation === RaterOrientation.LEFT) ?(mainlineX - tierOffset) : (mainlineX + tierOffset) 
-    const g = useRef<SVGGElement>(null)
 
     useEffect(() => {
         const onDragBehaviorEnd = (id:string, score:number) => {
             onDragEnd(id, score)
         }
-        if (!isReadonly && g.current) {
-            const dragBehavior = DragBehavior({item, g:g.current, scaler, onDragEnd:onDragBehaviorEnd}) 
-            select(g.current).call(drag<SVGGElement,any>()
+        if (!isReadonly && item.nodeRef.current) {
+            const dragBehavior = DragBehavior({item, g: item.nodeRef.current, scaler, highlightOnDrag, onDragEnd:onDragBehaviorEnd}) 
+            select(item.nodeRef.current).call(drag<SVGGElement,any>()
                 .on('start', dragBehavior.dragStart)
                 .on('drag', dragBehavior.dragInProgress)
                 .on('end', dragBehavior.dragEnd))
-        select(g.current).data<RatedItem>([item])
+        select(item.nodeRef.current).data<RatedItem>([item])
         }
-    },[isReadonly, item, scaler, onDragEnd]) 
+    },[isReadonly, item, scaler, onDragEnd, item.nodeRef, highlightOnDrag]) 
 
     const formatName= (name:string) => {
         const maxLength = 15
@@ -109,16 +109,14 @@ export const SingleRaterItem = ({item, nodeRef, isReadonly, mainlineX, scale=1, 
         const color = "rgb" + item.overlay   
         const cursor = (isReadonly) ? "pointer" : "move"  
         
-        return <g onClick={handleOnClick} ref={g} className="item" key={'single-rater-item-svg-g-'+item.name}>
-                        <g clipPath={ (item.orientation === RaterOrientation.LEFT) ? "url(#item-clip-path-left)" : "url(#item-clip-path-right)"  } ref={nodeRef}  className="draggable"> 
-                            <line className="item-scoreline" x1={lineDimensions.x1} y1={lineDimensions.y1} x2={lineDimensions.x2} y2={lineDimensions.y2} stroke={"black"} opacity={0.2} />
-                            <circle  className="item-thumbnail-overlay" cx={imageDimensions.x+imageDimensions.size/2} cy={imageDimensions.y+imageDimensions.size/2} r={imageDimensions.size/2} fill={color} stroke={color}></circle>
-                            <image fill={"rgba"+item.overlay} opacity={0.5} xlinkHref={item.thumbnail} clipPath="inset(0% round 15px)" cursor={cursor} className="item-thumbnail" width={imageDimensions.size} x={imageDimensions.x} y={imageDimensions.y} height={imageDimensions.size} href={item.thumbnail}/>
-                            <text textAnchor="middle" className="item-name" cursor={cursor} fontSize={6*scale} fill="black" x={songNameDimensions.x} y={songNameDimensions.y} dy=".35em">{formatName(item.name)}</text>
-                            <text textAnchor="middle" className="item-score" cursor={cursor} fontSize={10*scale} fontWeight="bold" fill={determineTextColor(item.overlay)} x={songScoreDimensions.x} y={songScoreDimensions.y} dy=".35em">{item.score.toFixed(2)}</text>
-                            <circle className="item-thumbnail-border" cx={imageDimensions.x+imageDimensions.size/2} cy={imageDimensions.y+imageDimensions.size/2} r={imageDimensions.size/2+2} fill="none" stroke={color}></circle>
-                        </g>
-                </g>
+        return <g onClick={handleOnClick} clipPath={ (item.orientation === RaterOrientation.LEFT) ? "url(#item-clip-path-left)" : "url(#item-clip-path-right)"  } ref={nodeRef}  className="item draggable"> 
+                    <line className="item-scoreline" x1={lineDimensions.x1} y1={lineDimensions.y1} x2={lineDimensions.x2} y2={lineDimensions.y2} stroke={"black"} opacity={0.2} />
+                    <circle  className="item-thumbnail-overlay" cx={imageDimensions.x+imageDimensions.size/2} cy={imageDimensions.y+imageDimensions.size/2} r={imageDimensions.size/2} fill={color} stroke={color}></circle>
+                    <image fill={"rgba"+item.overlay} opacity={0.5} xlinkHref={item.thumbnail} clipPath="inset(0% round 15px)" cursor={cursor} className="item-thumbnail" width={imageDimensions.size} x={imageDimensions.x} y={imageDimensions.y} height={imageDimensions.size} href={item.thumbnail}/>
+                    <text textAnchor="middle" className="item-name" cursor={cursor} fontSize={6*scale} fill="black" x={songNameDimensions.x} y={songNameDimensions.y} dy=".35em">{formatName(item.name)}</text>
+                    <text textAnchor="middle" className="item-score" cursor={cursor} fontSize={10*scale} fontWeight="bold" fill={determineTextColor(item.overlay)} x={songScoreDimensions.x} y={songScoreDimensions.y} dy=".35em">{item.score.toFixed(2)}</text>
+                    <circle className="item-thumbnail-border" cx={imageDimensions.x+imageDimensions.size/2} cy={imageDimensions.y+imageDimensions.size/2} r={imageDimensions.size/2+2} fill="none" stroke={color}></circle>
+               </g>
 
 
 }

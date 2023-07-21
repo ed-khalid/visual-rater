@@ -16,6 +16,7 @@ import { MusicAction, musicReducer } from './reducers/musicReducer';
 import { client } from './setupApollo';
 import { Reference } from '@apollo/client/cache';
 import { SearchPanel } from './components/panels/search/SearchPanel';
+import { BreadcrumbBuilder } from './functions/breadcrumb.builder';
 
 export const initialRaterState:RaterState = {
    start: 0
@@ -43,7 +44,7 @@ export const App = () => {
   const [musicState, musicDispatch] = useReducer<React.Reducer<MusicState,MusicAction>>(musicReducer, { data: { artists: [], albums:[], songs:[] } , filters: { artistIds: [] , albumIds:[], songIds: [], scoreFilter:{start:0, end:5} }  })
 
   // breadcrumbs 
-  const [breadcrumbs, setBreadcrumbs] = useState<Array<Breadcrumb>>([{ title: 'ARTISTS' , action: () => { setBreadcrumbs(breadcrumbs => ([breadcrumbs[0]])); musicDispatch({type: 'FILTER_CHANGE', variables: { filters: { artistIds:[], albumIds:[], songIds:[], scoreFilter: { start:0, end:5 } } }  })}}]) 
+  const [breadcrumbs, setBreadcrumbs] = useState<Array<Breadcrumb>>([{ title: 'ARTISTS' , action: () => { setBreadcrumbs(breadcrumbs => ([breadcrumbs[0]])); musicDispatch({type: 'FILTER_CHANGE', filters: { artistIds:[], albumIds:[], songIds:[], scoreFilter: { start:0, end:5 } } }  )}}]) 
 
   // rater 
   const [raterState, dispatch] = useReducer<React.Reducer<RaterState,RaterAction>>(raterReducer, initialRaterState )
@@ -63,14 +64,15 @@ export const App = () => {
 
   useEffect(()  => {
     if (!$artists.loading && $artists.data) {
-      musicDispatch({ type: 'DATA_CHANGE', variables: { data: { artists: $artists.data.artists.content as Artist[]   }}})
+      musicDispatch({ type: 'DATA_CHANGE', data: { artists: $artists.data.artists.content as Artist[]   }})
     }
   }, [$artists.loading, $artists.data] )
 
   const onArtistSelect = (artist:Artist) => {
-      setBreadcrumbs(breadcrumbs => [breadcrumbs[0], { title: artist.name, action: () => { setBreadcrumbs((breadcrumbs) => ([breadcrumbs[0], breadcrumbs[1]])); musicDispatch({ type: 'FILTER_CHANGE', variables: { filters: {artistIds: [artist.id], albumIds:[], songIds:[], scoreFilter:{start:0, end:5}} }})}} ])
+      const artistBreadcrumb = BreadcrumbBuilder.buildArtistBreadcrumb(artist,musicDispatch, setBreadcrumbs) 
+      setBreadcrumbs(breadcrumbs => [breadcrumbs[0], artistBreadcrumb ])
       $getAlbums({variables: { artistId: artist.id }})
-      musicDispatch({ type: 'FILTER_CHANGE', variables: { filters: { artistIds:[artist.id]  }} })
+      musicDispatch({ type: 'FILTER_CHANGE', filters: { artistIds:[artist.id]  }})
   }
   useEffect(() => {
     if (!$albums.loading && $albums.data) {
@@ -97,22 +99,25 @@ export const App = () => {
             }
           } 
         });
-        musicDispatch({ type: 'DATA_CHANGE', variables: { data: { albums: albums as Album[]}  } })
+        musicDispatch({ type: 'DATA_CHANGE', data: { albums: albums as Album[]}   })
       }
     }
   }, [$albums.loading, $albums.data])
 
   const addAlbum = (album:Album) => {
-    musicDispatch({type:'FILTER_CHANGE', variables: { filters: { albumIds: [album.id] } }} )
+    musicDispatch({type:'FILTER_CHANGE', filters: { albumIds: [album.id] } } )
   }
   const addArtist = (artist:Artist) => {
-    musicDispatch({type:'FILTER_CHANGE', variables: { filters: { artistIds: [artist.id] } }} )
+    musicDispatch({type:'FILTER_CHANGE', filters: { artistIds: [artist.id] } } )
   }
 
   const onAlbumSelect = (album:Album) => {
-    setBreadcrumbs(breadcrumbs => [breadcrumbs[0], breadcrumbs[1], { title: album.name, action: () => musicDispatch({ type: 'FILTER_CHANGE', variables: { filters: {albumIds: [album.id], songIds:[], scoreFilter:{start:0,end:5}} }})} ])
-    $getSongs({variables: { albumId: album.id }})
-    musicDispatch({type: 'FILTER_CHANGE', variables: { filters: { albumIds:[album.id] } }})
+    const albumBreadcrumb = BreadcrumbBuilder.buildAlbumBreadcrumb(album)
+    setBreadcrumbs(breadcrumbs => [breadcrumbs[0], breadcrumbs[1], albumBreadcrumb])
+    if (album.songs.length === 0) {
+      $getSongs({variables: { albumId: album.id }})
+    }
+    musicDispatch({type: 'FILTER_CHANGE', filters: { albumIds:[album.id] } })
   }
   useEffect(() => {
     if (!$songs.loading && $songs.data) {
@@ -139,13 +144,13 @@ export const App = () => {
           } 
         });
 
-        musicDispatch({ type: 'DATA_CHANGE', variables: { data: { songs: songs as Song[]} }})
+        musicDispatch({ type: 'DATA_CHANGE', data: { songs: songs as Song[]} })
       }
     }
   }, [$songs.loading, $songs.data])
 
   const onArtistPanelSongsClick = (artist:Artist, scoreFilter:{start:number,end:number}) => {
-    musicDispatch({ type: 'FILTER_CHANGE', variables: { filters: { artistIds: [artist.id], albumIds:[], scoreFilter: scoreFilter }  }})
+    musicDispatch({ type: 'FILTER_CHANGE', filters: { artistIds: [artist.id], albumIds:[], scoreFilter: scoreFilter }  })
   }  
 
 
@@ -193,11 +198,19 @@ export const App = () => {
   }, [getTracksResult.data?.searchExternalAlbumTracks, searchArtist, searchAlbum, createAlbum, $getSingleArtist ] )
 
   useEffect(() => {
-    if (!$singleArtist.loading && $singleArtist.data) {
-      musicDispatch({ type: 'DATA_CHANGE', variables: { data: { artists: [$singleArtist.data.artist] as Artist[], albums: $singleArtist.data.artist?.albums as Album[]    }}})
+    if (!$singleArtist.loading && $singleArtist.data && searchAlbum) {
+
+      const artistBreadcrumb = BreadcrumbBuilder.buildArtistBreadcrumb($singleArtist.data.artist as Artist, musicDispatch, setBreadcrumbs) 
+
+      const songs = $singleArtist.data.artist?.albums?.reduce<Array<Song>>((acc,curr) => {
+        return [...acc, ...curr!.songs]
+      }, [])
+      musicDispatch({ type: 'DATA_CHANGE', data: { artists: [$singleArtist.data.artist] as Artist[], albums: $singleArtist.data.artist?.albums as Album[], songs     }})
       const newAlbum = $singleArtist.data.artist?.albums?.find(it => it?.name === searchAlbum?.name )
+      const albumBreadcrumb = BreadcrumbBuilder.buildAlbumBreadcrumb(newAlbum as Album) 
+      setBreadcrumbs(breadcrumbs => [breadcrumbs[0], artistBreadcrumb, albumBreadcrumb])
       if (newAlbum) {
-        musicDispatch({ type: 'FILTER_CHANGE', variables: {  data: { albums: [newAlbum] as Album[]  } }})
+        musicDispatch({ type: 'FILTER_CHANGE', filters: { artistIds:[$singleArtist.data.artist!.id] , albumIds: [newAlbum.id] } })
       }
       setSearchArtist(undefined)
       setSearchAlbum(undefined)

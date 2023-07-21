@@ -7,7 +7,7 @@ import { Position } from '../../models/ui/Position';
 import { Dispatch, useEffect, useRef, useState, } from 'react';
 import React from 'react';
 import './Rater.css'
-import { RaterState, RATER_Y_TOP, RatedSongItemGrouped } from '../../models/ui/RaterTypes';
+import { RaterState, RATER_Y_TOP } from '../../models/ui/RaterTypes';
 import { ZoomBehavior } from './behaviors/ZoomBehavior';
 import { ANIMATION_DURATION } from '../../models/ui/Animation';
 import { Transition, TransitionGroup } from 'react-transition-group';
@@ -60,6 +60,12 @@ export const Rater = ({position, state, stateDispatch, onItemClick, updateSongSc
         setCurrentItem({id:itemId, score:newScore})
     }
 
+    const highlightItem = (itemNode:SVGGElement, toggleOn:boolean) => {
+        items.map(it => it.nodeRef.current).filter( it => it !== itemNode).forEach( it => {
+            select(it).classed('not-selected', toggleOn)
+        })
+    }
+
     const makeAxis = (scale:AxisScale<number>) => {
         const _axis = axisRight(scale) 
         const axisSel = select(g.current).select<SVGGElement>('g.rater-axis')
@@ -90,6 +96,7 @@ export const Rater = ({position, state, stateDispatch, onItemClick, updateSongSc
                                 <SingleRaterItem
                                     item={item}
                                     isReadonly={isReadonly}
+                                    highlightOnDrag={highlightItem}
                                     nodeRef={item.nodeRef}
                                     mainlineX={position.x}
                                     scaler={state.scaler}
