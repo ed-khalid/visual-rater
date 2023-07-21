@@ -41,12 +41,12 @@ BEGIN
               classic = classic$,
               terrible = terrible$,
               mediocre = mediocre$,
-              great_percentage = cast(great$ as float)/ cast(total$ as float),
-              good_percentage = cast(good$ as float)/ cast (total$ as float),
-              mediocre_percentage = cast(mediocre$ as float)/cast(total$ as float),
-              bad_percentage = cast(bad$ as float)/ cast (total$ as float),
-              terrible_percentage = cast (terrible$ as float)/ cast (total$ as float),
-              classic_percentage = cast(classic$ as float)/ cast (total$ as float)
+              great_percentage = cast(great$ as float)/nullif(cast(total$ as float), 0),
+              good_percentage = cast(good$ as float)/nullif(cast (total$ as float),0),
+              mediocre_percentage = cast(mediocre$ as float)/nullif(cast(total$ as float),0),
+              bad_percentage = cast(bad$ as float)/nullif( cast (total$ as float),0),
+              terrible_percentage = cast (terrible$ as float)/nullif(cast (total$ as float),0),
+              classic_percentage = cast(classic$ as float)/nullif(cast (total$ as float),0)
            where id =(select metadata_id from artist where artist.id = artist_id$)
         ;
         RETURN NULL;
