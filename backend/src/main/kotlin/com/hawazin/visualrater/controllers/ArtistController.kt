@@ -25,7 +25,7 @@ class ArtistController(val musicService: MusicService, val publisherService: Pub
         val maybeArtist = musicService.readArtistByName(name)
         return if (maybeArtist.isPresent) {
             val artist = maybeArtist.get()
-            artist
+            return Artist(id= artist.id, vendorId = artist.vendorId, albums = artist.albums, score= artist.score, metadata = artist.metadata, thumbnail =  artist.thumbnail, name=artist.name)
         } else {
             null
         }

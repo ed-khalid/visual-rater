@@ -5,7 +5,6 @@ import com.hawazin.visualrater.models.db.Song
 import com.hawazin.visualrater.models.graphql.NewAlbumInput
 import com.hawazin.visualrater.services.ImageService
 import com.hawazin.visualrater.services.MusicService
-import jakarta.persistence.*
 import org.springframework.graphql.data.method.annotation.Argument
 import org.springframework.graphql.data.method.annotation.MutationMapping
 import org.springframework.graphql.data.method.annotation.QueryMapping

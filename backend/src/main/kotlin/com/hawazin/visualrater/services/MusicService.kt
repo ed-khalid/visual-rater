@@ -53,9 +53,9 @@ class MusicService(private val songRepo: SongRepository, private val albumRepo: 
     @Transactional
     fun notifyOnMetadataUpdate(song:Song)
     {
-        val metadata = artistRepo.findMetadataBySong(song.artistId)
-        if (metadata != null) {
-            publisherService.notify(metadata)
+        val metadata = artistRepo.findMetadataById(song.artistId)
+        if (metadata.isPresent) {
+            publisherService.notify(metadata.get().metadata)
         }
     }
 

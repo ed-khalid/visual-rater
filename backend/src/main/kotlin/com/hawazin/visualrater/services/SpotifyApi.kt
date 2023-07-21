@@ -2,11 +2,11 @@ package com.hawazin.visualrater.services
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties
 import com.fasterxml.jackson.annotation.JsonProperty
-import com.hawazin.visualrater.models.graphql.Artist
-import com.hawazin.visualrater.models.graphql.Track
+import com.hawazin.visualrater.models.graphql.ExternalSearchArtist
+import com.hawazin.visualrater.models.graphql.ExternalSearchTracks
 import com.hawazin.visualrater.configurations.SpotifyConfiguration
 import com.hawazin.visualrater.graphql.CustomRestTemplateCustomizer
-import com.hawazin.visualrater.models.graphql.Album
+import com.hawazin.visualrater.models.graphql.ExternalSearchAlbum
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
@@ -60,15 +60,15 @@ class SpotifyApi(private val configuration: SpotifyConfiguration, val imageServi
         return accountsTemplate.postForObject<SpotifyAuthToken>("/api/token", request, SpotifyAuthToken::class.java)
     }
 
-    fun searchArtist(name:String) : Artist {
+    fun searchArtist(name:String) : ExternalSearchArtist {
         val response = makeCall { api().getForObject<SpotifyArtistListResponse>("/search?q={name}&type=artist", name) }
         val artist = response.artists.items[0]
         val albums = getAlbumsForArtist(artist.id)
-        return Artist(id = artist.id, name= artist.name, thumbnail = artist.images[1].url, albums = albums)
+        return ExternalSearchArtist(id = artist.id, name= artist.name, thumbnail = artist.images[1].url, albums = albums)
     }
 
     // let's forget about the offset for now
-    private fun getAlbumsForArtist(artistId: String, _offset: Int = 0): List<Album> {
+    private fun getAlbumsForArtist(artistId: String, _offset: Int = 0): List<ExternalSearchAlbum> {
         val response = makeCall {
             api().getForObject<SpotifyAlbumList>(
                 "/artists/{artistId}/albums?limit=50&county=US&include_groups=album",
@@ -88,11 +88,11 @@ class SpotifyApi(private val configuration: SpotifyConfiguration, val imageServi
         val similarityArray = imageService.groupSimilarAlbums(imageUrls)
         val albums = imageService.removeDuplicates(similarityArray, response.items)
         return albums.distinctBy { album -> album.name }
-            .map { Album(id = it.id, name = it.name, thumbnail = it.images[2].url, year = dateParser(it.release_date)) }
+            .map { ExternalSearchAlbum(id = it.id, name = it.name, thumbnail = it.images[2].url, year = dateParser(it.release_date)) }
             .sortedBy { it.year  }
     }
 
-    fun getTracksForAlbum(albumId:String) : List<Track> {
+    fun getTracksForAlbum(albumId:String) : List<ExternalSearchTracks> {
         val response = makeCall { api().getForObject<SpotifyTrackList>("/albums/{albumId}/tracks?limit=50", albumId) }
         return response.items
     }
@@ -105,4 +105,4 @@ data class SpotifyArtistList(val items:List<SpotifyArtist>)
 data class SpotifyAlbum(val id:String, val name:String, val images:Array<SpotifyImage>, val release_date:String)
 data class SpotifyAlbumList(val items:List<SpotifyAlbum>)
 data class SpotifyImage(val url:String, val width:Int, val height:Int)
-data class SpotifyTrackList(val items:List<Track>)
+data class SpotifyTrackList(val items:List<ExternalSearchTracks>)
