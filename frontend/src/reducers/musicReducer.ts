@@ -15,7 +15,7 @@ export const musicReducer: React.Reducer<MusicState, MusicAction> =  (state: Mus
 
     switch (action.type) {
         case 'DATA_CHANGE': {
-            const newData = action.variables?.data
+            const newData = action.data
             const filters = state.filters 
             if (newData) {
                 const artists = reconcileData<Artist>(state.data.artists, newData.artists) 
@@ -26,7 +26,7 @@ export const musicReducer: React.Reducer<MusicState, MusicAction> =  (state: Mus
             return state
         }
         case 'FILTER_CHANGE': {
-            const filters = action.variables?.filters
+            const filters = action.filters
             if (filters) {
                 const artistIds = (filters.artistIds) ? filters.artistIds : state.filters.artistIds
                 const albumIds = (filters.albumIds) ? filters.albumIds : state.filters.albumIds
@@ -39,25 +39,24 @@ export const musicReducer: React.Reducer<MusicState, MusicAction> =  (state: Mus
     }
 }
 
-export type MusicAction = {
-    type: MusicActionType
-    variables?: {
-        data?: {
+
+export type DataChangeMusicAction = {
+    type: 'DATA_CHANGE',
+    data: {
             artists?: Artist[],
             albums?: Album[],
             songs?: Song[]
-        }
-        filters?: {
+    } 
+} 
+
+export type FilterChangeMusicAction = {
+    type: 'FILTER_CHANGE',
+    filters: {
             artistIds?: string[]
             albumIds?: string[]
             songIds?: string[]
             scoreFilter?: { start: number, end: number }
-        }
-    }
-}
-export type MusicActionType =
-    'DATA_CHANGE'
-    | 'FILTER_CHANGE'
-
-
-
+    } 
+}  
+  
+export type MusicAction = FilterChangeMusicAction | DataChangeMusicAction  

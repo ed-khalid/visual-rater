@@ -1,3 +1,4 @@
+import { Ref } from 'react';
 import { Maybe } from '../../generated/graphql';
 import { Item, RatedItem } from '../domain/ItemTypes';
 import { RaterOrientation } from './RaterTypes'

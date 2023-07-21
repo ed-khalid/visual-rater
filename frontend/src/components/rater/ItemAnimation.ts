@@ -4,7 +4,6 @@ import { RATER_TIER_WIDTH, RaterOrientation } from "../../models/ui/RaterTypes";
 import { ANIMATION_DURATION } from "../../models/ui/Animation";
 
     export const animateOnEnter = (item:RatedMusicItemUI, mainlineX:number) => {
-        console.log('animate enter', item.name, (item.orientation === RaterOrientation.LEFT ) ? 'left': 'right' )
         const tierOffset = RATER_TIER_WIDTH * item.tier 
         const imageSize = 25;
         const x = (item.orientation === RaterOrientation.LEFT) ?(mainlineX - tierOffset) : (mainlineX + tierOffset) 
@@ -18,7 +17,6 @@ import { ANIMATION_DURATION } from "../../models/ui/Animation";
 
     export const animateOnExit = (item:RatedMusicItemUI, mainlineX:number)  => {
         const EXIT_DURATION = ANIMATION_DURATION + 200; 
-        console.log('animate exit')
         const tierOffset = RATER_TIER_WIDTH * item.tier 
         const imageSize = 25;
         const x = (item.orientation === RaterOrientation.LEFT) ?(mainlineX + tierOffset) : (mainlineX - tierOffset) 

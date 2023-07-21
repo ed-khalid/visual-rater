@@ -88,9 +88,7 @@ export class MusicStore {
     return this.filters.filterArtists(this.data.artists)
   }  
   public getSelectedAlbums(): Album[] {
-    const albums = this.filters.filterAlbums(this.data.albums)
-    console.log('filtered albums', JSON.stringify(albums.map(it => it.id)))
-    return albums
+    return this.filters.filterAlbums(this.data.albums)
   }  
 
   public hasNoFilters(): boolean {

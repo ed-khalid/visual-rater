@@ -631,13 +631,9 @@ export const GetSingleArtistDocument = gql`
     query getSingleArtist($artistName: String) {
   artist(name: $artistName) {
     ...ArtistFields
-    albums {
-      ...AlbumFields
-    }
   }
 }
-    ${ArtistFieldsFragmentDoc}
-${AlbumFieldsFragmentDoc}`;
+    ${ArtistFieldsFragmentDoc}`;
 
 /**
  * __useGetSingleArtistQuery__

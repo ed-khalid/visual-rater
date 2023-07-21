@@ -12,3 +12,12 @@ image.item-thumbnail:hover ~ circle.item-thumbnail-border  {
 .item-score:hover ~ circle.item-thumbnail-border  {
     visibility: visible;
 }
+
+g.item {
+    opacity: 1;
+    transition: all 200ms ease-in-out 50ms;
+}
+
+g.item.not-selected {
+    opacity:0.25;
+} 

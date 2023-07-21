@@ -26,14 +26,5 @@ const link  = ApolloLink.from([omit, splitLink])
 
 export const client = new ApolloClient({
   link
-  ,cache: new InMemoryCache({
-    typePolicies: {
-      Artist: {
-        fields: {
-          albums() {return []
-          } 
-        }
-      }
-    }
-  })
+  ,cache: new InMemoryCache()
 })

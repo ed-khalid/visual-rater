@@ -9,10 +9,11 @@ interface Props {
     scaler:Scaler
     item:RatedItem
     onDragEnd:(id:string, score:number ) => void
+    highlightOnDrag:(itemRef:SVGGElement, toggleOn:boolean) => void 
 }
 
 
-export const DragBehavior = ({item, g, scaler, onDragEnd}:Props) => {
+export const DragBehavior = ({item, g, scaler, highlightOnDrag, onDragEnd}:Props) => {
     const isDragInBounds = (_y:number) => {
         return _y  >= 5  && _y <= RATER_Y_BOTTOM - 5; 
     }
@@ -23,6 +24,7 @@ export const DragBehavior = ({item, g, scaler, onDragEnd}:Props) => {
         sessionStorage.setItem('dragStartPoint', JSON.stringify({x:event.x, y:event.y}))    
         if (nodes.length === 0 && g) {
             const gNode = select(g)
+            highlightOnDrag(g, true)
             select(g).classed('selected', true)
             const imageY = Number(gNode.select('.item-thumbnail').attr('y'))
             const lineY1 = Number(gNode.select('.item-scoreline').attr('y1'))
@@ -39,8 +41,6 @@ export const DragBehavior = ({item, g, scaler, onDragEnd}:Props) => {
                 const nameY = Number(gNode.select('.item-name').attr('y'))
                 const scoreY = Number(gNode.select('.item-score').attr('y'))
                 sessionStorage.setItem(`node${index}`, JSON.stringify({x:undefined, y: { image: imageY, line: { y1: lineY1, y2:lineY2 }, score: scoreY, name: nameY}}))
-                console.log(sessionStorage.getItem(`node${index}`))
-
             })
         }
     },   
@@ -82,6 +82,9 @@ export const DragBehavior = ({item, g, scaler, onDragEnd}:Props) => {
     },
     dragEnd : (event:any) => {
         sessionStorage.clear()
+        if (g) {
+          highlightOnDrag(g, false)
+        }
         const nodes = selectAll('svg#trackRater g.item.selected').nodes()
         nodes.forEach((g) => {
                 const item:RatedItem = select(g).data()[0] as RatedItem
