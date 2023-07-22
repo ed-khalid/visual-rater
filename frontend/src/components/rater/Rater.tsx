@@ -22,6 +22,7 @@ interface Props {
     zoomTarget?:SVGGElement|null
     onItemClick:(item:RatedItem) => void
     onSongDrag:(itemId:string) => void 
+    duringDrag:(itemId:string, score:number) => void
     stateDispatch:Dispatch<RaterAction>
     items: RatedMusicItemUI[]
     updateSongScore: (id:string, score:number) => void 
@@ -31,7 +32,7 @@ interface Props {
 
 
 
-export const Rater = ({position, state, stateDispatch, onItemClick, onSongDrag, updateSongScore, isReadonly, items }:Props) => {
+export const Rater = ({position, state, stateDispatch, onItemClick, duringDrag, onSongDrag, updateSongScore, isReadonly, items }:Props) => {
 
     const [currentItem, setCurrentItem] = useState<{id:string, score:number}|null>();  
     const g = useRef<SVGGElement>(null)
@@ -101,6 +102,7 @@ export const Rater = ({position, state, stateDispatch, onItemClick, onSongDrag, 
                                     mainlineX={position.x}
                                     scaler={state.scaler}
                                     onClick={onItemClick}
+                                    duringDrag={duringDrag}
                                     onDragStart={onSongDrag}
                                     onDragEnd={updateItem}
                                 />

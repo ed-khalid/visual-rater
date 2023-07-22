@@ -82,6 +82,7 @@ export type ComparisonSong = {
   albumDominantColor: Scalars['String']['output'];
   albumName: Scalars['String']['output'];
   artistName: Scalars['String']['output'];
+  id: Scalars['String']['output'];
   songName: Scalars['String']['output'];
   songScore: Scalars['Float']['output'];
   thumbnail?: Maybe<Scalars['String']['output']>;
@@ -306,7 +307,7 @@ export type CompareSongToOthersSameArtistQueryVariables = Exact<{
 }>;
 
 
-export type CompareSongToOthersSameArtistQuery = { __typename?: 'Query', compareToOtherSongsBySameArtist: Array<{ __typename?: 'ComparisonSong', songName: string, songScore: number, albumName: string, albumDominantColor: string, artistName: string, thumbnail?: string | null }> };
+export type CompareSongToOthersSameArtistQuery = { __typename?: 'Query', compareToOtherSongsBySameArtist: Array<{ __typename?: 'ComparisonSong', id: string, songName: string, songScore: number, albumName: string, albumDominantColor: string, artistName: string, thumbnail?: string | null }> };
 
 export type CompareSongToOtherSongsByOtherArtistsQueryVariables = Exact<{
   songId: Scalars['String']['input'];
@@ -314,7 +315,7 @@ export type CompareSongToOtherSongsByOtherArtistsQueryVariables = Exact<{
 }>;
 
 
-export type CompareSongToOtherSongsByOtherArtistsQuery = { __typename?: 'Query', compareToOtherSongsByOtherArtists: Array<{ __typename?: 'ComparisonSong', songName: string, songScore: number, albumName: string, albumDominantColor: string, artistName: string, thumbnail?: string | null }> };
+export type CompareSongToOtherSongsByOtherArtistsQuery = { __typename?: 'Query', compareToOtherSongsByOtherArtists: Array<{ __typename?: 'ComparisonSong', id: string, songName: string, songScore: number, albumName: string, albumDominantColor: string, artistName: string, thumbnail?: string | null }> };
 
 export type GetAlbumsQueryVariables = Exact<{
   artistId: Scalars['String']['input'];
@@ -603,6 +604,7 @@ export const CompareSongToOthersSameArtistDocument = gql`
     albumId: $albumId
     artistId: $artistId
   ) {
+    id
     songName
     songScore
     albumName
@@ -645,6 +647,7 @@ export type CompareSongToOthersSameArtistQueryResult = Apollo.QueryResult<Compar
 export const CompareSongToOtherSongsByOtherArtistsDocument = gql`
     query CompareSongToOtherSongsByOtherArtists($songId: String!, $artistId: String!) {
   compareToOtherSongsByOtherArtists(songId: $songId, artistId: $artistId) {
+    id
     songName
     songScore
     albumName

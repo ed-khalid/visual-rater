@@ -1,6 +1,5 @@
 import React from "react"
 import { ComparisonSong, Song } from "../../../generated/graphql"
-import { Scaler } from "../../../functions/scale"
 import './ComparisonSongs.css'
 
 interface ComparisonSongsProps {
@@ -10,12 +9,10 @@ interface ComparisonSongsProps {
 
 
 export const ComparisonSongs = ({songs,songBeingDragged}:ComparisonSongsProps) => {
-
-    const scaler = new Scaler({ line: { start: 5, end: 100 }}) 
-    
+    songs.sort((a,b) => (a.songScore > b.songScore ? -1 : a.songScore > b.songScore ? 1: 0))  
     return <React.Fragment>
-       {songs && songBeingDragged && <svg id="comparison-songs-box" viewBox="25 25 50 50">
-        {songs.map((it,i) => <ComparisonSongItem key={'comparison-item-'+i} item={it} mainlineX={50} y={scaler.toPosition(it.songScore)} ></ComparisonSongItem> )}
+       {songs && songBeingDragged && <svg id="comparison-songs-box" viewBox="20 0 35 35">
+        {songs.map((it,i) => <ComparisonSongItem key={'comparison-item-'+i} item={it} mainlineX={50} y={ 5 + (i*10)  } ></ComparisonSongItem> )}
         </svg>}
     </React.Fragment>
 } 
@@ -73,7 +70,6 @@ export const ComparisonSongItem = ({mainlineX, item, y}:ComparisonSongItemProps)
                     <image fill={"rgba"+item.albumDominantColor} opacity={0.5} xlinkHref={item.thumbnail!} clipPath="inset(0% round 15px)" className="item-thumbnail" width={imageDimensions.size} x={imageDimensions.x} y={imageDimensions.y} height={imageDimensions.size} href={item.thumbnail!}/>
                     <text textAnchor="middle" className="item-name" fontSize={3} fill="black" x={songNameDimensions.x} y={songNameDimensions.y} dy=".35em">{item.songName}</text>
                     <text textAnchor="middle" className="item-score" fontSize={3.7} fontWeight="bold" fill={determineTextColor(item.albumDominantColor)} x={songScoreDimensions.x} y={songScoreDimensions.y} dy=".35em">{item.songScore.toFixed(2)}</text>
-                    <circle className="item-thumbnail-border" cx={imageDimensions.x+imageDimensions.size/2} cy={imageDimensions.y+imageDimensions.size/2} r={imageDimensions.size/2+2} fill="none" stroke={color}></circle>
                </g>
 
 } 
