@@ -48,8 +48,9 @@ type ArtistPage implements Page {
 
 type ComparisonSong {
     songName:String!
-    songScore:String!
+    songScore:Float!
     albumName:String!
+    albumDominantColor:String!
     artistName:String!
     thumbnail:String
 }

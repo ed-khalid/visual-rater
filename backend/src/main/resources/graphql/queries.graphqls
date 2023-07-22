@@ -6,8 +6,8 @@ type Query {
     albums(artistId:String!): [Album!]
     songs(albumId:String!): [Song!]
     artist(name:String): Artist
-    compareToOtherAlbumsBySameArtist(songId:String!, artistId:String!, albumId:String!) : [ComparisonSong!]!
-    compareToOtherArtists(songId:String!, artistId:String!) : [ComparisonSong!]!
+    compareToOtherSongsBySameArtist(songId:String!, artistId:String!, albumId:String!) : [ComparisonSong!]!
+    compareToOtherSongsByOtherArtists(songId:String!, artistId:String!) : [ComparisonSong!]!
 }
 
 type ExternalArtistSearchResult {
