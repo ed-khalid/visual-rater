@@ -16,11 +16,12 @@ interface SingleRaterItemProps {
     nodeRef?:any
     onClick?:any
     onDragEnd?:any
+    onDragStart:(itemId:string) => void
     scaler:Scaler
     scale?:number
 } 
 
-export const SingleRaterItem = ({item, nodeRef, isReadonly, highlightOnDrag, mainlineX, scale=1, scaler, onClick, onDragEnd}:SingleRaterItemProps) =>  {
+export const SingleRaterItem = ({item, nodeRef, isReadonly, highlightOnDrag, mainlineX, scale=1, scaler, onClick, onDragStart, onDragEnd}:SingleRaterItemProps) =>  {
     const y = scaler.toPosition(item.score) 
     const tierOffset = RATER_TIER_WIDTH * item.tier 
     const x = (item.orientation === RaterOrientation.LEFT) ?(mainlineX - tierOffset) : (mainlineX + tierOffset) 
@@ -30,7 +31,7 @@ export const SingleRaterItem = ({item, nodeRef, isReadonly, highlightOnDrag, mai
             onDragEnd(id, score)
         }
         if (!isReadonly && item.nodeRef.current) {
-            const dragBehavior = DragBehavior({item, g: item.nodeRef.current, scaler, highlightOnDrag, onDragEnd:onDragBehaviorEnd}) 
+            const dragBehavior = DragBehavior({item, g: item.nodeRef.current, scaler, highlightOnDrag, onDragStart, onDragEnd:onDragBehaviorEnd}) 
             select(item.nodeRef.current).call(drag<SVGGElement,any>()
                 .on('start', dragBehavior.dragStart)
                 .on('drag', dragBehavior.dragInProgress)

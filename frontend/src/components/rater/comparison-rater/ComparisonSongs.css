@@ -1,0 +1,9 @@
+
+svg#comparison-songs-box {
+    border: 1px solid black;
+    position: absolute;
+    top: 15px;
+    left: 25vw;
+    width: 200px; 
+    height: 200px;
+}

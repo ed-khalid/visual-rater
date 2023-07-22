@@ -1,11 +1,12 @@
 import React, { Dispatch, useEffect, useRef, useState } from "react"
-import { Album, Artist, useUpdateSongMutation } from "../../generated/graphql"
+import { Album, Artist, ComparisonSong, Song, useCompareSongToOtherSongsByOtherArtistsLazyQuery, useUpdateSongMutation } from "../../generated/graphql"
 import { RatedMusicItemUI } from "../../models/ui/ItemTypes"
 import { Rater } from "./Rater"
 import { RaterState, RATER_X, RATER_Y_BOTTOM, RATER_Y_TOP, RatedSongItemGrouped, RaterOrientation, SVG_HEIGHT, SVG_WIDTH } from "../../models/ui/RaterTypes"
 import { RatedItem } from "../../models/domain/ItemTypes"
 import { RaterAction } from "../../reducers/raterReducer"
 import { MusicData, MusicFilters, MusicScope, MusicState, MusicStore } from "../../models/domain/MusicState"
+import { ComparisonSongs} from "./comparison-rater/ComparisonSongs"
 
 interface Props {
     onAlbumClick:(albums:Album) => void 
@@ -19,6 +20,9 @@ interface Props {
 export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, onAlbumClick}:Props) =>  {
     const gWrapper = useRef<SVGGElement>(null)
     const svgRef = useRef<SVGSVGElement>(null) 
+    const [comparisonSongs, setComparisonSongs] = useState<ComparisonSong[]>([]) 
+    const [songBeingDragged, setSongBeingDragged] = useState<Song|undefined>() 
+    const [ $getComparisonSongs, $comparisonSongs ] = useCompareSongToOtherSongsByOtherArtistsLazyQuery() 
     const [updateSong]  = useUpdateSongMutation();
     const [scope, setScope]= useState<MusicScope>(MusicScope.ALL)
     const [items, setItems] = useState<RatedMusicItemUI[]>([])
@@ -37,8 +41,28 @@ export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, o
     //       const loc = cursorPoint(evt)
     //       console.log(`{ x: ${loc.x}, y: ${loc.y}`)
     //     })
-
     // } 
+
+    const loadComparisonSongs = (itemId:string) => {
+      if (scope !== MusicScope.SONG) return; 
+      const song = musicState.data.songs.find(it => it.id === itemId )
+      if (song) {
+        setSongBeingDragged(song)
+        $getComparisonSongs({variables: { artistId: song.artistId, songId: song.id }})
+      }
+    }    
+    useEffect(() => {
+      if (!$comparisonSongs.loading && $comparisonSongs.data) {
+        const album = musicState.data.albums.find(it => it.id === songBeingDragged?.albumId ) 
+        const artist = musicState.data.artists.find(it => it.id === songBeingDragged?.artistId ) 
+        if (album && artist) {
+          const songsAsComparisonSong:ComparisonSong ={ albumName: album.name, thumbnail: album.thumbnail, albumDominantColor: album.dominantColor!, artistName: artist.name, songName: songBeingDragged?.name || 'ERROR NO DRAGGED SONG', songScore: songBeingDragged?.score || 0 }
+          setComparisonSongs([...$comparisonSongs.data.compareToOtherSongsByOtherArtists, songsAsComparisonSong]) 
+        }
+      }
+    }, [ $comparisonSongs.loading, $comparisonSongs.data, songBeingDragged, musicState])
+
+
 
     const onSongScoreUpdate = (id:string, score:number) => {
           updateSong({variables: {song:  { id , score} }})
@@ -96,27 +120,32 @@ export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, o
     }, [musicState.data, musicState.filters, state.scaler])
 
 
-    return <svg className="rater" ref={svgRef} id="trackRater" viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}>
-      <defs>
-            <clipPath id="item-clip-path-left">
-                <rect x={0} y={0} width={SVG_WIDTH/2} height={SVG_HEIGHT} ></rect>
-            </clipPath>
-            <clipPath id="item-clip-path-right">
-                <rect x={RATER_X} y={RATER_Y_TOP} width={SVG_WIDTH/2} height={SVG_HEIGHT} ></rect>
-            </clipPath>
-      </defs>
-          <g key={"rater-wrapper"}  ref={gWrapper} id="wrapper">
-          <Rater 
-                stateDispatch={stateDispatch}
-                position={{x:RATER_X, y:RATER_Y_BOTTOM}}
-                isReadonly={scope !== MusicScope.SONG}
-                onItemClick={(scope === MusicScope.ALBUM) ? handleOnAlbumClick : handleOnArtistClick}
-                updateSongScore={onSongScoreUpdate}
-                state={state}
-                zoomTarget={gWrapper.current}
-                items={items}
-          />
-          </g>
-        </svg>
+    return <React.Fragment>
+      {comparisonSongs && songBeingDragged && <ComparisonSongs songs={comparisonSongs} songBeingDragged={songBeingDragged} />}
+      <svg className="rater" ref={svgRef} id="trackRater" viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}>
+        <defs>
+              <clipPath id="item-clip-path-left">
+                  <rect x={0} y={0} width={SVG_WIDTH/2} height={SVG_HEIGHT} ></rect>
+              </clipPath>
+              <clipPath id="item-clip-path-right">
+                  <rect x={RATER_X} y={RATER_Y_TOP} width={SVG_WIDTH/2} height={SVG_HEIGHT} ></rect>
+              </clipPath>
+        </defs>
+            <g key={"rater-wrapper"}  ref={gWrapper} id="wrapper">
+            <Rater 
+                  stateDispatch={stateDispatch}
+                  position={{x:RATER_X, y:RATER_Y_BOTTOM}}
+                  isReadonly={scope !== MusicScope.SONG}
+                  onItemClick={(scope === MusicScope.ALBUM) ? handleOnAlbumClick : handleOnArtistClick}
+                  onSongDrag={loadComparisonSongs} 
+                  updateSongScore={onSongScoreUpdate}
+                  state={state}
+                  zoomTarget={gWrapper.current}
+                  items={items}
+            />
+            </g>
+          </svg>
+    </React.Fragment>
+    
 
 }

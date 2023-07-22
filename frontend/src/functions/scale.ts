@@ -2,6 +2,12 @@
 import { scaleLinear, ScaleLinear } from 'd3-scale';
 import { RATER_Y_BOTTOM, RATER_Y_TOP } from '../models/ui/RaterTypes';
 
+interface ScalerArguments {
+    line?: {start:number, end:number}
+    scale?: ScaleLinear<number,number>
+} 
+
+
 export class Scaler {
 
     private score = {
@@ -20,9 +26,12 @@ export class Scaler {
         this.scale = newScale 
     }
 
-    constructor(newScale?:ScaleLinear<number,number>) 
+    
+
+    constructor(args?:ScalerArguments) 
     {
-        this.scale = newScale || this.createDefaultScale()
+        this.line = args?.line || this.line  
+        this.scale = args?.scale || this.createDefaultScale()
     }
 
     private createDefaultScale() {

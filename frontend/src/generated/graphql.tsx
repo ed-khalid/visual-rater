@@ -77,6 +77,16 @@ export type ArtistSongMetadata = {
   terriblePercentage: Scalars['Float']['output'];
 };
 
+export type ComparisonSong = {
+  __typename?: 'ComparisonSong';
+  albumDominantColor: Scalars['String']['output'];
+  albumName: Scalars['String']['output'];
+  artistName: Scalars['String']['output'];
+  songName: Scalars['String']['output'];
+  songScore: Scalars['Float']['output'];
+  thumbnail?: Maybe<Scalars['String']['output']>;
+};
+
 export type ExternalAlbumSearchResult = {
   __typename?: 'ExternalAlbumSearchResult';
   id: Scalars['String']['output'];
@@ -176,6 +186,8 @@ export type Query = {
   albums?: Maybe<Array<Album>>;
   artist?: Maybe<Artist>;
   artists: ArtistPage;
+  compareToOtherSongsByOtherArtists: Array<ComparisonSong>;
+  compareToOtherSongsBySameArtist: Array<ComparisonSong>;
   searchExternalAlbumTracks: Array<ExternalTrackSearchResult>;
   searchExternalArtist?: Maybe<ExternalArtistSearchResult>;
   songs?: Maybe<Array<Song>>;
@@ -189,6 +201,19 @@ export type QueryAlbumsArgs = {
 
 export type QueryArtistArgs = {
   name?: InputMaybe<Scalars['String']['input']>;
+};
+
+
+export type QueryCompareToOtherSongsByOtherArtistsArgs = {
+  artistId: Scalars['String']['input'];
+  songId: Scalars['String']['input'];
+};
+
+
+export type QueryCompareToOtherSongsBySameArtistArgs = {
+  albumId: Scalars['String']['input'];
+  artistId: Scalars['String']['input'];
+  songId: Scalars['String']['input'];
 };
 
 
@@ -273,6 +298,23 @@ export type UpdateSongMutationVariables = Exact<{
 
 
 export type UpdateSongMutation = { __typename?: 'Mutation', UpdateSong?: { __typename?: 'Song', id: string, albumId: string, artistId: string, name: string, number: number, discNumber: number, score?: number | null } | null };
+
+export type CompareSongToOthersSameArtistQueryVariables = Exact<{
+  songId: Scalars['String']['input'];
+  albumId: Scalars['String']['input'];
+  artistId: Scalars['String']['input'];
+}>;
+
+
+export type CompareSongToOthersSameArtistQuery = { __typename?: 'Query', compareToOtherSongsBySameArtist: Array<{ __typename?: 'ComparisonSong', songName: string, songScore: number, albumName: string, albumDominantColor: string, artistName: string, thumbnail?: string | null }> };
+
+export type CompareSongToOtherSongsByOtherArtistsQueryVariables = Exact<{
+  songId: Scalars['String']['input'];
+  artistId: Scalars['String']['input'];
+}>;
+
+
+export type CompareSongToOtherSongsByOtherArtistsQuery = { __typename?: 'Query', compareToOtherSongsByOtherArtists: Array<{ __typename?: 'ComparisonSong', songName: string, songScore: number, albumName: string, albumDominantColor: string, artistName: string, thumbnail?: string | null }> };
 
 export type GetAlbumsQueryVariables = Exact<{
   artistId: Scalars['String']['input'];
@@ -554,6 +596,93 @@ export function useUpdateSongMutation(baseOptions?: Apollo.MutationHookOptions<U
 export type UpdateSongMutationHookResult = ReturnType<typeof useUpdateSongMutation>;
 export type UpdateSongMutationResult = Apollo.MutationResult<UpdateSongMutation>;
 export type UpdateSongMutationOptions = Apollo.BaseMutationOptions<UpdateSongMutation, UpdateSongMutationVariables>;
+export const CompareSongToOthersSameArtistDocument = gql`
+    query CompareSongToOthersSameArtist($songId: String!, $albumId: String!, $artistId: String!) {
+  compareToOtherSongsBySameArtist(
+    songId: $songId
+    albumId: $albumId
+    artistId: $artistId
+  ) {
+    songName
+    songScore
+    albumName
+    albumDominantColor
+    artistName
+    thumbnail
+  }
+}
+    `;
+
+/**
+ * __useCompareSongToOthersSameArtistQuery__
+ *
+ * To run a query within a React component, call `useCompareSongToOthersSameArtistQuery` and pass it any options that fit your needs.
+ * When your component renders, `useCompareSongToOthersSameArtistQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useCompareSongToOthersSameArtistQuery({
+ *   variables: {
+ *      songId: // value for 'songId'
+ *      albumId: // value for 'albumId'
+ *      artistId: // value for 'artistId'
+ *   },
+ * });
+ */
+export function useCompareSongToOthersSameArtistQuery(baseOptions: Apollo.QueryHookOptions<CompareSongToOthersSameArtistQuery, CompareSongToOthersSameArtistQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<CompareSongToOthersSameArtistQuery, CompareSongToOthersSameArtistQueryVariables>(CompareSongToOthersSameArtistDocument, options);
+      }
+export function useCompareSongToOthersSameArtistLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<CompareSongToOthersSameArtistQuery, CompareSongToOthersSameArtistQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<CompareSongToOthersSameArtistQuery, CompareSongToOthersSameArtistQueryVariables>(CompareSongToOthersSameArtistDocument, options);
+        }
+export type CompareSongToOthersSameArtistQueryHookResult = ReturnType<typeof useCompareSongToOthersSameArtistQuery>;
+export type CompareSongToOthersSameArtistLazyQueryHookResult = ReturnType<typeof useCompareSongToOthersSameArtistLazyQuery>;
+export type CompareSongToOthersSameArtistQueryResult = Apollo.QueryResult<CompareSongToOthersSameArtistQuery, CompareSongToOthersSameArtistQueryVariables>;
+export const CompareSongToOtherSongsByOtherArtistsDocument = gql`
+    query CompareSongToOtherSongsByOtherArtists($songId: String!, $artistId: String!) {
+  compareToOtherSongsByOtherArtists(songId: $songId, artistId: $artistId) {
+    songName
+    songScore
+    albumName
+    albumDominantColor
+    artistName
+    thumbnail
+  }
+}
+    `;
+
+/**
+ * __useCompareSongToOtherSongsByOtherArtistsQuery__
+ *
+ * To run a query within a React component, call `useCompareSongToOtherSongsByOtherArtistsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useCompareSongToOtherSongsByOtherArtistsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useCompareSongToOtherSongsByOtherArtistsQuery({
+ *   variables: {
+ *      songId: // value for 'songId'
+ *      artistId: // value for 'artistId'
+ *   },
+ * });
+ */
+export function useCompareSongToOtherSongsByOtherArtistsQuery(baseOptions: Apollo.QueryHookOptions<CompareSongToOtherSongsByOtherArtistsQuery, CompareSongToOtherSongsByOtherArtistsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<CompareSongToOtherSongsByOtherArtistsQuery, CompareSongToOtherSongsByOtherArtistsQueryVariables>(CompareSongToOtherSongsByOtherArtistsDocument, options);
+      }
+export function useCompareSongToOtherSongsByOtherArtistsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<CompareSongToOtherSongsByOtherArtistsQuery, CompareSongToOtherSongsByOtherArtistsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<CompareSongToOtherSongsByOtherArtistsQuery, CompareSongToOtherSongsByOtherArtistsQueryVariables>(CompareSongToOtherSongsByOtherArtistsDocument, options);
+        }
+export type CompareSongToOtherSongsByOtherArtistsQueryHookResult = ReturnType<typeof useCompareSongToOtherSongsByOtherArtistsQuery>;
+export type CompareSongToOtherSongsByOtherArtistsLazyQueryHookResult = ReturnType<typeof useCompareSongToOtherSongsByOtherArtistsLazyQuery>;
+export type CompareSongToOtherSongsByOtherArtistsQueryResult = Apollo.QueryResult<CompareSongToOtherSongsByOtherArtistsQuery, CompareSongToOtherSongsByOtherArtistsQueryVariables>;
 export const GetAlbumsDocument = gql`
     query getAlbums($artistId: String!) {
   albums(artistId: $artistId) {
