@@ -9,11 +9,12 @@ interface Props {
     scaler:Scaler
     item:RatedItem
     onDragEnd:(id:string, score:number ) => void
+    onDragStart: any
     highlightOnDrag:(itemRef:SVGGElement, toggleOn:boolean) => void 
 }
 
 
-export const DragBehavior = ({item, g, scaler, highlightOnDrag, onDragEnd}:Props) => {
+export const DragBehavior = ({item, g, scaler, highlightOnDrag, onDragStart, onDragEnd}:Props) => {
     const isDragInBounds = (_y:number) => {
         return _y  >= 5  && _y <= RATER_Y_BOTTOM - 5; 
     }
@@ -25,6 +26,7 @@ export const DragBehavior = ({item, g, scaler, highlightOnDrag, onDragEnd}:Props
         if (nodes.length === 0 && g) {
             const gNode = select(g)
             highlightOnDrag(g, true)
+            onDragStart(item.id)
             select(g).classed('selected', true)
             const imageY = Number(gNode.select('.item-thumbnail').attr('y'))
             const lineY1 = Number(gNode.select('.item-scoreline').attr('y1'))

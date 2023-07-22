@@ -1,0 +1,12 @@
+
+query CompareSongToOtherSongsByOtherArtists($songId:String!, $artistId:String!) {
+  compareToOtherSongsByOtherArtists(songId:$songId, artistId:$artistId)
+  {
+    songName
+    songScore 
+    albumName
+    albumDominantColor
+    artistName
+    thumbnail 
+  }
+}
