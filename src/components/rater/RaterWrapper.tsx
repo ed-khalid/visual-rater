@@ -43,6 +43,16 @@ export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, o
     //     })
     // } 
 
+    const duringDrag =  (itemId:string, score:number) => {
+      setSongBeingDragged(song => ( (song) ? { ...song, score }: undefined))
+      const song = comparisonSongs.find(it => it.id === itemId)
+      if (song) {
+        song.songScore = score 
+        const otherSongs = comparisonSongs.filter(it => it.id !== itemId) 
+        setComparisonSongs([song, ...otherSongs])
+      }
+    } 
+
     const loadComparisonSongs = (itemId:string) => {
       if (scope !== MusicScope.SONG) return; 
       const song = musicState.data.songs.find(it => it.id === itemId )
@@ -56,8 +66,9 @@ export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, o
         const album = musicState.data.albums.find(it => it.id === songBeingDragged?.albumId ) 
         const artist = musicState.data.artists.find(it => it.id === songBeingDragged?.artistId ) 
         if (album && artist) {
-          const songsAsComparisonSong:ComparisonSong ={ albumName: album.name, thumbnail: album.thumbnail, albumDominantColor: album.dominantColor!, artistName: artist.name, songName: songBeingDragged?.name || 'ERROR NO DRAGGED SONG', songScore: songBeingDragged?.score || 0 }
-          setComparisonSongs([...$comparisonSongs.data.compareToOtherSongsByOtherArtists, songsAsComparisonSong]) 
+          const songsAsComparisonSong:ComparisonSong ={ id: songBeingDragged!.id,   albumName: album.name, thumbnail: album.thumbnail, albumDominantColor: album.dominantColor!, artistName: artist.name, songName: songBeingDragged?.name || 'ERROR NO DRAGGED SONG', songScore: songBeingDragged?.score || 0 }
+          const songs = [...$comparisonSongs.data.compareToOtherSongsByOtherArtists, songsAsComparisonSong]
+          setComparisonSongs(songs) 
         }
       }
     }, [ $comparisonSongs.loading, $comparisonSongs.data, songBeingDragged, musicState])
@@ -66,6 +77,8 @@ export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, o
 
     const onSongScoreUpdate = (id:string, score:number) => {
           updateSong({variables: {song:  { id , score} }})
+          setComparisonSongs([])
+          setSongBeingDragged(undefined)
     }  
 
     const handleOnAlbumClick =  (item:RatedItem) => {
@@ -137,6 +150,7 @@ export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, o
                   position={{x:RATER_X, y:RATER_Y_BOTTOM}}
                   isReadonly={scope !== MusicScope.SONG}
                   onItemClick={(scope === MusicScope.ALBUM) ? handleOnAlbumClick : handleOnArtistClick}
+                  duringDrag={duringDrag}
                   onSongDrag={loadComparisonSongs} 
                   updateSongScore={onSongScoreUpdate}
                   state={state}

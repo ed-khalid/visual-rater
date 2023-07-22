@@ -1,4 +1,6 @@
 ### CURRENT 
+- comparison song focus on song
+- comparison song animations   
 
 ## APP
 - calculate artist tier

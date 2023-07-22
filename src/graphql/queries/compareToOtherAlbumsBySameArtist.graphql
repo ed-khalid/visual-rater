@@ -2,6 +2,7 @@
 query CompareSongToOthersSameArtist($songId:String!, $albumId:String!, $artistId:String!) {
   compareToOtherSongsBySameArtist(songId:$songId, albumId:$albumId, artistId:$artistId)
   {
+    id
     songName
     songScore 
     albumName

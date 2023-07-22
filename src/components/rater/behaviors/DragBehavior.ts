@@ -9,12 +9,13 @@ interface Props {
     scaler:Scaler
     item:RatedItem
     onDragEnd:(id:string, score:number ) => void
+    duringDrag:(id:string, score:number) => void
     onDragStart: any
     highlightOnDrag:(itemRef:SVGGElement, toggleOn:boolean) => void 
 }
 
 
-export const DragBehavior = ({item, g, scaler, highlightOnDrag, onDragStart, onDragEnd}:Props) => {
+export const DragBehavior = ({item, g, scaler, highlightOnDrag, duringDrag, onDragStart, onDragEnd}:Props) => {
     const isDragInBounds = (_y:number) => {
         return _y  >= 5  && _y <= RATER_Y_BOTTOM - 5; 
     }
@@ -72,12 +73,14 @@ export const DragBehavior = ({item, g, scaler, highlightOnDrag, onDragStart, onD
                         image: nodeOriginalPosition.y.image + delta,
                     }
                 } 
+                const newScore = clampToNearestIncrement(scaler.toScore(newPos.y.score))
                 gNode.select('.item-thumbnail').attr('y', newPos.y.image )
                 gNode.select('.item-name').attr('y', newPos.y.name )
                 gNode.select('.item-score').attr('y', newPos.y.score )
                 gNode.select('.item-scoreline').attr('y1', newPos.y.line.y1 )
                 gNode.select('.item-scoreline').attr('y2', newPos.y.line.y2 )
-                gNode.select('text.item-score').text(clampToNearestIncrement(scaler.toScore(newPos.y.score)));
+                gNode.select('text.item-score').text(newScore);
+                duringDrag(item.id, newScore)
                 }
               }
           })
