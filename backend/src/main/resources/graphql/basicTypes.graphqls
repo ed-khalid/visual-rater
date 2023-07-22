@@ -47,6 +47,7 @@ type ArtistPage implements Page {
 }
 
 type ComparisonSong {
+    id:String!
     songName:String!
     songScore:Float!
     albumName:String!

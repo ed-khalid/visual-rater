@@ -36,7 +36,7 @@ logging:
   level:
    root: ERROR
    org.spingframework.web: ERROR
-   com.hawazin.visualraterspring: DEBUG
+   com.hawazin.visualrater: INFO
 spotify:
   client:
     id: 793c68b38b06461d8127f90148edc66a

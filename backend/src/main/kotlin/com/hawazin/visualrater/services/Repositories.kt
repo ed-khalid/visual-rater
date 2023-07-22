@@ -25,10 +25,10 @@ interface AlbumRepository: CrudRepository<Album, UUID> {
 
 interface SongRepository:CrudRepository<Song,UUID> {
     fun findByAlbumId(albumId:UUID): Iterable<Song>?
-    @Query(nativeQuery = true, value = "SELECT score as songScore, album_name as albumName, artist_name as artistName, album_thumbnail as thumbnail, album_dominant_color as albumDominantColor, song_name as songName FROM get_other_artists_comparison_songs(:songId, :excludedArtistId)")
+    @Query(nativeQuery = true, value = "SELECT song_id as id, score as songScore, album_name as albumName, artist_name as artistName, album_thumbnail as thumbnail, album_dominant_color as albumDominantColor, song_name as songName FROM get_other_artists_comparison_songs(:songId, :excludedArtistId)")
     fun findComparisonSongsForOtherArtists(@Param("songId")songId:UUID, @Param("excludedArtistId") excludedArtistId:UUID) : Iterable<ComparisonSongProjection>
 
-    @Query(nativeQuery = true, value = "SELECT score as songScore, album_name as albumName, artist_name as artistName, album_thumbnail as thumbnail, album_dominant_color as albumDominantColor, song_name as songName FROM get_artist_comparison_songs(:songId, :artistId, :excludedAlbumId)  ")
+    @Query(nativeQuery = true, value = "SELECT song_id as id, score as songScore, album_name as albumName, artist_name as artistName, album_thumbnail as thumbnail, album_dominant_color as albumDominantColor, song_name as songName FROM get_artist_comparison_songs(:songId, :artistId, :excludedAlbumId)  ")
     fun findComparisonSongsForSameArtist(@Param("songId")songId:UUID, @Param("artistId") artistId:UUID, @Param("excludedAlbumId") excludedAlbumId: UUID) : Iterable<ComparisonSongProjection>
 
 }
