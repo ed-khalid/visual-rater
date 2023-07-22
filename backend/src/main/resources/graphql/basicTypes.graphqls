@@ -46,6 +46,14 @@ type ArtistPage implements Page {
     content:[Artist]!
 }
 
+type ComparisonSong {
+    songName:String!
+    songScore:String!
+    albumName:String!
+    artistName:String!
+    thumbnail:String
+}
+
 type Artist implements Pageable {
     id: String!
     name:String!

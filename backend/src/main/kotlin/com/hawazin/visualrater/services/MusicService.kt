@@ -59,6 +59,16 @@ class MusicService(private val songRepo: SongRepository, private val albumRepo: 
         }
     }
 
+    @Transactional
+    fun compareOtherArtists(songId:String, artistId:String) : Iterable<ComparisonSong>  {
+        return songRepo.findComparisonSongsForOtherArtists(UUID.fromString(songId), UUID.fromString(artistId))
+    }
+    @Transactional
+    fun compareOtherAlbumsSameArtist(songId:String, artistId:String, albumId:String) : Iterable<ComparisonSong>  {
+        val retv =  songRepo.findComparisonSongsForSameArtist(UUID.fromString(songId), UUID.fromString(artistId), UUID.fromString(albumId))
+        return retv
+    }
+
 
     @Transactional
     fun updateSong(songInput: SongInput) : Song
