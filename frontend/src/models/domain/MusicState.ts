@@ -1,6 +1,6 @@
-import { createRef } from "react";
+import { mapAlbumToRatedItem, mapArtistToRatedItem, mapSongToRatedItem } from "../../functions/mapper";
 import { Album, Artist, Song } from "../../generated/graphql"
-import { RatedMusicItemUI, RatedSongItemUI } from "../ui/ItemTypes";
+import { RatedMusicItemUI } from "../ui/ItemTypes";
 import { RaterOrientation } from "../ui/RaterTypes";
 
 export type MusicEntity = Artist | Album | Song 
@@ -9,9 +9,6 @@ export enum MusicScope {
   ALL, ARTIST, ALBUM, SONG
 } 
 
-const mapSongToRatedItem = (song: Song, album: Album, orientation: RaterOrientation): RatedSongItemUI => new RatedSongItemUI({ id: song.id, name: song.name }, song.score!, album.thumbnail!, orientation, 1, album.dominantColor, song.number, createRef(), album.name);
-const mapAlbumToRatedItem = (album: Album, orientation: RaterOrientation): RatedMusicItemUI => new RatedMusicItemUI({ id: album.id, name: album.name }, album.score!, album.thumbnail!, orientation, 1, createRef(), album.dominantColor)
-const mapArtistToRatedItem = (artist: Artist, orientation: RaterOrientation): RatedMusicItemUI => new RatedMusicItemUI({ id: artist.id, name: artist.name }, artist.score!, artist.thumbnail!, orientation, 1, createRef(), '(0,0,0)')
 const switchOrientation = (orientation: RaterOrientation) => {
   return orientation === RaterOrientation.LEFT ? RaterOrientation.RIGHT : RaterOrientation.LEFT
 }

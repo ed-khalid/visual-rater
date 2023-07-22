@@ -2,8 +2,22 @@
 svg#comparison-songs-box {
     border: 1px solid black;
     position: absolute;
-    top: 15px;
-    left: 25vw;
-    width: 250px; 
+    top: 50px;
+    left: 5px;
+    width: 350px; 
     height: 200px;
+    animation: fadeIn 200ms;
+}
+svg#comparison-songs-box.exit {
+    animation: fadeOut 200ms;
+}
+
+@keyframes fadeIn {
+    0% {opacity: 0;}
+    100% {opacity:1}
+}
+
+@keyframes fadeOut {
+    0% {opacity: 1;}
+    100% {opacity:0}
 }

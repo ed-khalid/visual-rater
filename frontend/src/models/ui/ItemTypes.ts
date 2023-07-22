@@ -1,19 +1,19 @@
-import { Ref } from 'react';
 import { Maybe } from '../../generated/graphql';
 import { Item, RatedItem } from '../domain/ItemTypes';
 import { RaterOrientation } from './RaterTypes'
 
-
-
 export type RaterTier = number
-
 
 export interface RaterItemUI {
     orientation:RaterOrientation,
     tier:RaterTier
 }
 
+export class ComparisonSongUIItem {
+    public constructor(public id:string, public name:string,public score:number,public isMain:boolean, public artistName:string, public albumName:string, public albumThumbnail?:string, public overlay?:string) {
 
+    }
+}  
 
 export class RatedMusicItemUI extends RatedItem implements RaterItemUI {
     public constructor(item:Item, 
