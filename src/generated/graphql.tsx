@@ -33,6 +33,7 @@ export type Album = {
 export type Artist = Pageable & {
   __typename?: 'Artist';
   albums?: Maybe<Array<Maybe<Album>>>;
+  genre?: Maybe<Genre>;
   id: Scalars['String']['output'];
   metadata?: Maybe<ArtistMetadata>;
   name: Scalars['String']['output'];
@@ -41,6 +42,7 @@ export type Artist = Pageable & {
 };
 
 export type ArtistInput = {
+  genre?: InputMaybe<Genre>;
   name: Scalars['String']['input'];
   thumbnail?: InputMaybe<Scalars['String']['input']>;
   vendorId?: InputMaybe<Scalars['String']['input']>;
@@ -112,15 +114,23 @@ export type ExternalTrackSearchResult = {
   trackNumber: Scalars['Int']['output'];
 };
 
+export enum Genre {
+  Altrock = 'ALTROCK',
+  ArabicClassical = 'ARABIC_CLASSICAL',
+  ArabicPop = 'ARABIC_POP',
+  Electronic = 'ELECTRONIC',
+  Latom = 'LATOM',
+  Metal = 'METAL',
+  Pop = 'POP',
+  Rap = 'RAP',
+  Rock = 'ROCK'
+}
+
 export type Item = {
   id: Scalars['String']['output'];
   name: Scalars['String']['output'];
   score?: Maybe<Scalars['Float']['output']>;
 };
-
-export enum ItemType {
-  Music = 'MUSIC'
-}
 
 export type Mutation = {
   __typename?: 'Mutation';
@@ -128,6 +138,7 @@ export type Mutation = {
   CreateArtist?: Maybe<Artist>;
   DeleteAlbum?: Maybe<Scalars['Boolean']['output']>;
   DeleteSong?: Maybe<Scalars['Boolean']['output']>;
+  UpdateArtist?: Maybe<Artist>;
   UpdateSong?: Maybe<Song>;
 };
 
@@ -149,6 +160,11 @@ export type MutationDeleteAlbumArgs = {
 
 export type MutationDeleteSongArgs = {
   songId: Scalars['String']['input'];
+};
+
+
+export type MutationUpdateArtistArgs = {
+  artist?: InputMaybe<ArtistInput>;
 };
 
 

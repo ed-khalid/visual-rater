@@ -1,6 +1,8 @@
 ### CURRENT 
-- comparison song focus on song
-- comparison song animations   
+- add genre to artist
+- add comparison radio buttons (artist, genre, all)
+- add compare by genre
+- re-introduce album/artist dashboards  (and drags)
 
 ## APP
 - calculate artist tier
