@@ -17,9 +17,12 @@ export type RatedSongItemGrouped  = {
         ,items:RatedMusicItemUI[]
 }    
 
-export const RATER_Y_TOP:number = 65; 
-export const RATER_Y_BOTTOM:number = 665; 
-export const RATER_X:number = 400; 
-export const RATER_TIER_WIDTH:number = 50 
-export const SVG_WIDTH:number = 800 
-export const SVG_HEIGHT:number = 700 
+export const RATER_Y_TOP:number = 60; 
+export const RATER_Y_BOTTOM:number = 720; 
+export const RATER_X:number = 1500; 
+export const RATER_TIER_WIDTH:number = 60 
+export const SVG_IMAGE_SIZE:number = 40;  
+export const CLOSENESS_THRESHOLD:number = 150; 
+
+export const SVG_WIDTH:number = 3000 
+export const SVG_HEIGHT:number = 750 
