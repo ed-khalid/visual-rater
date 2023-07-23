@@ -1,8 +1,8 @@
 import React, { Dispatch, useEffect, useRef, useState } from "react"
-import { Album, Artist, ComparisonSong, Song, useCompareSongToOtherSongsByOtherArtistsLazyQuery, useUpdateSongMutation } from "../../generated/graphql"
+import { Album, Artist, Song, useCompareSongToOtherSongsByOtherArtistsLazyQuery, useUpdateSongMutation } from "../../generated/graphql"
 import { ComparisonSongUIItem, RatedMusicItemUI } from "../../models/ui/ItemTypes"
 import { Rater } from "./Rater"
-import { RaterState, RATER_X, RATER_Y_BOTTOM, RATER_Y_TOP, RatedSongItemGrouped, RaterOrientation, SVG_HEIGHT, SVG_WIDTH } from "../../models/ui/RaterTypes"
+import { RaterState, RATER_X, RATER_Y_BOTTOM, RATER_Y_TOP, RatedSongItemGrouped, RaterOrientation, SVG_HEIGHT, SVG_WIDTH, CLOSENESS_THRESHOLD } from "../../models/ui/RaterTypes"
 import { RatedItem } from "../../models/domain/ItemTypes"
 import { RaterAction } from "../../reducers/raterReducer"
 import { MusicData, MusicFilters, MusicScope, MusicState, MusicStore } from "../../models/domain/MusicState"
@@ -113,7 +113,7 @@ export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, o
        const groupCloseItems = (ratedItems:RatedMusicItemUI[]) => {
             const groupedItems = ratedItems.reduce((acc:RatedSongItemGrouped[] , curr:RatedMusicItemUI) => {
                 const position =  state.scaler.toPosition(curr.score) 
-                const overlap = acc.find((it:RatedSongItemGrouped) =>  Math.abs(Number(it.position) - position) < 50  )
+                const overlap = acc.find((it:RatedSongItemGrouped) =>  Math.abs(Number(it.position) - position) < CLOSENESS_THRESHOLD  )
                 if (overlap) {
                     overlap.items.push(curr)
                     overlap.items.sort((a,b) => (a.score > b.score) ? 1 : (a.score < b.score) ? -1 : 0 )
@@ -136,7 +136,8 @@ export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, o
 
     return <React.Fragment>
       {comparisonSongs && <ComparisonSongs songs={comparisonSongs} />}
-      <svg className="rater" ref={svgRef} id="trackRater" viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`}>
+      <svg className="rater" ref={svgRef} id="trackRater" viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`} preserveAspectRatio="xMidYMid slice" >
+        <circle cx={0} cy={0} r={25} fill="red"></circle>
         <defs>
               <clipPath id="item-clip-path-left">
                   <rect x={0} y={0} width={SVG_WIDTH/2} height={SVG_HEIGHT} ></rect>
