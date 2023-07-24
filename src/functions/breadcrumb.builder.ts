@@ -7,6 +7,10 @@ import { MusicAction } from "../reducers/musicReducer";
 
 
 export const BreadcrumbBuilder = {
+    buildMixedBreadcrumb:() => {  return {
+        title: 'MIXED'
+        ,action: () => {}
+    }},
     buildArtistBreadcrumb: (artist:Artist, musicDispatch:Dispatch<MusicAction>, setBreadcrumbs:Dispatch<SetStateAction<Array<Breadcrumb>>>) => {
         return {
             title: artist.name 

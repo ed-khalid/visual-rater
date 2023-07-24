@@ -6,7 +6,7 @@ import { RaterOrientation } from "../ui/RaterTypes";
 export type MusicEntity = Artist | Album | Song 
 type ScoreFilter = { start: number, end: number }
 export enum MusicScope {
-  ALL, ARTIST, ALBUM, SONG
+  ARTIST, ALBUM, SONG
 } 
 
 const switchOrientation = (orientation: RaterOrientation) => {
@@ -74,12 +74,10 @@ export class MusicFilters {
 }
 
 
+// helper class to access data/filters
 export class MusicStore {
   constructor(public data: MusicData, public filters: MusicFilters) {
   }
-
-  public scope:MusicScope = MusicScope.ALL 
-
 
   public getSelectedArtists(): Artist[] {
     return this.filters.filterArtists(this.data.artists)
@@ -88,12 +86,47 @@ export class MusicStore {
     return this.filters.filterAlbums(this.data.albums)
   }  
 
+  public getArtistForAlbum(album:Album): Artist|undefined {
+    return this.data.artists.find(it => it.id === album.artistId)
+  } 
+
+  public getAlbumsForArtist(artistId:string) :Album[] {
+    return this.data.albums.filter(it => it.artistId === artistId)
+  }
+
+  public hasArtistLoadedAlbums(artist:Artist) : boolean {
+    return this.data.albums.filter(it => it.artistId === artist.id).length !== 0 
+  }
+  
+
   public hasNoFilters(): boolean {
     return this.filters.areEmpty()
   }
   public filterArtistsByScore = () => this.filters.filterByScore<Artist>(this.data.artists)
   public filterAlbumsByScore = () => this.filters.filterByScore<Album>(this.data.albums)
   public filterSongsByScore = () => this.filters.filterByScore<Song>(this.data.songs)
+
+
+  // scope means what we're looking at right now  
+  public getScope() : MusicScope  {
+    // no filters, very top just artists
+    if (this.filters.areEmpty()) {
+      return MusicScope.ARTIST
+    } 
+    // we're looking at artists albums
+    else if (this.filters.onlyArtists()) {
+      return MusicScope.ALBUM
+    }
+    else if (this.filters.onlyArtistsAndAlbums()) {
+      return MusicScope.SONG;
+    // artists/songs without albums (i.e if filtering by score)  
+    } else if (this.filters.onlyArtistsAndSongs()) {
+      return MusicScope.SONG;
+    // just get to the lower level
+    } else {
+      return MusicScope.SONG
+    }
+  }
 
   public getItems() {
     let whichOrientation = RaterOrientation.LEFT
@@ -103,15 +136,12 @@ export class MusicStore {
         whichOrientation = switchOrientation(whichOrientation)
         return mapArtistToRatedItem(it, whichOrientation)
       })
-      this.scope = MusicScope.ARTIST
     }
     else if (this.filters.onlyArtists()) {
       items = this.filters.filterAlbumsByArtist(this.data.albums).map(it => {
         whichOrientation = switchOrientation(whichOrientation)
         return mapAlbumToRatedItem(it, whichOrientation)
       })
-      this.scope = MusicScope.ALBUM
-
     }
     else if (this.filters.onlyArtistsAndAlbums()) {
       items = this.filters.filterSongsByAlbum(this.data.songs)
@@ -124,7 +154,6 @@ export class MusicStore {
             throw Error(`cannot find album for song ${song}`)
           }
         })
-      this.scope = MusicScope.SONG
     }
     else if (this.filters.onlyArtistsAndSongs()) {
       items = this.filters.filterSongsByArtist(this.data.songs)
@@ -137,7 +166,6 @@ export class MusicStore {
             throw Error(`cannot find album for song ${song}`)
           }
         })
-      this.scope = MusicScope.SONG
     }
       return items
   }

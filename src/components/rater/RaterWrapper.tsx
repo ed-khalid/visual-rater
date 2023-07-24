@@ -25,7 +25,7 @@ export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, o
     const [songBeingDragged, setSongBeingDragged] = useState<Song|undefined>() 
     const [ $getComparisonSongs, $comparisonSongs ] = useCompareSongToOtherSongsByOtherArtistsLazyQuery() 
     const [updateSong]  = useUpdateSongMutation();
-    const [scope, setScope]= useState<MusicScope>(MusicScope.ALL)
+    const [scope, setScope]= useState<MusicScope>(MusicScope.ARTIST)
     const [items, setItems] = useState<RatedMusicItemUI[]>([])
 
 
@@ -109,7 +109,7 @@ export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, o
       }
       const store = new MusicStore(new MusicData(musicState.data), new MusicFilters(musicState.filters))  
       const items = store.getItems() 
-      setScope(store.scope)
+      setScope(store.getScope())
        const groupCloseItems = (ratedItems:RatedMusicItemUI[]) => {
             const groupedItems = ratedItems.reduce((acc:RatedSongItemGrouped[] , curr:RatedMusicItemUI) => {
                 const position =  state.scaler.toPosition(curr.score) 
