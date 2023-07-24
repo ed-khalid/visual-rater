@@ -1,23 +1,49 @@
 @import url('https://fonts.googleapis.com/css?family=Abril+Fatface');
 @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@500');
+/* general styles */ 
 * {
   font-family: 'Raleway', sans-serif;
 }
-
+.App {
+  text-align: center;
+  background-color: #fff;
+  color: #000; 
+  height: 100vh;
+}
 .font-title {
   font-family: 'Abril Fatface', serif;
 }
 .font-normal {
   font-family: 'Raleway', sans-serif;
 }
-
 .grid {
   display:grid;
 }
+.flex {
+  display: flex;
+}
+.flex.column {
+  flex-direction:column;
+}
+.flex.col {
+  flex-direction:column;
+}
+.flex.center {
+  align-items:center;
+}
+img.item-thumbnail {
+  width:40px;
+  height:40px;
+  border-radius:50%;
+} 
+.draggable {
+  cursor:move;
+}
 
+ 
+/* panel styles */ 
 .panel {
   position: absolute;
-  cursor: move;
   border: 1px solid black; 
   border-radius: 0px 0px 15px 15px;
   z-index:99;
@@ -50,30 +76,11 @@
 .panel.center {
   left:50vw;
 }
-.App {
-  text-align: center;
-  background-color: #fff;
-  color: #000; 
-  height: 100vh;
-}
 
-.main {
-  position: relative;
-  font-size: 16px;
-}
- 
 div.drop-target {
   height:100vh;
 } 
-div#search {
-  left: 0;
-}
-
-div#dashboard {
-    text-align:unset;
-    top: 0;
-    right: 0;
-}
+/* rater */
 svg.rater {
   width: 100%;
   height: 100%; 
@@ -82,31 +89,4 @@ svg.rater {
   bottom: 0;
   left:0;
   right:0;
-}
-
-
-div.compare-section {
-  position:relative;
-  border: 4px solid rgb(112, 35, 35);
-  color: rgba(112,35,35);
-  height:40px;
-  width:50%;
-  border-radius:5px;
-}
-div.compare-section button {
-  width:50%;
-  height:100%;
-}
-div.compare-section button.selected {
-  background-color: black ;
-  color: white;
-}
-div.compare-section::after  {
-  position:absolute;
-  top:-8px;
-  left:4px;
-  content: 'compare';
-  background: #e9dfdf; 
-  font-size:11px;
-  text-transform: uppercase;
 }

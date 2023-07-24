@@ -7,13 +7,6 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-.flex {
-  display: flex;
-}
-.flex-column {
-  flex-direction:column;
-  display: flex;
-}
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',

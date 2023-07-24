@@ -102,3 +102,17 @@ div.album-panel div.album-thumbnail img {
     height: 2em;
     border-radius:15px;
 } 
+
+div.nav-album {
+    font-size: 8px;
+} 
+div.nav-album img {
+    width: 25px;
+    height:25px;
+}
+div.nav-artist-row {
+    margin-top: 2px;
+} 
+div.nav-album {
+    cursor:move;
+}  

@@ -25,7 +25,7 @@ export const SearchResults =  ({searchArtist, setSearchAlbum}:Props) => {
             <React.Fragment>
                 <div id="search-results-artist" className="flex-column">
                     <div id="search-results-artist-thumbnail">
-                        <img className="search-results-artist-thumbnail" src={searchArtist.thumbnail || ''} alt={""} /> 
+                        <img className="item-thumbnail" src={searchArtist.thumbnail || ''} alt={""} /> 
                     </div> 
                     <div id="search-results-artist-title" className="font-title" key={"external-artist" + searchArtist.name}>
                         {searchArtist.name}

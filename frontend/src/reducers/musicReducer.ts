@@ -2,6 +2,7 @@ import { Album, Artist, Song } from "../generated/graphql";
 import { MusicEntity, MusicState } from "../models/domain/MusicState";
 
 
+export enum FilterMode { ADDITIVE, EXCLUSIVE }
 export const musicReducer: React.Reducer<MusicState, MusicAction> =  (state: MusicState, action: MusicAction) : MusicState => {
 
     const reconcileData = <T extends MusicEntity> (oldData:Array<T>, newData:Array<T>|undefined) => {
@@ -27,10 +28,11 @@ export const musicReducer: React.Reducer<MusicState, MusicAction> =  (state: Mus
         }
         case 'FILTER_CHANGE': {
             const filters = action.filters
+            const mode = action.mode
             if (filters) {
-                const artistIds = (filters.artistIds) ? filters.artistIds : state.filters.artistIds
-                const albumIds = (filters.albumIds) ? filters.albumIds : state.filters.albumIds
-                const songIds = (filters.songIds) ? filters.songIds : state.filters.songIds
+                const artistIds = (filters.artistIds) ? (mode === FilterMode.ADDITIVE) ? [...state.filters.artistIds, ...filters.artistIds] :  filters.artistIds : state.filters.artistIds
+                const albumIds = (filters.albumIds) ? (mode === FilterMode.ADDITIVE)? [...state.filters.albumIds, ...filters.albumIds] : filters.albumIds : state.filters.albumIds
+                const songIds = (filters.songIds) ? (mode === FilterMode.ADDITIVE) ? [...state.filters.songIds, ...filters.songIds] : filters.songIds:  state.filters.songIds
                 const scoreFilter = (filters.scoreFilter) ? filters.scoreFilter : state.filters.scoreFilter
                 return { ...state, filters: { artistIds, albumIds, songIds, scoreFilter } } 
             }
@@ -56,7 +58,8 @@ export type FilterChangeMusicAction = {
             albumIds?: string[]
             songIds?: string[]
             scoreFilter?: { start: number, end: number }
-    } 
+    },  
+    mode?:FilterMode 
 }  
   
 export type MusicAction = FilterChangeMusicAction | DataChangeMusicAction  

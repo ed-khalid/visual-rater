@@ -1,13 +1,15 @@
-import React from 'react';
+import React  from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
-import App from './App';
 import * as serviceWorker from './serviceWorker';
 import {  ApolloProvider } from '@apollo/client';
 import { client } from './setupApollo';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+import { ReducerProvider } from './ReducerProvider';
 
+
+// app is inside ReducerProvider
 const container = document.getElementById('root')
 if (container) {
   const root = createRoot(container) 
@@ -15,7 +17,7 @@ if (container) {
     <React.StrictMode>
       <ApolloProvider client={client}>
       <DndProvider backend={HTML5Backend}>
-        <App />
+          <ReducerProvider />
         </DndProvider>
       </ApolloProvider>
     </React.StrictMode>
