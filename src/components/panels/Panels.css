@@ -1,13 +1,46 @@
 
-.rightside-panel {
-    width:20vw;
+/* music-navigation panel*/
+div#music-navigation {
+    top: 5px;
+    right:2px;
 }
+div#music-navigation .albums {
+    display:flex;
+    justify-content: space-evenly;
+    align-items:center;
+    flex-direction: row;
+    flex-wrap: wrap ;
+}
+div#music-navigation .albums .album {
+    width: 4em;
+}
+div#music-navigation .albums .album .album-thumbnail img {
+    width: 1.5em;
+    height: 1.5em;
+    border-radius:15px;
+    cursor: pointer;
 
+} 
+div#music-navigation .albums .album .album-title {
+    font-size:0.4em;
+} 
+div.nav-album {
+    font-size: 8px;
+} 
+div.nav-album img {
+    width: 25px;
+    height:25px;
+}
+div.nav-artist-row {
+    margin-top: 2px;
+} 
+div.nav-album {
+    cursor:move;
+}  
+/* breadcrumb panel */
 div#breadcrumb .panel-content {
     padding: 4px;
-
 }
-
 div#breadcrumb {
     z-index:5;
     top: 4px;
@@ -42,16 +75,11 @@ div#breadcrumb .breadcrumb-slash {
 div#breadcrumb span:hover   {
     text-decoration: underline;
 }
-
+/* artists-panel */
 div#artists-panel {
     align-items:center;
     justify-content: center;
-    top: 4px;
-    height:85px; 
-    right: 2px;
 }
-
-
 div#artists-panel img.artist-thumbnail {
     width: 1.5em;
     height: 1.5em;
@@ -61,58 +89,15 @@ div#artists-panel img.artist-thumbnail {
 div#artists-panel div.artist-name {
     font-size:0.4em;
 }
-
-
-div.artist-albums {
-    top: 95px;
-    right:2px;
-}
-div.artist-albums .albums {
-    display:flex;
-    justify-content: space-evenly;
-    align-items:center;
-    flex-direction: row;
-    flex-wrap: wrap ;
-}
-div.artist-albums .albums .album {
-    width: 4em;
-}
-div.artist-albums .albums .album .album-thumbnail img {
-    width: 1.5em;
-    height: 1.5em;
-    border-radius:15px;
-    cursor: pointer;
-
-} 
-div.artist-albums .albums .album .album-title {
-    font-size:0.4em;
-} 
-div.album-panel {
-    top: 210px; 
-    right:2px;
-}
-div.album-panel .panel-content {
+/* album panel */ 
+div#album-panel .panel-content {
     font-size: 0.4em;
 }
-div.album-panel .album-header {
+div#album-panel .album-header {
     font-size:2em;
 } 
-div.album-panel div.album-thumbnail img {
+div#album-panel div.album-thumbnail img {
     width: 3em;
     height: 2em;
     border-radius:15px;
 } 
-
-div.nav-album {
-    font-size: 8px;
-} 
-div.nav-album img {
-    width: 25px;
-    height:25px;
-}
-div.nav-artist-row {
-    margin-top: 2px;
-} 
-div.nav-album {
-    cursor:move;
-}  

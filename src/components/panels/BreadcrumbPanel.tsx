@@ -8,7 +8,7 @@ interface Props {
 
 export const BreadcrumbPanel = ({breadcrumbs}:Props) => {
 
-    return <Panel id="breadcrumb" title="Breadcrumb">
+    return <Panel className="fixed" id="breadcrumb" title="Breadcrumb">
         <div id="breadcrumb-wrapper">
           {breadcrumbs.map((it,i) => <BreadcrumbElement noSlash={ i === breadcrumbs.length-1 } key={'breadcrumb-'+i} breadcrumb={it}/>)}
         </div>

@@ -4,12 +4,6 @@
 * {
   font-family: 'Raleway', sans-serif;
 }
-.App {
-  text-align: center;
-  background-color: #fff;
-  color: #000; 
-  height: 100vh;
-}
 .font-title {
   font-family: 'Abril Fatface', serif;
 }
@@ -36,14 +30,53 @@ img.item-thumbnail {
   height:40px;
   border-radius:50%;
 } 
+.absolute {
+  position: absolute;
+}
+.relative {
+  position:relative;
+}
+.fixed {
+  position:fixed;
+}
+/* drag & drop */ 
 .draggable {
   cursor:move;
 }
+div.drop-target {
+  height:100vh;
+} 
 
  
+.App {
+  text-align: center;
+  background-color: #fff;
+  color: #000; 
+  height: 100vh;
+  overflow:hidden;
+}
+/* sidebar */
+div.sidebar {
+  position:absolute;
+  flex-direction: column;
+  display:flex;
+}
+div#right-sidebar {
+  top:0px;
+  right:0px;
+} 
+div#right-sidebar .panel {
+  width: 20vw;
+  margin-top: 2px;
+  margin-right:2px;
+} 
+div#left-sidebar {
+  top:0px;
+  left:0px;
+} 
+
 /* panel styles */ 
 .panel {
-  position: absolute;
   border: 1px solid black; 
   border-radius: 0px 0px 15px 15px;
   z-index:99;
@@ -77,9 +110,6 @@ img.item-thumbnail {
   left:50vw;
 }
 
-div.drop-target {
-  height:100vh;
-} 
 /* rater */
 svg.rater {
   width: 100%;
