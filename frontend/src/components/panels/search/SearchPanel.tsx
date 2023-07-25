@@ -25,7 +25,7 @@ export const SearchPanel =  ({onExternalAlbumSelect}:Props) => {
     }
 
     return <div>
-            <Panel id="search" isMoveable={false} isCollapsible={true}>
+            <Panel id="search" className="fixed" isMoveable={false} isCollapsible={true}>
                 <div id="search-content">
                     <SearchInput value={artistName} onClick={updateArtistName}></SearchInput>
                 </div>

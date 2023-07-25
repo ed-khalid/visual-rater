@@ -45,7 +45,7 @@ export const MusicNavigationPanel =  ({state, artists, onAlbumSelect, onArtistEx
     } 
     const store = new MusicStore(state.data, new MusicFilters(state.filters))
 
-    return <Panel className='rightside-panel artist-albums' title={'Music Navigation'}>
+    return <Panel id="music-navigation" className='rightside-panel artist-albums' title={'Music Navigation'}>
                 <div id="nav-artists" className="flex col">
                     {state.data.artists.map(artist => 
                     <MusicNavigationArtist store={store} onAlbumSelect={onAlbumSelect} artistToggleState={artistToggle.get(artist.id)} artist={artist} toggleArtist={toggleArtist} />

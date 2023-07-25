@@ -32,7 +32,6 @@ interface Props {
 }
 
 export const App = ({musicState, musicDispatch}:Props) => {
-  console.log('data', musicState.data, 'filters', musicState.filters)
 
   // search
   const [searchAlbum, setSearchAlbum] = useState<ExternalAlbumSearchResult>()
@@ -300,17 +299,20 @@ export const App = ({musicState, musicDispatch}:Props) => {
   const store = new MusicStore(new MusicData(musicState.data), new MusicFilters(musicState.filters))
   return (
     <div className="App">
-      <div className="main">
-        <SearchPanel onExternalAlbumSelect={onExternalAlbumSearchClick} />
+        <div id="left-sidebar" className="sidebar">
+           <SearchPanel onExternalAlbumSelect={onExternalAlbumSearchClick} />
+        </div>
+        <div id="right-sidebar" className="sidebar">
+          {!$artists.loading && $artists.data && <MusicNavigationPanel onAlbumSelect={onAlbumSelect} onArtistExpand={onMusicNavArtistExpand} state={musicState} artists={$artists.data.artists.content as Artist[]} />}
+          {store.getSelectedArtists().map(artist => <ArtistPanel onSongCategoryClick={onArtistPanelSongsClick} key={artist!.name+ '-panel'} artist={artist!}/>)}
+          {store.getSelectedAlbums().map(album => <AlbumPanel key={album.name+'-panel'} album={album} onClose={() => {}}  />)}
+        </div> 
         <BreadcrumbPanel breadcrumbs={breadcrumbs}/>
         {/* <div id="top-controls" className="panel">
           <div>
             <button onClick={onZoomResetClick}>Reset</button>
           </div>
         </div> */}
-        {!$artists.loading && $artists.data && <MusicNavigationPanel onAlbumSelect={onAlbumSelect} onArtistExpand={onMusicNavArtistExpand} state={musicState} artists={$artists.data.artists.content as Artist[]} />}
-        {store.getSelectedArtists().map(artist => <ArtistPanel onSongCategoryClick={onArtistPanelSongsClick} key={artist!.name+ '-panel'} artist={artist!}/>)}
-        {store.getSelectedAlbums().map(album => <AlbumPanel key={album.name+'-panel'} album={album} onClose={() => {}}  />)}
         <div id="rater" className="viz drop-target" ref={drop}>
           <RaterWrapper
           onAlbumClick={onAlbumSelect}
@@ -320,7 +322,6 @@ export const App = ({musicState, musicDispatch}:Props) => {
           stateDispatch={raterDispatch}
           />
         </div>
-      </div>
     </div>
   );
 }

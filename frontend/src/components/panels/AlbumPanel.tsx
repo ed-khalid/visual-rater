@@ -60,7 +60,7 @@ export const AlbumPanel = ({album, onClose}:Props) => {
           setSongUnderEdit({ id: undefined, name: '', number: ''})
     }
 
-    return <Panel className="album-panel rightside-panel" title={album.name}>
+    return <Panel id="album-panel" className="relative" title={album.name}>
     <div>
         <div className="album-header flex">
           <div className="album-thumbnail">
