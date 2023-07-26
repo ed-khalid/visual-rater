@@ -11,13 +11,15 @@ import { ArtistPanel } from './components/panels/ArtistPanel';
 import { AlbumPanel } from './components/panels/AlbumPanel';
 import { Breadcrumb, BreadcrumbPanel } from './components/panels/BreadcrumbPanel';
 import { RaterAction, raterReducer } from './reducers/raterReducer';
-import { MusicData, MusicFilters, MusicScope, MusicState, MusicStore } from './models/domain/MusicState';
 import { FilterMode, MusicAction } from './reducers/musicReducer';
 import { client } from './setupApollo';
 import { Reference } from '@apollo/client/cache';
 import { SearchPanel } from './components/panels/search/SearchPanel';
 import { BreadcrumbBuilder } from './functions/breadcrumb.builder';
 import { MusicNavigationPanel } from './components/panels/musicnavigation/MusicNavigation';
+import { MusicStore } from './music/MusicStore';
+import { MusicScope, MusicState } from './music/MusicState';
+import { BlockRaterPanel } from './components/panels/BlockRaterPanel';
 
 export const initialRaterState:RaterState = {
    start: 0
@@ -80,7 +82,7 @@ export const App = ({musicState, musicDispatch}:Props) => {
 
   const onMusicNavArtistExpand = (artist:Artist) => {
     console.log(musicState.data)
-      const store = new MusicStore(musicState.data, new MusicFilters(musicState.filters)) 
+      const store = new MusicStore(musicState) 
       if (!store.hasArtistLoadedAlbums(artist)) {
         $getAlbums({variables: { artistId: artist.id }})
       } 
@@ -117,7 +119,7 @@ export const App = ({musicState, musicDispatch}:Props) => {
   }, [$albums.loading, $albums.data, musicDispatch])
 
   const addAlbum = (album:Album) => {
-    const store = new MusicStore(musicState.data, new MusicFilters(musicState.filters)) 
+    const store = new MusicStore(musicState) 
     const scope = store.getScope(); 
     switch (scope) {
       case MusicScope.ARTIST: {
@@ -125,19 +127,19 @@ export const App = ({musicState, musicDispatch}:Props) => {
         break;
       }
       case MusicScope.ALBUM: {
-        musicDispatch({type:'FILTER_CHANGE', filters: { albumIds: [album.id] }, mode: FilterMode.ADDITIVE } )
+        musicDispatch({type:'FILTER_CHANGE', filters: { artistIds:[album.artistId], albumIds: [album.id] }, mode: FilterMode.ADDITIVE } )
         setBreadcrumbs(breadcrumbs => [breadcrumbs[0], BreadcrumbBuilder.buildMixedBreadcrumb()] )
         break;
       }
       case MusicScope.SONG: {
         $getSongs({ variables: { albumId : album.id }  })
-        musicDispatch({type:'FILTER_CHANGE', filters: { albumIds: [album.id]} , mode: FilterMode.ADDITIVE })
+        musicDispatch({type:'FILTER_CHANGE', filters: { artistIds:[album.artistId], albumIds: [album.id]} , mode: FilterMode.ADDITIVE })
         setBreadcrumbs(breadcrumbs => [breadcrumbs[0], BreadcrumbBuilder.buildMixedBreadcrumb()] )
       }
     }
   }
   const addArtist = (artist:Artist) => {
-    const store = new MusicStore(musicState.data, new MusicFilters(musicState.filters)) 
+    const store = new MusicStore(musicState) 
     const scope = store.getScope(); 
     switch(scope) {
       // switch to the artist and show all their albums
@@ -169,7 +171,7 @@ export const App = ({musicState, musicDispatch}:Props) => {
 
   const onAlbumSelect = (album:Album) => {
     const albumBreadcrumb = BreadcrumbBuilder.buildAlbumBreadcrumb(album)
-    const store = new MusicStore(musicState.data, new MusicFilters(musicState.filters))
+    const store = new MusicStore(musicState)
     let artistBreadcrumb = breadcrumbs[1] 
     if (!artistBreadcrumb) {
       const artist = store.getArtistForAlbum(album)  
@@ -296,16 +298,16 @@ export const App = ({musicState, musicDispatch}:Props) => {
 
 
 
-  const store = new MusicStore(new MusicData(musicState.data), new MusicFilters(musicState.filters))
+  const store = new MusicStore(musicState)
   return (
     <div className="App">
         <div id="left-sidebar" className="sidebar">
            <SearchPanel onExternalAlbumSelect={onExternalAlbumSearchClick} />
+           {store.getScope() === MusicScope.SONG && <BlockRaterPanel musicState={musicState} />  }
         </div>
         <div id="right-sidebar" className="sidebar">
           {!$artists.loading && $artists.data && <MusicNavigationPanel onAlbumSelect={onAlbumSelect} onArtistExpand={onMusicNavArtistExpand} state={musicState} artists={$artists.data.artists.content as Artist[]} />}
           {store.getSelectedArtists().map(artist => <ArtistPanel onSongCategoryClick={onArtistPanelSongsClick} key={artist!.name+ '-panel'} artist={artist!}/>)}
-          {store.getSelectedAlbums().map(album => <AlbumPanel key={album.name+'-panel'} album={album} onClose={() => {}}  />)}
         </div> 
         <BreadcrumbPanel breadcrumbs={breadcrumbs}/>
         {/* <div id="top-controls" className="panel">

@@ -1,5 +1,5 @@
 import { useReducer } from "react"
-import { MusicState } from "./models/domain/MusicState"
+import { MusicState } from "./music/MusicState"
 import { MusicAction, musicReducer } from "./reducers/musicReducer"
 import App from "./App"
 import React from "react"

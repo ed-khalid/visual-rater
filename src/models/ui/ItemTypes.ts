@@ -15,26 +15,28 @@ export class ComparisonSongUIItem {
     }
 }  
 
-export class RatedMusicItemUI extends RatedItem implements RaterItemUI {
+export class RatedMusicItemUI extends RatedItem {
     public constructor(item:Item, 
         public score:number, 
         public thumbnail:string, 
-        public orientation:RaterOrientation,
         public tier:RaterTier ,
         public nodeRef:any, 
         public overlay:Maybe<string>|undefined,
+        public orientation?:RaterOrientation,
         ) {
         super(item, score);
     }
 } 
 
 export class RatedSongItemUI extends RatedMusicItemUI {
-    public constructor(item:Item, public score:number, public thumbnail:string, public orientation:RaterOrientation, public tier:RaterTier, public overlay:Maybe<string>|undefined,
+    public constructor(item:Item, public score:number, public thumbnail:string, public tier:RaterTier, public overlay:Maybe<string>|undefined,
         public number:number, 
         public nodeRef:any, 
-        public albumName:string
+        public albumName:string,
+        public artistName:string, 
+        public orientation?:RaterOrientation
         ) {
-         super(item, score, thumbnail, orientation, tier, nodeRef, overlay)
+         super(item, score, thumbnail, tier, nodeRef, overlay, orientation)
     }
 
 } 
