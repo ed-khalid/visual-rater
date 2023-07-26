@@ -4,7 +4,7 @@ import { Panel } from "../Panel"
 import React from "react"
 import { SearchInput } from "./SearchInput"
 import { SearchResults } from "./SearchResults"
-import './SearchPanel.css'
+import './Search.css'
 
 interface Props {
     onExternalAlbumSelect:any
@@ -24,12 +24,8 @@ export const SearchPanel =  ({onExternalAlbumSelect}:Props) => {
             }
     }
 
-    return <div>
-            <Panel id="search" className="fixed" isMoveable={false} isCollapsible={true}>
-                <div id="search-content">
-                    <SearchInput value={artistName} onClick={updateArtistName}></SearchInput>
-                </div>
-           </Panel>
+    return <div id="search" className="flex col fixed">
+            <SearchInput value={artistName} onClick={updateArtistName}></SearchInput>
            {artistName && <Panel id="search-results" isMoveable={false} isCloseable={true}>
              <div>
                         {loading && <p>Loading...</p> }
