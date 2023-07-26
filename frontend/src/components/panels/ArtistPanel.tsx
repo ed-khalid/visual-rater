@@ -12,7 +12,7 @@ export const ArtistPanel = ({artist, onSongCategoryClick}:Props) => {
 
 
 
-    return <Panel className='relative' id="artists-panel" title={artist.name}>
+    return <Panel className='relative' id="artists-panel" isCollapsible={true} title={artist.name}>
             <div>
                     <img className="artist-thumbnail" src={artist.thumbnail!} alt="" />
                     <div className="artist-metadata flex">
