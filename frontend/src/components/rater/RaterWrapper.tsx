@@ -5,9 +5,11 @@ import { Rater } from "./Rater"
 import { RaterState, RATER_X, RATER_Y_BOTTOM, RATER_Y_TOP, RatedSongItemGrouped, RaterOrientation, SVG_HEIGHT, SVG_WIDTH, CLOSENESS_THRESHOLD } from "../../models/ui/RaterTypes"
 import { RatedItem } from "../../models/domain/ItemTypes"
 import { RaterAction } from "../../reducers/raterReducer"
-import { MusicData, MusicFilters, MusicScope, MusicState, MusicStore } from "../../models/domain/MusicState"
+import {  MusicScope, MusicState } from "../../music/MusicState"
 import { ComparisonSongs} from "./comparison-rater/ComparisonSongs"
 import { mapComparisonSongToComparisonSongUIItem } from "../../functions/mapper"
+import { MusicStore } from "../../music/MusicStore"
+import { sortByScore } from "../../functions/sort"
 
 interface Props {
     onAlbumClick:(albums:Album) => void 
@@ -107,7 +109,7 @@ export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, o
       if (!musicState.data.artists.length) {
         return
       }
-      const store = new MusicStore(new MusicData(musicState.data), new MusicFilters(musicState.filters))  
+      const store = new MusicStore(musicState)
       const items = store.getItems() 
       setScope(store.getScope())
        const groupCloseItems = (ratedItems:RatedMusicItemUI[]) => {
@@ -116,7 +118,7 @@ export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, o
                 const overlap = acc.find((it:RatedSongItemGrouped) =>  Math.abs(Number(it.position) - position) < CLOSENESS_THRESHOLD  )
                 if (overlap) {
                     overlap.items.push(curr)
-                    overlap.items.sort((a,b) => (a.score > b.score) ? 1 : (a.score < b.score) ? -1 : 0 )
+                    sortByScore(overlap.items)
                     overlap.items.forEach((item, i) => item.tier = ((i+1)))
                 } else {
                     acc.push({ position, items:[curr], id: '' + acc.length + 1 })
@@ -125,8 +127,8 @@ export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, o
             },  [])
             return groupedItems
         }  
-        const leftItems = items.filter( it => it.orientation === RaterOrientation.LEFT)
-        const rightItems = items.filter( it => it.orientation === RaterOrientation.RIGHT)
+        const leftItems = items.filter(it => it.orientation === RaterOrientation.LEFT)
+        const rightItems = items.filter(it => it.orientation === RaterOrientation.RIGHT)
         const leftGroups =  groupCloseItems(leftItems)
         const rightGroups =  groupCloseItems(rightItems)
         const finalItems = unwrapGroups([...leftGroups, ...rightGroups]) 

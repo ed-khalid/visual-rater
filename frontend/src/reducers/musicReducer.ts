@@ -1,5 +1,5 @@
 import { Album, Artist, Song } from "../generated/graphql";
-import { MusicEntity, MusicState } from "../models/domain/MusicState";
+import { MusicEntity, MusicState } from "../music/MusicState";
 
 
 export enum FilterMode { ADDITIVE, EXCLUSIVE }
@@ -12,6 +12,14 @@ export const musicReducer: React.Reducer<MusicState, MusicAction> =  (state: Mus
         const newDataIds = newData.map(it => it.id) 
         const data = oldData.filter(it => !newDataIds.includes(it.id)  )
         return [...data, ...newData]
+    }
+
+    const reconcileFilters =  (oldFilters:string[], newFilters:string[]|undefined, mode?:FilterMode) => {
+        if (!newFilters) {
+            return oldFilters
+        }
+        const filters = oldFilters.filter(it => !newFilters.includes(it))  
+        return (mode === FilterMode.ADDITIVE) ? [...filters, ...newFilters] : newFilters 
     }
 
     switch (action.type) {
@@ -30,9 +38,9 @@ export const musicReducer: React.Reducer<MusicState, MusicAction> =  (state: Mus
             const filters = action.filters
             const mode = action.mode
             if (filters) {
-                const artistIds = (filters.artistIds) ? (mode === FilterMode.ADDITIVE) ? [...state.filters.artistIds, ...filters.artistIds] :  filters.artistIds : state.filters.artistIds
-                const albumIds = (filters.albumIds) ? (mode === FilterMode.ADDITIVE)? [...state.filters.albumIds, ...filters.albumIds] : filters.albumIds : state.filters.albumIds
-                const songIds = (filters.songIds) ? (mode === FilterMode.ADDITIVE) ? [...state.filters.songIds, ...filters.songIds] : filters.songIds:  state.filters.songIds
+                const artistIds = reconcileFilters(state.filters.artistIds, filters.artistIds, mode)
+                const albumIds = reconcileFilters(state.filters.albumIds, filters.albumIds, mode) 
+                const songIds = reconcileFilters(state.filters.songIds, filters.songIds, mode)
                 const scoreFilter = (filters.scoreFilter) ? filters.scoreFilter : state.filters.scoreFilter
                 return { ...state, filters: { artistIds, albumIds, songIds, scoreFilter } } 
             }
