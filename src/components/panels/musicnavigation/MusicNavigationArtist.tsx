@@ -3,7 +3,7 @@ import { Album, Artist } from "../../../generated/graphql"
 import { MusicNavigationAlbumRow } from "./MusicNavigationAlbumRow"
 import { DragType } from "../../../models/ui/DragType"
 import { useDrag } from "react-dnd"
-import { MusicStore } from "../../../models/domain/MusicState"
+import { MusicStore } from "../../../music/MusicStore"
 
 
 interface Props {
@@ -43,7 +43,7 @@ export const MusicNavigationArtist = ({store,artist,artistToggleState, toggleArt
                         </span>
                         </div> 
                         <div className="flex nav-artist-row albums">
-                        {artistToggleState && store.getAlbumsForArtist(artist.id).map(album => <div className="nav-artist-albums" >
+                        {artistToggleState && store.getAlbumsForArtist(artist.id).map(album => <div key={'music-navigation-album-'+album.id} className="nav-artist-albums" >
                             <MusicNavigationAlbumRow album={album} onAlbumSelect={onAlbumSelect} />
                              </div> )}
                         </div> 

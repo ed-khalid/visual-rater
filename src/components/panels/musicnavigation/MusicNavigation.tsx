@@ -1,8 +1,9 @@
 import React, { useState } from "react"
 import { Album, Artist, Maybe } from "../../../generated/graphql"
 import { Panel } from "../Panel"
-import { MusicFilters, MusicState, MusicStore } from "../../../models/domain/MusicState"
+import { MusicState } from "../../../music/MusicState"
 import { MusicNavigationArtist } from "./MusicNavigationArtist"
+import { MusicStore } from "../../../music/MusicStore"
 
 interface Props {
     artists:Artist[]
@@ -43,12 +44,12 @@ export const MusicNavigationPanel =  ({state, artists, onAlbumSelect, onArtistEx
         }
         return 0; 
     } 
-    const store = new MusicStore(state.data, new MusicFilters(state.filters))
+    const store = new MusicStore(state) 
 
-    return <Panel id="music-navigation" className='rightside-panel artist-albums' title={'Music Navigation'}>
+    return <Panel id="music-navigation" className='rightside-panel artist-albums' title={'Music Navigation'} isCollapsible={true}>
                 <div id="nav-artists" className="flex col">
                     {state.data.artists.map(artist => 
-                    <MusicNavigationArtist store={store} onAlbumSelect={onAlbumSelect} artistToggleState={artistToggle.get(artist.id)} artist={artist} toggleArtist={toggleArtist} />
+                    <MusicNavigationArtist key={'music-navigation-artist-'+artist.id} store={store} onAlbumSelect={onAlbumSelect} artistToggleState={artistToggle.get(artist.id)} artist={artist} toggleArtist={toggleArtist} />
                     )}
 
                         {/* {  (artist.albums!.length > ALBUMS_PER_ARTIST) &&  <div className={`dashboard-albums-navigation flex-column ${(pageNumber === 1) ? 'disabled': '' }`} >
