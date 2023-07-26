@@ -1,4 +1,59 @@
 
+/* panel styles */ 
+.panel {
+  background:white;
+  border: 1px solid black; 
+  border-radius: 0px 0px 15px 15px;
+  z-index:6;
+}
+.panel-wrapper {
+  width:inherit;
+  position:relative;
+  overflow:hidden;
+}
+.panel .panel-header {
+  display: flex;
+  position: relative;
+  background-color:black;
+  color: white;
+  width: 100%;
+  height:20px;
+}
+.panel .panel-header .panel-title {
+  left:50%;
+  font-size: 1em;
+}
+.panel .panel-header .panel-control-icons {
+    top: 0px;
+    left: 2px;
+} 
+.panel .panel-header .panel-control-icons .panel-button-collapse {
+    transition: transform 200ms ease-in-out 10ms;   
+}  
+.panel .panel-header .panel-control-icons .panel-button-collapse.collapsed {
+    transform: rotate(-90deg) 
+}  
+
+.panel-content {
+  display:flex;
+  position:relative;
+  height: 250px; 
+  transition: height 200ms ease-in-out 10ms; 
+}
+.panel-padding {
+  padding: 10px;
+}
+
+.panel-content.collapsed {
+    height:0px;
+}
+.panel.noborder {
+  border:none;
+}
+.panel.center {
+  left:50vw;
+}
+
 /* music-navigation panel*/
 div#music-navigation {
     top: 5px;
@@ -89,15 +144,48 @@ div#artists-panel img.artist-thumbnail {
 div#artists-panel div.artist-name {
     font-size:0.4em;
 }
-/* album panel */ 
-div#album-panel .panel-content {
-    font-size: 0.4em;
+
+/* block-rater panel  */
+div#block-rater {
+    height:70vh; 
 }
-div#album-panel .album-header {
-    font-size:2em;
-} 
-div#album-panel div.album-thumbnail img {
-    width: 3em;
-    height: 2em;
-    border-radius:15px;
-} 
+div#block-rater .panel-content {
+    padding:0px;
+    height:66vh;
+}
+div#block-rater ul {
+    padding:2px;
+    overflow-y:scroll;
+    height:100%;
+}
+div#block-rater li {
+    align-items:center;
+    font-size: 10px;
+    text-align:center;
+    border:1px solid black;
+    border-top: none;
+}
+div#block-rater li:first-child {
+    border-top: 1px solid black;
+}
+div#block-rater li img.block-rater-item-thumbnail {
+    width:50px;
+    height:50px;
+}
+div#block-rater li .block-rater-item-rating {
+    align-items:center;
+    justify-content: center;
+    width:50px;
+    height:50px;
+}
+div#block-rater li .block-rater-item-info {
+    width:63%;
+}
+div#block-rater li .block-rater-item-songName {
+    font-size:12px;
+    font-weight:bold;
+}  
+div#block-rater li .block-rater-item-score {
+    font-size:24px;
+    font-weight:bold;
+}  
