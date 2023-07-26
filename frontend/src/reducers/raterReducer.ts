@@ -1,7 +1,7 @@
 import { zoomIdentity } from "d3-zoom"
 import { RaterState } from "../models/ui/RaterTypes"
 import { Scaler } from "../functions/scale"
-import { MusicScope } from "../models/domain/MusicState"
+import { MusicScope } from "../music/MusicState"
 
 
 
