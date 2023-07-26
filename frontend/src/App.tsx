@@ -8,7 +8,6 @@ import { DragType } from './models/ui/DragType';
 import { useDrop } from 'react-dnd';
 import { RaterState } from './models/ui/RaterTypes';
 import { ArtistPanel } from './components/panels/ArtistPanel';
-import { AlbumPanel } from './components/panels/AlbumPanel';
 import { BreadcrumbEntry, Breadcrumb } from './components/panels/BreadcrumbPanel';
 import { RaterAction, raterReducer } from './reducers/raterReducer';
 import { FilterMode, MusicAction } from './reducers/musicReducer';
@@ -19,7 +18,7 @@ import { BreadcrumbBuilder } from './functions/breadcrumb.builder';
 import { MusicNavigationPanel } from './components/panels/musicnavigation/MusicNavigation';
 import { MusicStore } from './music/MusicStore';
 import { MusicScope, MusicState } from './music/MusicState';
-import { BlockRaterPanel } from './components/panels/BlockRaterPanel';
+import { DetailsPanel } from './components/panels/BlockRaterPanel';
 
 export const initialRaterState:RaterState = {
    start: 0
@@ -303,7 +302,7 @@ export const App = ({musicState, musicDispatch}:Props) => {
     <div className="App">
         <div id="left-sidebar" className="sidebar">
            <Search onExternalAlbumSelect={onExternalAlbumSearchClick} />
-           {store.getScope() === MusicScope.SONG && <BlockRaterPanel musicState={musicState} />  }
+           <DetailsPanel musicState={musicState} /> 
         </div>
         <div id="right-sidebar" className="sidebar">
           {!$artists.loading && $artists.data && <MusicNavigationPanel onAlbumSelect={onAlbumSelect} onArtistExpand={onMusicNavArtistExpand} state={musicState} artists={$artists.data.artists.content as Artist[]} />}

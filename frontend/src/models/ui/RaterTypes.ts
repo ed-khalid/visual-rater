@@ -1,5 +1,5 @@
 import { Scaler } from '../../functions/scale'
-import { RatedMusicItemUI } from './ItemTypes'
+import { RaterUIItem } from '../domain/ItemTypes'
 
 export type RaterState = {
     scaler:Scaler
@@ -10,11 +10,10 @@ export type RaterState = {
 export enum RaterOrientation {
     RIGHT, LEFT
 }
-export type RatedSongItemGrouped  = {
+export interface RatedSongItemGrouped {
         id:string
         position:number
-        ,shouldDestroy?:boolean
-        ,items:RatedMusicItemUI[]
+        items:RaterUIItem[]
 }    
 
 export const RATER_Y_TOP:number = 60; 

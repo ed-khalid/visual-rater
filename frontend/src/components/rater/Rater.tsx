@@ -1,7 +1,7 @@
 import { axisRight } from 'd3-axis'
 import { select } from 'd3-selection';
 import { AxisScale, Selection } from 'd3';
-import { RatedItem } from "../../models/domain/ItemTypes";
+import { RatedItem, RaterUIItem } from "../../models/domain/ItemTypes";
 import { SingleRaterItem } from "./SingleRaterItem";
 import { Position } from '../../models/ui/Position';
 import { Dispatch, useEffect, useRef, useState, } from 'react';
@@ -12,7 +12,6 @@ import { ZoomBehavior } from './behaviors/ZoomBehavior';
 import { ANIMATION_DURATION } from '../../models/ui/Animation';
 import { Transition, TransitionGroup } from 'react-transition-group';
 import { RaterAction } from '../../reducers/raterReducer';
-import { RatedMusicItemUI } from '../../models/ui/ItemTypes';
 import { animateOnEnter, animateOnExit } from './ItemAnimation';
 
 interface Props {
@@ -24,7 +23,7 @@ interface Props {
     onSongDrag:(itemId:string) => void 
     duringDrag:(itemId:string, score:number) => void
     stateDispatch:Dispatch<RaterAction>
-    items: RatedMusicItemUI[]
+    items: RaterUIItem[]
     updateSongScore: (id:string, score:number) => void 
 }
 

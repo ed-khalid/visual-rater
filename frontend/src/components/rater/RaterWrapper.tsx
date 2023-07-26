@@ -1,9 +1,8 @@
 import React, { Dispatch, useEffect, useRef, useState } from "react"
 import { Album, Artist, Song, useCompareSongToOtherSongsByOtherArtistsLazyQuery, useUpdateSongMutation } from "../../generated/graphql"
-import { ComparisonSongUIItem, RatedMusicItemUI } from "../../models/ui/ItemTypes"
 import { Rater } from "./Rater"
 import { RaterState, RATER_X, RATER_Y_BOTTOM, RATER_Y_TOP, RatedSongItemGrouped, RaterOrientation, SVG_HEIGHT, SVG_WIDTH, CLOSENESS_THRESHOLD } from "../../models/ui/RaterTypes"
-import { RatedItem } from "../../models/domain/ItemTypes"
+import { ComparisonSongUIItem, RatedItem, RaterUIItem } from "../../models/domain/ItemTypes"
 import { RaterAction } from "../../reducers/raterReducer"
 import {  MusicScope, MusicState } from "../../music/MusicState"
 import { ComparisonSongs} from "./comparison-rater/ComparisonSongs"
@@ -28,7 +27,7 @@ export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, o
     const [ $getComparisonSongs, $comparisonSongs ] = useCompareSongToOtherSongsByOtherArtistsLazyQuery() 
     const [updateSong]  = useUpdateSongMutation();
     const [scope, setScope]= useState<MusicScope>(MusicScope.ARTIST)
-    const [items, setItems] = useState<RatedMusicItemUI[]>([])
+    const [items, setItems] = useState<RaterUIItem[]>([])
 
 
     // const mouseLocationListener =  (svg:SVGSVGElement) => {
@@ -69,7 +68,7 @@ export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, o
         const album = musicState.data.albums.find(it => it.id === songBeingDragged?.albumId ) 
         const artist = musicState.data.artists.find(it => it.id === songBeingDragged?.artistId ) 
         if (album && artist) {
-          const songsAsComparisonSong:ComparisonSongUIItem ={ id: songBeingDragged!.id,   albumName: album.name, albumThumbnail: album.thumbnail!, overlay: album.dominantColor!, artistName: artist.name, name: songBeingDragged?.name || 'ERROR NO DRAGGED SONG', score: songBeingDragged?.score || 0, isMain: true }
+          const songsAsComparisonSong:ComparisonSongUIItem ={ id: songBeingDragged!.id,   albumName: album.name, thumbnail: album.thumbnail!, overlay: album.dominantColor!, artistName: artist.name, name: songBeingDragged?.name || 'ERROR NO DRAGGED SONG', score: songBeingDragged?.score || 0, isMain: true }
           const otherSongs = $comparisonSongs.data.compareToOtherSongsByOtherArtists.map(it => mapComparisonSongToComparisonSongUIItem(it, false) )
           setComparisonSongs([...otherSongs, songsAsComparisonSong])
         }
@@ -99,8 +98,9 @@ export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, o
       }
     }
 
+
     const unwrapGroups = (groups:Array<RatedSongItemGrouped>) => {
-      return groups.reduce<RatedMusicItemUI[]>((acc,curr)=> {
+      return groups.reduce<RaterUIItem[]>((acc,curr)=> {
         return [...acc, ...curr.items ]
       }, [])
     } 
@@ -110,10 +110,10 @@ export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, o
         return
       }
       const store = new MusicStore(musicState)
-      const items = store.getItems() 
+      const items = store.getRaterItems()
       setScope(store.getScope())
-       const groupCloseItems = (ratedItems:RatedMusicItemUI[]) => {
-            const groupedItems = ratedItems.reduce((acc:RatedSongItemGrouped[] , curr:RatedMusicItemUI) => {
+       const groupCloseItems = (ratedItems:RaterUIItem[]) => {
+            const groupedItems = ratedItems.reduce((acc:RatedSongItemGrouped[] , curr:RaterUIItem) => {
                 const position =  state.scaler.toPosition(curr.score) 
                 const overlap = acc.find((it:RatedSongItemGrouped) =>  Math.abs(Number(it.position) - position) < CLOSENESS_THRESHOLD  )
                 if (overlap) {
@@ -133,7 +133,7 @@ export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, o
         const rightGroups =  groupCloseItems(rightItems)
         const finalItems = unwrapGroups([...leftGroups, ...rightGroups]) 
         setItems(finalItems)
-    }, [musicState.data, musicState.filters, state.scaler])
+    }, [musicState.data, musicState.filters, state.scaler, musicState])
 
 
     return <React.Fragment>

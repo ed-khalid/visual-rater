@@ -1,14 +1,33 @@
-export enum ItemType {
-    MUSIC
-}
-export abstract class Item {
+import { RaterOrientation } from "../ui/RaterTypes";
 
-    constructor(public id:string, public name:string) {
-
-    }
+export interface Item {
+    id:string
+    name:string
 }
-export class RatedItem extends Item {
-    public constructor(item:Item, public score:number) {
-        super(item.id, item.name);
-    }
+export interface RatedItem extends Item {
+    score:number;
 } 
+export interface MusicUIItem extends RatedItem {
+    thumbnail?:string
+    overlay:string
+} 
+export interface AlbumUIItem extends MusicUIItem {
+    artistName:string
+    year?:string
+} 
+export interface SongUIItem extends AlbumUIItem {
+    albumName:string
+    number?:number
+} 
+export type RaterTier = number
+export interface RaterUIItem extends MusicUIItem {
+    orientation:RaterOrientation,
+    tier:RaterTier
+    nodeRef:any 
+}
+
+export interface ComparisonSongUIItem extends SongUIItem {
+       isMain:boolean 
+}  
+
+export type RatedSongUIItem = RaterUIItem & SongUIItem     

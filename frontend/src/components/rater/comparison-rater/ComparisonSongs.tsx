@@ -1,6 +1,6 @@
 import React from "react"
 import './ComparisonSongs.css'
-import { ComparisonSongUIItem } from "../../../models/ui/ItemTypes"
+import { ComparisonSongUIItem } from "../../../models/domain/ItemTypes"
 
 interface ComparisonSongsProps {
     songs:ComparisonSongUIItem[]
@@ -76,7 +76,7 @@ export const ComparisonSongItem = ({mainlineX, item, y}:ComparisonSongItemProps)
         return <g className="comparison-item"> 
         <rect x={0} y={imageDimensions.y-1} opacity={0.5} width={100} height={10} fill={item.isMain? "yellow": "gray"} stroke="black" strokeWidth={0.2}></rect>
                     <circle className="item-thumbnail-overlay" cx={imageDimensions.x+imageDimensions.size/2} cy={imageDimensions.y+imageDimensions.size/2} r={imageDimensions.size/2} fill={color} stroke={color}></circle>
-                    <image fill={"rgba"+item.overlay} opacity={0.5} xlinkHref={item.albumThumbnail!} clipPath="inset(0% round 15px)" className="item-thumbnail" width={imageDimensions.size} x={imageDimensions.x} y={imageDimensions.y} height={imageDimensions.size} href={item.albumThumbnail!}/>
+                    <image fill={"rgba"+item.overlay} opacity={0.5} xlinkHref={item.thumbnail!} clipPath="inset(0% round 15px)" className="item-thumbnail" width={imageDimensions.size} x={imageDimensions.x} y={imageDimensions.y} height={imageDimensions.size} href={item.thumbnail!}/>
                     <text textAnchor="middle" className="item-name" fontSize={2} fill="black" x={songNameDimensions.x} y={songNameDimensions.y} dy=".35em">{item.name}</text>
                     <text textAnchor="middle" fontStyle="italic" className="artist-name" fontSize={1.7} fill="black" x={artistNameDimensions.x} y={artistNameDimensions.y} dy=".35em">{item.artistName}</text>
                     <text textAnchor="middle" fontStyle="italic" className="album-name" fontSize={1.7} fill="black" x={albumNameDimensions.x} y={albumNameDimensions.y} dy=".35em">{item.albumName}</text>
