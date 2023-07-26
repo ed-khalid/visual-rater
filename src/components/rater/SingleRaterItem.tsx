@@ -1,15 +1,14 @@
 import React, { useEffect } from "react";
 import { select } from 'd3-selection'
 import { drag } from 'd3-drag'
-import { RatedMusicItemUI } from "../../models/ui/ItemTypes";
 import { Scaler } from "../../functions/scale";
 import { DragBehavior } from "./behaviors/DragBehavior";
 import './SingleRaterItem.css' 
-import { RatedItem } from "../../models/domain/ItemTypes";
+import { RatedItem, RaterUIItem } from "../../models/domain/ItemTypes";
 import { RATER_TIER_WIDTH, SVG_IMAGE_SIZE, RaterOrientation } from "../../models/ui/RaterTypes";
 
 interface SingleRaterItemProps {
-    item:RatedMusicItemUI
+    item:RaterUIItem
     mainlineX:number
     highlightOnDrag:(item:SVGGElement, toggleOn:boolean) => void
     isReadonly:boolean

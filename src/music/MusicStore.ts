@@ -1,6 +1,6 @@
-import { mapArtistToRatedItem, mapAlbumToRatedItem, mapSongToRatedItem } from "../functions/mapper"
+import { mapAlbumToRaterUIItem, mapAlbumToUIItem, mapArtistToRaterUIItem, mapArtistToUIItem, mapSongToRaterUIItem, mapSongToUIItem } from "../functions/mapper"
 import { Artist, Album, Song } from "../generated/graphql"
-import { RatedMusicItemUI, RatedSongItemUI } from "../models/ui/ItemTypes"
+import { RaterUIItem } from "../models/domain/ItemTypes"
 import { RaterOrientation } from "../models/ui/RaterTypes"
 import { MusicData } from "./MusicData"
 import { MusicFilters } from "./MusicFilters"
@@ -62,46 +62,57 @@ export class MusicStore {
     else if (this.filters.onlyArtists()) {
       return MusicScope.ALBUM
     }
-    else if (this.filters.onlyArtistsAndAlbums()) {
-      return MusicScope.SONG;
-    // artists/songs without albums (i.e if filtering by score)  
-    } else if (this.filters.onlyArtistsAndSongs()) {
-      return MusicScope.SONG;
-    // just get to the lower level
-    } else {
+    else {
       return MusicScope.SONG
     }
   }
 
-
-  public getSongs() {
-    let items:RatedSongItemUI[] = []
-    if (this.getScope() === MusicScope.SONG) {
+  public getItems() {
+    switch(this.getScope()) {
+      case MusicScope.ARTIST: {
+        return this.data.artists.map(it => mapArtistToUIItem(it))
+      }
+      case MusicScope.ALBUM: {
+        return this.filters.filterAlbumsByArtist(this.data.albums).map(it => mapAlbumToUIItem(it))
+      }
+      case MusicScope.SONG: {
         const filteredByArtists = this.filters.filterSongsByArtist(this.data.songs)
         const filteredSongs = this.filters.filterSongsByAlbum(filteredByArtists)
         return filteredSongs.map(song => {
             const album = this.data.albums.find(it => it.id === song.albumId) 
             const artist = this.data.artists.find(it => it.id === song.artistId) 
-            return mapSongToRatedItem(song,album!, artist!)
+            return mapSongToUIItem(song,album!, artist!)
         })
+      } 
     }
-    return items;
   }  
 
+  /** 
+   *  possible filter states: (ScoreFilter applies to all SONG cases (for now))
+   *  artists [ ] albums [ ] songs [ ] = Scope.ARTIST, show ARTISTS 
+   *  artists [x] albums [ ] songs [ ] = Scope.ALBUM,  show ALBUMS for ARTISTS
+   *  artists [x] albums [x] songs [ ] = Scope.SONG, show SONGS for ARTISTS in ALBUMS     
+   *  artists [x] albums [ ] songs [x] = Scope.SONG, shows SONGS for ARTISTS 
+   *  artists [x] albums [x] songs [x] = Scope.SONG, shows SONGS  for ARTTIST in ALBUMS, as well as SONGS which could come from other sources
+   *  artists [ ] albums [x] songs [x] = Scope.SONG, show all SONGS from ALBUMS as well as SONGS 
+   *  artists [ ] albums [x] songs [ ] = Scope.SONG, show all SONGS from ALBUMS 
+   *  artists [ ] albums [ ] songs [x] = Scope.SONG, show all SONGS (from various sources)
+   */
 
-  public getItems() {
+
+  public getRaterItems() {
     let whichOrientation = RaterOrientation.LEFT
-    let items:RatedMusicItemUI[] = [];
+    let items:RaterUIItem[] = [];
     if (this.filters.areEmpty()) {
       items = this.data.artists.map(it => {
         whichOrientation = switchOrientation(whichOrientation)
-        return mapArtistToRatedItem(it, whichOrientation)
+        return mapArtistToRaterUIItem(it, whichOrientation)
       })
     }
     else if (this.filters.onlyArtists()) {
       items = this.filters.filterAlbumsByArtist(this.data.albums).map(it => {
         whichOrientation = switchOrientation(whichOrientation)
-        return mapAlbumToRatedItem(it, whichOrientation)
+        return mapAlbumToRaterUIItem(it, whichOrientation)
       })
     }
     else if (this.filters.onlyArtistsAndAlbums()) {
@@ -111,7 +122,7 @@ export class MusicStore {
           const album = this.data.albums.find(it => it.id === song.albumId)
           const artist = this.data.artists.find(it => it.id === song.artistId) 
           if (album && artist) {
-            return mapSongToRatedItem(song, album, artist, whichOrientation)
+            return mapSongToRaterUIItem(song, album, artist, whichOrientation)
           } else {
             throw Error(`cannot find album for song ${song}`)
           }
@@ -124,7 +135,7 @@ export class MusicStore {
           const album = this.data.albums.find(it => it.id === song.albumId)
           const artist = this.data.artists.find(it => it.id === song.artistId) 
           if (album && artist) {
-            return mapSongToRatedItem(song, album, artist, whichOrientation)
+            return mapSongToRaterUIItem(song, album, artist, whichOrientation)
           } else {
             throw Error(`cannot find album for song ${song}`)
           }

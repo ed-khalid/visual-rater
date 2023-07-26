@@ -1,9 +1,9 @@
 import { select } from "d3-selection";
-import { RatedMusicItemUI } from "../../models/ui/ItemTypes";
 import { RATER_TIER_WIDTH, RaterOrientation, SVG_IMAGE_SIZE } from "../../models/ui/RaterTypes";
 import { ANIMATION_DURATION } from "../../models/ui/Animation";
+import { RaterUIItem } from "../../models/domain/ItemTypes";
 
-    export const animateOnEnter = (item:RatedMusicItemUI, mainlineX:number) => {
+    export const animateOnEnter = (item:RaterUIItem, mainlineX:number) => {
         const tierOffset = RATER_TIER_WIDTH * item.tier 
         const imageSize = SVG_IMAGE_SIZE;
         const x = (item.orientation === RaterOrientation.LEFT) ?(mainlineX - tierOffset) : (mainlineX + tierOffset) 
@@ -15,7 +15,7 @@ import { ANIMATION_DURATION } from "../../models/ui/Animation";
         select(item.nodeRef.current).select('.item-score').transition().duration(ANIMATION_DURATION).attr('x', x+imageSize/2)
     } 
 
-    export const animateOnExit = (item:RatedMusicItemUI, mainlineX:number)  => {
+    export const animateOnExit = (item:RaterUIItem, mainlineX:number)  => {
         const EXIT_DURATION = ANIMATION_DURATION + 200; 
         const tierOffset = RATER_TIER_WIDTH * item.tier 
         const imageSize = SVG_IMAGE_SIZE;
