@@ -9,12 +9,12 @@ import { useDrop } from 'react-dnd';
 import { RaterState } from './models/ui/RaterTypes';
 import { ArtistPanel } from './components/panels/ArtistPanel';
 import { AlbumPanel } from './components/panels/AlbumPanel';
-import { Breadcrumb, BreadcrumbPanel } from './components/panels/BreadcrumbPanel';
+import { BreadcrumbEntry, Breadcrumb } from './components/panels/BreadcrumbPanel';
 import { RaterAction, raterReducer } from './reducers/raterReducer';
 import { FilterMode, MusicAction } from './reducers/musicReducer';
 import { client } from './setupApollo';
 import { Reference } from '@apollo/client/cache';
-import { SearchPanel } from './components/panels/search/SearchPanel';
+import { Search } from './components/panels/search/SearchPanel';
 import { BreadcrumbBuilder } from './functions/breadcrumb.builder';
 import { MusicNavigationPanel } from './components/panels/musicnavigation/MusicNavigation';
 import { MusicStore } from './music/MusicStore';
@@ -50,7 +50,7 @@ export const App = ({musicState, musicDispatch}:Props) => {
   const [$getSongs, $songs]  = useGetSongsLazyQuery() 
 
   // breadcrumbs 
-  const [breadcrumbs, setBreadcrumbs] = useState<Array<Breadcrumb>>([{ title: 'ARTISTS' , action: () => { setBreadcrumbs(breadcrumbs => ([breadcrumbs[0]])); musicDispatch({type: 'FILTER_CHANGE', filters: { artistIds:[], albumIds:[], songIds:[], scoreFilter: { start:0, end:5 } } }  )}}]) 
+  const [breadcrumbs, setBreadcrumbs] = useState<Array<BreadcrumbEntry>>([{ title: 'ARTISTS' , action: () => { setBreadcrumbs(breadcrumbs => ([breadcrumbs[0]])); musicDispatch({type: 'FILTER_CHANGE', filters: { artistIds:[], albumIds:[], songIds:[], scoreFilter: { start:0, end:5 } } }  )}}]) 
   // rater 
   const [raterState, raterDispatch] = useReducer<React.Reducer<RaterState,RaterAction>>(raterReducer, initialRaterState )
 
@@ -302,14 +302,14 @@ export const App = ({musicState, musicDispatch}:Props) => {
   return (
     <div className="App">
         <div id="left-sidebar" className="sidebar">
-           <SearchPanel onExternalAlbumSelect={onExternalAlbumSearchClick} />
+           <Search onExternalAlbumSelect={onExternalAlbumSearchClick} />
            {store.getScope() === MusicScope.SONG && <BlockRaterPanel musicState={musicState} />  }
         </div>
         <div id="right-sidebar" className="sidebar">
           {!$artists.loading && $artists.data && <MusicNavigationPanel onAlbumSelect={onAlbumSelect} onArtistExpand={onMusicNavArtistExpand} state={musicState} artists={$artists.data.artists.content as Artist[]} />}
           {store.getSelectedArtists().map(artist => <ArtistPanel onSongCategoryClick={onArtistPanelSongsClick} key={artist!.name+ '-panel'} artist={artist!}/>)}
         </div> 
-        <BreadcrumbPanel breadcrumbs={breadcrumbs}/>
+        <Breadcrumb breadcrumbs={breadcrumbs}/>
         {/* <div id="top-controls" className="panel">
           <div>
             <button onClick={onZoomResetClick}>Reset</button>

@@ -11,7 +11,7 @@ interface Props {
 }
 
 
-export const SearchPanel =  ({onExternalAlbumSelect}:Props) => {
+export const Search =  ({onExternalAlbumSelect}:Props) => {
     const [searchArtist, {data ,error,loading} ] = useSearchByArtistLazyQuery() 
     const [artistName, setArtistName] = useState<string>('')
 

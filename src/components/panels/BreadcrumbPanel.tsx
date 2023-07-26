@@ -1,23 +1,21 @@
 import React from 'react'
-import { Panel } from './Panel'
 
 interface Props {
-    breadcrumbs:Array<any>
-
+    breadcrumbs:Array<BreadcrumbEntry>
 }
 
-export const BreadcrumbPanel = ({breadcrumbs}:Props) => {
+export const Breadcrumb = ({breadcrumbs}:Props) => {
 
-    return <Panel className="fixed" id="breadcrumb" title="Breadcrumb">
+    return <div className="fixed" id="breadcrumb" title="Breadcrumb">
         <div id="breadcrumb-wrapper">
           {breadcrumbs.map((it,i) => <BreadcrumbElement noSlash={ i === breadcrumbs.length-1 } key={'breadcrumb-'+i} breadcrumb={it}/>)}
         </div>
-    </Panel>
+    </div>
 
 }
 
 interface BreadcrumbElementProps {
-    breadcrumb:Breadcrumb
+    breadcrumb:BreadcrumbEntry
     noSlash:boolean
 }
 
@@ -36,7 +34,7 @@ export const BreadcrumbElement =  ({breadcrumb, noSlash}:BreadcrumbElementProps)
 } 
 
 
-export type Breadcrumb = {
+export type BreadcrumbEntry = {
     title:string
     thumbnail?:string
     action:any

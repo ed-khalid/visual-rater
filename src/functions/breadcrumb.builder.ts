@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction } from "react";
 import { Album, Artist } from "../generated/graphql";
-import { Breadcrumb } from "../components/panels/BreadcrumbPanel";
+import { BreadcrumbEntry } from "../components/panels/BreadcrumbPanel";
 import { MusicAction } from "../reducers/musicReducer";
 
 
@@ -11,7 +11,7 @@ export const BreadcrumbBuilder = {
         title: 'MIXED'
         ,action: () => {}
     }},
-    buildArtistBreadcrumb: (artist:Artist, musicDispatch:Dispatch<MusicAction>, setBreadcrumbs:Dispatch<SetStateAction<Array<Breadcrumb>>>) => {
+    buildArtistBreadcrumb: (artist:Artist, musicDispatch:Dispatch<MusicAction>, setBreadcrumbs:Dispatch<SetStateAction<Array<BreadcrumbEntry>>>) => {
         return {
             title: artist.name 
             ,action:  () => {
