@@ -8,12 +8,12 @@ import { DragType } from './models/ui/DragType';
 import { useDrop } from 'react-dnd';
 import { RaterState } from './models/ui/RaterTypes';
 import { ArtistPanel } from './components/panels/ArtistPanel';
-import { BreadcrumbEntry, Breadcrumb } from './components/panels/BreadcrumbPanel';
+import { BreadcrumbEntry, Breadcrumb } from './components/floats/Breadcrumb';
 import { RaterAction, raterReducer } from './reducers/raterReducer';
 import { FilterMode, MusicAction } from './reducers/musicReducer';
 import { client } from './setupApollo';
 import { Reference } from '@apollo/client/cache';
-import { Search } from './components/panels/search/SearchPanel';
+import { Search } from './components/floats/search/Search';
 import { BreadcrumbBuilder } from './functions/breadcrumb.builder';
 import { MusicNavigationPanel } from './components/panels/musicnavigation/MusicNavigation';
 import { MusicStore } from './music/MusicStore';
@@ -80,7 +80,6 @@ export const App = ({musicState, musicDispatch}:Props) => {
   }
 
   const onMusicNavArtistExpand = (artist:Artist) => {
-    console.log(musicState.data)
       const store = new MusicStore(musicState) 
       if (!store.hasArtistLoadedAlbums(artist)) {
         $getAlbums({variables: { artistId: artist.id }})
@@ -305,7 +304,15 @@ export const App = ({musicState, musicDispatch}:Props) => {
            <DetailsPanel musicState={musicState} /> 
         </div>
         <div id="right-sidebar" className="sidebar">
-          {!$artists.loading && $artists.data && <MusicNavigationPanel onAlbumSelect={onAlbumSelect} onArtistExpand={onMusicNavArtistExpand} state={musicState} artists={$artists.data.artists.content as Artist[]} />}
+          {!$artists.loading && $artists.data && <MusicNavigationPanel 
+              onArtistExpand={onMusicNavArtistExpand} 
+              onArtistSwitch={onArtistSelect}
+              onArtistAdd={addArtist}
+              onAlbumSwitch={onAlbumSelect} 
+              onAlbumAdd={addAlbum}
+              state={musicState} 
+              artists={$artists.data.artists.content as Artist[]} 
+          />}
           {store.getSelectedArtists().map(artist => <ArtistPanel onSongCategoryClick={onArtistPanelSongsClick} key={artist!.name+ '-panel'} artist={artist!}/>)}
         </div> 
         <Breadcrumb breadcrumbs={breadcrumbs}/>
