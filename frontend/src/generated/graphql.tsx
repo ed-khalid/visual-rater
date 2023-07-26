@@ -33,7 +33,7 @@ export type Album = {
 export type Artist = Pageable & {
   __typename?: 'Artist';
   albums?: Maybe<Array<Maybe<Album>>>;
-  genre?: Maybe<Genre>;
+  dominantColor?: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
   metadata?: Maybe<ArtistMetadata>;
   name: Scalars['String']['output'];
@@ -42,7 +42,6 @@ export type Artist = Pageable & {
 };
 
 export type ArtistInput = {
-  genre?: InputMaybe<Genre>;
   name: Scalars['String']['input'];
   thumbnail?: InputMaybe<Scalars['String']['input']>;
   vendorId?: InputMaybe<Scalars['String']['input']>;
@@ -114,23 +113,15 @@ export type ExternalTrackSearchResult = {
   trackNumber: Scalars['Int']['output'];
 };
 
-export enum Genre {
-  Altrock = 'ALTROCK',
-  ArabicClassical = 'ARABIC_CLASSICAL',
-  ArabicPop = 'ARABIC_POP',
-  Electronic = 'ELECTRONIC',
-  Latom = 'LATOM',
-  Metal = 'METAL',
-  Pop = 'POP',
-  Rap = 'RAP',
-  Rock = 'ROCK'
-}
-
 export type Item = {
   id: Scalars['String']['output'];
   name: Scalars['String']['output'];
   score?: Maybe<Scalars['Float']['output']>;
 };
+
+export enum ItemType {
+  Music = 'MUSIC'
+}
 
 export type Mutation = {
   __typename?: 'Mutation';
@@ -138,7 +129,6 @@ export type Mutation = {
   CreateArtist?: Maybe<Artist>;
   DeleteAlbum?: Maybe<Scalars['Boolean']['output']>;
   DeleteSong?: Maybe<Scalars['Boolean']['output']>;
-  UpdateArtist?: Maybe<Artist>;
   UpdateSong?: Maybe<Song>;
 };
 
@@ -160,11 +150,6 @@ export type MutationDeleteAlbumArgs = {
 
 export type MutationDeleteSongArgs = {
   songId: Scalars['String']['input'];
-};
-
-
-export type MutationUpdateArtistArgs = {
-  artist?: InputMaybe<ArtistInput>;
 };
 
 
@@ -273,7 +258,7 @@ export type Subscription = {
 
 export type AlbumFieldsFragment = { __typename?: 'Album', id: string, artistId: string, name: string, year?: number | null, score?: number | null, dominantColor?: string | null, thumbnail?: string | null, songs: Array<{ __typename?: 'Song', id: string, albumId: string, artistId: string, name: string, number: number, discNumber: number, score?: number | null }> };
 
-export type ArtistFieldsFragment = { __typename?: 'Artist', id: string, name: string, thumbnail?: string | null, score?: number | null, albums?: Array<{ __typename?: 'Album', id: string, artistId: string, name: string, year?: number | null, score?: number | null, dominantColor?: string | null, thumbnail?: string | null, songs: Array<{ __typename?: 'Song', id: string, albumId: string, artistId: string, name: string, number: number, discNumber: number, score?: number | null }> } | null> | null, metadata?: { __typename?: 'ArtistMetadata', id: string, totalSongs: number, totalAlbums: number, songs: { __typename?: 'ArtistSongMetadata', classic: number, great: number, good: number, mediocre: number, bad: number, terrible: number, classicPercentage: number, greatPercentage: number, goodPercentage: number, mediocrePercentage: number, badPercentage: number, terriblePercentage: number } } | null };
+export type ArtistFieldsFragment = { __typename?: 'Artist', id: string, name: string, thumbnail?: string | null, dominantColor?: string | null, score?: number | null, albums?: Array<{ __typename?: 'Album', id: string, artistId: string, name: string, year?: number | null, score?: number | null, dominantColor?: string | null, thumbnail?: string | null, songs: Array<{ __typename?: 'Song', id: string, albumId: string, artistId: string, name: string, number: number, discNumber: number, score?: number | null }> } | null> | null, metadata?: { __typename?: 'ArtistMetadata', id: string, totalSongs: number, totalAlbums: number, songs: { __typename?: 'ArtistSongMetadata', classic: number, great: number, good: number, mediocre: number, bad: number, terrible: number, classicPercentage: number, greatPercentage: number, goodPercentage: number, mediocrePercentage: number, badPercentage: number, terriblePercentage: number } } | null };
 
 export type ArtistMetadataFieldsFragment = { __typename?: 'ArtistMetadata', id: string, totalSongs: number, totalAlbums: number, songs: { __typename?: 'ArtistSongMetadata', classic: number, great: number, good: number, mediocre: number, bad: number, terrible: number, classicPercentage: number, greatPercentage: number, goodPercentage: number, mediocrePercentage: number, badPercentage: number, terriblePercentage: number } };
 
@@ -343,14 +328,14 @@ export type GetAlbumsQuery = { __typename?: 'Query', albums?: Array<{ __typename
 export type GetArtistsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetArtistsQuery = { __typename?: 'Query', artists: { __typename?: 'ArtistPage', total: number, pageNumber: number, content: Array<{ __typename?: 'Artist', id: string, name: string, thumbnail?: string | null, score?: number | null, albums?: Array<{ __typename?: 'Album', id: string, artistId: string, name: string, year?: number | null, score?: number | null, dominantColor?: string | null, thumbnail?: string | null, songs: Array<{ __typename?: 'Song', id: string, albumId: string, artistId: string, name: string, number: number, discNumber: number, score?: number | null }> } | null> | null, metadata?: { __typename?: 'ArtistMetadata', id: string, totalSongs: number, totalAlbums: number, songs: { __typename?: 'ArtistSongMetadata', classic: number, great: number, good: number, mediocre: number, bad: number, terrible: number, classicPercentage: number, greatPercentage: number, goodPercentage: number, mediocrePercentage: number, badPercentage: number, terriblePercentage: number } } | null } | null> } };
+export type GetArtistsQuery = { __typename?: 'Query', artists: { __typename?: 'ArtistPage', total: number, pageNumber: number, content: Array<{ __typename?: 'Artist', id: string, name: string, thumbnail?: string | null, dominantColor?: string | null, score?: number | null, albums?: Array<{ __typename?: 'Album', id: string, artistId: string, name: string, year?: number | null, score?: number | null, dominantColor?: string | null, thumbnail?: string | null, songs: Array<{ __typename?: 'Song', id: string, albumId: string, artistId: string, name: string, number: number, discNumber: number, score?: number | null }> } | null> | null, metadata?: { __typename?: 'ArtistMetadata', id: string, totalSongs: number, totalAlbums: number, songs: { __typename?: 'ArtistSongMetadata', classic: number, great: number, good: number, mediocre: number, bad: number, terrible: number, classicPercentage: number, greatPercentage: number, goodPercentage: number, mediocrePercentage: number, badPercentage: number, terriblePercentage: number } } | null } | null> } };
 
 export type GetSingleArtistQueryVariables = Exact<{
   artistName?: InputMaybe<Scalars['String']['input']>;
 }>;
 
 
-export type GetSingleArtistQuery = { __typename?: 'Query', artist?: { __typename?: 'Artist', id: string, name: string, thumbnail?: string | null, score?: number | null, albums?: Array<{ __typename?: 'Album', id: string, artistId: string, name: string, year?: number | null, score?: number | null, dominantColor?: string | null, thumbnail?: string | null, songs: Array<{ __typename?: 'Song', id: string, albumId: string, artistId: string, name: string, number: number, discNumber: number, score?: number | null }> } | null> | null, metadata?: { __typename?: 'ArtistMetadata', id: string, totalSongs: number, totalAlbums: number, songs: { __typename?: 'ArtistSongMetadata', classic: number, great: number, good: number, mediocre: number, bad: number, terrible: number, classicPercentage: number, greatPercentage: number, goodPercentage: number, mediocrePercentage: number, badPercentage: number, terriblePercentage: number } } | null } | null };
+export type GetSingleArtistQuery = { __typename?: 'Query', artist?: { __typename?: 'Artist', id: string, name: string, thumbnail?: string | null, dominantColor?: string | null, score?: number | null, albums?: Array<{ __typename?: 'Album', id: string, artistId: string, name: string, year?: number | null, score?: number | null, dominantColor?: string | null, thumbnail?: string | null, songs: Array<{ __typename?: 'Song', id: string, albumId: string, artistId: string, name: string, number: number, discNumber: number, score?: number | null }> } | null> | null, metadata?: { __typename?: 'ArtistMetadata', id: string, totalSongs: number, totalAlbums: number, songs: { __typename?: 'ArtistSongMetadata', classic: number, great: number, good: number, mediocre: number, bad: number, terrible: number, classicPercentage: number, greatPercentage: number, goodPercentage: number, mediocrePercentage: number, badPercentage: number, terriblePercentage: number } } | null } | null };
 
 export type GetSongsQueryVariables = Exact<{
   albumId: Scalars['String']['input'];
@@ -434,6 +419,7 @@ export const ArtistFieldsFragmentDoc = gql`
   id
   name
   thumbnail
+  dominantColor
   score
   albums {
     ...AlbumFields

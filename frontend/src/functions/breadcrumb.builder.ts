@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction } from "react";
 import { Album, Artist } from "../generated/graphql";
-import { BreadcrumbEntry } from "../components/panels/BreadcrumbPanel";
+import { BreadcrumbEntry } from "../components/floats/Breadcrumb";
 import { MusicAction } from "../reducers/musicReducer";
 
 
