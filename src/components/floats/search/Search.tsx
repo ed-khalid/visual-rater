@@ -1,10 +1,10 @@
 import { useState } from "react"
 import { useSearchByArtistLazyQuery } from "../../../generated/graphql"
-import { Panel } from "../Panel"
 import React from "react"
 import { SearchInput } from "./SearchInput"
 import { SearchResults } from "./SearchResults"
 import './Search.css'
+import { Panel } from "../../panels/Panel"
 
 interface Props {
     onExternalAlbumSelect:any

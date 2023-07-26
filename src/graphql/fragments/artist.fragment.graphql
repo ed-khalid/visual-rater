@@ -3,6 +3,7 @@ fragment ArtistFields on Artist {
       id
       name 
       thumbnail
+      dominantColor
       score
       albums {
         ...AlbumFields

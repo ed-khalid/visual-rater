@@ -2,7 +2,7 @@
 - add genre to artist
 - add comparison radio buttons (artist, genre, all)
 - add compare by genre
-- re-introduce album/artist dashboards  (and drags)
+- re-introduce album/artist dashboards 
 
 ## APP
 - calculate artist tier
@@ -14,15 +14,12 @@
 
 ## SEARCH
 -- disable already existing albums in search (feature)
--- use name comparison instead of image (enhancement) 
-
-- understand how to properly do lazyloading hibernate (backend)
 - improve search (spotify icon only shown first, then spins to unroll input field when click, clicking it again rolls it back) (ui)
 - understand why zoom reset only works in a callback (frontend)
 - add zoom back 
 
 ### PANEL
-- work on default panel behavior (collapsible,closeable, moveable) (frontend)
+- work on default panel behavior (closeable, moveable) (frontend)
 - style panels better (ui)
 - revamp album details into a panel
 - improve album editing
@@ -30,4 +27,9 @@
 - add coloring to rater (good, great, bad) 
 - add graph of album progress
 - add review panel
+
+# ENHANCEMENTS
+- replace height transforms with performant ones  
+- understand how to properly do lazyloading hibernate (backend)
+- use name comparison instead of image (enhancement) 
 - introduce testing (storybook?)

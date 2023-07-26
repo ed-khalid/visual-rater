@@ -92,3 +92,19 @@ svg.rater {
   left:0;
   right:0;
 }
+/* ui items */
+.collapse-button {
+    transition: transform 200ms ease-in-out 10ms;   
+}  
+.collapse-button.collapsed {
+    transform: rotate(-90deg) 
+}  
+
+.expand-button.expanded {
+  transform: rotate(-0deg) 
+}  
+
+.expand-button {
+    transition: transform 100ms ease-in-out 10ms;   
+    transform: rotate(-90deg) 
+}  
