@@ -9,6 +9,7 @@ import { ComparisonSongs} from "./comparison-rater/ComparisonSongs"
 import { mapComparisonSongToComparisonSongUIItem } from "../../functions/mapper"
 import { MusicStore } from "../../music/MusicStore"
 import { sortByScore } from "../../functions/sort"
+import { RaterContents } from "../floats/RaterContents"
 
 interface Props {
     onAlbumClick:(albums:Album) => void 
@@ -138,6 +139,7 @@ export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, o
 
     return <React.Fragment>
       {comparisonSongs && <ComparisonSongs songs={comparisonSongs} />}
+      <RaterContents musicState={musicState} ></RaterContents>
       <svg className="rater" ref={svgRef} id="trackRater" viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`} preserveAspectRatio="xMidYMid slice" >
         <circle cx={0} cy={0} r={25} fill="red"></circle>
         <defs>
