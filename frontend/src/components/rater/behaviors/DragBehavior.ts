@@ -29,21 +29,25 @@ export const DragBehavior = ({item, g, scaler, highlightOnDrag, duringDrag, onDr
             highlightOnDrag(g, true)
             onDragStart(item.id)
             select(g).classed('selected', true)
+            const overlayY = Number(gNode.select('.item-thumbnail-overlay').attr('cy'))
+            const borderY = Number(gNode.select('.item-thumbnail-border').attr('cy'))  
             const imageY = Number(gNode.select('.item-thumbnail').attr('y'))
             const lineY1 = Number(gNode.select('.item-scoreline').attr('y1'))
             const lineY2 = Number(gNode.select('.item-scoreline').attr('y2'))
             const nameY = Number(gNode.select('.item-name').attr('y'))
             const scoreY = Number(gNode.select('.item-score').attr('y'))
-            sessionStorage.setItem(`node0`, JSON.stringify({x:undefined, y: { image: imageY, line: { y1: lineY1, y2:lineY2 }, score: scoreY, name: nameY}}))
+            sessionStorage.setItem(`node0`, JSON.stringify({x:undefined, y: { overlay: overlayY, border:borderY,  image: imageY, line: { y1: lineY1, y2:lineY2 }, score: scoreY, name: nameY}}))
         } else {
             nodes.forEach((node,index) => {
                 const gNode = select(node)
+                const overlayY = Number(gNode.select('.item-thumbnail-overlay').attr('cy'))
+                const borderY = Number(gNode.select('.item-thumbnail-border').attr('cy'))  
                 const imageY = Number(gNode.select('.item-thumbnail').attr('y'))
                 const lineY1 = Number(gNode.select('.item-scoreline').attr('y1'))
                 const lineY2 = Number(gNode.select('.item-scoreline').attr('y2'))
                 const nameY = Number(gNode.select('.item-name').attr('y'))
                 const scoreY = Number(gNode.select('.item-score').attr('y'))
-                sessionStorage.setItem(`node${index}`, JSON.stringify({x:undefined, y: { image: imageY, line: { y1: lineY1, y2:lineY2 }, score: scoreY, name: nameY}}))
+                sessionStorage.setItem(`node${index}`, JSON.stringify({x:undefined, y: { overlay: overlayY, border:borderY, image: imageY, line: { y1: lineY1, y2:lineY2 }, score: scoreY, name: nameY}}))
             })
         }
     },   
@@ -69,12 +73,16 @@ export const DragBehavior = ({item, g, scaler, highlightOnDrag, duringDrag, onDr
                         },
                         rect: nodeOriginalPosition.y.rect + delta,
                         name: nodeOriginalPosition.y.name + delta,
+                        border: nodeOriginalPosition.y.border + delta,
+                        overlay: nodeOriginalPosition.y.overlay + delta, 
                         score: event.y,
                         image: nodeOriginalPosition.y.image + delta,
                     }
                 } 
                 const newScore = clampToNearestIncrement(scaler.toScore(newPos.y.score))
                 gNode.select('.item-thumbnail').attr('y', newPos.y.image )
+                gNode.select('.item-thumbnail-overlay').attr('cy', newPos.y.overlay )
+                gNode.select('.item-thumbnail-border').attr('cy', newPos.y.border )
                 gNode.select('.item-name').attr('y', newPos.y.name )
                 gNode.select('.item-score').attr('y', newPos.y.score )
                 gNode.select('.item-scoreline').attr('y1', newPos.y.line.y1 )
