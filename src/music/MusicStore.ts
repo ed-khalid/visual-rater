@@ -1,10 +1,9 @@
-import { mapAlbumToRaterUIItem, mapAlbumToUIItem, mapArtistToRaterUIItem, mapArtistToUIItem, mapSongToRaterUIItem, mapSongToUIItem } from "../functions/mapper"
+import { mapAlbumToUIItem, mapArtistToUIItem, mapSongToUIItem, mapUIItemToRaterUIItem } from "../functions/mapper"
 import { Artist, Album, Song } from "../generated/graphql"
-import { RaterUIItem } from "../models/domain/ItemTypes"
 import { RaterOrientation } from "../models/ui/RaterTypes"
 import { MusicData } from "./MusicData"
 import { MusicFilters } from "./MusicFilters"
-import { MusicScope, MusicState } from "./MusicState"
+import { MusicZoomLevel, MusicState } from "./MusicState"
 
 
 const switchOrientation = (orientation: RaterOrientation) => {
@@ -18,10 +17,12 @@ export const createMusicStore = (state:MusicState) => {
 export class MusicStore {
   public filters:MusicFilters;  
   public data:MusicData;  
+  public zoomLevel:MusicZoomLevel
      
   constructor(state:MusicState) {
     this.data = state.data
     this.filters = new MusicFilters(state.filters)
+    this.zoomLevel = state.zoomLevel 
   }
 
   public getSelectedArtists(): Artist[] {
@@ -42,40 +43,33 @@ export class MusicStore {
   public hasArtistLoadedAlbums(artist:Artist) : boolean {
     return this.data.albums.filter(it => it.artistId === artist.id).length !== 0 
   }
-  
-
-  public hasNoFilters(): boolean {
-    return this.filters.areEmpty()
+  public hasAlbumLoadedSongs(album:Album) : boolean {
+    return this.data.songs.filter(it => it.albumId === album.id).length !== 0 
   }
+
+  public getLazyArtists() : Artist[]  {
+    return this.getSelectedArtists().filter(it => !this.hasArtistLoadedAlbums(it))
+  }
+  public getLazyAlbums() : Album[]  {
+    return this.getSelectedAlbums().filter(it => !this.hasAlbumLoadedSongs(it)  )
+  }
+  
   public filterArtistsByScore = () => this.filters.filterByScore<Artist>(this.data.artists)
   public filterAlbumsByScore = () => this.filters.filterByScore<Album>(this.data.albums)
   public filterSongsByScore = () => this.filters.filterByScore<Song>(this.data.songs)
 
-
-  // scope means what we're looking at right now  
-  public getScope() : MusicScope  {
-    // no filters, very top just artists
-    if (this.filters.areEmpty()) {
-      return MusicScope.ARTIST
-    } 
-    // we're looking at artists albums
-    else if (this.filters.onlyArtists()) {
-      return MusicScope.ALBUM
-    }
-    else {
-      return MusicScope.SONG
-    }
-  }
-
   public getItems() {
-    switch(this.getScope()) {
-      case MusicScope.ARTIST: {
+    switch(this.zoomLevel) {
+      case MusicZoomLevel.ALL: {
         return this.data.artists.map(it => mapArtistToUIItem(it))
       }
-      case MusicScope.ALBUM: {
+      case MusicZoomLevel.ARTIST: {
+        return this.getSelectedArtists().map(it => mapArtistToUIItem(it))
+      }
+      case MusicZoomLevel.ALBUM: {
         return this.filters.filterAlbumsByArtist(this.data.albums).map(it => mapAlbumToUIItem(it))
       }
-      case MusicScope.SONG: {
+      case MusicZoomLevel.SONG: {
         const filteredByArtists = this.filters.filterSongsByArtist(this.data.songs)
         const filteredSongs = this.filters.filterSongsByAlbum(filteredByArtists)
         return filteredSongs.map(song => {
@@ -101,46 +95,12 @@ export class MusicStore {
 
 
   public getRaterItems() {
-    let whichOrientation = RaterOrientation.LEFT
-    let items:RaterUIItem[] = [];
-    if (this.filters.areEmpty()) {
-      items = this.data.artists.map(it => {
-        whichOrientation = switchOrientation(whichOrientation)
-        return mapArtistToRaterUIItem(it, whichOrientation)
-      })
-    }
-    else if (this.filters.onlyArtists()) {
-      items = this.filters.filterAlbumsByArtist(this.data.albums).map(it => {
-        whichOrientation = switchOrientation(whichOrientation)
-        return mapAlbumToRaterUIItem(it, whichOrientation)
-      })
-    }
-    else if (this.filters.onlyArtistsAndAlbums()) {
-      items = this.filters.filterSongsByAlbum(this.data.songs)
-        .map(song => {
-          whichOrientation = switchOrientation(whichOrientation)
-          const album = this.data.albums.find(it => it.id === song.albumId)
-          const artist = this.data.artists.find(it => it.id === song.artistId) 
-          if (album && artist) {
-            return mapSongToRaterUIItem(song, album, artist, whichOrientation)
-          } else {
-            throw Error(`cannot find album for song ${song}`)
-          }
-        })
-    }
-    else if (this.filters.onlyArtistsAndSongs()) {
-      items = this.filters.filterSongsByArtist(this.data.songs)
-        .map(song => {
-          whichOrientation = switchOrientation(whichOrientation)
-          const album = this.data.albums.find(it => it.id === song.albumId)
-          const artist = this.data.artists.find(it => it.id === song.artistId) 
-          if (album && artist) {
-            return mapSongToRaterUIItem(song, album, artist, whichOrientation)
-          } else {
-            throw Error(`cannot find album for song ${song}`)
-          }
-        })
-    }
-      return items
+    const items = this.getItems(); 
+    let orientation = RaterOrientation.LEFT
+    return items.map(item => { 
+      const retv = mapUIItemToRaterUIItem(item, orientation,1)
+      orientation = switchOrientation(orientation)   
+      return retv
+    })
   }
 }

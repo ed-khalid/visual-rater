@@ -4,24 +4,30 @@ import { MusicNavigationAlbumRow } from "./MusicNavigationAlbumRow"
 import { DragType } from "../../../models/ui/DragType"
 import { useDrag } from "react-dnd"
 import { MusicStore } from "../../../music/MusicStore"
+import { ExpandButton } from "../../ui-items/ExpandButton"
 
 
 interface Props {
     artist:Artist
-    albums?:Album[]
-    artistToggleState:boolean|undefined
+    artistToggleState:boolean
     store:MusicStore
-    onAlbumSelect:(album:Album) => void
+    onArtistSwitch:(artist:Artist) => void
+    onArtistAdd:(artist:Artist) => void
+    onAlbumSwitch:(album:Album) => void
+    onAlbumAdd:(album:Album) => void
     toggleArtist:(artist:Artist) => void
 }
 
-export const MusicNavigationArtist = ({store,artist,artistToggleState, toggleArtist, onAlbumSelect, albums}:Props) => {
+export const MusicNavigationArtist = ({store,artist,artistToggleState, toggleArtist, onArtistSwitch, onArtistAdd, onAlbumSwitch, onAlbumAdd }:Props) => {
+    const handleExpandButtonClick = (newval:boolean) =>  {
+        toggleArtist(artist)
+    } 
 
-    const [ , drag ] = useDrag(() => ({
-        type: DragType.ARTIST,
-        item: { artist: artist }
-    })) 
-
+                    return <div style={{background:`url(${artist.thumbnail})`, backgroundSize: 'contain' }} className="flex col nav-artist-row" key={'nav-artist-'+artist.name}>
+                        <div onClick={() => toggleArtist(artist) } className="flex center nav-row artist">
+                            <ExpandButton theme="dark"  isExpanded={artistToggleState} setIsExpanded={handleExpandButtonClick} />
+                            <div className="flex col">
+                              <p className="nav-item-name">
                     return <div className="flex col nav-artist-row" key={'nav-artist-'+artist.name}>
                         <div className="flex center nav-artist-row artist">
                             { !artistToggleState &&  <svg width="16px" height="16px">
@@ -39,12 +45,12 @@ export const MusicNavigationArtist = ({store,artist,artistToggleState, toggleArt
                             </svg>}
                             <img ref={drag} className="item-thumbnail nav-item-thumbnail draggable" src={artist.thumbnail!} alt='' />  
                             <span className="nav-item-name">
-                            {artist.name}
+                                {artist.name}
                         </span>
                         </div> 
                         <div className="flex nav-artist-row albums">
                         {artistToggleState && store.getAlbumsForArtist(artist.id).map(album => <div key={'music-navigation-album-'+album.id} className="nav-artist-albums" >
-                            <MusicNavigationAlbumRow album={album} onAlbumSelect={onAlbumSelect} />
+                            <MusicNavigationAlbumRow album={album} onAlbumSwitch={onAlbumSwitch} onAlbumAdd={onAlbumAdd} store={store} />
                              </div> )}
                         </div> 
                         </div> 

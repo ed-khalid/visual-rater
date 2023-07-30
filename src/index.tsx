@@ -6,7 +6,7 @@ import {  ApolloProvider } from '@apollo/client';
 import { client } from './setupApollo';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
-import { ReducerProvider } from './ReducerProvider';
+import { ReducerProvider } from './providers/ReducerProvider';
 
 
 // app is inside ReducerProvider
@@ -17,7 +17,7 @@ if (container) {
     <React.StrictMode>
       <ApolloProvider client={client}>
       <DndProvider backend={HTML5Backend}>
-          <ReducerProvider />
+        <ReducerProvider />
         </DndProvider>
       </ApolloProvider>
     </React.StrictMode>

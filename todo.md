@@ -29,6 +29,7 @@
 - add review panel
 
 # ENHANCEMENTS
+- add albumId/artistId to comparison songs 
 - replace height transforms with performant ones  
 - understand how to properly do lazyloading hibernate (backend)
 - use name comparison instead of image (enhancement) 

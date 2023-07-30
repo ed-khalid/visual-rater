@@ -1,7 +1,7 @@
 import { zoomIdentity } from "d3-zoom"
 import { RaterState } from "../models/ui/RaterTypes"
 import { Scaler } from "../functions/scale"
-import { MusicScope } from "../music/MusicState"
+import { MusicZoomLevel } from "../music/MusicState"
 
 
 
@@ -9,22 +9,22 @@ export const raterReducer:React.Reducer<RaterState, RaterAction> = (state:any, a
     switch(action.type) {
          case 'ARTIST_SONG_THROUGH_METADATA_FILTER': {
             const update = action.data 
-            return { ...state, mode: MusicScope.SONG, selections: update.selections, scoreFilter: update.scoreFilter    } 
+            return { ...state, mode: MusicZoomLevel.SONG, selections: update.selections, scoreFilter: update.scoreFilter    } 
          }
          case 'BREADCRUMB_ARTIST': {
-            return {...state, mode: MusicScope.ARTIST, isReadonly: true}
+            return {...state, mode: MusicZoomLevel.ARTIST, isReadonly: true}
          }
          case 'ARTIST_SELECT' : {
             const update = action.data
-            return {...state, mode: MusicScope.ALBUM, isReadonly: true, selections: update.selections  }
+            return {...state, mode: MusicZoomLevel.ALBUM, isReadonly: true, selections: update.selections  }
          }
          case 'ALBUM_SELECT' : {
             const update = action.data
-            return {...state, mode: MusicScope.SONG, selections: update.selections  }
+            return {...state, mode: MusicZoomLevel.SONG, selections: update.selections  }
          }
          case 'ARTISTS_DATA_CHANGE': {
             const mode = state.mode
-            if (mode === MusicScope.ARTIST) {
+            if (mode === MusicZoomLevel.ARTIST) {
                 const update = action.data || []
                 return {...state, isReadonly:true, selections: update.selections }
             }

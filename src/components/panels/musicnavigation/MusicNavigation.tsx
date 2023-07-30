@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import { Album, Artist, Maybe } from "../../../generated/graphql"
+import { Album, Artist } from "../../../generated/graphql"
 import { Panel } from "../Panel"
 import { MusicState } from "../../../music/MusicState"
 import { MusicNavigationArtist } from "./MusicNavigationArtist"
@@ -8,18 +8,18 @@ import { MusicStore } from "../../../music/MusicStore"
 interface Props {
     artists:Artist[]
     state:MusicState
-    onAlbumSelect:(album:Album) => void
     onArtistExpand:(artist:Artist) => void
+    onArtistSwitch:(artist:Artist) => void
+    onArtistAdd:(artist:Artist) => void
+    onAlbumSwitch:(album:Album) => void
+    onAlbumAdd:(album:Album) => void
 }
 
 
-export const MusicNavigationPanel =  ({state, artists, onAlbumSelect, onArtistExpand}:Props) => {
+export const MusicNavigationPanel =  ({state, artists, onArtistExpand, onArtistSwitch, onArtistAdd, onAlbumSwitch, onAlbumAdd}:Props) => {
 
     const [ artistToggle, setArtistToggle] = useState<Map<string, boolean>>(new Map())
 
-    // const onAlbumSelectInternal = (album:Album, artist:Artist) => {
-    //     onAlbumSelect(album, artist)
-    // } 
     const sortAlbums =(albums?:Maybe<Album>[]|null) : Maybe<Album>[] => {
         if (albums) {
             return [...albums].sort(byYear)
@@ -33,23 +33,12 @@ export const MusicNavigationPanel =  ({state, artists, onAlbumSelect, onArtistEx
         }
         setArtistToggle(toggle => new Map(artistToggle.set(artist.id, !artistToggleState)) )
     } 
-    const byYear=(a:Maybe<Album>,b:Maybe<Album>) : number  => {
-        if (a && b && a.year && b.year) {
-            if (a.year < b.year) {
-                return -1;
-            }
-            if (a.year > b.year) {
-                return 1;
-            }
-        }
-        return 0; 
-    } 
     const store = new MusicStore(state) 
 
     return <Panel id="music-navigation" className='rightside-panel artist-albums' title={'Music Navigation'} isCollapsible={true}>
                 <div id="nav-artists" className="flex col">
                     {state.data.artists.map(artist => 
-                    <MusicNavigationArtist key={'music-navigation-artist-'+artist.id} store={store} onAlbumSelect={onAlbumSelect} artistToggleState={artistToggle.get(artist.id)} artist={artist} toggleArtist={toggleArtist} />
+                    <MusicNavigationArtist key={'music-navigation-artist-'+artist.id} store={store} onArtistSwitch={onArtistSwitch} onArtistAdd={onArtistAdd} onAlbumAdd={onAlbumAdd} onAlbumSwitch={onAlbumSwitch} artistToggleState={artistToggle.get(artist.id) || false} artist={artist} toggleArtist={toggleArtist} />
                     )}
 
                         {/* {  (artist.albums!.length > ALBUMS_PER_ARTIST) &&  <div className={`dashboard-albums-navigation flex-column ${(pageNumber === 1) ? 'disabled': '' }`} >

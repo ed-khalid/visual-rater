@@ -1,15 +1,18 @@
 import { useDrag } from "react-dnd"
 import React from 'react'
 import { Album } from "../../../generated/graphql"
-import { DragType } from "../../../models/ui/DragType"
+import { MusicStore } from '../../../music/MusicStore'
+import { MusicScope } from '../../../music/MusicState'
 
 interface Props  {
     album:Album
-    onAlbumSelect:any
+    store:MusicStore
+    onAlbumSwitch:(album:Album) => void
+    onAlbumAdd:(album:Album) => void
 }
 
 
-export const MusicNavigationAlbumRow = ({album, onAlbumSelect}:Props) => {
+export const MusicNavigationAlbumRow = ({album, onAlbumAdd, onAlbumSwitch, store}:Props) => {
 
     const [ , drag ] = useDrag(() => ({
         type: DragType.ALBUM,

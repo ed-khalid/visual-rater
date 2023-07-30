@@ -1,5 +1,5 @@
 import { Album, Artist, Song } from "../generated/graphql";
-import { MusicEntity, MusicState } from "../music/MusicState";
+import { MusicEntity, MusicState, MusicZoomLevel } from "../music/MusicState";
 
 
 export enum FilterMode { ADDITIVE, EXCLUSIVE }
@@ -46,6 +46,9 @@ export const musicReducer: React.Reducer<MusicState, MusicAction> =  (state: Mus
             }
             return state
         }
+        case 'ZOOM_LEVEL_CHANGE' : {
+            return {...state, zoomLevel : action.zoomLevel }
+        }
     }
 }
 
@@ -69,5 +72,10 @@ export type FilterChangeMusicAction = {
     },  
     mode?:FilterMode 
 }  
+
+export type ZoomLevelChangeMusicAction = {
+    type: 'ZOOM_LEVEL_CHANGE',
+    zoomLevel: MusicZoomLevel  
+} 
   
-export type MusicAction = FilterChangeMusicAction | DataChangeMusicAction  
+export type MusicAction = FilterChangeMusicAction | DataChangeMusicAction | ZoomLevelChangeMusicAction  
