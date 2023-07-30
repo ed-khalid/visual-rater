@@ -1,4 +1,5 @@
 import React, { ReactElement, useRef, useState } from 'react'
+import { CollapseButton } from '../ui-items/CollapseButton'
 
 interface PanelProps {
     title?:string
@@ -14,10 +15,9 @@ interface PanelProps {
 export const Panel = ({title, id, className, children, isMoveable=true, isResizable=false, isCloseable=true, isCollapsible=false }:PanelProps) => {
 
     const [ isCollapsed, setIsCollapsed ] = useState<boolean>(false) 
-    const collapseArrow = useRef<SVGSVGElement>(null)  
 
-    const collapse = () => {
-
+    const handleCollapseButtonClick = (newVal:boolean) => {
+        setIsCollapsed(isCollapsed => !isCollapsed)
     }  
 
     let classes = 'panel' 
@@ -29,11 +29,7 @@ export const Panel = ({title, id, className, children, isMoveable=true, isResiza
     <div className="panel-wrapper">
         {title && <div className="panel-header">
             <div className="panel-control-icons">
-                {isCollapsible && <svg ref={collapseArrow} onClick={() => setIsCollapsed(state => !state) } cursor={"pointer"} className={"panel-button-collapse " + (isCollapsed ? "collapsed": "" ) } width="16px" height="16px">
-                        <line stroke="white" x1="0" y1="1" x2="8" y2="15" />
-                        <line stroke="white" x1="14" y1="1" x2="8" y2="15" />
-                    
-                </svg> }
+                {isCollapsible && <CollapseButton isCollapsed={isCollapsed} setIsCollapsed={handleCollapseButtonClick} />}
             </div>
             <div className="panel-title">{title}</div> 
         </div>}

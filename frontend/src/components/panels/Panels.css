@@ -27,12 +27,6 @@
     top: 0px;
     left: 2px;
 } 
-.panel .panel-header .panel-control-icons .panel-button-collapse {
-    transition: transform 200ms ease-in-out 10ms;   
-}  
-.panel .panel-header .panel-control-icons .panel-button-collapse.collapsed {
-    transform: rotate(-90deg) 
-}  
 
 .panel-content {
   display:flex;
@@ -56,6 +50,7 @@
 
 /* music-navigation panel*/
 div#music-navigation {
+    user-select: none;
     top: 5px;
     right:2px;
 }
@@ -73,7 +68,6 @@ div#music-navigation .albums .album .album-thumbnail img {
     width: 1.5em;
     height: 1.5em;
     border-radius:15px;
-    cursor: pointer;
 
 } 
 div#music-navigation .albums .album .album-title {
@@ -144,6 +138,7 @@ div#artists-panel div.artist-name {
 
 /* block-rater panel  */
 div#block-rater {
+    user-select: none;
     height:70vh; 
 }
 div#block-rater .panel-content {
