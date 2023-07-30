@@ -2,6 +2,7 @@ import { Dispatch, SetStateAction } from "react";
 import { Album, Artist } from "../generated/graphql";
 import { BreadcrumbEntry } from "../components/floats/Breadcrumb";
 import { MusicAction } from "../music/MusicAction";
+import { MusicZoomLevel } from "../music/MusicState";
 
 
 
@@ -15,8 +16,8 @@ export const BreadcrumbBuilder = {
         return {
             title: artist.name 
             ,action:  () => {
-                musicDispatch({ type: 'FILTER_CHANGE', filters: { artistIds: [artist.id] , albumIds: [], songIds: [], scoreFilter: { start:0,end:5}}})
-                setBreadcrumbs(breadcrumbs => ([breadcrumbs[0], breadcrumbs[1]]))
+                musicDispatch({ type: 'FILTER_CHANGE', filters: { artistIds: [artist.id] , albumIds: [], songIds: [], scoreFilter: { start:0,end:5}}, zoomLevel: MusicZoomLevel.ALBUM })
+                setBreadcrumbs(breadcrumbs => ([breadcrumbs[0]]))
               }
            }
     },
