@@ -8,9 +8,10 @@ interface Props {
 export const Breadcrumb = ({breadcrumbs, onHomeClick }:Props) => {
 
     const breadcrumbsWithHome = [ { title: 'HOME',  action: onHomeClick  }, ...breadcrumbs]  
+    console.log(breadcrumbsWithHome)
     return <div className="fixed" id="breadcrumb" title="Breadcrumb">
         <div id="breadcrumb-wrapper">
-          {breadcrumbsWithHome.map((it,i) => <BreadcrumbElement noSlash={ i === breadcrumbs.length-1 } key={'breadcrumb-'+i} breadcrumb={it}/>)}
+          {breadcrumbsWithHome.map((it,i) => <BreadcrumbElement noSlash={ i === breadcrumbsWithHome.length-1 } key={'breadcrumb-'+i} breadcrumb={it}/>)}
         </div>
     </div>
 
