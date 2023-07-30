@@ -1,7 +1,5 @@
-query getAlbums($artistId:String!) {
-
-    albums(artistId:$artistId) {
+query albumsWithoutSongs($artistIds:[String!]) {
+    albumsWithoutSongs(artistIds:$artistIds) {
         ...AlbumFields
     }
-
 }

@@ -1534,19 +1534,23 @@
         "description": null,
         "fields": [
           {
-            "name": "albums",
+            "name": "albumsWithoutSongs",
             "description": null,
             "args": [
               {
-                "name": "artistId",
+                "name": "artistIds",
                 "description": null,
                 "type": {
-                  "kind": "NON_NULL",
+                  "kind": "LIST",
                   "name": null,
                   "ofType": {
-                    "kind": "SCALAR",
-                    "name": "String",
-                    "ofType": null
+                    "kind": "NON_NULL",
+                    "name": null,
+                    "ofType": {
+                      "kind": "SCALAR",
+                      "name": "String",
+                      "ofType": null
+                    }
                   }
                 },
                 "defaultValue": null,
@@ -1571,7 +1575,7 @@
             "deprecationReason": null
           },
           {
-            "name": "artist",
+            "name": "artistWithAlbumsAndSongs",
             "description": null,
             "args": [
               {
@@ -1596,7 +1600,7 @@
             "deprecationReason": null
           },
           {
-            "name": "artists",
+            "name": "artistsWithoutAlbumsPage",
             "description": null,
             "args": [],
             "type": {
@@ -1808,15 +1812,23 @@
             "description": null,
             "args": [
               {
-                "name": "albumId",
+                "name": "albumIds",
                 "description": null,
                 "type": {
                   "kind": "NON_NULL",
                   "name": null,
                   "ofType": {
-                    "kind": "SCALAR",
-                    "name": "String",
-                    "ofType": null
+                    "kind": "LIST",
+                    "name": null,
+                    "ofType": {
+                      "kind": "NON_NULL",
+                      "name": null,
+                      "ofType": {
+                        "kind": "SCALAR",
+                        "name": "String",
+                        "ofType": null
+                      }
+                    }
                   }
                 },
                 "defaultValue": null,
@@ -1828,12 +1840,16 @@
               "kind": "LIST",
               "name": null,
               "ofType": {
-                "kind": "NON_NULL",
+                "kind": "LIST",
                 "name": null,
                 "ofType": {
-                  "kind": "OBJECT",
-                  "name": "Song",
-                  "ofType": null
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "OBJECT",
+                    "name": "Song",
+                    "ofType": null
+                  }
                 }
               }
             },
