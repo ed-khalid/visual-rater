@@ -20,12 +20,6 @@ export const MusicNavigationPanel =  ({state, artists, onArtistExpand, onArtistS
 
     const [ artistToggle, setArtistToggle] = useState<Map<string, boolean>>(new Map())
 
-    const sortAlbums =(albums?:Maybe<Album>[]|null) : Maybe<Album>[] => {
-        if (albums) {
-            return [...albums].sort(byYear)
-        }
-        return []
-    }
     const toggleArtist = (artist:Artist) => {
         const artistToggleState = artistToggle.get(artist.id)
         if (!artistToggleState) {
@@ -35,8 +29,8 @@ export const MusicNavigationPanel =  ({state, artists, onArtistExpand, onArtistS
     } 
     const store = new MusicStore(state) 
 
-    return <Panel id="music-navigation" className='rightside-panel artist-albums' title={'Music Navigation'} isCollapsible={true}>
-                <div id="nav-artists" className="flex col">
+    return <Panel id="music-navigation" className='rightside-panel' title={'Music Navigation'} isCollapsible={true}>
+                <ul id="nav-artists" className="flex col">
                     {state.data.artists.map(artist => 
                     <MusicNavigationArtist key={'music-navigation-artist-'+artist.id} store={store} onArtistSwitch={onArtistSwitch} onArtistAdd={onArtistAdd} onAlbumAdd={onAlbumAdd} onAlbumSwitch={onAlbumSwitch} artistToggleState={artistToggle.get(artist.id) || false} artist={artist} toggleArtist={toggleArtist} />
                     )}
@@ -53,7 +47,7 @@ export const MusicNavigationPanel =  ({state, artists, onArtistExpand, onArtistS
                         { (artist.albums!.length > ALBUMS_PER_ARTIST) && <div className={`dashboard-albums-navigation flex-column ${pageNumber*ALBUMS_PER_ARTIST >= artist?.albums!.length? "disabled":"" }`}>
                             <FontAwesomeIcon onClick={() => setPageNumber(pageNumber+1)} icon={faArrowRight}></FontAwesomeIcon>
                         </div>} */}
-                </div>
+                </ul>
     </Panel>
 
 }

@@ -2,7 +2,7 @@ import { useDrag } from "react-dnd"
 import React from 'react'
 import { Album } from "../../../generated/graphql"
 import { MusicStore } from '../../../music/MusicStore'
-import { MusicScope } from '../../../music/MusicState'
+import { DragType } from "../../../models/ui/DragType"
 
 interface Props  {
     album:Album
@@ -19,9 +19,17 @@ export const MusicNavigationAlbumRow = ({album, onAlbumAdd, onAlbumSwitch, store
         item: { album: album }
     })) 
 
-
-    return <div ref={drag} className="flex col center nav-album   "> 
-        <img className="item-thumbnail nav-item-thumbnail" src={album.thumbnail!} alt='' />  
-        <span>{album.name}</span> 
+    return <li ref={drag} className="nav-row nav-row-album"> 
+    <div className="wrapper flex center">
+        <div className="left flex center">
+            <img className="nav-item-thumbnail" src={album.thumbnail!} alt='' />  
+            <span>{album.name}</span> 
+        </div> 
+        <div className="right flex center nav-row-actions">
+            <button>GO TO</button>
+            <button>ADD</button>
+            <button style={{fontSize: '4px'}}>ADD ALL ALBUMS</button>
+        </div>
     </div>
+    </li>
 }
