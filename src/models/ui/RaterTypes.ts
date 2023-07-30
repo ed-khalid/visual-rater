@@ -10,7 +10,7 @@ export type RaterState = {
 export enum RaterOrientation {
     RIGHT, LEFT
 }
-export interface RatedSongItemGrouped {
+export interface RaterUIItemGrouped {
         id:string
         position:number
         items:RaterUIItem[]

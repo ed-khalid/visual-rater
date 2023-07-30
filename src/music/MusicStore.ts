@@ -62,14 +62,12 @@ export class MusicStore {
 
   public getItems() {
     switch(this.zoomLevel) {
-      case MusicZoomLevel.ALL: {
-        return this.data.artists.map(it => mapArtistToUIItem(it))
-      }
       case MusicZoomLevel.ARTIST: {
         return this.getSelectedArtists().map(it => mapArtistToUIItem(it))
       }
       case MusicZoomLevel.ALBUM: {
-        return this.filters.filterAlbumsByArtist(this.data.albums).map(it => mapAlbumToUIItem(it))
+        const artistAlbums = this.getSelectedArtists().flatMap(it => this.getAlbumsForArtist(it))
+        return this.filters.filterAlbums(artistAlbums).map(it => mapAlbumToUIItem(it)) 
       }
       case MusicZoomLevel.SONG: {
         const filteredByArtists = this.filters.filterSongsByArtist(this.data.songs)
@@ -85,7 +83,6 @@ export class MusicStore {
 
   /** 
    *  possible filter states: (ScoreFilter applies to all SONG cases (for now))
-   *  artists [ ] albums [ ] songs [ ] z [WHATEVER]  show nothing   
    *  artists [x] albums [ ] songs [ ] z [ARTIST]   show all selected artists 
    *  artists [x] albums [ ] songs [ ] z [ALBUM]   show all albums for selected artists 
    *  artists [x] albums [ ] songs [ ] z [SONG]   show all songs for selected artists 
@@ -102,17 +99,7 @@ export class MusicStore {
    *  artists [x] albums [x] songs [x] z [ALBUM] show all albums for selected artists 
    *  artists [x] albums [x] songs [x] z [SONG] show all selected songs for selected albums for selected artists 
    * 
-   *  artists [ ] albums [x] songs [x] z [ARTIST] show nothing 
-   *  artists [ ] albums [x] songs [x]  show nothing
-   *  artists [ ] albums [x] songs [x]  show nothing 
-   * 
-   *  artists [ ] albums [x] songs [ ]  show nothing
-   *  artists [ ] albums [x] songs [ ]  show nothing
-   *  artists [ ] albums [x] songs [ ]  show nothing
-   * 
-   *  artists [ ] albums [ ] songs [x]  show nothing 
-   *  artists [ ] albums [ ] songs [x]  show nothing
-   *  artists [ ] albums [ ] songs [x]  show nothing
+ 
    */
 
 

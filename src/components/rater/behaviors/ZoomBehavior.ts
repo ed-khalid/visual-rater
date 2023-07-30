@@ -3,7 +3,7 @@ import { zoom } from 'd3-zoom'
 import { Scaler } from '../../../functions/scale';
 import { ScaleLinear } from 'd3-scale' 
 import { Dispatch, } from 'react';
-import {  RatedSongItemGrouped } from '../../../models/ui/RaterTypes';
+import {  RaterUIItemGrouped } from '../../../models/ui/RaterTypes';
 import { RaterAction } from '../../../reducers/raterReducer';
 interface Props {
     listener:SVGRectElement|null
@@ -26,7 +26,7 @@ export const ZoomBehavior = (props?:Props) => {
     }
 
     return {
-        zoomOnGroup: (group:RatedSongItemGrouped) =>  {
+        zoomOnGroup: (group:RaterUIItemGrouped) =>  {
             const min = group.items.reduce((curr,it) => Math.min(it.score,curr)  , Infinity)  
             const max = group.items.reduce((curr,it) => Math.max(it.score,curr)  , -Infinity)  
             return { start:(min-0.05)+'', end:(max+0.05)+'' }

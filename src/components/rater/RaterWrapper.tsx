@@ -1,10 +1,10 @@
 import React, { Dispatch, useEffect, useRef, useState } from "react"
 import { Album, Artist, Song, useUpdateSongMutation } from "../../generated/graphql"
 import { Rater } from "./Rater"
-import { RaterState, RATER_X, RATER_Y_BOTTOM, RATER_Y_TOP, RatedSongItemGrouped, RaterOrientation, SVG_HEIGHT, SVG_WIDTH, CLOSENESS_THRESHOLD } from "../../models/ui/RaterTypes"
+import { RaterState, RATER_X, RATER_Y_BOTTOM, RATER_Y_TOP, RaterOrientation, SVG_HEIGHT, SVG_WIDTH, CLOSENESS_THRESHOLD, RaterUIItemGrouped } from "../../models/ui/RaterTypes"
 import { RatedItem, RaterUIItem } from "../../models/domain/ItemTypes"
 import { RaterAction } from "../../reducers/raterReducer"
-import {  MusicZoomLevel, MusicState, MusicEntity } from "../../music/MusicState"
+import { MusicZoomLevel, MusicState } from "../../music/MusicState"
 import { MusicStore } from "../../music/MusicStore"
 import { sortByScore } from "../../functions/sort"
 import { ComparisonRater, ComparisonRaterType } from "./comparison-rater/ComparisonRater"
@@ -78,7 +78,7 @@ export const RaterWrapper = ({state, stateDispatch, comparisonRaterOptions,filte
     }
 
 
-    const unwrapGroups = (groups:Array<RatedSongItemGrouped>) => {
+    const unwrapGroups = (groups:Array<RaterUIItemGrouped>) => {
       return groups.reduce<RaterUIItem[]>((acc,curr)=> {
         return [...acc, ...curr.items ]
       }, [])
@@ -91,15 +91,15 @@ export const RaterWrapper = ({state, stateDispatch, comparisonRaterOptions,filte
       const store = new MusicStore(musicState)
       const items = store.getRaterItems()
        const groupCloseItems = (ratedItems:RaterUIItem[]) => {
-            const groupedItems = ratedItems.reduce((acc:RatedSongItemGrouped[] , curr:RaterUIItem) => {
+            const groupedItems = ratedItems.reduce((acc:RaterUIItemGrouped[] , curr:RaterUIItem) => {
                 const position =  state.scaler.toPosition(curr.score) 
-                const overlap = acc.find((it:RatedSongItemGrouped) =>  Math.abs(Number(it.position) - position) < CLOSENESS_THRESHOLD  )
+                const overlap = acc.find((it:RaterUIItemGrouped) =>  Math.abs(Number(it.position) - position) < CLOSENESS_THRESHOLD  )
                 if (overlap) {
                     overlap.items.push(curr)
                     sortByScore(overlap.items)
                     const sum = overlap.items.reduce<number>((acc,curr) => state.scaler.toPosition(curr.score) + acc, 0)    
                     overlap.position = sum/overlap.items.length 
-                    overlap.items.forEach((item, i) => item.tier = ((i+1)))
+                    overlap.items.forEach((item, i) => item.tier = ((i+1 % 9) + 1))
                 } else {
                     acc.push({ position, items:[curr], id: '' + acc.length + 1 })
                 }

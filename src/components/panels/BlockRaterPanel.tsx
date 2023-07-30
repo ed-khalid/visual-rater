@@ -108,7 +108,6 @@ export const ScorecardPanel = ({musicState, musicDispatch}:Props) => {
       const items = store.getItems() 
       const sortedItems = sortByScore(items)
       switch(store.zoomLevel) {
-        case MusicZoomLevel.ALL: 
         case MusicZoomLevel.ARTIST: {
           return <ArtistBlockDetails onClick={navigate} items={sortedItems}/>
         } 
