@@ -1,34 +1,33 @@
 import React, { Dispatch, useEffect, useRef, useState } from "react"
-import { Album, Artist, Song, useCompareSongToOtherSongsByOtherArtistsLazyQuery, useUpdateSongMutation } from "../../generated/graphql"
+import { Album, Artist, Song, useUpdateSongMutation } from "../../generated/graphql"
 import { Rater } from "./Rater"
 import { RaterState, RATER_X, RATER_Y_BOTTOM, RATER_Y_TOP, RatedSongItemGrouped, RaterOrientation, SVG_HEIGHT, SVG_WIDTH, CLOSENESS_THRESHOLD } from "../../models/ui/RaterTypes"
-import { ComparisonSongUIItem, RatedItem, RaterUIItem } from "../../models/domain/ItemTypes"
+import { RatedItem, RaterUIItem } from "../../models/domain/ItemTypes"
 import { RaterAction } from "../../reducers/raterReducer"
-import {  MusicScope, MusicState } from "../../music/MusicState"
-import { ComparisonSongs} from "./comparison-rater/ComparisonSongs"
-import { mapComparisonSongToComparisonSongUIItem } from "../../functions/mapper"
+import {  MusicZoomLevel, MusicState } from "../../music/MusicState"
 import { MusicStore } from "../../music/MusicStore"
 import { sortByScore } from "../../functions/sort"
-import { RaterContents } from "../floats/RaterContents"
+import { ComparisonRater, ComparisonRaterType } from "./comparison-rater/ComparisonRater"
+import { MusicAction } from "../../reducers/musicReducer"
 
 interface Props {
     onAlbumClick:(albums:Album) => void 
     onArtistClick:(artist:Artist) => void
     state:RaterState
     musicState:MusicState
+    musicDispatch:Dispatch<MusicAction>
+    comparisonRaterOptions:Map<ComparisonRaterType,boolean>|undefined
     stateDispatch:Dispatch<RaterAction>
 }
 
 
-export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, onAlbumClick}:Props) =>  {
+export const RaterWrapper = ({state, stateDispatch, comparisonRaterOptions, musicDispatch, musicState, onArtistClick, onAlbumClick}:Props) =>  {
     const gWrapper = useRef<SVGGElement>(null)
     const svgRef = useRef<SVGSVGElement>(null) 
-    const [comparisonSongs, setComparisonSongs] = useState<ComparisonSongUIItem[]>([]) 
-    const [songBeingDragged, setSongBeingDragged] = useState<Song|undefined>() 
-    const [ $getComparisonSongs, $comparisonSongs ] = useCompareSongToOtherSongsByOtherArtistsLazyQuery() 
     const [updateSong]  = useUpdateSongMutation();
-    const [scope, setScope]= useState<MusicScope>(MusicScope.ARTIST)
+    const [songBeingDragged, setSongBeingDragged] = useState<Song|undefined>()
     const [items, setItems] = useState<RaterUIItem[]>([])
+    const [dragUpdate, setDragUpdate] = useState<{itemId:string,score:number}|undefined>()
 
 
     // const mouseLocationListener =  (svg:SVGSVGElement) => {
@@ -46,42 +45,19 @@ export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, o
     //     })
     // } 
 
-    const duringDrag =  (itemId:string, score:number) => {
-      setSongBeingDragged(song => ( (song) ? { ...song, score }: undefined))
-      const song = comparisonSongs.find(it => it.id === itemId)
-      if (song) {
-        song.score = score 
-        const otherSongs = comparisonSongs.filter(it => it.id !== itemId) 
-        setComparisonSongs([song, ...otherSongs])
-      }
-    } 
-
     const loadComparisonSongs = (itemId:string) => {
-      if (scope !== MusicScope.SONG) return; 
+      if (musicState.zoomLevel !== MusicZoomLevel.SONG) return; 
       const song = musicState.data.songs.find(it => it.id === itemId )
       if (song) {
         setSongBeingDragged(song)
-        $getComparisonSongs({variables: { artistId: song.artistId, songId: song.id }})
       }
     }    
-    useEffect(() => {
-      if (!$comparisonSongs.loading && $comparisonSongs.data) {
-        const album = musicState.data.albums.find(it => it.id === songBeingDragged?.albumId ) 
-        const artist = musicState.data.artists.find(it => it.id === songBeingDragged?.artistId ) 
-        if (album && artist) {
-          const songsAsComparisonSong:ComparisonSongUIItem ={ id: songBeingDragged!.id,   albumName: album.name, thumbnail: album.thumbnail!, overlay: album.dominantColor!, artistName: artist.name, name: songBeingDragged?.name || 'ERROR NO DRAGGED SONG', score: songBeingDragged?.score || 0, isMain: true }
-          const otherSongs = $comparisonSongs.data.compareToOtherSongsByOtherArtists.map(it => mapComparisonSongToComparisonSongUIItem(it, false) )
-          setComparisonSongs([...otherSongs, songsAsComparisonSong])
-        }
-      }
-    }, [ $comparisonSongs.loading, $comparisonSongs.data, songBeingDragged, musicState])
-
-
+    const duringDrag =  (itemId:string, score:number) => {
+      setDragUpdate({itemId, score})
+    } 
 
     const onSongScoreUpdate = (id:string, score:number) => {
-          updateSong({variables: {song:  { id , score} }})
-          setComparisonSongs([])
-          setSongBeingDragged(undefined)
+        updateSong({ variables: {song:  { id , score} }})
     }  
 
     const handleOnAlbumClick =  (item:RatedItem) => {
@@ -112,7 +88,6 @@ export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, o
       }
       const store = new MusicStore(musicState)
       const items = store.getRaterItems()
-      setScope(store.getScope())
        const groupCloseItems = (ratedItems:RaterUIItem[]) => {
             const groupedItems = ratedItems.reduce((acc:RatedSongItemGrouped[] , curr:RaterUIItem) => {
                 const position =  state.scaler.toPosition(curr.score) 
@@ -120,6 +95,8 @@ export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, o
                 if (overlap) {
                     overlap.items.push(curr)
                     sortByScore(overlap.items)
+                    const sum = overlap.items.reduce<number>((acc,curr) => state.scaler.toPosition(curr.score) + acc, 0)    
+                    overlap.position = sum/overlap.items.length 
                     overlap.items.forEach((item, i) => item.tier = ((i+1)))
                 } else {
                     acc.push({ position, items:[curr], id: '' + acc.length + 1 })
@@ -138,10 +115,8 @@ export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, o
 
 
     return <React.Fragment>
-      {comparisonSongs && <ComparisonSongs songs={comparisonSongs} />}
-      <RaterContents musicState={musicState} ></RaterContents>
+      { musicState.zoomLevel === MusicZoomLevel.SONG && songBeingDragged && comparisonRaterOptions && <ComparisonRater  musicDispatch={musicDispatch} songBeingDragged={songBeingDragged} musicState={musicState} dragUpdate={dragUpdate} comparisonRaterOptions={comparisonRaterOptions} />}
       <svg className="rater" ref={svgRef} id="trackRater" viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`} preserveAspectRatio="xMidYMid slice" >
-        <circle cx={0} cy={0} r={25} fill="red"></circle>
         <defs>
               <clipPath id="item-clip-path-left">
                   <rect x={0} y={0} width={SVG_WIDTH/2} height={SVG_HEIGHT} ></rect>
@@ -154,8 +129,8 @@ export const RaterWrapper = ({state, stateDispatch, musicState, onArtistClick, o
             <Rater 
                   stateDispatch={stateDispatch}
                   position={{x:RATER_X, y:RATER_Y_BOTTOM}}
-                  isReadonly={scope !== MusicScope.SONG}
-                  onItemClick={(scope === MusicScope.ALBUM) ? handleOnAlbumClick : handleOnArtistClick}
+                  isReadonly={musicState.zoomLevel !== MusicZoomLevel.SONG}
+                  onItemClick={(musicState.zoomLevel === MusicZoomLevel.ALBUM) ? handleOnAlbumClick : handleOnArtistClick}
                   duringDrag={duringDrag}
                   onSongDrag={loadComparisonSongs} 
                   updateSongScore={onSongScoreUpdate}

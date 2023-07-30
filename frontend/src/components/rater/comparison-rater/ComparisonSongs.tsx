@@ -11,8 +11,9 @@ export const ComparisonSongs = ({songs}:ComparisonSongsProps) => {
     const orderedAndPositionedSongs = songs.sort((a,b) => (a.score > b.score ? -1 : a.score > b.score ? 1: 0)).map((it,i) => ({...it, y: 5+(i*10)  }) )  
     const mainSong = orderedAndPositionedSongs.find(it => it.isMain)  
     return <React.Fragment>
-       {orderedAndPositionedSongs && mainSong && <svg id="comparison-songs-box" viewBox={`20 ${mainSong?.y - 25} 35 35`}>
-        {orderedAndPositionedSongs.map((it,i) => <ComparisonSongItem key={'comparison-item-'+it.id} item={it} mainlineX={50} y={it.y} ></ComparisonSongItem> )}
+       {orderedAndPositionedSongs && mainSong && <svg viewBox={`20 ${mainSong?.y - 25} 35 35`}>
+        { orderedAndPositionedSongs.length > 1 && orderedAndPositionedSongs.map((it,i) => <ComparisonSongItem key={'comparison-item-'+it.id} item={it} mainlineX={50} y={it.y} ></ComparisonSongItem> )}
+        { orderedAndPositionedSongs.length === 1 && <text fontSize={2} x={20} y={mainSong.y-5}>{mainSong.artistName} has no other albums to compare</text> }
         </svg>}
     </React.Fragment>
 } 
@@ -75,12 +76,12 @@ export const ComparisonSongItem = ({mainlineX, item, y}:ComparisonSongItemProps)
     const color = "rgb" + item.overlay   
         return <g className="comparison-item"> 
         <rect x={0} y={imageDimensions.y-1} opacity={0.5} width={100} height={10} fill={item.isMain? "yellow": "gray"} stroke="black" strokeWidth={0.2}></rect>
-                    <circle className="item-thumbnail-overlay" cx={imageDimensions.x+imageDimensions.size/2} cy={imageDimensions.y+imageDimensions.size/2} r={imageDimensions.size/2} fill={color} stroke={color}></circle>
-                    <image fill={"rgba"+item.overlay} opacity={0.5} xlinkHref={item.thumbnail!} clipPath="inset(0% round 15px)" className="item-thumbnail" width={imageDimensions.size} x={imageDimensions.x} y={imageDimensions.y} height={imageDimensions.size} href={item.thumbnail!}/>
-                    <text textAnchor="middle" className="item-name" fontSize={2} fill="black" x={songNameDimensions.x} y={songNameDimensions.y} dy=".35em">{item.name}</text>
-                    <text textAnchor="middle" fontStyle="italic" className="artist-name" fontSize={1.7} fill="black" x={artistNameDimensions.x} y={artistNameDimensions.y} dy=".35em">{item.artistName}</text>
-                    <text textAnchor="middle" fontStyle="italic" className="album-name" fontSize={1.7} fill="black" x={albumNameDimensions.x} y={albumNameDimensions.y} dy=".35em">{item.albumName}</text>
-                    <text textAnchor="middle" className="item-score" fontSize={3.7} fontWeight="bold" fill={determineTextColor(item.overlay)} x={songScoreDimensions.x} y={songScoreDimensions.y} dy=".35em">{item.score.toFixed(2)}</text>
+                    <circle className=" comparison-item item-thumbnail-overlay" cx={imageDimensions.x+imageDimensions.size/2} cy={imageDimensions.y+imageDimensions.size/2} r={imageDimensions.size/2} fill={color} stroke={color}></circle>
+                    <image fill={"rgba"+item.overlay} opacity={0.5} xlinkHref={item.thumbnail!} clipPath="inset(0% round 15px)" className="comparison-item item-thumbnail" width={imageDimensions.size} x={imageDimensions.x} y={imageDimensions.y} height={imageDimensions.size} href={item.thumbnail!}/>
+                    <text textAnchor="middle" className="comparison-item item-name" fontSize={2} fill="black" x={songNameDimensions.x} y={songNameDimensions.y} dy=".35em">{item.name}</text>
+                    <text textAnchor="middle" fontStyle="italic" className="comparison-item artist-name" fontSize={1.7} fill="black" x={artistNameDimensions.x} y={artistNameDimensions.y} dy=".35em">{item.artistName}</text>
+                    <text textAnchor="middle" fontStyle="italic" className="comparison-item album-name" fontSize={1.7} fill="black" x={albumNameDimensions.x} y={albumNameDimensions.y} dy=".35em">{item.albumName}</text>
+                    <text textAnchor="middle" className="comparison-item item-score" fontSize={3.7} fontWeight="bold" fill={determineTextColor(item.overlay)} x={songScoreDimensions.x} y={songScoreDimensions.y} dy=".35em">{item.score.toFixed(2)}</text>
                </g>
 
 } 
