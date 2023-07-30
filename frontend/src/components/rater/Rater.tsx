@@ -7,7 +7,7 @@ import { Position } from '../../models/ui/Position';
 import { Dispatch, useEffect, useRef, useState, } from 'react';
 import React from 'react';
 import './Rater.css'
-import { RaterState, RATER_Y_TOP } from '../../models/ui/RaterTypes';
+import { RaterState, RATER_Y_TOP, RaterOrientation } from '../../models/ui/RaterTypes';
 import { ZoomBehavior } from './behaviors/ZoomBehavior';
 import { ANIMATION_DURATION } from '../../models/ui/Animation';
 import { Transition, TransitionGroup } from 'react-transition-group';
@@ -37,7 +37,6 @@ export const Rater = ({position, filterMode, itemsToFilter, state, stateDispatch
 
     const [currentItem, setCurrentItem] = useState<{id:string, score:number}|null>();  
     const g = useRef<SVGGElement>(null)
-    const itemsGroupRef = useRef<SVGGElement>(null)
     const zoomTarget= useRef<SVGGElement>(null)
     const zoomListener = useRef<SVGRectElement>(null)
     // const [shouldHide, setShouldHide] = useState<boolean>(false)
@@ -79,6 +78,9 @@ export const Rater = ({position, filterMode, itemsToFilter, state, stateDispatch
     }
     const axisSel:Selection<SVGGElement, unknown, null, undefined> = makeAxis(state.scaler.scale) 
 
+    const leftItems = items.filter(it => it.orientation === RaterOrientation.LEFT ) 
+    const rightItems = items.filter(it => it.orientation === RaterOrientation.RIGHT ) 
+
     return (
                    <g ref={g} className="rater-container">
                         <rect 
@@ -91,9 +93,31 @@ export const Rater = ({position, filterMode, itemsToFilter, state, stateDispatch
                       <g ref={zoomTarget} className="zoom-target">
                         <g className="rater-axis"></g>
                         <line className="rater-line" x1={position.x} y1={RATER_Y_TOP} x2={position.x} y2={position.y} />
-                        <g ref={itemsGroupRef} className="items">
+                        <g className="items">
                        <TransitionGroup component={null} >
-                      { items.map(item =>  
+                      { leftItems.map(item =>  
+                        <Transition key={'single-rater-item'+item.name} onEnter={()=> animateOnEnter(item,position.x)} onExit={() => animateOnExit(item, position.x)}  nodeRef={item.nodeRef} timeout={ANIMATION_DURATION}>
+                                <SingleRaterItem
+                                    item={item}
+                                    itemsToFilter={itemsToFilter}
+                                    filterMode={filterMode}
+                                    isReadonly={isReadonly}
+                                    highlightOnDrag={highlightItem}
+                                    nodeRef={item.nodeRef}
+                                    mainlineX={position.x}
+                                    scaler={state.scaler}
+                                    onClick={onItemClick}
+                                    duringDrag={duringDrag}
+                                    onDragStart={onSongDrag}
+                                    onDragEnd={updateItem}
+                                />
+                          </Transition>
+                      )}
+                      </TransitionGroup>
+                      </g>
+                        <g className="items">
+                       <TransitionGroup component={null} >
+                      { rightItems.map(item =>  
                         <Transition key={'single-rater-item'+item.name} onEnter={()=> animateOnEnter(item,position.x)} onExit={() => animateOnExit(item, position.x)}  nodeRef={item.nodeRef} timeout={ANIMATION_DURATION}>
                                 <SingleRaterItem
                                     item={item}
