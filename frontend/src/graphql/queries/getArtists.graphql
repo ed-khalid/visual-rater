@@ -1,5 +1,5 @@
-query getArtists {
-  artists {
+query artistsWithoutAlbumsPage {
+  artistsWithoutAlbumsPage {
     total 
     pageNumber
     content

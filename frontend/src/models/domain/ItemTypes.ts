@@ -13,10 +13,12 @@ export interface MusicUIItem extends RatedItem {
 } 
 export interface AlbumUIItem extends MusicUIItem {
     artistName:string
+    artistId:string
     year?:string
 } 
 export interface SongUIItem extends AlbumUIItem {
     albumName:string
+    albumId:string
     number?:number
 } 
 export type RaterTier = number

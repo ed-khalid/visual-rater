@@ -1,5 +1,5 @@
-query getSongs($albumId:String!) {
-    songs(albumId:$albumId) {
+query albumSongs($albumIds:[String!]!) {
+    songs(albumIds:$albumIds) {
         ...SongFields
     }
 
