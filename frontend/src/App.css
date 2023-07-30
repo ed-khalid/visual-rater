@@ -62,7 +62,7 @@ div.sidebar {
   display:flex;
 }
 div.sidebar .panel {
-  width: 20vw;
+  width: 15vw;
 }
 div#right-sidebar {
   top:0px;
