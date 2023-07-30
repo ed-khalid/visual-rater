@@ -1,16 +1,20 @@
 ### CURRENT 
-- add genre to artist
-- add comparison radio buttons (artist, genre, all)
-- add compare by genre
-- re-introduce album/artist dashboards 
+ # CONTEXT
+ - get rid of breadcrumbs in favor of a context
+ - add simple home button to reset context to all loaded artists
+ - what to do when items are more than a certain number (collapse into groups) ? infinite pan?  
+ # COMPARISON
+ - comparison songs click
 
+ 
+
+
+## FEATURE
+  # GENRE
+  - add genre to artist
+  - add compare by genre
 ## APP
 - calculate artist tier
-- improve breadcrumbs (ui)
-- search results hover slightly increases width due to border appearing on hover (already tried existing transparent border but need to solve for text being bold)  (ui)  
-
-## COMPARISON
--- introduce pagination by song score (100 songs per page)
 
 ## SEARCH
 -- disable already existing albums in search (feature)
@@ -34,3 +38,4 @@
 - understand how to properly do lazyloading hibernate (backend)
 - use name comparison instead of image (enhancement) 
 - introduce testing (storybook?)
+- search results hover slightly increases width due to border appearing on hover (already tried existing transparent border but need to solve for text being bold)  (ui)  

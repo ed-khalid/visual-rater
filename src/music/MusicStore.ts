@@ -36,8 +36,8 @@ export class MusicStore {
     return this.data.artists.find(it => it.id === album.artistId)
   } 
 
-  public getAlbumsForArtist(artistId:string) :Album[] {
-    return this.data.albums.filter(it => it.artistId === artistId)
+  public getAlbumsForArtist(artist:Artist) :Album[] {
+    return this.data.albums.filter(it => it.artistId === artist.id)
   }
 
   public hasArtistLoadedAlbums(artist:Artist) : boolean {
@@ -51,7 +51,9 @@ export class MusicStore {
     return this.getSelectedArtists().filter(it => !this.hasArtistLoadedAlbums(it))
   }
   public getLazyAlbums() : Album[]  {
-    return this.getSelectedAlbums().filter(it => !this.hasAlbumLoadedSongs(it)  )
+    const artists = this.getSelectedArtists()
+    const albums = artists.flatMap(it => this.getAlbumsForArtist(it))
+    return albums.filter(it => !this.hasAlbumLoadedSongs(it)  )
   }
   
   public filterArtistsByScore = () => this.filters.filterByScore<Artist>(this.data.artists)
@@ -83,14 +85,34 @@ export class MusicStore {
 
   /** 
    *  possible filter states: (ScoreFilter applies to all SONG cases (for now))
-   *  artists [ ] albums [ ] songs [ ] = Scope.ARTIST, show ARTISTS 
-   *  artists [x] albums [ ] songs [ ] = Scope.ALBUM,  show ALBUMS for ARTISTS
-   *  artists [x] albums [x] songs [ ] = Scope.SONG, show SONGS for ARTISTS in ALBUMS     
-   *  artists [x] albums [ ] songs [x] = Scope.SONG, shows SONGS for ARTISTS 
-   *  artists [x] albums [x] songs [x] = Scope.SONG, shows SONGS  for ARTTIST in ALBUMS, as well as SONGS which could come from other sources
-   *  artists [ ] albums [x] songs [x] = Scope.SONG, show all SONGS from ALBUMS as well as SONGS 
-   *  artists [ ] albums [x] songs [ ] = Scope.SONG, show all SONGS from ALBUMS 
-   *  artists [ ] albums [ ] songs [x] = Scope.SONG, show all SONGS (from various sources)
+   *  artists [ ] albums [ ] songs [ ] z [WHATEVER]  show nothing   
+   *  artists [x] albums [ ] songs [ ] z [ARTIST]   show all selected artists 
+   *  artists [x] albums [ ] songs [ ] z [ALBUM]   show all albums for selected artists 
+   *  artists [x] albums [ ] songs [ ] z [SONG]   show all songs for selected artists 
+   *  
+   *  artists [x] albums [x] songs [ ] z [ARTIST] show all selected artists 
+   *  artists [x] albums [x] songs [ ] z [ALBUM] show all selected albums for selected artists 
+   *  artists [x] albums [x] songs [ ] z [SONG] show all songs for selected albums for selected artists 
+   * 
+   *  artists [x] albums [ ] songs [x] z [ARITST] show all selected artists   
+   *  artists [x] albums [ ] songs [x] z [ALBUM] show all albums for selected songs for selected artists   
+   *  artists [x] albums [ ] songs [x] z [SONG] show all selected songs for selected artists   
+   * 
+   *  artists [x] albums [x] songs [x] z [ARTIST] show all selected artists 
+   *  artists [x] albums [x] songs [x] z [ALBUM] show all albums for selected artists 
+   *  artists [x] albums [x] songs [x] z [SONG] show all selected songs for selected albums for selected artists 
+   * 
+   *  artists [ ] albums [x] songs [x] z [ARTIST] show nothing 
+   *  artists [ ] albums [x] songs [x]  show nothing
+   *  artists [ ] albums [x] songs [x]  show nothing 
+   * 
+   *  artists [ ] albums [x] songs [ ]  show nothing
+   *  artists [ ] albums [x] songs [ ]  show nothing
+   *  artists [ ] albums [x] songs [ ]  show nothing
+   * 
+   *  artists [ ] albums [ ] songs [x]  show nothing 
+   *  artists [ ] albums [ ] songs [x]  show nothing
+   *  artists [ ] albums [ ] songs [x]  show nothing
    */
 
 

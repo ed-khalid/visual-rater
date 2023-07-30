@@ -32,10 +32,8 @@ export const musicReducer: React.Reducer<MusicState, MusicAction> =  (state: Mus
                 const albums = reconcileData<Album>(state.data.albums, newData.albums)
                 const songs = reconcileData<Song>(state.data.songs, newData.songs)
                 const newState= { ...state, data: { artists, albums, songs }, filters }
-                console.log('datachange', newState)
                 return newState
             }
-            console.log('datachange no change', state)
             return state
         }
         case 'FILTER_CHANGE': {
@@ -51,7 +49,6 @@ export const musicReducer: React.Reducer<MusicState, MusicAction> =  (state: Mus
             }
             const zoomLevel = (action.zoomLevel !== undefined) ? action.zoomLevel : state.zoomLevel  
             const newState = { ...state, filters, zoomLevel }
-            console.log('fitlerchange',newState)
             return newState
         }
     }
