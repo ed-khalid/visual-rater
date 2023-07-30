@@ -1,8 +1,9 @@
 import { useReducer } from "react"
 import { MusicState, MusicZoomLevel } from "../music/MusicState"
-import { MusicAction, musicReducer } from "../reducers/musicReducer"
+import { musicReducer } from "../reducers/musicReducer"
 import App from "../App"
 import React from "react"
+import { MusicAction } from "../music/MusicAction"
 
 
 

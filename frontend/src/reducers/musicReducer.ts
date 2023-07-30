@@ -1,8 +1,9 @@
 import { Album, Artist, Song } from "../generated/graphql";
-import { MusicEntity, MusicState, MusicZoomLevel } from "../music/MusicState";
+import { MusicAction } from "../music/MusicAction";
+import { FilterMode } from "../music/MusicFilters";
+import { MusicEntity, MusicState } from "../music/MusicState";
 
 
-export enum FilterMode { ADDITIVE, EXCLUSIVE }
 export const musicReducer: React.Reducer<MusicState, MusicAction> =  (state: MusicState, action: MusicAction) : MusicState => {
 
     const reconcileData = <T extends MusicEntity> (oldData:Array<T>, newData:Array<T>|undefined) => {
@@ -30,52 +31,28 @@ export const musicReducer: React.Reducer<MusicState, MusicAction> =  (state: Mus
                 const artists = reconcileData<Artist>(state.data.artists, newData.artists) 
                 const albums = reconcileData<Album>(state.data.albums, newData.albums)
                 const songs = reconcileData<Song>(state.data.songs, newData.songs)
-                return { ...state, data: { artists, albums, songs }, filters }
+                const newState= { ...state, data: { artists, albums, songs }, filters }
+                console.log('datachange', newState)
+                return newState
             }
+            console.log('datachange no change', state)
             return state
         }
         case 'FILTER_CHANGE': {
-            const filters = action.filters
+            const newFilters = action.filters
             const mode = action.mode
-            if (filters) {
-                const artistIds = reconcileFilters(state.filters.artistIds, filters.artistIds, mode)
-                const albumIds = reconcileFilters(state.filters.albumIds, filters.albumIds, mode) 
-                const songIds = reconcileFilters(state.filters.songIds, filters.songIds, mode)
-                const scoreFilter = (filters.scoreFilter) ? filters.scoreFilter : state.filters.scoreFilter
-                return { ...state, filters: { artistIds, albumIds, songIds, scoreFilter } } 
+            let filters = state.filters; 
+            if (newFilters) {
+                const artistIds = reconcileFilters(state.filters.artistIds, newFilters.artistIds, mode)
+                const albumIds = reconcileFilters(state.filters.albumIds, newFilters.albumIds, mode) 
+                const songIds = reconcileFilters(state.filters.songIds, newFilters.songIds, mode)
+                const scoreFilter = (newFilters.scoreFilter) ? newFilters.scoreFilter : state.filters.scoreFilter
+                filters = { artistIds, albumIds, songIds, scoreFilter }  
             }
-            return state
-        }
-        case 'ZOOM_LEVEL_CHANGE' : {
-            return {...state, zoomLevel : action.zoomLevel }
+            const zoomLevel = (action.zoomLevel !== undefined) ? action.zoomLevel : state.zoomLevel  
+            const newState = { ...state, filters, zoomLevel }
+            console.log('fitlerchange',newState)
+            return newState
         }
     }
 }
-
-
-export type DataChangeMusicAction = {
-    type: 'DATA_CHANGE',
-    data: {
-            artists?: Artist[],
-            albums?: Album[],
-            songs?: Song[]
-    } 
-} 
-
-export type FilterChangeMusicAction = {
-    type: 'FILTER_CHANGE',
-    filters: {
-            artistIds?: string[]
-            albumIds?: string[]
-            songIds?: string[]
-            scoreFilter?: { start: number, end: number }
-    },  
-    mode?:FilterMode 
-}  
-
-export type ZoomLevelChangeMusicAction = {
-    type: 'ZOOM_LEVEL_CHANGE',
-    zoomLevel: MusicZoomLevel  
-} 
-  
-export type MusicAction = FilterChangeMusicAction | DataChangeMusicAction | ZoomLevelChangeMusicAction  

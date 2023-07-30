@@ -5,7 +5,7 @@ import React from "react"
 import { MusicState } from "../../../music/MusicState"
 import { mapComparisonSongToComparisonSongUIItem } from "../../../functions/mapper"
 import { ComparisonSongs } from "./ComparisonSongs"
-import { MusicAction } from "../../../reducers/musicReducer"
+import { MusicAction } from "../../../music/MusicAction"
 
 interface Props {
     musicState:MusicState

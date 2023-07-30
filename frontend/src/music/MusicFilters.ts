@@ -24,3 +24,5 @@ export class MusicFilters {
   public filterSongsByArtist = (songs: Song[]) => songs.filter(it => this.filterById(it.artistId,this.artistIds))
 
 }
+
+export enum FilterMode { ADDITIVE, EXCLUSIVE }

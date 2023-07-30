@@ -10,6 +10,7 @@ interface Props {
 export const RaterZoomLevelControl = ({value, onZoomChange}:Props) => {
 
     const convertMusicZoomLevelToRangeNumber = () => {
+        if (value === MusicZoomLevel.ALL ) return 1
         if (value === MusicZoomLevel.ARTIST) return 1
         if (value === MusicZoomLevel.ALBUM) return 2
         if (value === MusicZoomLevel.SONG) return 3

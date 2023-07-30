@@ -5,7 +5,7 @@ import { MusicStore } from "../../music/MusicStore"
 import { sortByScore } from "../../functions/sort"
 import { mapArtistScoreToUI, mapSongScoreToUI } from "../../functions/scoreUI"
 import { AlbumUIItem, MusicUIItem, SongUIItem } from "../../models/domain/ItemTypes"
-import { MusicAction } from "../../reducers/musicReducer"
+import { MusicAction } from "../../music/MusicAction"
 
 interface Props {
     musicState:MusicState
@@ -92,15 +92,13 @@ export const ScorecardPanel = ({musicState, musicDispatch}:Props) => {
 
     switch(zoomLevel) {
       case MusicZoomLevel.ARTIST : {
-        musicDispatch({ type: 'FILTER_CHANGE', filters: { artistIds:[artistId] } })
-        musicDispatch({ type: 'ZOOM_LEVEL_CHANGE', zoomLevel: MusicZoomLevel.ALBUM })
+        musicDispatch({ type: 'FILTER_CHANGE', filters: { artistIds:[artistId] }, zoomLevel: MusicZoomLevel.ALBUM })
         break;
       } 
       case MusicZoomLevel.ALBUM : 
       case MusicZoomLevel.SONG: { 
         if (albumId) {
-        musicDispatch({ type: 'FILTER_CHANGE', filters: { artistIds:[artistId],albumIds:[albumId] } })
-        musicDispatch({ type: 'ZOOM_LEVEL_CHANGE', zoomLevel: MusicZoomLevel.SONG })
+        musicDispatch({ type: 'FILTER_CHANGE', filters: { artistIds:[artistId],albumIds:[albumId] }, zoomLevel: MusicZoomLevel.SONG  })
         }
         break;
       }
