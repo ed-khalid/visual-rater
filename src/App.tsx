@@ -14,7 +14,7 @@ import { Reference } from '@apollo/client/cache';
 import { Search } from './components/floats/search/Search';
 import { MusicNavigationPanel } from './components/panels/musicnavigation/MusicNavigation';
 import { MusicStore } from './music/MusicStore';
-import { MusicZoomLevel, MusicState, MusicEntity } from './music/MusicState';
+import { MusicZoomLevel, MusicState } from './music/MusicState';
 import { ScorecardPanel } from './components/panels/BlockRaterPanel';
 import { RaterZoomLevelControl } from './components/floats/RaterZoomLevelControl';
 import { ComparisonRaterType } from './components/rater/comparison-rater/ComparisonRater';
@@ -46,6 +46,8 @@ export const App = ({musicState, musicDispatch}:Props) => {
 
   const [$getSearchAlbumTracks, $searchAlbumTracks ] = useGetTracksForSearchAlbumLazyQuery()
   const [createAlbum, ] = useCreateAlbumMutation() 
+
+  const  [filterAwaitingLoad, setFilterAwaitingLoad] = useState<boolean>(false) 
 
   const [filterMode, setFilterMode] = useState<boolean>(false)
   const [itemsToFilter, setItemsToFilter] = useState<Array<string>>([])
@@ -86,6 +88,7 @@ export const App = ({musicState, musicDispatch}:Props) => {
       const store = new MusicStore(musicState) 
       if (!store.hasArtistLoadedAlbums(artist)) {
         $loadAlbumsWithoutSongs({variables: { artistIds: [artist.id] }})
+        setFilterAwaitingLoad(true)
       }
       musicDispatch({ type: 'FILTER_CHANGE', filters: { artistIds:[artist.id]  }, zoomLevel: MusicZoomLevel.ALBUM})
     }
@@ -102,6 +105,9 @@ export const App = ({musicState, musicDispatch}:Props) => {
     if (!$albumsWithoutSongs.loading && $albumsWithoutSongs.data) {
       const albums = $albumsWithoutSongs.data.albumsWithoutSongs
       if (albums && albums.length) {
+        if (filterAwaitingLoad) {
+          musicDispatch({ type: 'FILTER_CHANGE', filters: { albumIds: albums.map(it => it.id) }})
+        }
         const artistId = albums[0].artistId 
         const cache = client.cache
         const refs = albums.map(it => client.writeFragment({ data: it, fragment: AlbumFieldsFragmentDoc, fragmentName: 'AlbumFields'}))
@@ -124,15 +130,15 @@ export const App = ({musicState, musicDispatch}:Props) => {
           } 
         });
         musicDispatch({ type: 'DATA_CHANGE', data: { albums: albums as Album[]}   })
+        setFilterAwaitingLoad(false)
       }
     }
-  }, [$albumsWithoutSongs.loading, $albumsWithoutSongs.data, musicDispatch])
+  }, [$albumsWithoutSongs.loading, $albumsWithoutSongs.data, musicDispatch, filterAwaitingLoad])
 
   const addAlbum = (album:Album) => {
     const store = new MusicStore(musicState) 
     const zoomLevel = store.zoomLevel; 
     switch (zoomLevel) {
-      case MusicZoomLevel.ALL: 
       case MusicZoomLevel.ARTIST: {
         onAlbumSelect(album)
         break;
@@ -154,7 +160,6 @@ export const App = ({musicState, musicDispatch}:Props) => {
     const zoomLevel = store.zoomLevel; 
     switch(zoomLevel) {
       // switch to the artist and show all their albums
-      case MusicZoomLevel.ALL: 
       case MusicZoomLevel.ARTIST: {
         if (!store.hasArtistLoadedAlbums(artist)) {
           $loadAlbumsWithoutSongs({ variables: { artistIds: [artist.id] }})
@@ -183,7 +188,6 @@ export const App = ({musicState, musicDispatch}:Props) => {
 
   useEffect(() => {
     switch(musicState.zoomLevel) {
-      case MusicZoomLevel.ALL:
       case MusicZoomLevel.ARTIST: { break;} 
       case MusicZoomLevel.ALBUM: {  
         const store = new MusicStore(musicState) 
@@ -331,7 +335,7 @@ export const App = ({musicState, musicDispatch}:Props) => {
   }, [$artistWithAlbumsAndSongs.loading, $artistWithAlbumsAndSongs.data, searchAlbum, musicDispatch])
 
   const goHome = () => {
-    musicDispatch({ type : 'FILTER_CHANGE', filters: { artistIds:  musicState.data.artists.map(it => it.id ), albumIds:[], songIds:[], scoreFilter: { start:0, end:5}} , zoomLevel: MusicZoomLevel.ALL  })
+    musicDispatch({ type : 'FILTER_CHANGE', filters: { artistIds:  musicState.data.artists.map(it => it.id ), albumIds:[], songIds:[], scoreFilter: { start:0, end:5}} , zoomLevel: MusicZoomLevel.ARTIST  })
   } 
 
   const applyFilters = (shouldApply:boolean) => {
