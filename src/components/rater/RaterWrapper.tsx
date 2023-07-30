@@ -8,7 +8,7 @@ import {  MusicZoomLevel, MusicState } from "../../music/MusicState"
 import { MusicStore } from "../../music/MusicStore"
 import { sortByScore } from "../../functions/sort"
 import { ComparisonRater, ComparisonRaterType } from "./comparison-rater/ComparisonRater"
-import { MusicAction } from "../../reducers/musicReducer"
+import { MusicAction } from "../../music/MusicAction"
 
 interface Props {
     onAlbumClick:(albums:Album) => void 

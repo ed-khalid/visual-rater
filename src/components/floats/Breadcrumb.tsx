@@ -2,13 +2,15 @@ import React from 'react'
 
 interface Props {
     breadcrumbs:Array<BreadcrumbEntry>
+    onHomeClick:() => void
 }
 
-export const Breadcrumb = ({breadcrumbs}:Props) => {
+export const Breadcrumb = ({breadcrumbs, onHomeClick }:Props) => {
 
+    const breadcrumbsWithHome = [ { title: 'HOME',  action: onHomeClick  }, ...breadcrumbs]  
     return <div className="fixed" id="breadcrumb" title="Breadcrumb">
         <div id="breadcrumb-wrapper">
-          {breadcrumbs.map((it,i) => <BreadcrumbElement noSlash={ i === breadcrumbs.length-1 } key={'breadcrumb-'+i} breadcrumb={it}/>)}
+          {breadcrumbsWithHome.map((it,i) => <BreadcrumbElement noSlash={ i === breadcrumbs.length-1 } key={'breadcrumb-'+i} breadcrumb={it}/>)}
         </div>
     </div>
 
