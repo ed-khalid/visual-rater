@@ -12,5 +12,7 @@ export type SongItemPosition = {
         image:number
         name:number
         score:number
+        overlay:number
+        border:number
     }
 } 

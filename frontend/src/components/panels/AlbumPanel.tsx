@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react"
 import { Panel } from "./Panel"
-import { Album, GetArtistsDocument, Song, SongInput, useDeleteAlbumMutation, useUpdateSongMutation } from "../../generated/graphql"
+import { Album, ArtistsWithoutAlbumsPageDocument, Song, SongInput, useDeleteAlbumMutation, useUpdateSongMutation } from "../../generated/graphql"
 
 interface Props {
     album:Album
@@ -42,7 +42,7 @@ export const AlbumPanel = ({album, onClose}:Props) => {
         updateSong({ variables: { song }})
     }
     const onAlbumDelete = (album:Album) => {
-        deleteAlbum({variables: { albumId: album.id}, refetchQueries: [{query: GetArtistsDocument}]})
+        deleteAlbum({variables: { albumId: album.id}, refetchQueries: [{query: ArtistsWithoutAlbumsPageDocument}]})
         onClose()
     }
 
