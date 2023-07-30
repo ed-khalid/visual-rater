@@ -53,35 +53,65 @@ div#music-navigation {
     user-select: none;
     top: 5px;
     right:2px;
+    height:100%;
 }
-div#music-navigation .albums {
-    display:flex;
-    justify-content: space-evenly;
-    align-items:center;
-    flex-direction: row;
-    flex-wrap: wrap ;
+div#music-navigation .panel-content {
+    margin: 0;
 }
-div#music-navigation .albums .album {
-    width: 4em;
+div#music-navigation .panel-padding {
+    padding: 0;
 }
-div#music-navigation .albums .album .album-thumbnail img {
-    width: 1.5em;
-    height: 1.5em;
-    border-radius:15px;
-
+div#music-navigation ul#nav-artists {
+    width: 15vw;
+    margin: 0;
+    margin-top: 2px;
+    padding: 0;
+}
+div#music-navigation li.nav-row {
+    border-top: 1px solid black;
+    cursor: pointer;
+}
+li.nav-row {
+    font-size:18px;
+}
+li.nav-row img {
+    width: 22px;
+    height:22px;
+}
+li.nav-row span {
+    margin-left: 3px;
+}
+li.nav-row {
+    margin-top: 0px;
 } 
-div#music-navigation .albums .album .album-title {
-    font-size:0.4em;
+li.nav-row-album .wrapper {
+    width: 84%;
+    margin-left: 26px;
 } 
+li.nav-row-album {
+    background: rgb(211, 200, 200);
+} 
+li.nav-row-album img {
+    width: 20px;
+    height: 20px;
+} 
+li.nav-row-album span {
+    font-size: 10px; 
+}
+div#music-navigation li.nav-row .left {
+    width:70%;
+}
+div#music-navigation li.nav-row .right {
+    width:30%;
+}
+div#music-navigation li.nav-row button {
+    cursor:pointer;
+    width: 35px;
+    height:20px;
+    font-size:6px;
+}
 div.nav-album {
     font-size: 8px;
-} 
-div.nav-album img {
-    width: 25px;
-    height:25px;
-}
-div.nav-artist-row {
-    margin-top: 2px;
 } 
 div.nav-album {
     cursor:move;
@@ -151,11 +181,15 @@ div#block-rater ul {
     height:100%;
 }
 div#block-rater li {
+    cursor:pointer;
     align-items:center;
     font-size: 10px;
     text-align:center;
     border:1px solid black;
     border-top: none;
+}
+div#block-rater li:hover {
+    background: rgb(216, 216, 177);
 }
 div#block-rater li:first-child {
     border-top: 1px solid black;

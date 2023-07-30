@@ -47,9 +47,6 @@ g.read-only-item  circle {
     fill-opacity: 0.5 ;
 }  
 
-g.selected  circle {
-    fill: red ;
-}  
 g.read-only-item text {
     fill: rgba(61,61,61,0.2);
 }

@@ -3,10 +3,30 @@ div.float {
   border-radius: 15px;
 }
 
-div#rater-contents {
-    position:absolute;
+label#rater-zoom-level-control-label {
+  position:absolute;
+  top: -3.7px;
+  left: 40%;
+  text-align:center;
+}
+
+div#rater-zoom-level-control {
+    border:none;
     width:200px;
-    top: 49px; 
-    left: 21vw;
+    position:absolute;
+    left:0; 
+    right:0; 
+    height:30px;
+    font-size:8px;
+    margin: 0 auto; 
+    top: 40px; 
+    z-index:5;
+}
+datalist#markers {
+  display: flex;
+  flex-direction: column;
+  writing-mode: vertical-lr;
+  justify-content:space-between;
+  width: 200px;
 }
 
