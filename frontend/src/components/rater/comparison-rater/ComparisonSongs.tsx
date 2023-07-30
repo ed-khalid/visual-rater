@@ -74,7 +74,7 @@ export const ComparisonSongItem = ({mainlineX, item, y}:ComparisonSongItemProps)
     }  
 
     const color = "rgb" + item.overlay   
-        return <g className="comparison-item"> 
+        return <g cursor={"pointer"} className="comparison-item"> 
         <rect x={0} y={imageDimensions.y-1} opacity={0.5} width={100} height={10} fill={item.isMain? "yellow": "gray"} stroke="black" strokeWidth={0.2}></rect>
                     <circle className=" comparison-item item-thumbnail-overlay" cx={imageDimensions.x+imageDimensions.size/2} cy={imageDimensions.y+imageDimensions.size/2} r={imageDimensions.size/2} fill={color} stroke={color}></circle>
                     <image fill={"rgba"+item.overlay} opacity={0.5} xlinkHref={item.thumbnail!} clipPath="inset(0% round 15px)" className="comparison-item item-thumbnail" width={imageDimensions.size} x={imageDimensions.x} y={imageDimensions.y} height={imageDimensions.size} href={item.thumbnail!}/>

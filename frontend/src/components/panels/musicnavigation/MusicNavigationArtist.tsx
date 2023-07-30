@@ -38,7 +38,7 @@ export const MusicNavigationArtist = ({store,artist,artistToggleState, toggleArt
                                 </div>
                             </div>
                         </li>
-                        {artistToggleState && store.getAlbumsForArtist(artist.id).map(album => 
+                        {artistToggleState && store.getAlbumsForArtist(artist).map(album => 
                             <MusicNavigationAlbumRow key={'music-navigation-album-row-'+ album.id } album={album} onAlbumSwitch={onAlbumSwitch} onAlbumAdd={onAlbumAdd} store={store} />
                              )}
                     </React.Fragment>

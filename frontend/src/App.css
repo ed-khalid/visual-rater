@@ -48,6 +48,10 @@ div.drop-target {
 } 
 
  
+.App.filterMode {
+  cursor:crosshair;
+
+}
 .App {
   text-align: center;
   background-color: #fff;
@@ -80,6 +84,15 @@ div#left-sidebar {
   top:10px;
   left:0px;
 } 
+
+div#controls {
+  display:flex;
+  margin: 0 auto;
+  position: fixed;
+  left:50vw;
+  z-index:99;
+}
+
 
 
 /* rater */

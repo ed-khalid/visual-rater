@@ -9,6 +9,8 @@ import { RATER_TIER_WIDTH, SVG_IMAGE_SIZE, RaterOrientation } from "../../models
 
 interface SingleRaterItemProps {
     item:RaterUIItem
+    filterMode:boolean
+    itemsToFilter:string[]
     mainlineX:number
     highlightOnDrag:(item:SVGGElement, toggleOn:boolean) => void
     isReadonly:boolean
@@ -21,7 +23,7 @@ interface SingleRaterItemProps {
     scale?:number
 } 
 
-export const SingleRaterItem = ({item, nodeRef, isReadonly, highlightOnDrag, duringDrag, mainlineX, scale=1, scaler, onClick, onDragStart, onDragEnd}:SingleRaterItemProps) =>  {
+export const SingleRaterItem = ({item, itemsToFilter, nodeRef, filterMode, isReadonly, highlightOnDrag, duringDrag, mainlineX, scale=1, scaler, onClick, onDragStart, onDragEnd}:SingleRaterItemProps) =>  {
     const y = scaler.toPosition(item.score) 
     const tierOffset = RATER_TIER_WIDTH * item.tier 
     const x = (item.orientation === RaterOrientation.LEFT) ?(mainlineX - tierOffset) : (mainlineX + tierOffset) 
@@ -108,7 +110,7 @@ export const SingleRaterItem = ({item, nodeRef, isReadonly, highlightOnDrag, dur
         }
 
         const color = "rgb" + item.overlay   
-        const cursor = (isReadonly) ? "pointer" : "move"  
+        const cursor = filterMode ? "crosshair" : (isReadonly) ? "pointer" : "move"  
         
         return <g onClick={handleOnClick} clipPath={ (item.orientation === RaterOrientation.LEFT) ? "url(#item-clip-path-left)" : "url(#item-clip-path-right)"  } ref={nodeRef}  className="item draggable"> 
                     <line className="rater-item item-scoreline" x1={lineDimensions.x1} y1={lineDimensions.y1} x2={lineDimensions.x2} y2={lineDimensions.y2} stroke={"black"} opacity={0.2} />
@@ -117,6 +119,7 @@ export const SingleRaterItem = ({item, nodeRef, isReadonly, highlightOnDrag, dur
                     <text textAnchor="middle" className="rater-item item-name" cursor={cursor} fontSize={8*scale} fill="black" x={songNameDimensions.x} y={songNameDimensions.y} dy=".35em">{formatName(item.name)}</text>
                     <text textAnchor="middle" className="rater-item item-score" cursor={cursor} fontSize={16*scale} fontWeight="bold" fill={determineTextColor(item.overlay)} x={songScoreDimensions.x} y={songScoreDimensions.y} dy=".35em">{item.score.toFixed(2)}</text>
                     <circle className="rater-item item-thumbnail-border" cx={imageDimensions.x+imageDimensions.size/2} cy={imageDimensions.y+imageDimensions.size/2} r={imageDimensions.size/2+2} fill="none" stroke={color}></circle>
+                    {itemsToFilter.includes(item.id) && <circle className="rater-item item-filter" cx={x+imageDimensions.size/2} cy={imageDimensions.y+imageDimensions.size/2} r={imageDimensions.size/2+2} opacity={0.8} fill="black" stroke={"black"}></circle>}
                </g>
 
 

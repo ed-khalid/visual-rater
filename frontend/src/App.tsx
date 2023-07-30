@@ -8,15 +8,13 @@ import { DragType } from './models/ui/DragType';
 import { useDrop } from 'react-dnd';
 import { RaterState } from './models/ui/RaterTypes';
 import { ArtistPanel } from './components/panels/ArtistPanel';
-import { BreadcrumbEntry, Breadcrumb } from './components/floats/Breadcrumb';
 import { RaterAction, raterReducer } from './reducers/raterReducer';
 import { client } from './setupApollo';
 import { Reference } from '@apollo/client/cache';
 import { Search } from './components/floats/search/Search';
-import { BreadcrumbBuilder } from './functions/breadcrumb.builder';
 import { MusicNavigationPanel } from './components/panels/musicnavigation/MusicNavigation';
 import { MusicStore } from './music/MusicStore';
-import { MusicZoomLevel, MusicState } from './music/MusicState';
+import { MusicZoomLevel, MusicState, MusicEntity } from './music/MusicState';
 import { ScorecardPanel } from './components/panels/BlockRaterPanel';
 import { RaterZoomLevelControl } from './components/floats/RaterZoomLevelControl';
 import { ComparisonRaterType } from './components/rater/comparison-rater/ComparisonRater';
@@ -49,11 +47,12 @@ export const App = ({musicState, musicDispatch}:Props) => {
   const [$getSearchAlbumTracks, $searchAlbumTracks ] = useGetTracksForSearchAlbumLazyQuery()
   const [createAlbum, ] = useCreateAlbumMutation() 
 
+  const [filterMode, setFilterMode] = useState<boolean>(false)
+  const [itemsToFilter, setItemsToFilter] = useState<Array<string>>([])
+
   const [$loadAlbumsWithoutSongs, $albumsWithoutSongs]  = useAlbumsWithoutSongsLazyQuery() 
   const [$loadSongs, $songs]  = useAlbumSongsLazyQuery() 
 
-  // breadcrumbs 
-  const [breadcrumbs, setBreadcrumbs] = useState<Array<BreadcrumbEntry>>([])
   // rater 
   const [raterState, raterDispatch] = useReducer<React.Reducer<RaterState,RaterAction>>(raterReducer, initialRaterState )
 
@@ -81,13 +80,15 @@ export const App = ({musicState, musicDispatch}:Props) => {
 
 
   const onArtistSelect = (artist:Artist) => {
+    if (filterMode) {
+      setItemsToFilter(items => [artist.id, ...itemsToFilter])
+    } else {
       const store = new MusicStore(musicState) 
-      const artistBreadcrumb = BreadcrumbBuilder.buildArtistBreadcrumb(artist,musicDispatch, setBreadcrumbs) 
-      setBreadcrumbs([artistBreadcrumb])
       if (!store.hasArtistLoadedAlbums(artist)) {
         $loadAlbumsWithoutSongs({variables: { artistIds: [artist.id] }})
       }
       musicDispatch({ type: 'FILTER_CHANGE', filters: { artistIds:[artist.id]  }, zoomLevel: MusicZoomLevel.ALBUM})
+    }
   }
 
   const onMusicNavArtistExpand = (artist:Artist) => {
@@ -138,7 +139,6 @@ export const App = ({musicState, musicDispatch}:Props) => {
       }
       case MusicZoomLevel.ALBUM: {
         musicDispatch({type:'FILTER_CHANGE', filters: { artistIds:[album.artistId], albumIds: [album.id] }, mode: FilterMode.ADDITIVE } )
-        setBreadcrumbs([BreadcrumbBuilder.buildMixedBreadcrumb()])
         break;
       }
       case MusicZoomLevel.SONG: {
@@ -146,7 +146,6 @@ export const App = ({musicState, musicDispatch}:Props) => {
           $loadSongs({ variables: { albumIds : [album.id] }  })
         }
         musicDispatch({type:'FILTER_CHANGE', filters: { artistIds:[album.artistId], albumIds: [album.id]} , mode: FilterMode.ADDITIVE })
-        setBreadcrumbs([BreadcrumbBuilder.buildMixedBreadcrumb()] )
       }
     }
   }
@@ -160,7 +159,6 @@ export const App = ({musicState, musicDispatch}:Props) => {
         if (!store.hasArtistLoadedAlbums(artist)) {
           $loadAlbumsWithoutSongs({ variables: { artistIds: [artist.id] }})
         }
-        setBreadcrumbs([BreadcrumbBuilder.buildArtistBreadcrumb(artist, musicDispatch, setBreadcrumbs)]) 
         musicDispatch({type:'FILTER_CHANGE', filters: { artistIds: [artist.id] } } )
         break;
       }
@@ -169,7 +167,6 @@ export const App = ({musicState, musicDispatch}:Props) => {
         if (!store.hasArtistLoadedAlbums(artist)) {
           $loadAlbumsWithoutSongs({ variables: { artistIds: [artist.id] }})
         }
-        setBreadcrumbs([BreadcrumbBuilder.buildMixedBreadcrumb()]) 
         musicDispatch({type:'FILTER_CHANGE', filters: { artistIds: [artist.id] }, mode:FilterMode.ADDITIVE  } )
         break;
       }
@@ -178,7 +175,6 @@ export const App = ({musicState, musicDispatch}:Props) => {
         if (!store.hasArtistLoadedAlbums(artist)) {
           $loadArtistWithAlbumsAndSongs({variables: {artistName :artist.name}})
         }
-        setBreadcrumbs([BreadcrumbBuilder.buildMixedBreadcrumb()]) 
         musicDispatch({type:'FILTER_CHANGE', filters: { artistIds: [artist.id] }, mode:FilterMode.ADDITIVE  } )
       }
     }
@@ -209,27 +205,19 @@ export const App = ({musicState, musicDispatch}:Props) => {
   }, [musicState.zoomLevel, $loadAlbumsWithoutSongs,$loadSongs, musicState])
 
   const onAlbumSelect = (album:Album) => {
-    const albumBreadcrumb = BreadcrumbBuilder.buildAlbumBreadcrumb(album)
-    const store = new MusicStore(musicState)
-    let artistBreadcrumb = breadcrumbs[1] 
-    if (!artistBreadcrumb) {
-      const artist = store.getArtistForAlbum(album)  
-      if (artist) {
-        artistBreadcrumb = BreadcrumbBuilder.buildArtistBreadcrumb(artist, musicDispatch, setBreadcrumbs) 
-      } else {
-        throw Error("Didn't find artist for album " + album.name ) 
+    if (filterMode) {
+      setItemsToFilter(items => [album.id, ...itemsToFilter])
+    } else {
+      if (album.songs.length === 0) {
+        $loadSongs({variables: { albumIds: [album.id] }})
       }
+      musicDispatch({type: 'FILTER_CHANGE', filters: { albumIds:[album.id] }, zoomLevel: MusicZoomLevel.SONG })
     }
-    setBreadcrumbs([artistBreadcrumb, albumBreadcrumb])
-    if (album.songs.length === 0) {
-      $loadSongs({variables: { albumIds: [album.id] }})
-    }
-    musicDispatch({type: 'FILTER_CHANGE', filters: { artistIds:[album.artistId], albumIds:[album.id] }, zoomLevel: MusicZoomLevel.SONG })
   }
+
   useEffect(() => {
     if (!$songs.loading && $songs.data) {
       const songArr = $songs.data.songs
-      console.log(songArr)
       if (songArr) {
         songArr.forEach(songs => {
           if (songs) {
@@ -318,15 +306,11 @@ export const App = ({musicState, musicDispatch}:Props) => {
   useEffect(() => {
     if (!$artistWithAlbumsAndSongs.loading && $artistWithAlbumsAndSongs.data && searchAlbum) {
 
-      const artistBreadcrumb = BreadcrumbBuilder.buildArtistBreadcrumb($artistWithAlbumsAndSongs.data.artistWithAlbumsAndSongs as Artist, musicDispatch, setBreadcrumbs) 
-
       const songs = $artistWithAlbumsAndSongs.data.artistWithAlbumsAndSongs?.albums?.reduce<Array<Song>>((acc,curr) => {
         return [...acc, ...curr!.songs]
       }, [])
       musicDispatch({ type: 'DATA_CHANGE', data: { artists: [$artistWithAlbumsAndSongs.data.artistWithAlbumsAndSongs] as Artist[], albums: $artistWithAlbumsAndSongs.data.artistWithAlbumsAndSongs?.albums as Album[], songs     }})
       const newAlbum = $artistWithAlbumsAndSongs.data.artistWithAlbumsAndSongs?.albums?.find(it => it?.name === searchAlbum?.name )
-      const albumBreadcrumb = BreadcrumbBuilder.buildAlbumBreadcrumb(newAlbum as Album) 
-      setBreadcrumbs([artistBreadcrumb, albumBreadcrumb])
       if (newAlbum) {
         musicDispatch({ type: 'FILTER_CHANGE', filters: { artistIds:[$artistWithAlbumsAndSongs.data.artistWithAlbumsAndSongs!.id] , albumIds: [newAlbum.id] } })
       }
@@ -347,15 +331,25 @@ export const App = ({musicState, musicDispatch}:Props) => {
   }, [$artistWithAlbumsAndSongs.loading, $artistWithAlbumsAndSongs.data, searchAlbum, musicDispatch])
 
   const goHome = () => {
-    setBreadcrumbs([])
     musicDispatch({ type : 'FILTER_CHANGE', filters: { artistIds:  musicState.data.artists.map(it => it.id ), albumIds:[], songIds:[], scoreFilter: { start:0, end:5}} , zoomLevel: MusicZoomLevel.ALL  })
   } 
 
+  const applyFilters = (shouldApply:boolean) => {
+    if (shouldApply) {
+      if (musicState.zoomLevel === MusicZoomLevel.ALBUM) {
+         musicDispatch({ type : 'FILTER_CHANGE', filters: { albumIds:  itemsToFilter }, zoomLevel: MusicZoomLevel.ALBUM   })
+      } else {
+         musicDispatch({ type : 'FILTER_CHANGE', filters: { artistIds:  itemsToFilter }, zoomLevel: MusicZoomLevel.ARTIST  })
+      }
+    } 
+    setFilterMode(false)
+    setItemsToFilter([])
+  }
 
 
   const store = new MusicStore(musicState)
   return (
-    <div className="App">
+    <div className={"App " + ((filterMode)?"filterMode":"")} >
         <div id="left-sidebar" className="sidebar">
            <Search onExternalAlbumSelect={onExternalAlbumSearchClick} />
            <ScorecardPanel musicState={musicState} musicDispatch={musicDispatch} /> 
@@ -372,10 +366,16 @@ export const App = ({musicState, musicDispatch}:Props) => {
           />}
           {store.getSelectedArtists().length === 1 &&  store.getSelectedArtists().map(artist => <ArtistPanel onSongCategoryClick={onArtistPanelSongsClick} key={artist!.name+ '-panel'} artist={artist!}/>)}
         </div> 
-        <Breadcrumb onHomeClick={goHome} breadcrumbs={breadcrumbs}/>
+        <div id="controls">
+          <button id="home-button" onClick={goHome}>HOME</button>  
+          <button id="filter-button" onClick={() => setFilterMode(true)}>FILTER</button>  
+          { filterMode && <React.Fragment><button onClick={() => applyFilters(true)}>APPLY</button><button onClick={()=> applyFilters(false)} >CANCEL</button></React.Fragment>}
+        </div>
         <RaterZoomLevelControl onZoomChange={handleOnZoomChange} value={musicState.zoomLevel} ></RaterZoomLevelControl>
         <div id="rater" className="viz drop-target" ref={drop}>
           <RaterWrapper
+          filterMode={filterMode}
+          itemsToFilter={itemsToFilter}
           comparisonRaterOptions={comparisonRaterOptions}
           onAlbumClick={onAlbumSelect}
           onArtistClick={onArtistSelect}

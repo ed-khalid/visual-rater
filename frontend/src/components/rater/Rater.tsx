@@ -17,7 +17,9 @@ import { animateOnEnter, animateOnExit } from './ItemAnimation';
 interface Props {
     position:Position
     state:RaterState
+    itemsToFilter:string[]
     isReadonly:boolean
+    filterMode:boolean
     zoomTarget?:SVGGElement|null
     onItemClick:(item:RatedItem) => void
     onSongDrag:(itemId:string) => void 
@@ -31,7 +33,7 @@ interface Props {
 
 
 
-export const Rater = ({position, state, stateDispatch, onItemClick, duringDrag, onSongDrag, updateSongScore, isReadonly, items }:Props) => {
+export const Rater = ({position, filterMode, itemsToFilter, state, stateDispatch, onItemClick, duringDrag, onSongDrag, updateSongScore, isReadonly, items }:Props) => {
 
     const [currentItem, setCurrentItem] = useState<{id:string, score:number}|null>();  
     const g = useRef<SVGGElement>(null)
@@ -95,6 +97,8 @@ export const Rater = ({position, state, stateDispatch, onItemClick, duringDrag, 
                         <Transition key={'single-rater-item'+item.name} onEnter={()=> animateOnEnter(item,position.x)} onExit={() => animateOnExit(item, position.x)}  nodeRef={item.nodeRef} timeout={ANIMATION_DURATION}>
                                 <SingleRaterItem
                                     item={item}
+                                    itemsToFilter={itemsToFilter}
+                                    filterMode={filterMode}
                                     isReadonly={isReadonly}
                                     highlightOnDrag={highlightItem}
                                     nodeRef={item.nodeRef}

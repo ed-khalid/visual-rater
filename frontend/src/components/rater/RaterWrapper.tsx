@@ -4,7 +4,7 @@ import { Rater } from "./Rater"
 import { RaterState, RATER_X, RATER_Y_BOTTOM, RATER_Y_TOP, RatedSongItemGrouped, RaterOrientation, SVG_HEIGHT, SVG_WIDTH, CLOSENESS_THRESHOLD } from "../../models/ui/RaterTypes"
 import { RatedItem, RaterUIItem } from "../../models/domain/ItemTypes"
 import { RaterAction } from "../../reducers/raterReducer"
-import {  MusicZoomLevel, MusicState } from "../../music/MusicState"
+import {  MusicZoomLevel, MusicState, MusicEntity } from "../../music/MusicState"
 import { MusicStore } from "../../music/MusicStore"
 import { sortByScore } from "../../functions/sort"
 import { ComparisonRater, ComparisonRaterType } from "./comparison-rater/ComparisonRater"
@@ -13,6 +13,8 @@ import { MusicAction } from "../../music/MusicAction"
 interface Props {
     onAlbumClick:(albums:Album) => void 
     onArtistClick:(artist:Artist) => void
+    filterMode:boolean
+    itemsToFilter:string[]
     state:RaterState
     musicState:MusicState
     musicDispatch:Dispatch<MusicAction>
@@ -21,7 +23,7 @@ interface Props {
 }
 
 
-export const RaterWrapper = ({state, stateDispatch, comparisonRaterOptions, musicDispatch, musicState, onArtistClick, onAlbumClick}:Props) =>  {
+export const RaterWrapper = ({state, stateDispatch, comparisonRaterOptions,filterMode, itemsToFilter, musicDispatch, musicState, onArtistClick, onAlbumClick}:Props) =>  {
     const gWrapper = useRef<SVGGElement>(null)
     const svgRef = useRef<SVGSVGElement>(null) 
     const [updateSong]  = useUpdateSongMutation();
@@ -127,7 +129,9 @@ export const RaterWrapper = ({state, stateDispatch, comparisonRaterOptions, musi
         </defs>
             <g key={"rater-wrapper"}  ref={gWrapper} id="wrapper">
             <Rater 
+                  itemsToFilter={itemsToFilter}
                   stateDispatch={stateDispatch}
+                  filterMode={filterMode}
                   position={{x:RATER_X, y:RATER_Y_BOTTOM}}
                   isReadonly={musicState.zoomLevel !== MusicZoomLevel.SONG}
                   onItemClick={(musicState.zoomLevel === MusicZoomLevel.ALBUM) ? handleOnAlbumClick : handleOnArtistClick}
