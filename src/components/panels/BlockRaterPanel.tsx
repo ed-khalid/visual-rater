@@ -1,28 +1,33 @@
-import React from "react"
+import React, { Dispatch } from "react"
 import { Panel } from "./Panel"
-import { MusicScope, MusicState } from "../../music/MusicState"
+import { MusicZoomLevel, MusicState } from "../../music/MusicState"
 import { MusicStore } from "../../music/MusicStore"
 import { sortByScore } from "../../functions/sort"
 import { mapArtistScoreToUI, mapSongScoreToUI } from "../../functions/scoreUI"
 import { AlbumUIItem, MusicUIItem, SongUIItem } from "../../models/domain/ItemTypes"
+import { MusicAction } from "../../reducers/musicReducer"
 
 interface Props {
     musicState:MusicState
+    musicDispatch:Dispatch<MusicAction> 
 }
 
 
 interface ArtistBlockProps {
   items:MusicUIItem[]
+  onClick:(zoomLevel:MusicZoomLevel, artistId:string, albumId?:string) => void
 }
 interface AlbumBlockProps {
   items:AlbumUIItem[]
+  onClick:(zoomLevel:MusicZoomLevel, artistId:string, albumId?:string) => void
 }
 interface SongBlockProps {
   items:SongUIItem[]
+  onClick:(zoomLevel:MusicZoomLevel, artistId:string, albumId?:string) => void
 }
-const ArtistBlockDetails = ({items}:ArtistBlockProps) => {
+const ArtistBlockDetails = ({items,onClick}:ArtistBlockProps) => {
                 return <React.Fragment>
-                {items.map(artist => <li className="flex" key={'block-rater-item-' + artist.id}>
+                {items.map(artist => <li onClick={() => onClick(MusicZoomLevel.ARTIST, artist.id) } className="flex" key={'block-rater-item-' + artist.id}>
                   <img src={artist.thumbnail} alt='?' className="block-rater-item-thumbnail"/> 
                   <div className="block-rater-item-info">
                     <div className="block-rater-item-name">{artist.name} </div>
@@ -38,9 +43,9 @@ const ArtistBlockDetails = ({items}:ArtistBlockProps) => {
                 </li> )}
                 </React.Fragment> 
 }  
-const AlbumBlockDetails = ({items}:AlbumBlockProps) => {
+const AlbumBlockDetails = ({items, onClick}:AlbumBlockProps) => {
                 return <React.Fragment>
-                {items.map(album => <li className="flex" key={'block-rater-item-' + album.id}>
+                {items.map(album => <li onClick={() => onClick(MusicZoomLevel.ALBUM, album.artistId, album.id)} className="flex" key={'block-rater-item-' + album.id}>
                   <img src={album.thumbnail} alt='?' className="block-rater-item-thumbnail"/> 
                   <div className="block-rater-item-info">
                     <div className="block-rater-item-name">{album.name} </div>
@@ -59,9 +64,9 @@ const AlbumBlockDetails = ({items}:AlbumBlockProps) => {
                 </React.Fragment> 
 }  
 
-const SongBlockDetails = ({items}:SongBlockProps) => {
+export const SongBlockDetails = ({items, onClick}:SongBlockProps) => {
                 return <React.Fragment>
-                {items.map(song => <li className="flex" key={'block-rater-item-' + song.id}>
+                {items.map(song => <li onClick={() => onClick(MusicZoomLevel.SONG, song.artistId, song.albumId )} className="flex" key={'block-rater-item-' + song.id}>
                   <img src={song.thumbnail} alt='?' className="block-rater-item-thumbnail"/> 
                   <div className="block-rater-item-info">
                     <div className="block-rater-item-songName">{song.name} </div>
@@ -81,28 +86,45 @@ const SongBlockDetails = ({items}:SongBlockProps) => {
 }  
 
 
-// music scope is SONG
-export const DetailsPanel = ({musicState}:Props) => {
+export const ScorecardPanel = ({musicState, musicDispatch}:Props) => {
 
+  const navigate= (zoomLevel:MusicZoomLevel, artistId:string, albumId?:string)  => {
 
+    switch(zoomLevel) {
+      case MusicZoomLevel.ARTIST : {
+        musicDispatch({ type: 'FILTER_CHANGE', filters: { artistIds:[artistId] } })
+        musicDispatch({ type: 'ZOOM_LEVEL_CHANGE', zoomLevel: MusicZoomLevel.ALBUM })
+        break;
+      } 
+      case MusicZoomLevel.ALBUM : 
+      case MusicZoomLevel.SONG: { 
+        if (albumId) {
+        musicDispatch({ type: 'FILTER_CHANGE', filters: { artistIds:[artistId],albumIds:[albumId] } })
+        musicDispatch({ type: 'ZOOM_LEVEL_CHANGE', zoomLevel: MusicZoomLevel.SONG })
+        }
+        break;
+      }
+    }
+  }
     const renderItems =  () => {
       const items = store.getItems() 
       const sortedItems = sortByScore(items)
-      switch(store.getScope()) {
-        case MusicScope.ARTIST: {
-          return <ArtistBlockDetails items={sortedItems}/>
+      switch(store.zoomLevel) {
+        case MusicZoomLevel.ALL: 
+        case MusicZoomLevel.ARTIST: {
+          return <ArtistBlockDetails onClick={navigate} items={sortedItems}/>
         } 
-        case MusicScope.ALBUM: {
-          return <AlbumBlockDetails items={sortedItems as AlbumUIItem[]}/>
+        case MusicZoomLevel.ALBUM: {
+          return <AlbumBlockDetails onClick={navigate} items={sortedItems as AlbumUIItem[]}/>
         } 
-        case MusicScope.SONG: {
-          return <SongBlockDetails items={sortedItems as SongUIItem[]}/>
+        case MusicZoomLevel.SONG: {
+          return <SongBlockDetails onClick={navigate} items={sortedItems as SongUIItem[]}/>
         } 
       }
     }
 
     const store = new MusicStore(musicState)
-        return <Panel id="block-rater" className="relative" title="Block Rater">
+        return <Panel id="block-rater" className="relative" title="Scorecard">
             <ul>
               {renderItems()}
             </ul>
