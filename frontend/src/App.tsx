@@ -335,7 +335,7 @@ export const App = ({musicState, musicDispatch}:Props) => {
   }, [$artistWithAlbumsAndSongs.loading, $artistWithAlbumsAndSongs.data, searchAlbum, musicDispatch])
 
   const goHome = () => {
-    musicDispatch({ type : 'FILTER_CHANGE', filters: { artistIds:  musicState.data.artists.map(it => it.id ), albumIds:[], songIds:[], scoreFilter: { start:0, end:5}} , zoomLevel: MusicZoomLevel.ARTIST  })
+    musicDispatch({ type : 'FILTER_CHANGE', filters: { artistIds:  musicState.data.artists.map(it => it.id ), albumIds:[], songIds:[], scoreFilter: { start: SCORE_START, end:SCORE_END}} , zoomLevel: MusicZoomLevel.ARTIST  })
   } 
 
   const applyFilters = (shouldApply:boolean) => {

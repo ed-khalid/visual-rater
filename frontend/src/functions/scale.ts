@@ -1,6 +1,7 @@
 
 import { scaleLinear, ScaleLinear } from 'd3-scale';
 import { RATER_Y_BOTTOM, RATER_Y_TOP } from '../models/ui/RaterTypes';
+import { SCORE_END, SCORE_START } from '../models/domain/ItemTypes';
 
 interface ScalerArguments {
     line?: {start:number, end:number}
@@ -11,8 +12,8 @@ interface ScalerArguments {
 export class Scaler {
 
     private score = {
-        start: 0
-        ,end: 5
+        start: SCORE_START
+        ,end: SCORE_END
     }     
     private line  = {
         start: RATER_Y_TOP 
@@ -45,14 +46,5 @@ export class Scaler {
 }  
 
 export function clampToNearestIncrement(rawScore:number) {
-    // 375 
-    let byHundred = Math.round(rawScore * 100)
-    const firstDigit = byHundred % 10;    
-    if (firstDigit > 5) {
-        byHundred = byHundred - (firstDigit-5)    
-    } 
-    if (firstDigit !==0 && firstDigit < 5) {
-        byHundred = byHundred - (firstDigit)    
-    }
-        return byHundred/100;
-    }
+    return Math.round(rawScore)
+}

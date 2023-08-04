@@ -2,15 +2,16 @@
 fragment ArtistSongMetadataFields on ArtistSongMetadata {
           classic
           great
+          verygood
           good
-          mediocre
+          pleasant
+          decent
+          interesting
+          ok
+          meh
+          average
+          boring
+          poor
           bad
-          terrible
-          classicPercentage
-          greatPercentage
-          goodPercentage
-          mediocrePercentage
-          badPercentage
-          terriblePercentage
-
+          offensive
 }
