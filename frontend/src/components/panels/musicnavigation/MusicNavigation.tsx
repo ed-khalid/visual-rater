@@ -29,7 +29,7 @@ export const MusicNavigationPanel =  ({state, artists, onArtistExpand, onArtistS
     } 
     const store = new MusicStore(state) 
 
-    return <Panel id="music-navigation" className='rightside-panel' title={'Music Navigation'} isCollapsible={true}>
+    return <Panel isMoveable={true} id="music-navigation" className='rightside-panel' title={'Music Navigation'} isCollapsible={true}>
                 <ul id="nav-artists" className="flex col">
                     {state.data.artists.map(artist => 
                     <MusicNavigationArtist key={'music-navigation-artist-'+artist.id} store={store} onArtistSwitch={onArtistSwitch} onArtistAdd={onArtistAdd} onAlbumAdd={onAlbumAdd} onAlbumSwitch={onAlbumSwitch} artistToggleState={artistToggle.get(artist.id) || false} artist={artist} toggleArtist={toggleArtist} />
