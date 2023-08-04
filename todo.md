@@ -1,5 +1,6 @@
 ### CURRENT 
  # CONTEXT
+ - refetch album when song updates to update score / artist score 
  - get rid of breadcrumbs in favor of a context
  - add simple home button to reset context to all loaded artists
  - what to do when items are more than a certain number (collapse into groups) ? infinite pan?  
@@ -33,6 +34,8 @@
 - add review panel
 
 # ENHANCEMENTS
+- drag should not go out of bounds, add resize observer as well  
+- drag should be only enabled by the header but affects the entire window    
 - add albumId/artistId to comparison songs 
 - replace height transforms with performant ones  
 - understand how to properly do lazyloading hibernate (backend)
