@@ -117,7 +117,6 @@ export const RaterWrapper = ({state, stateDispatch, comparisonRaterOptions,filte
 
 
     return <React.Fragment>
-      { musicState.zoomLevel === MusicZoomLevel.SONG && songBeingDragged && comparisonRaterOptions && <ComparisonRater  musicDispatch={musicDispatch} songBeingDragged={songBeingDragged} musicState={musicState} dragUpdate={dragUpdate} comparisonRaterOptions={comparisonRaterOptions} />}
       <svg className="rater" ref={svgRef} id="trackRater" viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`} preserveAspectRatio="xMidYMid slice" >
         <defs>
               <clipPath id="item-clip-path-left">
