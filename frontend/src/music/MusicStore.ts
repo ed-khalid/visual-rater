@@ -60,6 +60,8 @@ export class MusicStore {
   public filterAlbumsByScore = () => this.filters.filterByScore<Album>(this.data.albums)
   public filterSongsByScore = () => this.filters.filterByScore<Song>(this.data.songs)
 
+  public findSongById = (id:String) => this.data.songs.find(it => it.id === id)  
+
   public getItems() {
     switch(this.zoomLevel) {
       case MusicZoomLevel.ARTIST: {
