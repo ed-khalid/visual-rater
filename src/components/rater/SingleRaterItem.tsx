@@ -40,7 +40,7 @@ export const SingleRaterItem = ({item, itemsToFilter, nodeRef, filterMode, isRea
                 .on('end', dragBehavior.dragEnd))
         select(item.nodeRef.current).data<RatedItem>([item])
         }
-    },[isReadonly, item, scaler, onDragEnd, item.nodeRef, highlightOnDrag]) 
+    },[isReadonly, item, scaler, onDragEnd, item.nodeRef, highlightOnDrag, onDragStart, duringDrag]) 
 
     const formatName= (name:string) => {
         const maxLength = 15
@@ -117,7 +117,7 @@ export const SingleRaterItem = ({item, itemsToFilter, nodeRef, filterMode, isRea
                     <circle  className="rater-item item-thumbnail-overlay" cx={imageDimensions.x+imageDimensions.size/2} cy={imageDimensions.y+imageDimensions.size/2} r={imageDimensions.size/2} fill={color} stroke={color}></circle>
                     <image fill={"rgba"+item.overlay} opacity={0.5} xlinkHref={item.thumbnail} clipPath="inset(0% round 45px)" cursor={cursor} className="rater-item item-thumbnail" width={imageDimensions.size} x={imageDimensions.x} y={imageDimensions.y} height={imageDimensions.size} href={item.thumbnail}/>
                     <text textAnchor="middle" className="rater-item item-name" cursor={cursor} fontSize={8*scale} fill="black" x={songNameDimensions.x} y={songNameDimensions.y} dy=".35em">{formatName(item.name)}</text>
-                    <text textAnchor="middle" className="rater-item item-score" cursor={cursor} fontSize={16*scale} fontWeight="bold" fill={determineTextColor(item.overlay)} x={songScoreDimensions.x} y={songScoreDimensions.y} dy=".35em">{item.score.toFixed(2)}</text>
+                    <text textAnchor="middle" className="rater-item item-score" cursor={cursor} fontSize={16*scale} fontWeight="bold" fill={determineTextColor(item.overlay)} x={songScoreDimensions.x} y={songScoreDimensions.y} dy=".35em">{Math.round(item.score)}</text>
                     <circle className="rater-item item-thumbnail-border" cx={imageDimensions.x+imageDimensions.size/2} cy={imageDimensions.y+imageDimensions.size/2} r={imageDimensions.size/2+2} fill="none" stroke={color}></circle>
                     {itemsToFilter.includes(item.id) && <circle className="rater-item item-filter" cx={x+imageDimensions.size/2} cy={imageDimensions.y+imageDimensions.size/2} r={imageDimensions.size/2+2} opacity={0.8} fill="black" stroke={"black"}></circle>}
                </g>

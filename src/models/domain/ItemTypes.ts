@@ -33,3 +33,6 @@ export interface ComparisonSongUIItem extends SongUIItem {
 }  
 
 export type RatedSongUIItem = RaterUIItem & SongUIItem     
+
+export const SCORE_START = 0  
+export const SCORE_END = 100  

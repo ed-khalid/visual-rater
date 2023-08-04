@@ -5,18 +5,7 @@ subscription onArtistMetadataUpdate {
         totalSongs
         totalAlbums
         songs {
-          classic
-          great
-          good
-          mediocre
-          bad
-          terrible
-          classicPercentage
-          greatPercentage
-          goodPercentage
-          mediocrePercentage
-          badPercentage
-          terriblePercentage
+          ...ArtistSongMetadataFields
         }
 
     }
