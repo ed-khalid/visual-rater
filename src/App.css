@@ -65,9 +65,6 @@ div.sidebar {
   flex-direction: column;
   display:flex;
 }
-div.sidebar .panel {
-  width: 15vw;
-}
 div#right-sidebar {
   top:0px;
   right:0px;

@@ -16,7 +16,6 @@ export const RaterZoomLevelControl = ({value, onZoomChange}:Props) => {
     }  
 
     const onSliderChange = (_val:string) => {
-        console.log(_val)
         const val:number =  Number(_val) 
         if  (val === 1) onZoomChange(MusicZoomLevel.ARTIST) 
         else if  (val === 2) onZoomChange(MusicZoomLevel.ALBUM) 

@@ -15,11 +15,12 @@ import { Search } from './components/floats/search/Search';
 import { MusicNavigationPanel } from './components/panels/musicnavigation/MusicNavigation';
 import { MusicStore } from './music/MusicStore';
 import { MusicZoomLevel, MusicState } from './music/MusicState';
-import { ScorecardPanel } from './components/panels/BlockRaterPanel';
+import { ScorecardPanel } from './components/panels/Scorecard';
 import { RaterZoomLevelControl } from './components/floats/RaterZoomLevelControl';
 import { ComparisonRaterType } from './components/rater/comparison-rater/ComparisonRater';
 import { MusicAction } from './music/MusicAction';
 import { FilterMode } from './music/MusicFilters';
+import { SCORE_END, SCORE_START } from './models/domain/ItemTypes';
 
 export const initialRaterState:RaterState = {
    start: 0

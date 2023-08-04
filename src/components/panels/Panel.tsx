@@ -1,5 +1,6 @@
-import React, { ReactElement, useRef, useState } from 'react'
+import React, { ReactElement, useState } from 'react'
 import { CollapseButton } from '../ui-items/CollapseButton'
+import { useDraggable } from './behavior/Draggable'
 
 interface PanelProps {
     title?:string
@@ -12,11 +13,12 @@ interface PanelProps {
     isCollapsible?:boolean
 }
 
-export const Panel = ({title, id, className, children, isMoveable=true, isResizable=false, isCloseable=true, isCollapsible=false }:PanelProps) => {
+export const Panel = ({title, id, className, children, isMoveable=false, isResizable=false, isCloseable=true, isCollapsible=false }:PanelProps) => {
 
     const [ isCollapsed, setIsCollapsed ] = useState<boolean>(false) 
+    const [ref] =  useDraggable()
 
-    const handleCollapseButtonClick = (newVal:boolean) => {
+    const handleCollapseButtonClick = (_:boolean) => {
         setIsCollapsed(isCollapsed => !isCollapsed)
     }  
 
@@ -24,8 +26,11 @@ export const Panel = ({title, id, className, children, isMoveable=true, isResiza
     if (className) {
         classes = [classes, className].join(' ')
     }
+    if (isMoveable) {
+        classes += " moveable" 
+    }
 
-    return <div className={classes} id={id} >
+    return <div  ref={(isMoveable)? ref: null} className={classes} id={id} >
     <div className="panel-wrapper">
         {title && <div className="panel-header">
             <div className="panel-control-icons">
