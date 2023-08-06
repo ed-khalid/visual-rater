@@ -48,7 +48,7 @@ const AlbumBlockDetails = ({items, onClick}:AlbumBlockProps) => {
                 {items.map(album => <li onClick={() => onClick(MusicZoomLevel.ALBUM, album.artistId, album.id)} className="flex" key={'block-rater-item-' + album.id}>
                   <img src={album.thumbnail} alt='?' className="block-rater-item-thumbnail"/> 
                   <div className="block-rater-item-info">
-                    <div className="block-rater-item-name">{album.name} </div>
+                    <div className=" block-rater-item-info-primary block-rater-item-name">{album.name} </div>
                     <div className="block-rater-item-artistName">{album.artistName}</div>
                   <div className="block-rater-item-year">{album.year}</div>
                   </div>
@@ -69,7 +69,7 @@ export const SongBlockDetails = ({items, onClick}:SongBlockProps) => {
                 {items.map(song => <li onClick={() => onClick(MusicZoomLevel.SONG, song.artistId, song.albumId )} className="flex" key={'block-rater-item-' + song.id}>
                   <img src={song.thumbnail} alt='?' className="block-rater-item-thumbnail"/> 
                   <div className="block-rater-item-info">
-                    <div className="block-rater-item-songName">{song.name} </div>
+                    <div className="block-rater-item-songName block-rater-item-info-primary">{song.name} </div>
                     <div className="block-rater-item-artistName">{song.artistName}</div>
                   <div className="block-rater-item-albumName">{song.albumName}</div>
                   </div>

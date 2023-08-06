@@ -1,7 +1,10 @@
 
 /* panel styles */ 
 div.sidebar .panel {
-  width: 20vw;
+  width: 250px;
+}
+div#left-sidebar .panel {
+    width:270px;
 }
 .panel {
   background:white;
@@ -144,30 +147,33 @@ div#artists-panel div.artist-name {
 div#scorecard {
     overflow-y: auto;
     user-select: none;
-    max-height: 90vh;
+    width:auto;
+    max-height: 92vh;
 }
 div#scorecard .panel-padding {
     padding:0px;
 }
+div#scorecard .panel-content {
+    height:auto;
+    overflow-y:auto;
+}
 div#scorecard ul {
-    width: 100%;
+    width: 250px;
     margin: 0;
-    padding:2px;
-    height:100%;
+    padding:0;
 }
 div#scorecard li {
     cursor:pointer;
     align-items:center;
     font-size: 10px;
     text-align:center;
-    border:1px solid black;
-    border-top: none;
+    border-bottom:1px solid black;
+}
+div#scorecard li:last-child {
+    border-bottom:none;
 }
 div#scorecard li:hover {
     background: rgb(216, 216, 177);
-}
-div#scorecard li:first-child {
-    border-top: 1px solid black;
 }
 div#scorecard li img.block-rater-item-thumbnail {
     width:50px;
@@ -176,13 +182,13 @@ div#scorecard li img.block-rater-item-thumbnail {
 div#scorecard li .block-rater-item-rating {
     align-items:center;
     justify-content: center;
-    width:50px;
+    width:80px;
     height:50px;
 }
 div#scorecard li .block-rater-item-info {
-    width:63%;
+    width:73%;
 }
-div#scorecard li .block-rater-item-songName {
+div#scorecard li .block-rater-item-info-primary {
     font-size:12px;
     font-weight:bold;
 }  
