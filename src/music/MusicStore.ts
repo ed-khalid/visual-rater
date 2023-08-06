@@ -1,18 +1,9 @@
 import { mapAlbumToUIItem, mapArtistToUIItem, mapSongToUIItem, mapUIItemToRaterUIItem } from "../functions/mapper"
 import { Artist, Album, Song } from "../generated/graphql"
-import { RaterOrientation } from "../models/ui/RaterTypes"
 import { MusicData } from "./MusicData"
 import { MusicFilters } from "./MusicFilters"
 import { MusicZoomLevel, MusicState } from "./MusicState"
 
-
-const switchOrientation = (orientation: RaterOrientation) => {
-  return orientation === RaterOrientation.LEFT ? RaterOrientation.RIGHT : RaterOrientation.LEFT
-}
-
-export const createMusicStore = (state:MusicState) => {
-
-}
 
 export class MusicStore {
   public filters:MusicFilters;  
@@ -104,14 +95,7 @@ export class MusicStore {
  
    */
 
-
   public getRaterItems() {
-    const items = this.getItems(); 
-    let orientation = RaterOrientation.LEFT
-    return items.map(item => { 
-      const retv = mapUIItemToRaterUIItem(item, orientation,1)
-      orientation = switchOrientation(orientation)   
-      return retv
-    })
+    return this.getItems().map(item => mapUIItemToRaterUIItem(item, 1))
   }
 }

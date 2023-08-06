@@ -1,4 +1,3 @@
-import { RaterOrientation } from "../ui/RaterTypes";
 
 export interface Item {
     id:string
@@ -23,7 +22,6 @@ export interface SongUIItem extends AlbumUIItem {
 } 
 export type RaterTier = number
 export interface RaterUIItem extends MusicUIItem {
-    orientation:RaterOrientation,
     tier:RaterTier
     nodeRef:any 
 }

@@ -141,20 +141,21 @@ div#artists-panel div.artist-name {
 }
 
 /* block-rater panel  */
-div#block-rater {
+div#scorecard {
+    overflow-y: auto;
     user-select: none;
-    height:70vh; 
+    max-height: 90vh;
 }
-div#block-rater .panel-content {
+div#scorecard .panel-padding {
     padding:0px;
-    height:66vh;
 }
-div#block-rater ul {
+div#scorecard ul {
+    width: 100%;
+    margin: 0;
     padding:2px;
-    overflow-y:scroll;
     height:100%;
 }
-div#block-rater li {
+div#scorecard li {
     cursor:pointer;
     align-items:center;
     font-size: 10px;
@@ -162,30 +163,30 @@ div#block-rater li {
     border:1px solid black;
     border-top: none;
 }
-div#block-rater li:hover {
+div#scorecard li:hover {
     background: rgb(216, 216, 177);
 }
-div#block-rater li:first-child {
+div#scorecard li:first-child {
     border-top: 1px solid black;
 }
-div#block-rater li img.block-rater-item-thumbnail {
+div#scorecard li img.block-rater-item-thumbnail {
     width:50px;
     height:50px;
 }
-div#block-rater li .block-rater-item-rating {
+div#scorecard li .block-rater-item-rating {
     align-items:center;
     justify-content: center;
     width:50px;
     height:50px;
 }
-div#block-rater li .block-rater-item-info {
+div#scorecard li .block-rater-item-info {
     width:63%;
 }
-div#block-rater li .block-rater-item-songName {
+div#scorecard li .block-rater-item-songName {
     font-size:12px;
     font-weight:bold;
 }  
-div#block-rater li .block-rater-item-score {
+div#scorecard li .block-rater-item-score {
     font-size:24px;
     font-weight:bold;
 }  
