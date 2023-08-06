@@ -13,7 +13,6 @@ import { ANIMATION_DURATION } from '../../models/ui/Animation';
 import { Transition, TransitionGroup } from 'react-transition-group';
 import { RaterAction } from '../../reducers/raterReducer';
 import { animateOnEnter, animateOnExit } from './ItemAnimation';
-import { placeLabels } from './behaviors/LabelBehavior';
 
 interface Props {
     position:Position
