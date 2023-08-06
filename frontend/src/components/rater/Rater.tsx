@@ -43,16 +43,6 @@ export const Rater = ({position, filterMode, itemsToFilter, state, stateDispatch
     // const [shouldHide, setShouldHide] = useState<boolean>(false)
     const [, setZoomBehavior] = useState<any>() 
 
-
-    useEffect(() => {
-        if (items.length) {
-            placeLabels(g.current)
-        }
-        
-    }, [items])
-
-
-
     useEffect(() => {
         if (zoomTarget && zoomListener) {
             const z = ZoomBehavior({listener: zoomListener.current, target: zoomTarget.current,axis: axisSel ,scale:state.scaler.yScale, stateDispatch  })
