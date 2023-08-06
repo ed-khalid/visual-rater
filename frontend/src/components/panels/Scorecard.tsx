@@ -121,7 +121,7 @@ export const ScorecardPanel = ({musicState, musicDispatch}:Props) => {
     }
 
     const store = new MusicStore(musicState)
-        return <Panel id="block-rater" className="relative" title="Scorecard">
+        return <Panel id="scorecard" className="relative" title="Scorecard">
             <ul>
               {renderItems()}
             </ul>

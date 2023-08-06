@@ -36,6 +36,7 @@
 # ENHANCEMENTS
 - drag should not go out of bounds, add resize observer as well  
 - drag should be only enabled by the header but affects the entire window    
+- prevent text collision (and maybe node collision?) (d3.force?)   
 - add albumId/artistId to comparison songs 
 - replace height transforms with performant ones  
 - understand how to properly do lazyloading hibernate (backend)

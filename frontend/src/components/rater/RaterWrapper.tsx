@@ -1,13 +1,13 @@
 import React, { Dispatch, useEffect, useRef, useState } from "react"
 import { Album, Artist, Song, useUpdateSongMutation } from "../../generated/graphql"
 import { Rater } from "./Rater"
-import { RaterState, RATER_X, RATER_Y_BOTTOM, RATER_Y_TOP, RaterOrientation, SVG_HEIGHT, SVG_WIDTH, CLOSENESS_THRESHOLD, RaterUIItemGrouped } from "../../models/ui/RaterTypes"
+import { RaterState, RATER_X, RATER_Y_BOTTOM, RATER_Y_TOP, SVG_HEIGHT, SVG_WIDTH, CLOSENESS_THRESHOLD, RaterUIItemGrouped } from "../../models/ui/RaterTypes"
 import { RatedItem, RaterUIItem } from "../../models/domain/ItemTypes"
 import { RaterAction } from "../../reducers/raterReducer"
 import { MusicZoomLevel, MusicState } from "../../music/MusicState"
 import { MusicStore } from "../../music/MusicStore"
 import { sortByScore } from "../../functions/sort"
-import { ComparisonRater, ComparisonRaterType } from "./comparison-rater/ComparisonRater"
+import { ComparisonRaterType } from "./comparison-rater/ComparisonRater"
 import { MusicAction } from "../../music/MusicAction"
 
 interface Props {
@@ -107,21 +107,15 @@ export const RaterWrapper = ({state, stateDispatch, comparisonRaterOptions,filte
             },  [])
             return groupedItems
         }  
-        const leftItems = items.filter(it => it.orientation === RaterOrientation.LEFT)
-        const rightItems = items.filter(it => it.orientation === RaterOrientation.RIGHT)
-        const leftGroups =  groupCloseItems(leftItems)
-        const rightGroups =  groupCloseItems(rightItems)
-        const finalItems = unwrapGroups([...leftGroups, ...rightGroups]) 
+        const groups =  groupCloseItems(items)
+        const finalItems = unwrapGroups([...groups]) 
         setItems(finalItems)
     }, [musicState.data, musicState.filters, state.scaler, musicState])
 
 
     return <React.Fragment>
-      <svg className="rater" ref={svgRef} id="trackRater" viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`} preserveAspectRatio="xMidYMid slice" >
+      <svg className="rater" ref={svgRef} id="trackRater" viewBox={`0 0 ${SVG_WIDTH} ${SVG_HEIGHT}`} preserveAspectRatio="xMinYMid slice" >
         <defs>
-              <clipPath id="item-clip-path-left">
-                  <rect x={0} y={0} width={SVG_WIDTH/2} height={SVG_HEIGHT} ></rect>
-              </clipPath>
               <clipPath id="item-clip-path-right">
                   <rect x={RATER_X} y={RATER_Y_TOP} width={SVG_WIDTH/2} height={SVG_HEIGHT} ></rect>
               </clipPath>
