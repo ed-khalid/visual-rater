@@ -1,120 +1,74 @@
-import { SCORE_END, SCORE_START } from "../models/domain/ItemTypes"
+import { ArtistSongMetadata, Song } from "../generated/graphql"
+import { SCORE_END, SCORE_START } from "../models/ItemTypes"
+import { ARTIST_SCORE_MAP, ArtistScoreUI, SONG_SCORE_DICTIONARY, SongScoreCategory, SongScoreCategoryUI , SongScoreUI } from "../models/ScoreTypes"
 
-export type SongScoreUIBase = {
-    description:SongScoreDescriptor
-    color:string
-    threshold:number
+
+export const mapAlbumSongsToSongScoreUI = (songs:Song[]) => {
+    const retv:SongScoreCategoryUI[] = []
+    if (!songs) {
+        return retv
+    }
+    for (let[k,v] of SONG_SCORE_DICTIONARY) {
+        retv.push({category:k, value: songs.filter(it => it.score! >= v.threshold.low && it.score! < v.threshold.high ).length   })
+    } 
+    return retv
+}  
+
+export const mapSongScoreCategoryToScoreFilter = (category:SongScoreCategory) => {
+    let scoreFilter = { start:SCORE_START, end:SCORE_END }
+    const value = SONG_SCORE_DICTIONARY.get(category)
+    return (value) ? { start: value.threshold.low, end: value.threshold.high }  : scoreFilter 
 }   
-export type ArtistScoreUIBase = {
-    description:ScoreDescriptor
-    color:string
-    threshold:number
-}
-export type AlbumScoreUIBase = {
-    description:ScoreDescriptor
-    color:string
-    threshold:number
-}
-export type ScoreDescriptor = 'A' | 'B' | 'C' | 'D' | 'E' | 'F'  
-export type SongScoreDescriptor = 'CLASSIC'|'GREAT'|'VERY GOOD'|'GOOD'|'PLEASANT'|'DECENT'|'INTERESTING'|'OK'|'MEH'|'AVERAGE'|'BORING'|'POOR'|'BAD'|'OFFENSIVE'  
-const ARTIST_SCORE_UI_MAP: {[index in ScoreDescriptor]:ArtistScoreUIBase}  = {
-    'A': { description: 'A', color: '#018c16', threshold: 4  } ,
-    'B': { description: 'B', color: '#1df23d', threshold: 3.5 },
-    'C': { description: 'C', color: '#cff78d', threshold: 3 },
-    'D': { description: 'D', color: '#f2e89b', threshold: 2.5 },
-    'E': { description: 'E', color: '#e34119', threshold: 1 },
-    'F': { description: 'F', color: '#fa2100', threshold: 0 },
+
+export const mapArtistSongMetadataToSongScoreUI =(metadata?:ArtistSongMetadata) => {
+    const retv:SongScoreCategoryUI[] = [] 
+    if (!metadata) return  retv
+
+    const retrieveValue = (category: SongScoreCategory, metadata:ArtistSongMetadata):number => {
+        switch(category) {
+            case 'CLASSIC': return metadata.classic 
+            case 'GREAT': return metadata.great 
+            case 'VERY GOOD': return metadata.verygood 
+            case 'GOOD': return metadata.good 
+            case 'PLEASANT': return metadata.pleasant 
+            case 'DECENT': return metadata.decent 
+            case 'INTERESTING': return metadata.interesting 
+            case 'OK': return metadata.ok 
+            case 'MEH': return metadata.meh 
+            case 'BORING': return metadata.boring 
+            case 'AVERAGE': return metadata.average 
+            case 'POOR': return metadata.poor 
+            case 'BAD': return metadata.bad 
+            case 'OFFENSIVE': return metadata.offensive 
+        }
+    }
+    for (let[k] of SONG_SCORE_DICTIONARY) {
+        retv.push({category: k, value: retrieveValue(k,metadata)   }  )
+    } 
+    return retv
 } 
-export type SongScoreUI = SongScoreUIBase & { score:number } 
-export type ArtistScoreUI = ArtistScoreUIBase & { score:string } 
-const SONG_SCORE_UI_MAP: {[index in SongScoreDescriptor]:SongScoreUIBase}  = {
-    'CLASSIC': { description: 'CLASSIC', color: '#424bf5', threshold: 95 },
-    'GREAT': { description: 'GREAT', color: '#018c16', threshold: 90  } ,
-    'VERY GOOD': { description: 'VERY GOOD', color: '#00de21', threshold: 85 },
-    'GOOD': { description: 'GOOD', color: '#1df23d', threshold: 80 },
-    'PLEASANT': { description: 'PLEASANT', color: '#b0f78d', threshold: 75 },
-    'DECENT': { description: 'DECENT', color: '#b0f78d', threshold: 70 },
-    'INTERESTING': { description: 'INTERESTING', color: '#b0f78d', threshold: 65 },
-    'OK': { description: 'OK', color: '#cff78d', threshold: 60 },
-    'MEH': { description: 'MEH', color: '#daf50c', threshold: 55 },
-    'AVERAGE': { description: 'AVERAGE', color: '#edff66', threshold: 50 },
-    'BORING': { description: 'BORING', color: '#f2e89b', threshold: 40 },
-    'POOR': { description: 'POOR', color: '#f2ce9b', threshold: 30 },
-    'BAD': { description: 'BAD', color: '#e34119', threshold: 10 },
-    'OFFENSIVE': { description: 'OFFENSIVE', color: '#fa2100', threshold: 0 },
-} 
+
+
+
   
 
 export const mapArtistScoreToUI = (score:number) : ArtistScoreUI => {
     if (score < SCORE_START || score > SCORE_END ) {
         throw Error("Invalid Score") 
     }
-    if (score >= 80) {
-        return {...ARTIST_SCORE_UI_MAP['A'], score:score.toFixed(2)}
+    for (let [,v] of ARTIST_SCORE_MAP) {
+      if (v.threshold.low <= score && v.threshold.high  >= score ) return { ...v, score:score.toFixed(1) }
     }
-    if (score >= 70) {
-        return {...ARTIST_SCORE_UI_MAP['B'], score:score.toFixed(2)}
-    }
-    if (score >= 60) {
-        return {...ARTIST_SCORE_UI_MAP['C'], score:score.toFixed(2)}
-    }
-    if (score >= 50) {
-        return {...ARTIST_SCORE_UI_MAP['D'], score:score.toFixed(2)}
-    }
-    if (score >= 40) {
-        return {...ARTIST_SCORE_UI_MAP['E'], score:score.toFixed(2)}
-    }
-    return {...ARTIST_SCORE_UI_MAP['F'], score:score.toFixed(2)}
+    throw Error('Score could not be found in dictionary')
 }  
  
-
 export const mapSongScoreToUI  = (score:number) : SongScoreUI  => {
     if (score < SCORE_START || score > SCORE_END ) {
         throw Error("Invalid Score") 
     }
-    if (score >= 95) {
-        return {...SONG_SCORE_UI_MAP['CLASSIC'], score }
-    }
-    if (score >= 90) {
-        return {...SONG_SCORE_UI_MAP['GREAT'], score }
-    }
-    if (score >= 85) {
-        return {...SONG_SCORE_UI_MAP['VERY GOOD'], score }
-    }
-    if (score >= 80) {
-        return {...SONG_SCORE_UI_MAP['GOOD'], score }
-    }
-    if (score >= 75) {
-        return {...SONG_SCORE_UI_MAP['PLEASANT'], score }
-    }
-    if (score >= 70) {
-        return {...SONG_SCORE_UI_MAP['DECENT'], score }
-    }
-    if (score >= 65) {
-        return {...SONG_SCORE_UI_MAP['INTERESTING'], score }
-    }
-    if (score >= 60) {
-        return {...SONG_SCORE_UI_MAP['OK'], score }
-    }
-    if (score >= 55) {
-        return {...SONG_SCORE_UI_MAP['MEH'], score }
-    }
-    if (score >= 50) {
-        return {...SONG_SCORE_UI_MAP['AVERAGE'], score }
-    }
-    if (score >= 40) {
-        return {...SONG_SCORE_UI_MAP['BORING'], score }
-    }
-    if (score >= 30) {
-        return {...SONG_SCORE_UI_MAP['POOR'], score }
-    }
-    if (score >= 10) {
-        return {...SONG_SCORE_UI_MAP['BAD'], score }
-    }
-    if (score >= 0) {
-        return {...SONG_SCORE_UI_MAP['OFFENSIVE'], score }
-    } else {
-        throw Error('Score outside of bounds')
-
-    }
+    for (let [,v] of SONG_SCORE_DICTIONARY) {
+        if (v.threshold.low <= score && v.threshold.high >= score) return { ...v, score } 
+    } 
+    console.log(score)
+    throw Error('Score could not be found in dictionary')
 }  

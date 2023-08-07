@@ -1,6 +1,6 @@
 import React from "react"
 import './ComparisonSongs.css'
-import { ComparisonSongUIItem } from "../../../models/domain/ItemTypes"
+import { ComparisonSongUIItem } from "../../../models/ItemTypes"
 
 interface ComparisonSongsProps {
     songs:ComparisonSongUIItem[]

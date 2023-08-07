@@ -2,11 +2,11 @@ import React, { Dispatch, useEffect, useReducer, useState } from 'react';
 import './App.css';
 import { Scaler } from './functions/scale';
 import {  ExternalAlbumSearchResult, Artist, ExternalArtistSearchResult, NewSongInput, useCreateAlbumMutation, useGetTracksForSearchAlbumLazyQuery, Song, Album, useOnArtistMetadataUpdateSubscription, AlbumFieldsFragmentDoc, SongFieldsFragmentDoc, useArtistWithAlbumsAndSongsLazyQuery, useArtistsWithoutAlbumsPageQuery, useAlbumsWithoutSongsLazyQuery, useAlbumSongsLazyQuery } from './generated/graphql';
-import { ExternalFullSearchResult } from './models/domain/ExternalFullSearchResult';
+import { ExternalFullSearchResult } from './models/ExternalFullSearchResult';
 import { RaterWrapper } from './components/rater/RaterWrapper';
-import { DragType } from './models/ui/DragType';
+import { DragType } from './models/DragType';
 import { useDrop } from 'react-dnd';
-import { RaterState } from './models/ui/RaterTypes';
+import { RaterState } from './models/RaterTypes';
 import { ArtistPanel } from './components/panels/ArtistPanel';
 import { RaterAction, raterReducer } from './reducers/raterReducer';
 import { client } from './setupApollo';
@@ -20,11 +20,12 @@ import { RaterZoomLevelControl } from './components/floats/RaterZoomLevelControl
 import { ComparisonRaterType } from './components/rater/comparison-rater/ComparisonRater';
 import { MusicAction } from './music/MusicAction';
 import { FilterMode } from './music/MusicFilters';
-import { SCORE_END, SCORE_START } from './models/domain/ItemTypes';
+import { RaterUIItem, SCORE_END, SCORE_START } from './models/ItemTypes';
+import { AlbumPanel } from './components/panels/AlbumPanel';
 
 export const initialRaterState:RaterState = {
-   start: 0
-  ,end: 5
+   start: SCORE_START
+  ,end: SCORE_END
   ,isReadonly: true
   ,scaler : new Scaler() 
 } 
@@ -35,6 +36,7 @@ interface Props {
 }
 
 export const App = ({musicState, musicDispatch}:Props) => {
+
 
   // search
   const $artistsPage  =  useArtistsWithoutAlbumsPageQuery()
@@ -53,11 +55,19 @@ export const App = ({musicState, musicDispatch}:Props) => {
   const [filterMode, setFilterMode] = useState<boolean>(false)
   const [itemsToFilter, setItemsToFilter] = useState<Array<string>>([])
 
+  const [panelArtist, setPanelArtist] = useState<Artist|undefined>() 
+  const [panelAlbum, setPanelAlbum] = useState<Album|undefined>() 
+
   const [$loadAlbumsWithoutSongs, $albumsWithoutSongs]  = useAlbumsWithoutSongsLazyQuery() 
   const [$loadSongs, $songs]  = useAlbumSongsLazyQuery() 
 
   // rater 
   const [raterState, raterDispatch] = useReducer<React.Reducer<RaterState,RaterAction>>(raterReducer, initialRaterState )
+
+
+  const zoomIn = () => {
+
+  } 
 
   useEffect(() => {
   if (!$artistsPage.loading && $artistsPage.data) {
@@ -256,11 +266,21 @@ export const App = ({musicState, musicDispatch}:Props) => {
     }
   }, [$songs.loading, $songs.data, musicDispatch])
 
-  const onArtistPanelSongsClick = (artist:Artist, scoreFilter:{start:number,end:number}) => {
-    musicDispatch({ type: 'FILTER_CHANGE', filters: { artistIds: [artist.id], albumIds:[], scoreFilter: scoreFilter }  })
+  const onMetadataCategroyClick = (artist:Artist, scoreFilter:{start:number,end:number}) => {
+    musicDispatch({ type: 'FILTER_CHANGE', filters: { artistIds: [artist.id], albumIds:[], scoreFilter: scoreFilter }, zoomLevel: MusicZoomLevel.SONG  })
   }  
 
+  const onAlbumPanelMetadataCategoryClick = (album:Album, scoreFilter:{start:number,end:number}) => {
+    const artist  = new MusicStore(musicState).getArtistForAlbum(album)   
+    if (artist) {
+      onMetadataCategroyClick(artist,scoreFilter)
+    }
+  } 
   const handleOnZoomChange = (zoomLevel:MusicZoomLevel) => {
+    if (zoomLevel === MusicZoomLevel.SONG) {
+      setPanelArtist(undefined)
+      setPanelAlbum(undefined)
+    }
     musicDispatch({ type: 'FILTER_CHANGE', zoomLevel  })
   } 
 
@@ -339,6 +359,31 @@ export const App = ({musicState, musicDispatch}:Props) => {
     musicDispatch({ type : 'FILTER_CHANGE', filters: { artistIds:  musicState.data.artists.map(it => it.id ), albumIds:[], songIds:[], scoreFilter: { start: SCORE_START, end:SCORE_END}} , zoomLevel: MusicZoomLevel.ARTIST  })
   } 
 
+  const handleHover =  (item:RaterUIItem, mode:boolean) => {
+    console.log(item)
+    if (mode === false) {
+      return;
+    }
+    const store = new MusicStore(musicState) 
+    switch(store.zoomLevel) {
+      case MusicZoomLevel.ARTIST : {
+        setPanelAlbum(undefined)
+        const artist = store.findArtistById(item.id)  
+        setPanelArtist(artist)
+        break;
+      }
+      case MusicZoomLevel.ALBUM: {
+        const album = store.findAlbumById(item.id)  
+        setPanelArtist(undefined)
+        setPanelAlbum(album)
+        break;
+      } 
+      case MusicZoomLevel.SONG: {
+        return;
+      }
+    }
+  }
+
   const applyFilters = (shouldApply:boolean) => {
     if (shouldApply) {
       if (musicState.zoomLevel === MusicZoomLevel.ALBUM) {
@@ -369,18 +414,21 @@ export const App = ({musicState, musicDispatch}:Props) => {
               state={musicState} 
               artists={store.data.artists} 
           />}
-          {store.getSelectedArtists().length === 1 &&  store.getSelectedArtists().map(artist => <ArtistPanel onSongCategoryClick={onArtistPanelSongsClick} key={artist!.name+ '-panel'} artist={artist!}/>)}
+          {panelArtist && <ArtistPanel onSongCategoryClick={onMetadataCategroyClick} key={panelArtist.name+ '-panel'} artist={panelArtist}/>}
+          {panelAlbum && <AlbumPanel onSongCategoryClick={onAlbumPanelMetadataCategoryClick} key={panelAlbum.name+ '-panel'} album={panelAlbum}/>}
         </div> 
         <div id="controls">
           <button id="home-button" onClick={goHome}>HOME</button>  
           <button id="filter-button" onClick={() => setFilterMode(true)}>FILTER</button>  
           { filterMode && <React.Fragment><button onClick={() => applyFilters(true)}>APPLY</button><button onClick={()=> applyFilters(false)} >CANCEL</button></React.Fragment>}
+          <button id="zoom-in" onClick={()=> zoomIn() }>ZOOM-IN</button>
         </div>
         <RaterZoomLevelControl onZoomChange={handleOnZoomChange} value={musicState.zoomLevel} ></RaterZoomLevelControl>
         <div id="rater" className="viz drop-target" ref={drop}>
           <RaterWrapper
           filterMode={filterMode}
           itemsToFilter={itemsToFilter}
+          handleHover={handleHover}
           comparisonRaterOptions={comparisonRaterOptions}
           onAlbumClick={onAlbumSelect}
           onArtistClick={onArtistSelect}

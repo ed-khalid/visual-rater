@@ -1,43 +1,20 @@
 import { zoomIdentity } from "d3-zoom"
-import { RaterState } from "../models/ui/RaterTypes"
+import { RaterState } from "../models/RaterTypes"
 import { Scaler } from "../functions/scale"
-import { MusicZoomLevel } from "../music/MusicState"
+import { interpolateRound } from "d3"
 
 
 
-export const raterReducer:React.Reducer<RaterState, RaterAction> = (state:any, action:RaterAction) => {
+export const raterReducer:React.Reducer<RaterState, RaterAction> = (state:RaterState, action:RaterAction) => {
     switch(action.type) {
-         case 'ARTIST_SONG_THROUGH_METADATA_FILTER': {
-            const update = action.data 
-            return { ...state, mode: MusicZoomLevel.SONG, selections: update.selections, scoreFilter: update.scoreFilter    } 
-         }
-         case 'BREADCRUMB_ARTIST': {
-            return {...state, mode: MusicZoomLevel.ARTIST, isReadonly: true}
-         }
-         case 'ARTIST_SELECT' : {
-            const update = action.data
-            return {...state, mode: MusicZoomLevel.ALBUM, isReadonly: true, selections: update.selections  }
-         }
-         case 'ALBUM_SELECT' : {
-            const update = action.data
-            return {...state, mode: MusicZoomLevel.SONG, selections: update.selections  }
-         }
-         case 'ARTISTS_DATA_CHANGE': {
-            const mode = state.mode
-            if (mode === MusicZoomLevel.ARTIST) {
-                const update = action.data || []
-                return {...state, isReadonly:true, selections: update.selections }
-            }
-            return state
-         }
          case 'ZOOM': {
             const update = action.data  
-            const newScale = update.eventTransform.rescaleY(state.scaler.yScale) 
-            return {...state, scaler: new Scaler(newScale) }
+            const newScale = update.eventTransform.rescaleY(state.scaler.yScale).interpolate(interpolateRound) 
+            return {...state, scaler: new Scaler({scale:newScale}) }
          }
          case 'ZOOM_RESET': {
              const resetScale = zoomIdentity.rescaleY(state.scaler.yScale) 
-             return {...state, scaler: new Scaler(resetScale) }
+             return {...state, scaler: new Scaler({scale:resetScale}) }
          }
     }
 }  
@@ -46,10 +23,4 @@ export type RaterAction = {
     type: RaterActionType  
     data?: any
 } 
-export type RaterActionType = 'ARTIST_SONG_THROUGH_METADATA_FILTER' 
-| 'ALBUM_SELECT'  
-| 'ARTIST_SELECT'  
-| 'BREADCRUMB_ARTIST' 
-| 'ARTISTS_DATA_CHANGE'
-| 'ZOOM_RESET'
-| 'ZOOM'
+export type RaterActionType =  'ZOOM_RESET' | 'ZOOM'

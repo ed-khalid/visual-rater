@@ -1,5 +1,5 @@
-import { Scaler } from '../../functions/scale'
-import { RaterUIItem } from '../domain/ItemTypes'
+import { Scaler } from '../functions/scale'
+import { RaterUIItem } from './ItemTypes'
 
 export type RaterState = {
     scaler:Scaler

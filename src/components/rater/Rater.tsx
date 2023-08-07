@@ -1,15 +1,15 @@
 import { axisRight } from 'd3-axis'
 import { select } from 'd3-selection';
 import { AxisScale, Selection } from 'd3';
-import { RatedItem, RaterUIItem } from "../../models/domain/ItemTypes";
+import { RatedItem, RaterUIItem } from "../../models/ItemTypes";
 import { SingleRaterItem } from "./SingleRaterItem";
-import { Position } from '../../models/ui/Position';
+import { Position } from '../../models/Position';
 import { Dispatch, useEffect, useRef, useState, } from 'react';
 import React from 'react';
 import './Rater.css'
-import { RaterState, RATER_Y_TOP } from '../../models/ui/RaterTypes';
+import { RaterState, RATER_Y_TOP } from '../../models/RaterTypes';
 import { ZoomBehavior } from './behaviors/ZoomBehavior';
-import { ANIMATION_DURATION } from '../../models/ui/Animation';
+import { ANIMATION_DURATION } from '../../models/Animation';
 import { Transition, TransitionGroup } from 'react-transition-group';
 import { RaterAction } from '../../reducers/raterReducer';
 import { animateOnEnter, animateOnExit } from './ItemAnimation';
@@ -21,6 +21,7 @@ interface Props {
     isReadonly:boolean
     filterMode:boolean
     zoomTarget?:SVGGElement|null
+    handleHover:(item:RaterUIItem, on:boolean) => void
     onItemClick:(item:RatedItem) => void
     onSongDrag:(itemId:string) => void 
     duringDrag:(itemId:string, score:number) => void
@@ -33,7 +34,7 @@ interface Props {
 
 
 
-export const Rater = ({position, filterMode, itemsToFilter, state, stateDispatch, onItemClick, duringDrag, onSongDrag, updateSongScore, isReadonly, items }:Props) => {
+export const Rater = ({position, filterMode, handleHover, itemsToFilter, state, stateDispatch, onItemClick, duringDrag, onSongDrag, updateSongScore, isReadonly, items }:Props) => {
 
     const [currentItem, setCurrentItem] = useState<{id:string, score:number}|null>();  
     const g = useRef<SVGGElement>(null)
@@ -96,6 +97,7 @@ export const Rater = ({position, filterMode, itemsToFilter, state, stateDispatch
                         <Transition key={'single-rater-item'+item.name} onEnter={()=> animateOnEnter(item,position.x)} onExit={() => animateOnExit(item, position.x)}  nodeRef={item.nodeRef} timeout={ANIMATION_DURATION}>
                                 <SingleRaterItem
                                     item={item}
+                                    handleHover={handleHover}
                                     itemsToFilter={itemsToFilter}
                                     filterMode={filterMode}
                                     isReadonly={isReadonly}

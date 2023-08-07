@@ -1,6 +1,6 @@
 import { Dispatch, useEffect, useState } from "react"
 import { Song, useCompareSongToOtherSongsByOtherArtistsLazyQuery, useCompareSongToOthersSameArtistLazyQuery } from "../../../generated/graphql"
-import { ComparisonSongUIItem } from "../../../models/domain/ItemTypes"
+import { ComparisonSongUIItem } from "../../../models/ItemTypes"
 import React from "react"
 import { MusicState } from "../../../music/MusicState"
 import { mapComparisonSongToComparisonSongUIItem } from "../../../functions/mapper"

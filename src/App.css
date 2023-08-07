@@ -3,6 +3,7 @@
 /* general styles */ 
 * {
   font-family: 'Raleway', sans-serif;
+  color: rgb(145, 153, 161);
 }
 .font-title {
   font-family: 'Abril Fatface', serif;
@@ -54,7 +55,7 @@ div.drop-target {
 }
 .App {
   text-align: center;
-  background-color: #fff;
+  background-color:#2c3440;
   color: #000; 
   height: 100vh;
   overflow:hidden;
@@ -82,13 +83,6 @@ div#left-sidebar {
   left:0px;
 } 
 
-div#controls {
-  display:flex;
-  margin: 0 auto;
-  position: fixed;
-  left:50vw;
-  z-index:99;
-}
 
 
 

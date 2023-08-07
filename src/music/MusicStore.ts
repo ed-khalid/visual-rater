@@ -52,6 +52,8 @@ export class MusicStore {
   public filterSongsByScore = () => this.filters.filterByScore<Song>(this.data.songs)
 
   public findSongById = (id:String) => this.data.songs.find(it => it.id === id)  
+  public findArtistById = (id:String) => this.data.artists.find(it => it.id === id)  
+  public findAlbumById = (id:String) => this.data.albums.find(it => it.id === id)  
 
   public getItems() {
     switch(this.zoomLevel) {
@@ -63,9 +65,10 @@ export class MusicStore {
         return this.filters.filterAlbums(artistAlbums).map(it => mapAlbumToUIItem(it)) 
       }
       case MusicZoomLevel.SONG: {
-        const filteredByArtists = this.filters.filterSongsByArtist(this.data.songs)
-        const filteredSongs = this.filters.filterSongsByAlbum(filteredByArtists)
-        return filteredSongs.map(song => {
+        const artistSongs = this.filters.filterSongsByArtist(this.data.songs)
+        const albumSongs = this.filters.filterSongsByAlbum(artistSongs)
+        const scoreFilteredSongs = this.filters.filterByScore(albumSongs)    
+        return scoreFilteredSongs.map(song => {
             const album = this.data.albums.find(it => it.id === song.albumId) 
             const artist = this.data.artists.find(it => it.id === song.artistId) 
             return mapSongToUIItem(song,album!, artist!)

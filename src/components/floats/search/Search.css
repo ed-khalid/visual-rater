@@ -12,7 +12,7 @@ div#search #search-field {
 }   
 div#search #search-field label {
     position: absolute;
-    font-size: 10px;
+    font-size: 16px;
     top: -12px;
     left: 15px;
 }   
@@ -26,7 +26,6 @@ div#search #search-field img {
 div#search input {
     margin-left: 13px;
     height: 90%;
-    font-size:0.9em;
     width:80%;
     border: none;
     outline:none;
@@ -82,7 +81,7 @@ div.search-result-album {
     cursor: pointer;
     display: flex;
     flex-direction: column;
-    font-size:8px;
+    font-size:16px;
 }
 div.search-result-album:hover div.search-result-album-name {
     font-weight:bold;

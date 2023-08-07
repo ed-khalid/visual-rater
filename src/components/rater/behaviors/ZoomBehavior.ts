@@ -3,8 +3,9 @@ import { zoom } from 'd3-zoom'
 import { Scaler } from '../../../functions/scale';
 import { ScaleLinear } from 'd3-scale' 
 import { Dispatch, } from 'react';
-import {  RaterUIItemGrouped } from '../../../models/ui/RaterTypes';
+import {  RaterUIItemGrouped } from '../../../models/RaterTypes';
 import { RaterAction } from '../../../reducers/raterReducer';
+import { SCORE_END, SCORE_START } from '../../../models/ItemTypes';
 interface Props {
     listener:SVGRectElement|null
     axis:Selection<SVGGElement,unknown, null, undefined>
@@ -17,10 +18,11 @@ export const ZoomBehavior = (props?:Props) => {
 
     if (props && props.listener) {
         const doZoom = (event:any) => {
-            props.stateDispatch({type: 'ZOOM', data: { eventTransform: event.tranform } })
+            console.log(event)
+            props.stateDispatch({type: 'ZOOM', data: { eventTransform: event.transform } })
         }
         const zoomHandler = zoom<SVGRectElement, unknown>()
-          .scaleExtent([0,Infinity])
+          .scaleExtent([0.7,2])
           .on('zoom', doZoom) 
         select(props.listener).call(zoomHandler)
     }
@@ -34,8 +36,8 @@ export const ZoomBehavior = (props?:Props) => {
         zoomIn: (e:MouseEvent, scaler:Scaler) => {
             const y = e.offsetY;  
             const score = scaler.toScore(y) 
-            const min = Math.min((score - 0.25) || 0) 
-            const max = Math.min((score + 0.25) || 5) 
+            const min = Math.max((score - 25) || SCORE_START) 
+            const max = Math.min((score + 25) || SCORE_END) 
             return { start:min.toFixed(2), end:max.toFixed(2)} 
         } 
     }

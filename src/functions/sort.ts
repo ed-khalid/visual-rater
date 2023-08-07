@@ -1,4 +1,4 @@
-import { RatedItem } from "../models/domain/ItemTypes";
+import { RatedItem } from "../models/ItemTypes";
 
 
 

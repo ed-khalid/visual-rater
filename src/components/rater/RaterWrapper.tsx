@@ -1,8 +1,8 @@
 import React, { Dispatch, useEffect, useRef, useState } from "react"
 import { Album, Artist, Song, useUpdateSongMutation } from "../../generated/graphql"
 import { Rater } from "./Rater"
-import { RaterState, RATER_X, RATER_Y_BOTTOM, RATER_Y_TOP, SVG_HEIGHT, SVG_WIDTH, CLOSENESS_THRESHOLD, RaterUIItemGrouped } from "../../models/ui/RaterTypes"
-import { RatedItem, RaterUIItem } from "../../models/domain/ItemTypes"
+import { RaterState, RATER_X, RATER_Y_BOTTOM, RATER_Y_TOP, SVG_HEIGHT, SVG_WIDTH, CLOSENESS_THRESHOLD, RaterUIItemGrouped } from "../../models/RaterTypes"
+import { RatedItem, RaterUIItem } from "../../models/ItemTypes"
 import { RaterAction } from "../../reducers/raterReducer"
 import { MusicZoomLevel, MusicState } from "../../music/MusicState"
 import { MusicStore } from "../../music/MusicStore"
@@ -20,10 +20,11 @@ interface Props {
     musicDispatch:Dispatch<MusicAction>
     comparisonRaterOptions:Map<ComparisonRaterType,boolean>|undefined
     stateDispatch:Dispatch<RaterAction>
+    handleHover:(item:RaterUIItem, on:boolean) => void
 }
 
 
-export const RaterWrapper = ({state, stateDispatch, comparisonRaterOptions,filterMode, itemsToFilter, musicDispatch, musicState, onArtistClick, onAlbumClick}:Props) =>  {
+export const RaterWrapper = ({state, stateDispatch, handleHover, comparisonRaterOptions,filterMode, itemsToFilter, musicDispatch, musicState, onArtistClick, onAlbumClick}:Props) =>  {
     const gWrapper = useRef<SVGGElement>(null)
     const svgRef = useRef<SVGSVGElement>(null) 
     const [updateSong]  = useUpdateSongMutation();
@@ -79,9 +80,29 @@ export const RaterWrapper = ({state, stateDispatch, comparisonRaterOptions,filte
 
 
     const unwrapGroups = (groups:Array<RaterUIItemGrouped>) => {
-      return groups.reduce<RaterUIItem[]>((acc,curr)=> {
+      const items =  groups.reduce<RaterUIItem[]>((acc,curr)=> {
         return [...acc, ...curr.items ]
       }, [])
+      const scoreMap = new Map<number, Array<RaterUIItem>>()    
+      items.forEach(item => {
+        let values = scoreMap.get(item.score) || [] 
+        values.push(item)
+        scoreMap.set(item.score, values)
+       })
+
+       for (let [k,v]  of scoreMap) {
+        if (v.length !== 1)  {
+          v.sort((a,b) =>  (a.tier < b.tier)? -1 : (a.tier > b.tier) ? 1 : 0 )
+          v.forEach((item,i,arr) => {
+            if (i !== arr.length-1) {
+              item.shouldDrawLine = false
+            }
+          })
+        }
+       }
+
+
+      return items
     } 
 
     useEffect(() => {
@@ -99,7 +120,10 @@ export const RaterWrapper = ({state, stateDispatch, comparisonRaterOptions,filte
                     sortByScore(overlap.items)
                     const sum = overlap.items.reduce<number>((acc,curr) => state.scaler.toPosition(curr.score) + acc, 0)    
                     overlap.position = sum/overlap.items.length 
-                    overlap.items.forEach((item, i) => item.tier = ((i+1 % 9) + 1))
+                    overlap.items.forEach((item, i, arr) =>  { 
+                      item.tier = ((i % 15) + 1)
+                    })
+                    
                 } else {
                     acc.push({ position, items:[curr], id: '' + acc.length + 1 })
                 }
@@ -125,6 +149,7 @@ export const RaterWrapper = ({state, stateDispatch, comparisonRaterOptions,filte
                   itemsToFilter={itemsToFilter}
                   stateDispatch={stateDispatch}
                   filterMode={filterMode}
+                  handleHover={handleHover}
                   position={{x:RATER_X, y:RATER_Y_BOTTOM}}
                   isReadonly={musicState.zoomLevel !== MusicZoomLevel.SONG}
                   onItemClick={(musicState.zoomLevel === MusicZoomLevel.ALBUM) ? handleOnAlbumClick : handleOnArtistClick}
