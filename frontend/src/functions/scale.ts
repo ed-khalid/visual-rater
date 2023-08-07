@@ -1,7 +1,7 @@
 
 import { scaleLinear, ScaleLinear } from 'd3-scale';
-import { RATER_Y_BOTTOM, RATER_Y_TOP } from '../models/ui/RaterTypes';
-import { SCORE_END, SCORE_START } from '../models/domain/ItemTypes';
+import { RATER_Y_BOTTOM, RATER_Y_TOP } from '../models/RaterTypes';
+import { SCORE_END, SCORE_START } from '../models/ItemTypes';
 
 interface ScalerArguments {
     line?: {start:number, end:number}

@@ -2,7 +2,7 @@ import { useDrag } from "react-dnd"
 import React from 'react'
 import { Album } from "../../../generated/graphql"
 import { MusicStore } from '../../../music/MusicStore'
-import { DragType } from "../../../models/ui/DragType"
+import { DragType } from "../../../models/DragType"
 
 interface Props  {
     album:Album

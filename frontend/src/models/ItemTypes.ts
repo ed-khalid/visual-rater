@@ -24,6 +24,7 @@ export type RaterTier = number
 export interface RaterUIItem extends MusicUIItem {
     tier:RaterTier
     nodeRef:any 
+    shouldDrawLine:boolean
 }
 
 export interface ComparisonSongUIItem extends SongUIItem {

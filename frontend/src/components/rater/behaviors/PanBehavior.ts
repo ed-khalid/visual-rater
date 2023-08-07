@@ -1,5 +1,5 @@
 import { Scaler } from "../../../functions/scale";
-import { Position } from "../../../models/ui/Position";
+import { Position } from "../../../models/Position";
 
 export const PanBehavior =  () => {
 

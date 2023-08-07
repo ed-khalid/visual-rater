@@ -1,15 +1,16 @@
 
+
 /* panel styles */ 
-div.sidebar .panel {
-  width: 250px;
+div#right-sidebar .panel {
+  width: 450px;
 }
 div#left-sidebar .panel {
     width:270px;
 }
 .panel {
-  background:white;
-  border: 1px solid black; 
-  border-radius: 0px 0px 15px 15px;
+  user-select: none;
+  background:#2c3440;
+  border: 1px solid rgb(123, 128, 133);
   z-index:6;
 }
 .panel-wrapper {
@@ -20,10 +21,11 @@ div#left-sidebar .panel {
 .panel .panel-header {
   display: flex;
   position: relative;
-  background-color:black;
+  background-color:#14181c;
+  font-size:20px;
   color: white;
   width: 100%;
-  height:20px;
+  height:25px;
 }
 .panel .panel-header .panel-title {
   left:50%;
@@ -37,7 +39,6 @@ div#left-sidebar .panel {
 .panel-content {
   display:flex;
   position:relative;
-  height: 250px; 
   transition: height 200ms ease-in-out 10ms; 
 }
 .panel-padding {
@@ -56,7 +57,6 @@ div#left-sidebar .panel {
 
 /* music-navigation panel*/
 div#music-navigation {
-    user-select: none;
     top: 5px;
     right:2px;
     height:100%;
@@ -74,7 +74,7 @@ div#music-navigation ul#nav-artists {
     padding: 0;
 }
 div#music-navigation li.nav-row {
-    border-top: 1px solid black;
+    border-top: 1px solid rgb(182, 176, 176);
     cursor: pointer;
 }
 li.nav-row {
@@ -102,7 +102,7 @@ li.nav-row-album img {
     height: 20px;
 } 
 li.nav-row-album span {
-    font-size: 10px; 
+    font-size: 16px; 
 }
 div#music-navigation li.nav-row .left {
     width:70%;
@@ -114,41 +114,72 @@ div#music-navigation li.nav-row button {
     cursor:pointer;
     width: 35px;
     height:20px;
-    font-size:6px;
+    font-size:16px;
 }
 div.nav-album {
-    font-size: 8px;
+    font-size: 16px;
 } 
 div.nav-album {
     cursor:move;
 }  
-
-/* artist panel */
-div#artists-panel {
-    align-items:center;
-    justify-content: center;
-    height: 45vh;
+/* album panel */
+div.details-panel {
+    text-shadow:rgb(0, 0, 0) 3px 0px 4px; 
 }
-div#artists-panel .panel-padding {
-    padding: 0px;
+div.details-panel .panel-content {
+    height: 480px;
+    background-image:linear-gradient(to bottom, #14181c 0px, #14181c 40px,#2c3440 200px);
 }
-div#artists-panel img.artist-thumbnail {
-    width: 200px; 
-    height: 200px;
+div.details-panel .panel-content.collapsed {
+    height: 0px;
+}
+div.details-panel .panel-padding {
+    padding:0;
+    color: rgb(145, 153, 161);
+}
+div.details-panel div.outer-grid {
+    grid-template-columns: 50% 50%; 
+    grid-template-rows: 40% 31% 39%;
+}
+div.details-panel img.thumbnail {
+    width: 320px; 
+    height: 100%;
     max-width: 100%;
     max-height:100%;
+}
+div.details-panel div.songs {
+    user-select:text;
+    grid-template-rows: 20% 70%;
+    grid-row: span 2;
+}
+div.details-panel div.songs div.row{
+    transition: color 4ms;   
+}  
+
+div.details-panel div.songs div.row:hover {
+    color: green;
+}  
+div.songscorecategory-panelsection {
+    font-size: 16px;
+    grid-template-columns: 50% 50%;
+}
+div.songscorecategory-panelsection div.row {
     cursor: pointer;
 }
-div#artists-panel div.artist-name {
-    font-size:0.4em;
+div.details-panel div.big-text {
+    font-size: 8rem;
+}  
+div.medium2-text {
+    font-size: 2rem;
 }
+div.medium-text {
+    font-size: 4rem;
+} 
 
-/* block-rater panel  */
+/* scorecard */
 div#scorecard {
-    overflow-y: auto;
     user-select: none;
     width:auto;
-    max-height: 92vh;
 }
 div#scorecard .panel-padding {
     padding:0px;
@@ -156,16 +187,18 @@ div#scorecard .panel-padding {
 div#scorecard .panel-content {
     height:auto;
     overflow-y:auto;
+    max-height: 89vh;
 }
 div#scorecard ul {
-    width: 250px;
+    width: 270px;
     margin: 0;
     padding:0;
+    overflow-y:auto;
 }
 div#scorecard li {
     cursor:pointer;
     align-items:center;
-    font-size: 10px;
+    font-size: 16px;
     text-align:center;
     border-bottom:1px solid black;
 }
@@ -176,20 +209,20 @@ div#scorecard li:hover {
     background: rgb(216, 216, 177);
 }
 div#scorecard li img.block-rater-item-thumbnail {
-    width:50px;
-    height:50px;
+    width:80px;
+    height:80px;
 }
 div#scorecard li .block-rater-item-rating {
     align-items:center;
     justify-content: center;
     width:80px;
-    height:50px;
+    height:auto;
 }
 div#scorecard li .block-rater-item-info {
     width:73%;
 }
 div#scorecard li .block-rater-item-info-primary {
-    font-size:12px;
+    font-size:16px;
     font-weight:bold;
 }  
 div#scorecard li .block-rater-item-score {

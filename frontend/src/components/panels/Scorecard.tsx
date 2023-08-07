@@ -4,7 +4,7 @@ import { MusicZoomLevel, MusicState } from "../../music/MusicState"
 import { MusicStore } from "../../music/MusicStore"
 import { sortByScore } from "../../functions/sort"
 import { mapArtistScoreToUI, mapSongScoreToUI } from "../../functions/scoreUI"
-import { AlbumUIItem, MusicUIItem, SongUIItem } from "../../models/domain/ItemTypes"
+import { AlbumUIItem, MusicUIItem, SongUIItem } from "../../models/ItemTypes"
 import { MusicAction } from "../../music/MusicAction"
 
 interface Props {
@@ -35,7 +35,7 @@ const ArtistBlockDetails = ({items,onClick}:ArtistBlockProps) => {
                   <div style={{background: mapArtistScoreToUI(artist.score).color}} className="block-rater-item-rating flex column">
                     <div className="block-rater-item-score">
                     { 
-                      mapArtistScoreToUI(artist.score).description  
+                      mapArtistScoreToUI(artist.score).category  
                     }
                     </div>
                     <div className="block-rater-item-score-descriptor">{mapArtistScoreToUI(artist.score).score}</div>
@@ -55,7 +55,7 @@ const AlbumBlockDetails = ({items, onClick}:AlbumBlockProps) => {
                   <div style={{background: mapArtistScoreToUI(album.score).color}} className="block-rater-item-rating flex column">
                     <div className="block-rater-item-score">
                     { 
-                      mapArtistScoreToUI(album.score).description  
+                      mapArtistScoreToUI(album.score).category  
                     }
                     </div>
                     <div className="block-rater-item-score-descriptor">{mapArtistScoreToUI(album.score).score}</div>
@@ -79,7 +79,7 @@ export const SongBlockDetails = ({items, onClick}:SongBlockProps) => {
                       mapSongScoreToUI(song.score).score  
                     }
                     </div>
-                    <div className="block-rater-item-score-descriptor">{mapSongScoreToUI(song.score).description}</div>
+                    <div className="block-rater-item-score-descriptor">{mapSongScoreToUI(song.score).category}</div>
                   </div> 
                 </li> )}
                 </React.Fragment> 

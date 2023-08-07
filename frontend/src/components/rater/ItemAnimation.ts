@@ -1,7 +1,7 @@
 import { select } from "d3-selection";
-import { RATER_TIER_WIDTH, SVG_IMAGE_SIZE } from "../../models/ui/RaterTypes";
-import { ANIMATION_DURATION } from "../../models/ui/Animation";
-import { RaterUIItem } from "../../models/domain/ItemTypes";
+import { RATER_TIER_WIDTH, SVG_IMAGE_SIZE } from "../../models/RaterTypes";
+import { ANIMATION_DURATION } from "../../models/Animation";
+import { RaterUIItem } from "../../models/ItemTypes";
 
     export const animateOnEnter = (item:RaterUIItem, mainlineX:number) => {
         const tierOffset = RATER_TIER_WIDTH * item.tier 
