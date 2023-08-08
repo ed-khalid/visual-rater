@@ -7,12 +7,21 @@ DECLARE album_score double precision;
 DECLARE artist_score double precision;
 DECLARE artist_id$ uuid;
 DECLARE album_id$ uuid;
+
 DECLARE classic$ int;
 DECLARE great$ int;
+DECLARE verygood$ int;
 DECLARE good$ int;
-DECLARE mediocre$ int;
+DECLARE pleasant$ int;
+DECLARE decent$ int;
+DECLARE interesting$ int;
+DECLARE ok$ int;
+DECLARE average$ int;
+DECLARE meh$ int;
+DECLARE boring$ int;
+DECLARE poor$ int;
 DECLARE bad$ int;
-DECLARE terrible$ int;
+DECLARE offensive$ int;
 DECLARE total$ int;
 BEGIN
         IF (TG_op = 'DELETE') THEN
@@ -24,31 +33,40 @@ BEGIN
         end if;
         select avg(score) from SONG s where s.album_id = album_id$ INTO album_score;
         UPDATE album SET score = album_score WHERE id = album_id$;
-        select avg(score) from album a where a.artist_id = artist_id$ INTO artist_score;
-        UPDATE artist SET score = artist_score WHERE id = artist_id$;
-        select count(*) from song s where s.artist_id = artist_id$ and s.score >= 4.25 INTO classic$ ;
-        select count(*) from song s where s.artist_id = artist_id$ and s.score >= 4 and s.score < 4.25 INTO great$ ;
-        select count(*) from song s where s.artist_id = artist_id$ and s.score >= 3.5 and s.score < 4 INTO good$ ;
-        select count(*) from song s where s.artist_id = artist_id$ and s.score >= 3 and s.score < 3.5 INTO mediocre$ ;
-        select count(*) from song s where s.artist_id = artist_id$ and s.score >= 2 and s.score < 3 INTO bad$ ;
-        select count(*) from song s where s.artist_id = artist_id$ and s.score < 2 INTO terrible$ ;
+        select count(*) from song s where s.artist_id = artist_id$ and s.score >= 95 INTO classic$ ;
+        select count(*) from song s where s.artist_id = artist_id$ and s.score >= 90 and s.score < 95 INTO great$ ;
+        select count(*) from song s where s.artist_id = artist_id$ and s.score >= 85 and s.score < 90 INTO verygood$ ;
+        select count(*) from song s where s.artist_id = artist_id$ and s.score >= 80 and s.score < 85 INTO good$ ;
+        select count(*) from song s where s.artist_id = artist_id$ and s.score >= 75 and s.score < 80 INTO pleasant$ ;
+        select count(*) from song s where s.artist_id = artist_id$ and s.score >= 70 and s.score < 75 INTO decent$ ;
+        select count(*) from song s where s.artist_id = artist_id$ and s.score >= 65 and s.score < 70 INTO interesting$ ;
+        select count(*) from song s where s.artist_id = artist_id$ and s.score >= 60 and s.score < 65 INTO ok$ ;
+        select count(*) from song s where s.artist_id = artist_id$ and s.score >= 55 and s.score < 60 INTO meh$ ;
+        select count(*) from song s where s.artist_id = artist_id$ and s.score >= 50 and s.score < 55 INTO average$ ;
+        select count(*) from song s where s.artist_id = artist_id$ and s.score >= 40 and s.score < 50 INTO boring$ ;
+        select count(*) from song s where s.artist_id = artist_id$ and s.score >= 30 and s.score < 40 INTO poor$ ;
+        select count(*) from song s where s.artist_id = artist_id$ and s.score >= 10 and s.score < 30 INTO bad$ ;
+        select count(*) from song s where s.artist_id = artist_id$ and s.score >= 0 and s.score < 10 INTO offensive$ ;
         select count(*) from song s where s.artist_id = artist_id$ INTO total$;
         update artist_metadata
           set total_songs = total$,
+              offensive = offensive$,
               bad = bad$,
+              poor = poor$,
+              average = average$,
+              meh = meh$,
+              ok = ok$,
+              interesting = interesting$,
+              decent = decent$,
+              pleasant = pleasant$,
               good = good$,
+              verygood = verygood$,
               great= great$,
-              classic = classic$,
-              terrible = terrible$,
-              mediocre = mediocre$,
-              great_percentage = cast(great$ as float)/nullif(cast(total$ as float), 0),
-              good_percentage = cast(good$ as float)/nullif(cast (total$ as float),0),
-              mediocre_percentage = cast(mediocre$ as float)/nullif(cast(total$ as float),0),
-              bad_percentage = cast(bad$ as float)/nullif( cast (total$ as float),0),
-              terrible_percentage = cast (terrible$ as float)/nullif(cast (total$ as float),0),
-              classic_percentage = cast(classic$ as float)/nullif(cast (total$ as float),0)
+              classic = classic$
            where id =(select metadata_id from artist where artist.id = artist_id$)
         ;
+        select (6*classic$ + 4*great$ + 2*verygood$ + 1*good$ + 0.5 * decent$ + 0.5* pleasant$ + 0.1*interesting$) INTO artist_score;
+        UPDATE artist SET score = artist_score WHERE id = artist_id$;
         RETURN NULL;
     END
 $rec$;
@@ -79,7 +97,7 @@ CREATE FUNCTION recalculate_total_albums()
   LANGUAGE plpgsql
 AS $tot_alb$
     BEGIN
-        update artist_metadata set total_albums = (select count(*) from album a WHERE a.artist_id = NEW.artist_id) ;
+        update artist_metadata set total_albums = (select count(*) from album a WHERE a.artist_id = NEW.artist_id) where artist_id = NEW.artist_id;
         RETURN NULL;
     end;
 $tot_alb$;

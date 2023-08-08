@@ -3,8 +3,7 @@ type Query {
     searchExternalArtist(name:String): ExternalArtistSearchResult
     searchExternalAlbumTracks(albumId:String): [ExternalTrackSearchResult!]!
     artists: ArtistPage!
-    albums(artistId:String!): [Album!]
-    songs(albumId:String!): [Song!]
+    albums(ids:[String!]!): [Album!]
     artist(name:String): Artist
     compareToOtherSongsBySameArtist(songId:String!, artistId:String!, albumId:String!) : [ComparisonSong!]!
     compareToOtherSongsByOtherArtists(songId:String!, artistId:String!) : [ComparisonSong!]!

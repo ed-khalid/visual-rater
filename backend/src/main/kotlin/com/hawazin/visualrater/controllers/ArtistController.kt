@@ -4,19 +4,17 @@ import com.hawazin.visualrater.models.api.ArtistPage
 import com.hawazin.visualrater.models.db.Artist
 import com.hawazin.visualrater.models.db.ArtistMetadata
 import com.hawazin.visualrater.models.graphql.ArtistInput
-import com.hawazin.visualrater.services.MusicService
-import com.hawazin.visualrater.services.PublisherService
+import com.hawazin.visualrater.services.*
 import org.reactivestreams.Publisher
 import org.springframework.graphql.data.method.annotation.*
 import org.springframework.stereotype.Controller
 
 @Controller
-class ArtistController(val musicService: MusicService, val publisherService: PublisherService) {
+class ArtistController(val musicService: MusicService, val publisherService: ArtistPublisher, val imageService: ImageService) {
 
     @QueryMapping
     fun artists() : ArtistPage {
         val artists = musicService.readArtists()
-        artists.forEach { it.albums = mutableListOf()  }
         return ArtistPage(total= artists.totalPages, pageNumber = artists.pageable.pageNumber, content = artists.content)
     }
 
@@ -25,19 +23,22 @@ class ArtistController(val musicService: MusicService, val publisherService: Pub
         val maybeArtist = musicService.readArtistByName(name)
         return if (maybeArtist.isPresent) {
             val artist = maybeArtist.get()
-            return Artist(id= artist.id, vendorId = artist.vendorId, albums = artist.albums, score= artist.score, metadata = artist.metadata, thumbnail =  artist.thumbnail, name=artist.name)
+            return Artist(id= artist.id, vendorId = artist.vendorId, albums = artist.albums, score= artist.score, metadata = artist.metadata, thumbnail =  artist.thumbnail, name=artist.name, dominantColor = artist.dominantColor)
         } else {
             null
         }
     }
 
     @SubscriptionMapping
-    fun artistMetadataUpdated() : Publisher<ArtistMetadata>  {
+    fun artistUpdated() : Publisher<Artist>  {
         return publisherService
     }
 
     @MutationMapping
     fun CreateArtist(@Argument artist: ArtistInput): Artist {
+        if (artist.thumbnail != null) {
+            artist.dominantColor = imageService.getDominantColor(artist.thumbnail).colorString
+        }
         return musicService.createArtist(artist)
     }
 }

@@ -13,18 +13,20 @@ import java.util.*
 
 
 @Service
-class MusicService(private val songRepo: SongRepository, private val albumRepo: AlbumRepository, private val artistRepo: ArtistRepository, private val publisherService: PublisherService) {
+class MusicService(private val songRepo: SongRepository, private val albumRepo: AlbumRepository, private val artistRepo: ArtistRepository, private val artistPublisherService: PublisherService<Artist>, private val albumPublisherService: PublisherService<Album>) {
 
     @Transactional
     fun readArtists() : Page<Artist> = artistRepo.findAll(PageRequest.of(0,5))
     @Transactional
+    fun readAlbums(ids:List<UUID>): Iterable<Album> = albumRepo.findAllById(ids)
+    @Transactional
     fun readArtistByName(name:String) = artistRepo.findByName(name)
     @Transactional
-    fun readArtistById(id:UUID) = artistRepo.findById(id)
+    fun readAlbumsForArtists(artistIds:List<UUID>) : Iterable<Album> =  artistIds.map {  albumRepo.findByArtistId(it) }.flatten()
     @Transactional
-    fun readAlbumsForArtist(artistId:UUID) : Iterable<Album> = albumRepo.findByArtistId(artistId)
+    fun readArtists(artistIds:List<UUID>) : Iterable<Artist> =  artistIds.map {  artistRepo.findById(it) }.filter { (it.isPresent) }.map { it.get() }
     @Transactional
-    fun readSongsForAlbum(albumId:String) : Iterable<Song>? = songRepo.findByAlbumId(UUID.fromString(albumId))
+    fun readSongsForAlbums(albumIds:List<UUID>) : Iterable<Iterable<Song>> = albumIds.map{ songRepo.findByAlbumId(it) }
     @Transactional
     fun deleteSongById(id:UUID) : Boolean
     {
@@ -51,11 +53,15 @@ class MusicService(private val songRepo: SongRepository, private val albumRepo: 
 
 
     @Transactional
-    fun notifyOnMetadataUpdate(song:Song)
+    fun notifyOnSongUpdate(song:Song)
     {
-        val metadata = artistRepo.findMetadataById(song.artistId)
-        if (metadata.isPresent) {
-            publisherService.notify(metadata.get().metadata)
+        val artist = artistRepo.findById(song.artistId)
+        val album = albumRepo.findById(song.albumId)
+        if (artist.isPresent) {
+            artistPublisherService.notify(artist.get())
+        }
+        if (album.isPresent) {
+            albumPublisherService.notify(album.get())
         }
     }
 
@@ -88,7 +94,7 @@ class MusicService(private val songRepo: SongRepository, private val albumRepo: 
     @Transactional
     fun createArtist(artistInput: ArtistInput): Artist
     {
-        var artist:Artist = artistInput.let { Artist(id = null, vendorId= it.vendorId,  name= it.name,thumbnail = it.thumbnail, score  = 0.0, metadata = ArtistMetadata(id = null, tier = 0, songs = ArtistSongMetadata(), totalAlbums = 0, totalSongs = 0  ) )   }
+        var artist:Artist = artistInput.let { Artist(id = null, vendorId= it.vendorId, name= it.name,thumbnail = it.thumbnail, score  = 0.0, metadata = ArtistMetadata(id = null, tier = 0, songs = ArtistSongMetadata(), totalAlbums = 0, totalSongs = 0 , ), dominantColor =  artistInput.dominantColor )   }
         return artistRepo.save(artist)
     }
 

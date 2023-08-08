@@ -12,6 +12,7 @@ data class Artist(
     var vendorId:String?,
     var name:String,
     var thumbnail:String?,
+    var dominantColor:String?,
     @OneToMany(cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
     @JoinColumn(name = "artistId")
     var albums:MutableList<Album>? = null,

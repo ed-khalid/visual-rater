@@ -1,7 +1,7 @@
 interface Item {
 id:String!
 name:String!
-score:Float
+score:Float!
 }
 
 enum ItemType {
@@ -12,7 +12,7 @@ type Song implements Item {
     id:String!
     albumId:String!
     artistId:String!
-    score:Float
+    score:Float!
     name: String!
     number:Int!
     discNumber:Int!
@@ -33,7 +33,7 @@ type Album {
 interface Page {
     total: Int!
     pageNumber: Int!
-    content:[Pageable]
+    content:[Pageable!]!
 }
 
 interface Pageable {
@@ -43,7 +43,7 @@ interface Pageable {
 type ArtistPage implements Page {
     total:Int!
     pageNumber:Int!
-    content:[Artist]!
+    content:[Artist!]!
 }
 
 type ComparisonSong {
@@ -60,24 +60,27 @@ type Artist implements Pageable {
     id: String!
     name:String!
     thumbnail: String
-    albums:[Album]
-    score: Float
-    metadata:ArtistMetadata
+    dominantColor: String!
+    albums:[Album!]!
+    score: Float!
+    metadata:ArtistMetadata!
 }
 
 type ArtistSongMetadata {
     classic:Int!
     great:Int!
+    verygood:Int!
     good:Int!
-    mediocre:Int!
+    pleasant:Int!
+    decent:Int!
+    interesting:Int!
+    ok:Int!
+    meh:Int!
+    average:Int!
+    boring:Int!
+    poor:Int!
     bad:Int!
-    terrible:Int!
-    classicPercentage:Float!
-    greatPercentage:Float!
-    goodPercentage:Float!
-    mediocrePercentage:Float!
-    badPercentage:Float!
-    terriblePercentage:Float!
+    offensive:Int!
 }
 
 type ArtistMetadata {

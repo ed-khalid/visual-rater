@@ -3,7 +3,6 @@ package com.hawazin.visualrater.controllers
 import com.hawazin.visualrater.models.db.Song
 import com.hawazin.visualrater.models.graphql.SongInput
 import com.hawazin.visualrater.services.MusicService
-import com.hawazin.visualrater.services.PublisherService
 import org.springframework.graphql.data.method.annotation.Argument
 import org.springframework.graphql.data.method.annotation.MutationMapping
 import org.springframework.graphql.data.method.annotation.QueryMapping
@@ -16,8 +15,8 @@ import java.util.*
 class SongController(val musicService: MusicService) {
 
     @QueryMapping
-    fun songs(@Argument albumId:String): Iterable<Song>? {
-        return musicService.readSongsForAlbum(albumId)
+    fun songs(@Argument albumIds:List<String>): Iterable<Iterable<Song>>? {
+        return musicService.readSongsForAlbums(albumIds.map{ UUID.fromString(it) })
     }
 
     @SchemaMapping
@@ -32,7 +31,7 @@ class SongController(val musicService: MusicService) {
     @MutationMapping
     fun UpdateSong(@Argument song: SongInput) : Song {
         val song = musicService.updateSong(song)
-        musicService.notifyOnMetadataUpdate(song)
+        musicService.notifyOnSongUpdate(song)
         return song
     }
 

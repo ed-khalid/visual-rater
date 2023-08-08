@@ -1,4 +1,5 @@
 
 type Subscription {
-    artistMetadataUpdated: ArtistMetadata
+    artistUpdated: Artist
+    albumUpdated: Album
 }
