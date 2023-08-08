@@ -1,0 +1,9 @@
+
+query GetArtistAlbums($artistName:String) {
+  artist(name:$artistName) {
+    id
+    albums {
+        ...AlbumFields
+    }
+  }
+}

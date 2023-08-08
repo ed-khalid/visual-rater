@@ -1,6 +1,0 @@
-
-query artistWithAlbumsAndSongs($artistName:String) {
-  artistWithAlbumsAndSongs(name:$artistName) {
-      ...ArtistFields
-  }
-}

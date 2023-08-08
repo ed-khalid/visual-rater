@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { useSearchByArtistLazyQuery } from "../../../generated/graphql"
+import { useSearchExternalArtistLazyQuery } from "../../../generated/graphql"
 import React from "react"
 import { SearchInput } from "./SearchInput"
 import { SearchResults } from "./SearchResults"
@@ -12,7 +12,7 @@ interface Props {
 
 
 export const Search =  ({onExternalAlbumSelect}:Props) => {
-    const [searchArtist, {data ,error,loading} ] = useSearchByArtistLazyQuery() 
+    const [searchArtist, {data ,error,loading} ] = useSearchExternalArtistLazyQuery() 
     const [artistName, setArtistName] = useState<string>('')
 
     const updateArtistName = (name:string) => {

@@ -1,0 +1,8 @@
+query GetAlbumsSongs($albumIds:[String!]!) {
+    albums(ids:$albumIds) {
+        id
+        songs {
+          ...SongFields
+        }
+    }
+}

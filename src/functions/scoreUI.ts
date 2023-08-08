@@ -59,6 +59,7 @@ export const mapArtistScoreToUI = (score:number) : ArtistScoreUI => {
     for (let [,v] of ARTIST_SCORE_MAP) {
       if (v.threshold.low <= score && v.threshold.high  >= score ) return { ...v, score:score.toFixed(1) }
     }
+    console.log(score)
     throw Error('Score could not be found in dictionary')
 }  
  

@@ -1,8 +1,4 @@
 import React from 'react';
-import { render } from '@testing-library/react';
-import { MockedProvider, MockedResponse } from '@apollo/client/testing'
-import { ArtistsWithoutAlbumsPageDocument  } from './generated/graphql';
-import { ReducerProvider } from './providers/ReducerProvider';
 /*
 test('renders app and sees eminem', async () => {
   const { findByText } = render(<MockedProvider mocks={mocks} addTypename={false}><ReducerProvider/></MockedProvider>);

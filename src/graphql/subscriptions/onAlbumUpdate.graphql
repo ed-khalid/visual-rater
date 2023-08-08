@@ -1,0 +1,7 @@
+
+subscription onAlbumUpdate {
+    albumUpdated {
+        id
+        score
+    }
+}   

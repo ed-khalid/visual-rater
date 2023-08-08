@@ -53,7 +53,7 @@ SONG_SCORE_DICTIONARY.set('MEH',
 SONG_SCORE_DICTIONARY.set('AVERAGE', 
     { category: 'AVERAGE', color: '#edff66', threshold: {low:50,high:54}})
 SONG_SCORE_DICTIONARY.set('BORING', 
-    { category: 'BORING', color: '#f2e89b', threshold: {low:40,high:44} })
+    { category: 'BORING', color: '#f2e89b', threshold: {low:40,high:49} })
 SONG_SCORE_DICTIONARY.set('POOR', 
     { category: 'POOR', color: '#f2ce9b', threshold: {low:30,high:39} })
 SONG_SCORE_DICTIONARY.set('BAD', 
@@ -63,11 +63,11 @@ SONG_SCORE_DICTIONARY.set('OFFENSIVE',
 
 export const ARTIST_SCORE_MAP:Map<ArtistScoreCategory, ArtistScoreUIBase> = new Map()   
 ARTIST_SCORE_MAP.set('A+',{ category: 'A+', color: '#018c16', threshold: {low:90,high:100} }) 
-ARTIST_SCORE_MAP.set('A' ,{ category: 'A' , color: '#018c16', threshold: {low:80,high:89}  }) 
-ARTIST_SCORE_MAP.set('B+',{ category: 'B+', color: '#1df23d', threshold: {low:70,high:79}  })
-ARTIST_SCORE_MAP.set('B', { category: 'B' , color: '#1df23d', threshold: {low:60,high:69}  })
-ARTIST_SCORE_MAP.set('C+', { category: 'C' , color: '#cff78d', threshold: {low:50, high:59} })
-ARTIST_SCORE_MAP.set('C',  { category: 'C+', color: '#cff78d', threshold: {low:40,high:49} })
-ARTIST_SCORE_MAP.set('D',{ category: 'D' , color: '#f2e89b', threshold: {low:30,high:39} })
-ARTIST_SCORE_MAP.set('E',  { category: 'E' , color: '#e34119', threshold: {low:10,high:29} })
-ARTIST_SCORE_MAP.set('F', { category: 'F' , color: '#fa2100', threshold: {low:0,high:9}  })
+ARTIST_SCORE_MAP.set('A' ,{ category: 'A' , color: '#018c16', threshold: {low:80,high:89.99}  }) 
+ARTIST_SCORE_MAP.set('B+',{ category: 'B+', color: '#1df23d', threshold: {low:70,high:79.99}  })
+ARTIST_SCORE_MAP.set('B', { category: 'B' , color: '#1df23d', threshold: {low:60,high:69.99}  })
+ARTIST_SCORE_MAP.set('C+', { category: 'C' , color: '#cff78d', threshold: {low:50, high:59.99} })
+ARTIST_SCORE_MAP.set('C',  { category: 'C+', color: '#cff78d', threshold: {low:40,high:49.99} })
+ARTIST_SCORE_MAP.set('D',{ category: 'D' , color: '#f2e89b', threshold: {low:30,high:39.99} })
+ARTIST_SCORE_MAP.set('E',  { category: 'E' , color: '#e34119', threshold: {low:10,high:29.99} })
+ARTIST_SCORE_MAP.set('F', { category: 'F' , color: '#fa2100', threshold: {low:0,high:9.99}  })
