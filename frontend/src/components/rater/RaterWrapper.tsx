@@ -1,5 +1,5 @@
 import React, { Dispatch, useEffect, useRef, useState } from "react"
-import { Album, Artist, Song, useUpdateSongMutation } from "../../generated/graphql"
+import { Album, Artist, GetAlbumsDocument, Song, useUpdateSongMutation } from "../../generated/graphql"
 import { Rater } from "./Rater"
 import { RaterState, RATER_X, RATER_Y_BOTTOM, RATER_Y_TOP, SVG_HEIGHT, SVG_WIDTH, CLOSENESS_THRESHOLD, RaterUIItemGrouped } from "../../models/RaterTypes"
 import { RatedItem, RaterUIItem } from "../../models/ItemTypes"
@@ -60,7 +60,11 @@ export const RaterWrapper = ({state, stateDispatch, handleHover, comparisonRater
     } 
 
     const onSongScoreUpdate = (id:string, score:number) => {
-        updateSong({ variables: {song:  { id , score} }})
+        const store = new MusicStore(musicState) 
+        const song = store.findSongById(id)
+        if (song) {
+          updateSong({ variables: {song:  { id , score} }, refetchQueries: [{ query: GetAlbumsDocument, variables: { ids: [song.albumId] }  }]})
+        }
     }  
 
     const handleOnAlbumClick =  (item:RatedItem) => {

@@ -1,7 +1,7 @@
 import React, { Dispatch, useEffect, useReducer, useState } from 'react';
 import './App.css';
 import { Scaler } from './functions/scale';
-import {  ExternalAlbumSearchResult, Artist, ExternalArtistSearchResult, NewSongInput, useCreateAlbumMutation, useGetTracksForSearchAlbumLazyQuery, Song, Album, useOnArtistMetadataUpdateSubscription, AlbumFieldsFragmentDoc, SongFieldsFragmentDoc, useArtistWithAlbumsAndSongsLazyQuery, useArtistsWithoutAlbumsPageQuery, useAlbumsWithoutSongsLazyQuery, useAlbumSongsLazyQuery } from './generated/graphql';
+import {  ExternalAlbumSearchResult, Artist, ExternalArtistSearchResult, NewSongInput, useCreateAlbumMutation, useGetTracksForSearchAlbumLazyQuery, Song, Album, useOnAlbumUpdateSubscription, useOnArtistUpdateSubscription, useGetArtistsPageQuery, useGetAlbumsSongsLazyQuery, useGetAlbumsLazyQuery, useGetArtistFullLazyQuery } from './generated/graphql';
 import { ExternalFullSearchResult } from './models/ExternalFullSearchResult';
 import { RaterWrapper } from './components/rater/RaterWrapper';
 import { DragType } from './models/DragType';
@@ -9,8 +9,6 @@ import { useDrop } from 'react-dnd';
 import { RaterState } from './models/RaterTypes';
 import { ArtistPanel } from './components/panels/ArtistPanel';
 import { RaterAction, raterReducer } from './reducers/raterReducer';
-import { client } from './setupApollo';
-import { Reference } from '@apollo/client/cache';
 import { Search } from './components/floats/search/Search';
 import { MusicNavigationPanel } from './components/panels/musicnavigation/MusicNavigation';
 import { MusicStore } from './music/MusicStore';
@@ -39,13 +37,13 @@ export const App = ({musicState, musicDispatch}:Props) => {
 
 
   // search
-  const $artistsPage  =  useArtistsWithoutAlbumsPageQuery()
+  const $artistsPage  =  useGetArtistsPageQuery()
   const [firstLoad, setFirstLoad] = useState<boolean>(true) 
   const [searchAlbum, setSearchAlbum] = useState<ExternalAlbumSearchResult>()
   const [searchArtist,setSearchArtist] = useState<ExternalArtistSearchResult>()
   const [comparisonRaterOptions, setComparisonRaterOptions] = useState<Map<ComparisonRaterType, boolean>>(new Map([[ComparisonRaterType.OTHER_ARTISTS, true], [ComparisonRaterType.SAME_ARTIST, true], [ComparisonRaterType.WHATS_ON_RATER, false]])) 
-  const [ $loadArtistWithAlbumsAndSongs, $artistWithAlbumsAndSongs ] = useArtistWithAlbumsAndSongsLazyQuery()
-  useOnArtistMetadataUpdateSubscription() 
+  useOnAlbumUpdateSubscription({onData: ({data}) => { console.log('album update',data)}})
+  useOnArtistUpdateSubscription({onData: ({data}) => { console.log('artist update', data) } })
 
   const [$getSearchAlbumTracks, $searchAlbumTracks ] = useGetTracksForSearchAlbumLazyQuery()
   const [createAlbum, ] = useCreateAlbumMutation() 
@@ -58,12 +56,13 @@ export const App = ({musicState, musicDispatch}:Props) => {
   const [panelArtist, setPanelArtist] = useState<Artist|undefined>() 
   const [panelAlbum, setPanelAlbum] = useState<Album|undefined>() 
 
-  const [$loadAlbumsWithoutSongs, $albumsWithoutSongs]  = useAlbumsWithoutSongsLazyQuery() 
-  const [$loadSongs, $songs]  = useAlbumSongsLazyQuery() 
+  const [$loadArtistFull, $artistFull] = useGetArtistFullLazyQuery()
+
+  const [$loadAlbumsWithoutSongs, $albumsWithoutSongs]  = useGetAlbumsLazyQuery() 
+  const [$loadAlbumSongs, $albumSongs]  = useGetAlbumsSongsLazyQuery() 
 
   // rater 
   const [raterState, raterDispatch] = useReducer<React.Reducer<RaterState,RaterAction>>(raterReducer, initialRaterState )
-
 
   const zoomIn = () => {
 
@@ -71,9 +70,9 @@ export const App = ({musicState, musicDispatch}:Props) => {
 
   useEffect(() => {
   if (!$artistsPage.loading && $artistsPage.data) {
-      musicDispatch({ type: 'DATA_CHANGE', data: { artists: $artistsPage.data.artistsWithoutAlbumsPage.content as Artist[]   }})
+      musicDispatch({ type: 'DATA_CHANGE', data: { artists: $artistsPage.data.artists.content as Artist[]   }})
       if (firstLoad) {
-          musicDispatch({type: 'FILTER_CHANGE', filters: { artistIds: $artistsPage.data.artistsWithoutAlbumsPage.content.map(it => it!.id) } }) 
+          musicDispatch({type: 'FILTER_CHANGE', filters: { artistIds: $artistsPage.data.artists.content.map(it => it.id) } }) 
           setFirstLoad(false)
       }
   }
@@ -98,7 +97,7 @@ export const App = ({musicState, musicDispatch}:Props) => {
     } else {
       const store = new MusicStore(musicState) 
       if (!store.hasArtistLoadedAlbums(artist)) {
-        $loadAlbumsWithoutSongs({variables: { artistIds: [artist.id] }})
+        $loadAlbumsWithoutSongs({variables: { ids: artist.albums.map(it => it.id) }})
         setFilterAwaitingLoad(true)
       }
       musicDispatch({ type: 'FILTER_CHANGE', filters: { artistIds:[artist.id]  }, zoomLevel: MusicZoomLevel.ALBUM})
@@ -108,38 +107,17 @@ export const App = ({musicState, musicDispatch}:Props) => {
   const onMusicNavArtistExpand = (artist:Artist) => {
       const store = new MusicStore(musicState) 
       if (!store.hasArtistLoadedAlbums(artist)) {
-        $loadAlbumsWithoutSongs({variables: { artistIds: [artist.id] }})
+        $loadAlbumsWithoutSongs({variables: { ids: artist.albums.map(it=>it.id) }})
       } 
   }  
 
   useEffect(() => {
     if (!$albumsWithoutSongs.loading && $albumsWithoutSongs.data) {
-      const albums = $albumsWithoutSongs.data.albumsWithoutSongs
+      const albums = $albumsWithoutSongs.data.albums
       if (albums && albums.length) {
         if (filterAwaitingLoad) {
           musicDispatch({ type: 'FILTER_CHANGE', filters: { albumIds: albums.map(it => it.id) }})
         }
-        const artistId = albums[0].artistId 
-        const cache = client.cache
-        const refs = albums.map(it => client.writeFragment({ data: it, fragment: AlbumFieldsFragmentDoc, fragmentName: 'AlbumFields'}))
-        cache.modify({
-          id: `Artist:${artistId}`,
-          fields: {
-            albums(existing:Reference[], {readField} ) {
-              const newRefs = refs.reduce<Reference[]>((acc,curr) => {
-                if (!curr) {
-                  return acc
-                }
-                else if (existing.some(it => readField('id',it) ===  readField('id', curr))) {
-                  return acc
-                } else {
-                  return [...acc, curr]
-                }
-              }, [])
-              return [...existing, ...newRefs ]
-            }
-          } 
-        });
         musicDispatch({ type: 'DATA_CHANGE', data: { albums: albums as Album[]}   })
         setFilterAwaitingLoad(false)
       }
@@ -160,7 +138,7 @@ export const App = ({musicState, musicDispatch}:Props) => {
       }
       case MusicZoomLevel.SONG: {
         if (!store.hasAlbumLoadedSongs(album)) {
-          $loadSongs({ variables: { albumIds : [album.id] }  })
+          $loadAlbumSongs({ variables: { albumIds : [album.id] }  })
         }
         musicDispatch({type:'FILTER_CHANGE', filters: { artistIds:[album.artistId], albumIds: [album.id]} , mode: FilterMode.ADDITIVE })
       }
@@ -173,7 +151,7 @@ export const App = ({musicState, musicDispatch}:Props) => {
       // switch to the artist and show all their albums
       case MusicZoomLevel.ARTIST: {
         if (!store.hasArtistLoadedAlbums(artist)) {
-          $loadAlbumsWithoutSongs({ variables: { artistIds: [artist.id] }})
+          $loadAlbumsWithoutSongs({ variables: { ids: artist.albums!.map(it => it.id) }})
         }
         musicDispatch({type:'FILTER_CHANGE', filters: { artistIds: [artist.id] } } )
         break;
@@ -181,7 +159,7 @@ export const App = ({musicState, musicDispatch}:Props) => {
       // load all albums (without songs) and add it to the current rater view   
       case MusicZoomLevel.ALBUM: {
         if (!store.hasArtistLoadedAlbums(artist)) {
-          $loadAlbumsWithoutSongs({ variables: { artistIds: [artist.id] }})
+          $loadAlbumsWithoutSongs({ variables: { ids: artist.albums!.map(it => it.id) }})
         }
         musicDispatch({type:'FILTER_CHANGE', filters: { artistIds: [artist.id] }, mode:FilterMode.ADDITIVE  } )
         break;
@@ -189,7 +167,7 @@ export const App = ({musicState, musicDispatch}:Props) => {
       // load all songs for artist and add it to the current rater view  
       case MusicZoomLevel.SONG: {
         if (!store.hasArtistLoadedAlbums(artist)) {
-          $loadArtistWithAlbumsAndSongs({variables: {artistName :artist.name}})
+          $loadArtistFull({variables: {artistName :artist.name}})
         }
         musicDispatch({type:'FILTER_CHANGE', filters: { artistIds: [artist.id] }, mode:FilterMode.ADDITIVE  } )
       }
@@ -202,69 +180,47 @@ export const App = ({musicState, musicDispatch}:Props) => {
       case MusicZoomLevel.ARTIST: { break;} 
       case MusicZoomLevel.ALBUM: {  
         const store = new MusicStore(musicState) 
-        const artistIds  = store.getLazyArtists().map(it => it.id) 
-        if (artistIds.length) {
-          $loadAlbumsWithoutSongs({variables :  { artistIds } })
-        }
+        // we're loading all artists 
+        if (store.getSelectedArtists().length === 0) {
+          const artists  = store.getLazyArtists()
+          if (artists.length) {
+            const ids = artists.reduce<Album[]>((acc,curr) =>  [...acc, ...curr.albums], [] ).map(it => it.id)
+            $loadAlbumsWithoutSongs({variables :  { ids } })
+          }
+        } 
         break;
       }
       case MusicZoomLevel.SONG: {
         const store = new MusicStore(musicState) 
-        const albumIds =  store.getLazyAlbums().map(it => it.id) 
-        if (albumIds.length) {
-          $loadSongs({ variables: { albumIds } })
+        // loading all albums not yet loaded 
+        if (store.getSelectedAlbums().length === 0) {
+          const albumIds =  store.getLazyAlbums().map(it => it.id) 
+          if (albumIds.length) {
+            $loadAlbumSongs({ variables: { albumIds } })
+          }
         }
         break;
       }
     }
-  }, [musicState.zoomLevel, $loadAlbumsWithoutSongs,$loadSongs, musicState])
+  }, [musicState.zoomLevel, $loadAlbumsWithoutSongs,$loadAlbumSongs, musicState])
 
   const onAlbumSelect = (album:Album) => {
     if (filterMode) {
       setItemsToFilter(items => [album.id, ...itemsToFilter])
     } else {
-      if (album.songs.length === 0) {
-        $loadSongs({variables: { albumIds: [album.id] }})
-      }
+      $loadAlbumSongs({variables: { albumIds: [album.id] }})
       musicDispatch({type: 'FILTER_CHANGE', filters: { albumIds:[album.id] }, zoomLevel: MusicZoomLevel.SONG })
     }
   }
 
   useEffect(() => {
-    if (!$songs.loading && $songs.data) {
-      const songArr = $songs.data.songs
-      if (songArr) {
-        songArr.forEach(songs => {
-          if (songs) {
-            const albumId = songs[0].albumId 
-            const refs = songs.map(song => client.writeFragment({ data: song, fragment: SongFieldsFragmentDoc}))
-            client.cache.modify({
-              id: `Album:${albumId}`,
-              fields: {
-                songs(existing:Reference[], {readField} ) {
-                  const newRefs = refs.reduce<Reference[]>((acc,curr) => {
-                    if (!curr) {
-                      return acc
-                    }
-                    else if (existing.some(it => readField('id',it) ===  readField('id', curr))) {
-                      return acc
-                    } else {
-                      return [...acc, curr]
-                    }
-                  }, [])
-                  return [...existing, ...newRefs ]
-                }
-              } 
-            });
-          }
-        })
-        const allSongs = songArr.reduce<Song[]>((acc,curr) => {  
-          if(curr) return [...acc, ...curr] 
-          else return acc }, [])
-        musicDispatch({ type: 'DATA_CHANGE', data: { songs: allSongs as Song[]} })
+    if (!$albumSongs.loading && $albumSongs.data) {
+      const songs = $albumSongs.data.albums!.reduce<Song[]>((acc,curr)=> {
+        return [...acc, ...curr.songs ]
+      }, [])
+        musicDispatch({ type: 'DATA_CHANGE', data: { songs: songs as Song[]} })
       }
-    }
-  }, [$songs.loading, $songs.data, musicDispatch])
+  }, [$albumSongs.loading, $albumSongs.data, musicDispatch])
 
   const onMetadataCategroyClick = (artist:Artist, scoreFilter:{start:number,end:number}) => {
     musicDispatch({ type: 'FILTER_CHANGE', filters: { artistIds: [artist.id], albumIds:[], scoreFilter: scoreFilter }, zoomLevel: MusicZoomLevel.SONG  })
@@ -322,45 +278,44 @@ export const App = ({musicState, musicDispatch}:Props) => {
           }, 
           songs
         }},  update: () => {
-            $loadArtistWithAlbumsAndSongs({ variables: { artistName: searchArtistAlbumTracks.artist.name }})
+            $loadArtistFull({ variables: { artistName: searchArtistAlbumTracks.artist.name }})
         } 
       }, )
     }
-  }, [$searchAlbumTracks.data?.searchExternalAlbumTracks, searchArtist, searchAlbum, createAlbum, $loadArtistWithAlbumsAndSongs ] )
+  }, [$searchAlbumTracks.data?.searchExternalAlbumTracks, searchArtist, searchAlbum, createAlbum, $loadArtistFull ] )
 
   useEffect(() => {
-    if (!$artistWithAlbumsAndSongs.loading && $artistWithAlbumsAndSongs.data && searchAlbum) {
+    if (!$artistFull.loading && $artistFull.data && searchAlbum) {
 
-      const songs = $artistWithAlbumsAndSongs.data.artistWithAlbumsAndSongs?.albums?.reduce<Array<Song>>((acc,curr) => {
+      const songs = $artistFull.data.artist?.albums?.reduce<Array<Song>>((acc,curr) => {
         return [...acc, ...curr!.songs]
       }, [])
-      musicDispatch({ type: 'DATA_CHANGE', data: { artists: [$artistWithAlbumsAndSongs.data.artistWithAlbumsAndSongs] as Artist[], albums: $artistWithAlbumsAndSongs.data.artistWithAlbumsAndSongs?.albums as Album[], songs     }})
-      const newAlbum = $artistWithAlbumsAndSongs.data.artistWithAlbumsAndSongs?.albums?.find(it => it?.name === searchAlbum?.name )
+      musicDispatch({ type: 'DATA_CHANGE', data: { artists: [$artistFull.data.artist] as Artist[], albums: $artistFull.data.artist?.albums as Album[], songs     }})
+      const newAlbum = $artistFull.data.artist?.albums?.find(it => it?.name === searchAlbum?.name )
       if (newAlbum) {
-        musicDispatch({ type: 'FILTER_CHANGE', filters: { artistIds:[$artistWithAlbumsAndSongs.data.artistWithAlbumsAndSongs!.id] , albumIds: [newAlbum.id] } })
+        musicDispatch({ type: 'FILTER_CHANGE', filters: { artistIds:[$artistFull.data.artist!.id] , albumIds: [newAlbum.id] } })
       }
       setSearchArtist(undefined)
       setSearchAlbum(undefined)
       // just loading an artist without search
-    } else if (!$artistWithAlbumsAndSongs.loading && $artistWithAlbumsAndSongs.data && !searchAlbum) {
-      const songs = $artistWithAlbumsAndSongs.data.artistWithAlbumsAndSongs?.albums?.reduce<Array<Song>>((acc,curr) => {
+    } else if (!$artistFull.loading && $artistFull.data && !searchAlbum) {
+      const songs = $artistFull.data.artist?.albums?.reduce<Array<Song>>((acc,curr) => {
         return [...acc, ...curr!.songs]
       }, [])
-      musicDispatch({ type: 'DATA_CHANGE', data: { artists: [$artistWithAlbumsAndSongs.data.artistWithAlbumsAndSongs] as Artist[], albums: $artistWithAlbumsAndSongs.data.artistWithAlbumsAndSongs?.albums as Album[], songs     }})
-      const albumIds = $artistWithAlbumsAndSongs.data.artistWithAlbumsAndSongs?.albums!.map(it => it!.id)  
+      musicDispatch({ type: 'DATA_CHANGE', data: { artists: [$artistFull.data.artist] as Artist[], albums: $artistFull.data.artist?.albums as Album[], songs     }})
+      const albumIds = $artistFull.data.artist?.albums!.map(it => it.id)  
       const songIds = songs?.map(it => it.id)  
       if (albumIds && songIds) {
-        musicDispatch({ type: 'FILTER_CHANGE', filters: { artistIds:[$artistWithAlbumsAndSongs.data.artistWithAlbumsAndSongs!.id] , albumIds, songIds }, mode:FilterMode.ADDITIVE })
+        musicDispatch({ type: 'FILTER_CHANGE', filters: { artistIds:[$artistFull.data.artist!.id] , albumIds, songIds }, mode:FilterMode.ADDITIVE })
       }
     }
-  }, [$artistWithAlbumsAndSongs.loading, $artistWithAlbumsAndSongs.data, searchAlbum, musicDispatch])
+  }, [$artistFull.loading, $artistFull.data, searchAlbum, musicDispatch])
 
   const goHome = () => {
     musicDispatch({ type : 'FILTER_CHANGE', filters: { artistIds:  musicState.data.artists.map(it => it.id ), albumIds:[], songIds:[], scoreFilter: { start: SCORE_START, end:SCORE_END}} , zoomLevel: MusicZoomLevel.ARTIST  })
   } 
 
   const handleHover =  (item:RaterUIItem, mode:boolean) => {
-    console.log(item)
     if (mode === false) {
       return;
     }
@@ -396,8 +351,6 @@ export const App = ({musicState, musicDispatch}:Props) => {
     setItemsToFilter([])
   }
 
-
-  const store = new MusicStore(musicState)
   return (
     <div className={"App " + ((filterMode)?"filterMode":"")} >
         <div id="left-sidebar" className="sidebar">
@@ -405,7 +358,7 @@ export const App = ({musicState, musicDispatch}:Props) => {
            <ScorecardPanel musicState={musicState} musicDispatch={musicDispatch} /> 
         </div>
         <div id="right-sidebar" className="sidebar">
-          {store.data.artists && <MusicNavigationPanel 
+          {/* {store.data.artists && <MusicNavigationPanel 
               onArtistExpand={onMusicNavArtistExpand} 
               onArtistSwitch={onArtistSelect}
               onArtistAdd={addArtist}
@@ -413,7 +366,7 @@ export const App = ({musicState, musicDispatch}:Props) => {
               onAlbumAdd={addAlbum}
               state={musicState} 
               artists={store.data.artists} 
-          />}
+          />} */}
           {panelArtist && <ArtistPanel onSongCategoryClick={onMetadataCategroyClick} key={panelArtist.name+ '-panel'} artist={panelArtist}/>}
           {panelAlbum && <AlbumPanel onSongCategoryClick={onAlbumPanelMetadataCategoryClick} key={panelAlbum.name+ '-panel'} album={panelAlbum}/>}
         </div> 

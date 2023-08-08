@@ -1,0 +1,15 @@
+
+subscription onArtistUpdate {
+    artistUpdated {
+        id
+        score
+        metadata {
+          totalSongs
+          totalAlbums 
+          songs {
+            ...ArtistSongMetadataFields
+          }
+
+        }
+    }
+}   

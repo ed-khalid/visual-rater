@@ -1,0 +1,18 @@
+query GetArtistsPage {
+  artists {
+    total 
+    pageNumber
+    content
+    {
+      id 
+      name
+      thumbnail
+      dominantColor
+      score
+      albums {
+        id
+      }
+      metadata { ...ArtistMetadataFields }
+    }
+  }
+}
