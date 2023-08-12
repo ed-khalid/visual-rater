@@ -12,7 +12,6 @@
     "graphql-ws": "^5.14.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
-    "react-scripts": "5.0.1",
     "react-transition-group": "4.4.5"
   },
   "devDependencies": {
@@ -28,20 +27,21 @@
     "@types/d3": "7.4.0",
     "@types/d3-drag": "3.0.2",
     "@types/jest": "^24.9.1",
-    "@types/resize-observer-browser": "0.1.7",
-    "@types/node": "^12.12.47",
+    "@types/node": "16.18.40",
     "@types/react": "18.2.14",
     "@types/react-dom": "18.2.6",
     "@types/react-transition-group": "4.4.6",
+    "@types/resize-observer-browser": "0.1.7",
+    "@vitejs/plugin-react": "^4.0.4",
     "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^16.0.1",
-    "typescript": "^3.7.5"
+    "typescript": "^3.7.5",
+    "vite": "^4.4.9"
   },
   "scripts": {
-    "start": "react-scripts start --no-cache",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
+    "start": "vite",
+    "build": "vite build",
+    "serve": "vite preview",
     "graphql-init": "graphql-codegen init",
     "graphql": "graphql-codegen --config codegen.yml"
   },
