@@ -9,8 +9,7 @@ div#left-sidebar .panel {
 }
 .panel {
   user-select: none;
-  background:#2c3440;
-  border: 1px solid rgb(123, 128, 133);
+  border: 1px solid var(--color-secondary-one);
   z-index:6;
 }
 .panel-wrapper {
@@ -21,9 +20,8 @@ div#left-sidebar .panel {
 .panel .panel-header {
   display: flex;
   position: relative;
-  background-color:#14181c;
+  background-color: var(--color-primary-three);
   font-size:20px;
-  color: white;
   width: 100%;
   height:25px;
 }
@@ -122,20 +120,19 @@ div.nav-album {
 div.nav-album {
     cursor:move;
 }  
-/* album panel */
+/* details panel */
 div.details-panel {
-    text-shadow:rgb(0, 0, 0) 3px 0px 4px; 
+    text-shadow: var(--color-primary-three) 3px 0px 4px; 
 }
 div.details-panel .panel-content {
     height: 480px;
-    background-image:linear-gradient(to bottom, #14181c 0px, #14181c 40px,#2c3440 200px);
+    background-image:linear-gradient(to bottom, var(--color-primary-two)0px, var(--color-primary-two) 50px, var(--color-primary-one) 200px);
 }
 div.details-panel .panel-content.collapsed {
     height: 0px;
 }
 div.details-panel .panel-padding {
     padding:0;
-    color: rgb(145, 153, 161);
 }
 div.details-panel div.outer-grid {
     grid-template-columns: 50% 50%; 
@@ -157,7 +154,7 @@ div.details-panel div.songs div.row{
 }  
 
 div.details-panel div.songs div.row:hover {
-    color: green;
+    color: var(--color-accent-one);
 }  
 div.songscorecategory-panelsection {
     font-size: 16px;
@@ -197,35 +194,73 @@ div#scorecard ul {
 }
 div#scorecard li {
     cursor:pointer;
-    align-items:center;
+    align-items:stretch;
     font-size: 16px;
     text-align:center;
-    border-bottom:1px solid black;
+    border-bottom:1px solid  var(--color-secondary-one);
 }
 div#scorecard li:last-child {
     border-bottom:none;
 }
 div#scorecard li:hover {
-    background: rgb(216, 216, 177);
+    background: var(--color-secondary-two);
 }
 div#scorecard li img.block-rater-item-thumbnail {
-    width:80px;
-    height:80px;
-}
-div#scorecard li .block-rater-item-rating {
-    align-items:center;
-    justify-content: center;
-    width:80px;
-    height:auto;
+    width:60px;
 }
 div#scorecard li .block-rater-item-info {
-    width:73%;
+    width:75%;
 }
 div#scorecard li .block-rater-item-info-primary {
     font-size:16px;
     font-weight:bold;
 }  
+
+div#scorecard li .block-rater-item-rating {
+    align-items:center;
+    justify-content: center;
+    width:60px;
+}
 div#scorecard li .block-rater-item-score {
     font-size:24px;
     font-weight:bold;
 }  
+
+
+div.block-rater-item-rating div.block-rater-item-score {
+    color: var(--color-secondary-two); 
+}
+div.block-rater-item-rating div.block-rater-item-score-descriptor {
+    color: var(--color-secondary-two); 
+}
+
+div#scorecard div.block-rater-item-rating {
+    color: var(--color-secondary-two);
+}
+
+div.block-rater-item-rating.one {
+    background: var(--color-rating-one);
+    color: var(--color-secondary-two);
+}
+div.block-rater-item-rating.two {
+    background: var(--color-rating-two);
+}
+div.block-rater-item-rating.three {
+    background: var(--color-rating-three);
+
+}
+div.block-rater-item-rating.four {
+    background: var(--color-rating-four);
+
+}
+div.block-rater-item-rating.five {
+    background: var(--color-rating-five);
+
+}
+div.block-rater-item-rating.six {
+    background: var(--color-rating-six);
+
+}
+div.block-rater-item-rating.seven {
+    background: var(--color-rating-seven);
+}

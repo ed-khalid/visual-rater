@@ -32,7 +32,7 @@ const ArtistBlockDetails = ({items,onClick}:ArtistBlockProps) => {
                   <div className="block-rater-item-info">
                     <div className="block-rater-item-name">{artist.name} </div>
                   </div>
-                  <div style={{background: mapArtistScoreToUI(artist.score).color}} className="block-rater-item-rating flex column">
+                  <div className={"block-rater-item-rating flex column " + mapArtistScoreToUI(artist.score).class }>
                     <div className="block-rater-item-score">
                     { 
                       mapArtistScoreToUI(artist.score).category  
@@ -52,7 +52,7 @@ const AlbumBlockDetails = ({items, onClick}:AlbumBlockProps) => {
                     <div className="block-rater-item-artistName">{album.artistName}</div>
                   <div className="block-rater-item-year">{album.year}</div>
                   </div>
-                  <div style={{background: mapArtistScoreToUI(album.score).color}} className="block-rater-item-rating flex column">
+                  <div className={"block-rater-item-rating flex column " + mapArtistScoreToUI(album.score).class }>
                     <div className="block-rater-item-score">
                     { 
                       mapArtistScoreToUI(album.score).category  

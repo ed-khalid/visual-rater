@@ -13,7 +13,7 @@ export type SongScoreUIBase = {
 
 export type ArtistScoreUIBase = {
     category:ArtistScoreCategory
-    color:string
+    class:string
     threshold:ScoreThreshold
 }
 
@@ -62,12 +62,12 @@ SONG_SCORE_DICTIONARY.set('OFFENSIVE',
     { category: 'OFFENSIVE', color: '#fa2100', threshold: {low:0,high:9} })
 
 export const ARTIST_SCORE_MAP:Map<ArtistScoreCategory, ArtistScoreUIBase> = new Map()   
-ARTIST_SCORE_MAP.set('A+',{ category: 'A+', color: '#018c16', threshold: {low:90,high:100} }) 
-ARTIST_SCORE_MAP.set('A' ,{ category: 'A' , color: '#018c16', threshold: {low:80,high:89.99}  }) 
-ARTIST_SCORE_MAP.set('B+',{ category: 'B+', color: '#1df23d', threshold: {low:70,high:79.99}  })
-ARTIST_SCORE_MAP.set('B', { category: 'B' , color: '#1df23d', threshold: {low:60,high:69.99}  })
-ARTIST_SCORE_MAP.set('C+', { category: 'C' , color: '#cff78d', threshold: {low:50, high:59.99} })
-ARTIST_SCORE_MAP.set('C',  { category: 'C+', color: '#cff78d', threshold: {low:40,high:49.99} })
-ARTIST_SCORE_MAP.set('D',{ category: 'D' , color: '#f2e89b', threshold: {low:30,high:39.99} })
-ARTIST_SCORE_MAP.set('E',  { category: 'E' , color: '#e34119', threshold: {low:10,high:29.99} })
-ARTIST_SCORE_MAP.set('F', { category: 'F' , color: '#fa2100', threshold: {low:0,high:9.99}  })
+ARTIST_SCORE_MAP.set('A+',{ category: 'A+', class: 'one', threshold: {low:90,high:100} }) 
+ARTIST_SCORE_MAP.set('A' ,{ category: 'A' , class: 'one', threshold: {low:80,high:89.99}  }) 
+ARTIST_SCORE_MAP.set('B+',{ category: 'B+', class: 'two', threshold: {low:70,high:79.99}  })
+ARTIST_SCORE_MAP.set('B', { category: 'B' , class: 'two', threshold: {low:60,high:69.99}  })
+ARTIST_SCORE_MAP.set('C+', { category: 'C' , class: 'three', threshold: {low:50, high:59.99} })
+ARTIST_SCORE_MAP.set('C',  { category: 'C+', class: 'four', threshold: {low:40,high:49.99} })
+ARTIST_SCORE_MAP.set('D',{ category: 'D' , class: 'five', threshold: {low:30,high:39.99} })
+ARTIST_SCORE_MAP.set('E',  { category: 'E' , class: 'six', threshold: {low:10,high:29.99} })
+ARTIST_SCORE_MAP.set('F', { category: 'F' , class: 'seven', threshold: {low:0,high:9.99}  })

@@ -1,0 +1,17 @@
+
+:root {
+  --color-primary-one: rgb(20, 24, 28); 
+  --color-primary-two: rgb(44, 52, 64);  
+  --color-primary-three: rgb(3, 3, 3); 
+  --color-secondary-one: rgb(145,153,161);
+  --color-secondary-two: rgb(209,209,195);
+  --color-accent-one: rgb(0, 255, 0); 
+
+  --color-rating-one: rgb(0, 92, 14);
+  --color-rating-two: rgb(40, 126, 0);
+  --color-rating-three: rgb(101, 124, 0); 
+  --color-rating-four: rgb(242, 232, 155);
+  --color-rating-five: rgb(168, 34, 0);
+  --color-rating-six: rgb(250, 33, 0);
+  --color-rating-seven: rgb(22, 20, 19);
+}

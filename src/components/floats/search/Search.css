@@ -1,6 +1,5 @@
 div#search {
     position:relative;
-    width:200px;
     margin: 2px 5px;
 }
 div#search #search-field {
@@ -24,8 +23,9 @@ div#search #search-field img {
     height:23px;
 }   
 div#search input {
+    background: var(--color-background-one); 
     margin-left: 13px;
-    height: 90%;
+    height: 100%;
     width:80%;
     border: none;
     outline:none;
