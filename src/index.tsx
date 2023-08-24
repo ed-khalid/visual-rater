@@ -3,10 +3,14 @@ import { createRoot } from 'react-dom/client';
 import './index.css';
 import * as serviceWorker from './serviceWorker';
 import {  ApolloProvider } from '@apollo/client';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import { client } from './setupApollo';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import { ReducerProvider } from './providers/ReducerProvider';
+import { HierarchyMaker } from './components/HierarchyMaker';
+
+const router = createBrowserRouter([{ path: '/', element: <ReducerProvider /> }, { path: '/new', element: <HierarchyMaker/> }])  
 
 
 // app is inside ReducerProvider
@@ -17,7 +21,7 @@ if (container) {
     <React.StrictMode>
       <ApolloProvider client={client}>
       <DndProvider backend={HTML5Backend}>
-        <ReducerProvider />
+        <RouterProvider router={router} />
         </DndProvider>
       </ApolloProvider>
     </React.StrictMode>
