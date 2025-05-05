@@ -12,7 +12,8 @@ import java.util.*
 
 
 @Controller
-class SongController(val musicService: MusicService) {
+class SongController(private val musicService: MusicService) {
+
 
     @QueryMapping
     fun songs(@Argument albumIds:List<String>): Iterable<Iterable<Song>>? {
@@ -30,13 +31,13 @@ class SongController(val musicService: MusicService) {
 
     @MutationMapping
     fun UpdateSong(@Argument song: SongInput) : Song {
-        val song = musicService.updateSong(song)
-        musicService.notifyOnSongUpdate(song)
-        return song
+        val newSong  = musicService.updateSong(song)
+        musicService.notifyOnSongUpdate(newSong)
+        return newSong
     }
 
     @MutationMapping
-    fun DeleteSong(@Argument songId:String) : Boolean {
+    fun deleteSong(@Argument songId:String) : Boolean {
         return musicService.deleteSongById(UUID.fromString(songId))
     }
 

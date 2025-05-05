@@ -1,52 +1,29 @@
 package com.hawazin.visualrater.services
 
-import com.hawazin.visualrater.configurations.ImageServiceConfiguration
-import org.springframework.boot.web.client.RestTemplateBuilder
-import org.springframework.http.HttpEntity
-import org.springframework.http.HttpHeaders
-import org.springframework.http.MediaType
+import io.github.oshai.kotlinlogging.KotlinLogging
+import org.springframework.beans.factory.annotation.Qualifier
 import org.springframework.stereotype.Service
-import org.springframework.web.client.getForEntity
-import org.springframework.web.client.postForEntity
-import java.util.*
+import org.springframework.web.client.RestClient
 
 
 @Service
-class ImageService(val configuration: ImageServiceConfiguration) {
+class ImageService(@Qualifier("imageServiceClient") val imageServiceClient:RestClient) {
 
-    fun groupSimilarAlbums(images:Array<ImageSimilarityRequest>): Array<ImageSimilarityResponse> {
-        val template = RestTemplateBuilder()
-            .rootUri(configuration.uri)
-            .build()
-        val headers = HttpHeaders()
-        headers.contentType = MediaType.APPLICATION_JSON
-        headers.accept = Collections.singletonList(MediaType.APPLICATION_JSON)
-        val request = HttpEntity<Array<ImageSimilarityRequest>>(images,headers)
-        val resp = template.postForEntity<Array<ImageSimilarityResponse>>("/similarity", request, ImageSimilarityResponse::class)
-        return resp.body!!
-    }
+    val logger = KotlinLogging.logger {}
 
-    fun getDominantColor(imageUrl:String) : DominantColorResponse {
-        val template = RestTemplateBuilder()
-            .rootUri(configuration.uri)
-            .build()
-        val headers = HttpHeaders()
-        headers.contentType = MediaType.APPLICATION_JSON
-        headers.accept = Collections.singletonList(MediaType.APPLICATION_JSON)
-        val resp = template.getForEntity<DominantColorResponse>("/colors?imageUrl={imageUrl}",imageUrl)
-        return resp.body!!
-    }
-
-    fun removeDuplicates(similarAlbums:Array<ImageSimilarityResponse>, albums:List<SpotifyAlbum>) : List<SpotifyAlbum> {
-        val filteredAlbums:List<SpotifyAlbum> = similarAlbums.map<ImageSimilarityResponse, SpotifyAlbum> { it ->
-            var albums = it.similarAlbumIds.map { _it -> albums.find { album -> album.id == _it }!! }
-            albums.minByOrNull { it.name.length } ?: albums[0]
+    fun getDominantColor(imageUrl:String): DominantColorResponse =
+        try {
+            imageServiceClient.get()
+                .uri("/colors?imageUrl=$imageUrl")
+                .retrieve()
+                .body(DominantColorResponse::class.java)!!
+        } catch (e:Exception) {
+            logger.error(e) { "Error retrieving dominant color for image $imageUrl"}
+            DominantColorResponse("0,0,0")
         }
-        return filteredAlbums
-    }
+
+
 }
 
 
 class DominantColorResponse(val colorString:String)
-class ImageSimilarityRequest(val id:String,val imageUrl:String)
-class ImageSimilarityResponse(val similarAlbumIds:Array<String>)

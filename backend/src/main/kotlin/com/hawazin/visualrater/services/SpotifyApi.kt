@@ -22,7 +22,7 @@ data class SpotifyAuthToken(@JsonProperty("access_token") val accessToken:String
 
 
 @Service
-class SpotifyApi(private val configuration: SpotifyConfiguration, val imageService: ImageService) {
+class SpotifyApi(private val configuration: SpotifyConfiguration) {
 
     private var token: SpotifyAuthToken? = null
     private val accountsTemplate: RestTemplate = RestTemplateBuilder()
@@ -68,7 +68,7 @@ class SpotifyApi(private val configuration: SpotifyConfiguration, val imageServi
     }
 
     // let's forget about the offset for now
-    private fun getAlbumsForArtist(artistId: String, _offset: Int = 0): List<ExternalSearchAlbum> {
+    private fun getAlbumsForArtist(artistId: String): List<ExternalSearchAlbum> {
         val response = makeCall {
             api().getForObject<SpotifyAlbumList>(
                 "/artists/{artistId}/albums?limit=50&county=US&include_groups=album",
@@ -79,15 +79,7 @@ class SpotifyApi(private val configuration: SpotifyConfiguration, val imageServi
             val dateArr =  date.split("-")
             return dateArr[0].toInt()
         }
-        var imageUrls = response.items.map {
-            ImageSimilarityRequest(
-                id = it.id,
-                imageUrl = it.images[2].url
-            )
-        }.toTypedArray()
-        val similarityArray = imageService.groupSimilarAlbums(imageUrls)
-        val albums = imageService.removeDuplicates(similarityArray, response.items)
-        return albums.distinctBy { album -> album.name }
+        return response.items.distinctBy { album -> album.name }
             .map { ExternalSearchAlbum(id = it.id, name = it.name, thumbnail = it.images[2].url, year = dateParser(it.release_date)) }
             .sortedBy { it.year  }
     }

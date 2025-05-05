@@ -2,7 +2,6 @@
 spring:
   jpa:
     hibernate:
-      format_sql: true
       ddl-auto: update
     show-sql:  true
   datasource:

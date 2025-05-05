@@ -97,7 +97,7 @@ CREATE FUNCTION recalculate_total_albums()
   LANGUAGE plpgsql
 AS $tot_alb$
     BEGIN
-        update artist_metadata set total_albums = (select count(*) from album a WHERE a.artist_id = NEW.artist_id) where artist_id = NEW.artist_id;
+        update artist_metadata set total_albums = (select count(*) from album a WHERE a.artist_id = NEW.artist_id) where id = (select metadata_id from artist where id = NEW.artist_id);
         RETURN NULL;
     end;
 $tot_alb$;
