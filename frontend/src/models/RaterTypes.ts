@@ -13,12 +13,12 @@ export interface RaterUIItemGrouped {
         items:RaterUIItem[]
 }    
 
-export const RATER_Y_TOP:number = 40; 
+export const RATER_Y_TOP:number = 10; 
 export const RATER_Y_BOTTOM:number = 740; 
-export const RATER_X:number = 5; 
+export const RATER_X:number = 10; 
 export const RATER_TIER_WIDTH:number = 50 
 export const SVG_IMAGE_SIZE:number = 40;  
 export const CLOSENESS_THRESHOLD:number = 100; 
 
 export const SVG_WIDTH:number = 7000 
-export const SVG_HEIGHT:number = 750 
+export const SVG_HEIGHT:number = 770 

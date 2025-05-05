@@ -83,7 +83,7 @@ export const SingleRaterItem = ({item, itemsToFilter, nodeRef, filterMode, isRea
             if (color === null || color === undefined) {
                 return "black"
             }
-            const arr = color.match(/^\((\d+),\s*(\d+),\s*(\d+),\s*(\d+)\)$/) 
+            const arr = color.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/) 
             if (arr) {
                         const r = Number(arr[1])
                         const g = Number(arr[2])
@@ -100,7 +100,7 @@ export const SingleRaterItem = ({item, itemsToFilter, nodeRef, filterMode, isRea
                             return 'black';
                         } 
                         else {
-                            return 'white';
+                            return '#bccddf';
                         }
             } else return 'black'
         } 
@@ -120,15 +120,15 @@ export const SingleRaterItem = ({item, itemsToFilter, nodeRef, filterMode, isRea
             return Math.round(score) 
         }  
 
-        const color = "rgb" + item.overlay   
+        const color = "rgb(" + item.overlay + ")"  
         const cursor = filterMode ? "crosshair" : (isReadonly) ? "pointer" : "move"  
         
         return <g onMouseEnter={() => handleHover(item, true)} onMouseLeave={() => handleHover(item, false) } onClick={handleOnClick} clipPath={ "url(#item-clip-path-right)"  } ref={nodeRef}  className="item draggable"> 
                     {item.shouldDrawLine && <line className="rater-item item-scoreline" x1={lineDimensions.x1} y1={lineDimensions.y1} x2={lineDimensions.x2} y2={lineDimensions.y2} stroke="rgb(145,153,161)" opacity={0.2} />}
                     <circle   className="rater-item item-thumbnail-overlay" cx={imageDimensions.x+imageDimensions.size/2} cy={imageDimensions.y+imageDimensions.size/2} r={imageDimensions.size/2} fill={color} stroke={color}></circle>
-                    <image fill={"rgba"+item.overlay} opacity={0.5} xlinkHref={item.thumbnail} clipPath="inset(0% round 45px)" cursor={cursor} className="rater-item item-thumbnail" width={imageDimensions.size} x={imageDimensions.x} y={imageDimensions.y} height={imageDimensions.size} href={item.thumbnail}/>
+                    <image fill={"rgba("+item.overlay+")"} opacity={0.5} xlinkHref={item.thumbnail} clipPath="inset(0% round 45px)" cursor={cursor} className="rater-item item-thumbnail" width={imageDimensions.size} x={imageDimensions.x} y={imageDimensions.y} height={imageDimensions.size} href={item.thumbnail}/>
                     <text textAnchor="middle" className="rater-item item-name" cursor={cursor} fontSize={10*scale} fill="rgb(145,153,161)" x={songNameDimensions.x} y={songNameDimensions.y} dy=".35em">{formatName(item.name)}</text>
-                    <text textAnchor="middle" className="rater-item item-score" cursor={cursor} fontSize={16*scale} fontWeight="bold" fill={determineTextColor(item.overlay)} x={songScoreDimensions.x} y={songScoreDimensions.y} dy=".35em">{formatScore(item.score)}</text>
+                    <text textAnchor="middle" className="rater-item item-score" cursor={cursor} fontSize={16*scale} fontWeight="bold" fill={determineTextColor(color)} x={songScoreDimensions.x} y={songScoreDimensions.y} dy=".35em">{formatScore(item.score)}</text>
                     <circle className="rater-item item-thumbnail-border" cx={imageDimensions.x+imageDimensions.size/2} cy={imageDimensions.y+imageDimensions.size/2} r={imageDimensions.size/2+2} fill="none" stroke={color}></circle>
                     {itemsToFilter.includes(item.id) && <circle className="rater-item item-filter" cx={x+imageDimensions.size/2} cy={imageDimensions.y+imageDimensions.size/2} r={imageDimensions.size/2+2} opacity={0.8} fill="black" stroke={"black"}></circle>}
                </g>

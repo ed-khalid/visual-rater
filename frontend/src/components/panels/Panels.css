@@ -1,15 +1,11 @@
 
 
 /* panel styles */ 
-div#right-sidebar .panel {
-  width: 450px;
-}
-div#left-sidebar .panel {
-    width:270px;
+div.sidebar .panel {
+  width: 100%;
 }
 .panel {
   user-select: none;
-  background:#2c3440;
   border: 1px solid rgb(123, 128, 133);
   z-index:6;
 }
@@ -30,16 +26,26 @@ div#left-sidebar .panel {
 .panel .panel-header .panel-title {
   left:50%;
   font-size: 1em;
+  background-color: inherit;
 }
 .panel .panel-header .panel-control-icons {
     top: 0px;
     left: 2px;
+    background-color: inherit;
+} 
+
+.panel .panel-header .panel-control-icons svg.button.right {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+    background-color: inherit;
 } 
 
 .panel-content {
   display:flex;
   position:relative;
   transition: height 200ms ease-in-out 10ms; 
+  background-color: inherit;
 }
 .panel-padding {
   padding: 10px;
@@ -53,6 +59,30 @@ div#left-sidebar .panel {
 }
 .panel.center {
   left:50vw;
+}
+ 
+/* left panels */ 
+
+/* add panel */ 
+div#add-panel {
+    border: none;
+}
+div#add-panel-buttons {
+    gap: 10px;
+    width: 100%;
+} 
+div.add-panel-option svg {
+    width:  20px;
+    height: 20px;
+    cursor: pointer;
+    transition: fill ease 0.3s, transform ease 0.3s;
+    transform: rotate(0deg);
+}  
+div.add-panel-option svg:hover {
+    fill: rgba(1, 167, 1, 0.753);
+}  
+div.add-panel-option svg.clicked {
+    transform:rotate(180deg);
 }
 
 /* music-navigation panel*/
@@ -176,13 +206,90 @@ div.medium-text {
     font-size: 4rem;
 } 
 
+ /* musical panel */ 
+div.musical-panel {
+    user-select: none;
+    width:auto;
+    background: inherit;
+} 
+div.musical-panel .panel-padding {
+    padding:0px;
+    width: 100%;
+}
+div.musical-panel .panel-content {
+    height:auto;
+    overflow-y:auto;
+    max-height: 89vh;
+}
+div.musical-panel ul {
+    margin: 0;
+    padding:0;
+    width: 100%;
+    overflow-y:auto;
+}
+div.musical-panel li {
+    cursor:pointer;
+    align-items:center;
+    font-size: 16px;
+    text-align:center;
+    border-bottom:1px solid black;
+}
+div.musical-panel div.musical-panel-expandable-item {
+    display: flex;
+    cursor:pointer;
+    align-items:center;
+    font-size: 16px;
+    text-align:center;
+    border-bottom:1px solid black;
+} 
+div.musical-panel li:last-child {
+    border-bottom:none;
+}
+div.musical-panel li img.musical-panel-item-thumbnail {
+    width: 80px;
+    height:100%;
+}
+div.musical-panel li .musical-panel-item-info {
+    flex: 1;
+    background: inherit;
+}
+div.musical-panel li .musical-panel-item-info-name{
+    font-size: 24px;
+}
+div.musical-panel li .musical-panel-item-info-name:hover {
+    text-decoration: underline;
+}
+div.musical-panel li .musical-panel-item-info-rating {
+    display: flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content: center;
+    background:inherit;
+    width: 80px;
+    height: 80px;
+}
+div.musical-panel li .musical-panel-item-info-score {
+    margin-top: 10px;
+    font-size:38px;
+    font-weight:bold;
+    height: 100%;
+    background: inherit;
+}  
+div.musical-panel li .musical-panel-item-info-score-descriptor {
+    background: inherit;
+    font-size: 16px;
+    margin-bottom: 10px;
+}  
+
 /* scorecard */
 div#scorecard {
     user-select: none;
     width:auto;
+    background: inherit;
 }
 div#scorecard .panel-padding {
     padding:0px;
+    width: 100%;
 }
 div#scorecard .panel-content {
     height:auto;
@@ -190,9 +297,9 @@ div#scorecard .panel-content {
     max-height: 89vh;
 }
 div#scorecard ul {
-    width: 270px;
     margin: 0;
     padding:0;
+    width: 100%;
     overflow-y:auto;
 }
 div#scorecard li {
@@ -206,26 +313,45 @@ div#scorecard li:last-child {
     border-bottom:none;
 }
 div#scorecard li:hover {
-    background: rgb(216, 216, 177);
+    background: rgb(35, 107, 26);
+}
+div#scorecard li:hover .block-rater-item-name {
+    background: rgb(35, 107, 26);
+}
+div#scorecard li:hover .block-rater-item-artistName {
+    background: rgb(35, 107, 26);
+}
+div#scorecard li:hover .block-rater-item-year {
+    background: rgb(35, 107, 26);
 }
 div#scorecard li img.block-rater-item-thumbnail {
-    width:80px;
-    height:80px;
-}
-div#scorecard li .block-rater-item-rating {
-    align-items:center;
-    justify-content: center;
-    width:80px;
-    height:auto;
+    width: 80px;
+    height:100%;
 }
 div#scorecard li .block-rater-item-info {
-    width:73%;
+    flex: 1;
+    background: inherit;
 }
 div#scorecard li .block-rater-item-info-primary {
     font-size:16px;
     font-weight:bold;
+    background: inherit;
 }  
+div#scorecard li .block-rater-item-rating {
+    align-items:center;
+    justify-content: center;
+    width: 80px;
+    height: 80px;
+}
 div#scorecard li .block-rater-item-score {
-    font-size:24px;
+    margin-top: 10px;
+    font-size:38px;
     font-weight:bold;
+    height: 100%;
+    background: inherit;
+}  
+div#scorecard li .block-rater-item-score-descriptor {
+    background: inherit;
+    font-size: 16px;
+    margin-bottom: 10px;
 }  

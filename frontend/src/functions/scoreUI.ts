@@ -70,6 +70,5 @@ export const mapSongScoreToUI  = (score:number) : SongScoreUI  => {
     for (let [,v] of SONG_SCORE_DICTIONARY) {
         if (v.threshold.low <= score && v.threshold.high >= score) return { ...v, score } 
     } 
-    console.log(score)
     throw Error('Score could not be found in dictionary')
 }  

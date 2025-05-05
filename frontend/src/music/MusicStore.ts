@@ -1,5 +1,6 @@
 import { mapAlbumToUIItem, mapArtistToUIItem, mapSongToUIItem, mapUIItemToRaterUIItem } from "../functions/mapper"
 import { Artist, Album, Song } from "../generated/graphql"
+import { SongUIItem } from "../models/ItemTypes"
 import { MusicData } from "./MusicData"
 import { MusicFilters } from "./MusicFilters"
 import { MusicZoomLevel, MusicState } from "./MusicState"
@@ -16,6 +17,10 @@ export class MusicStore {
     this.zoomLevel = state.zoomLevel 
   }
 
+  public getAllArtists(): Artist[] {
+    return this.data.artists
+  }
+
   public getSelectedArtists(): Artist[] {
     return this.filters.filterArtists(this.data.artists)
   }  
@@ -29,6 +34,10 @@ export class MusicStore {
 
   public getAlbumsForArtist(artist:Artist) :Album[] {
     return this.data.albums.filter(it => it.artistId === artist.id)
+  }
+
+  public getSongsForAlbum(album:Album): Song[] {
+    return this.data.songs.filter(it => it.albumId === album.id)
   }
 
   public hasArtistLoadedAlbums(artist:Artist) : boolean {
@@ -56,6 +65,40 @@ export class MusicStore {
   public findAlbumById = (id:String) => this.data.albums.find(it => it.id === id)  
 
   public getItems() {
+    switch(this.zoomLevel) {
+      case MusicZoomLevel.ARTIST: {
+        return this.getSelectedArtists()
+      }
+      case MusicZoomLevel.ALBUM: {
+        const artistAlbums = this.getSelectedArtists().flatMap(it => this.getAlbumsForArtist(it))
+        return this.filters.filterAlbums(artistAlbums)
+      }
+      case MusicZoomLevel.SONG: {
+        const artistSongs = this.filters.filterSongsByArtist(this.data.songs)
+        const albumSongs = this.filters.filterSongsByAlbum(artistSongs)
+        const scoreFilteredSongs = this.filters.filterByScore(albumSongs)    
+        return scoreFilteredSongs.map(song => {
+            const album = this.data.albums.find(it => it.id === song.albumId) 
+            const artist = this.data.artists.find(it => it.id === song.artistId) 
+            return mapSongToUIItem(song,album!, artist!)
+        })
+      } 
+    }
+
+  }
+
+  public getSelectedSongsAsUIItems(): SongUIItem[] {
+        const artistSongs = this.filters.filterSongsByArtist(this.data.songs)
+        const albumSongs = this.filters.filterSongsByAlbum(artistSongs)
+        return albumSongs.map(song => {
+            const album = this.data.albums.find(it => it.id === song.albumId) 
+            const artist = this.data.artists.find(it => it.id === song.artistId) 
+            return mapSongToUIItem(song,album!, artist!)
+        })
+  }  
+
+
+  public getUIItems() {
     switch(this.zoomLevel) {
       case MusicZoomLevel.ARTIST: {
         return this.getSelectedArtists().map(it => mapArtistToUIItem(it))
@@ -99,6 +142,6 @@ export class MusicStore {
    */
 
   public getRaterItems() {
-    return this.getItems().map(item => mapUIItemToRaterUIItem(item, 1))
+    return this.getUIItems().map(item => mapUIItemToRaterUIItem(item, 1))
   }
 }

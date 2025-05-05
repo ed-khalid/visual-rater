@@ -36,7 +36,8 @@
     "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^16.0.1",
     "typescript": "^3.7.5",
-    "vite": "^4.4.9"
+    "vite": "^4.4.9",
+    "vite-plugin-svg": "0.7.0"
   },
   "scripts": {
     "start": "vite",

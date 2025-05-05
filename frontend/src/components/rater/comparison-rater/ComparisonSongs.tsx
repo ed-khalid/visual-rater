@@ -28,7 +28,7 @@ export const ComparisonSongItem = ({mainlineX, item, y}:ComparisonSongItemProps)
             if (color === null || color === undefined) {
                 return "black"
             }
-            const arr = color.match(/^\((\d+),\s*(\d+),\s*(\d+),\s*(\d+)\)$/) 
+            const arr = color.match(/^rgb\((\d+),\s*(\d+),\s*(\d+),\s*(\d+)\)$/) 
             if (arr) {
                         const r = Number(arr[1])
                         const g = Number(arr[2])
@@ -73,15 +73,15 @@ export const ComparisonSongItem = ({mainlineX, item, y}:ComparisonSongItemProps)
         y: imageDimensions.y + imageSize/2   
     }  
 
-    const color = "rgb" + item.overlay   
+    const color = "rgb(" + item.overlay  + ")"
         return <g cursor={"pointer"} className="comparison-item"> 
         <rect x={0} y={imageDimensions.y-1} opacity={0.5} width={100} height={10} fill={item.isMain? "yellow": "gray"} stroke="black" strokeWidth={0.2}></rect>
                     <circle className=" comparison-item item-thumbnail-overlay" cx={imageDimensions.x+imageDimensions.size/2} cy={imageDimensions.y+imageDimensions.size/2} r={imageDimensions.size/2} fill={color} stroke={color}></circle>
-                    <image fill={"rgba"+item.overlay} opacity={0.5} xlinkHref={item.thumbnail!} clipPath="inset(0% round 15px)" className="comparison-item item-thumbnail" width={imageDimensions.size} x={imageDimensions.x} y={imageDimensions.y} height={imageDimensions.size} href={item.thumbnail!}/>
+                    <image fill={"rgba("+item.overlay+")"} opacity={0.5} xlinkHref={item.thumbnail!} clipPath="inset(0% round 15px)" className="comparison-item item-thumbnail" width={imageDimensions.size} x={imageDimensions.x} y={imageDimensions.y} height={imageDimensions.size} href={item.thumbnail!}/>
                     <text textAnchor="middle" className="comparison-item item-name" fontSize={2} fill="black" x={songNameDimensions.x} y={songNameDimensions.y} dy=".35em">{item.name}</text>
                     <text textAnchor="middle" fontStyle="italic" className="comparison-item artist-name" fontSize={1.7} fill="black" x={artistNameDimensions.x} y={artistNameDimensions.y} dy=".35em">{item.artistName}</text>
                     <text textAnchor="middle" fontStyle="italic" className="comparison-item album-name" fontSize={1.7} fill="black" x={albumNameDimensions.x} y={albumNameDimensions.y} dy=".35em">{item.albumName}</text>
-                    <text textAnchor="middle" className="comparison-item item-score" fontSize={3.7} fontWeight="bold" fill={determineTextColor(item.overlay)} x={songScoreDimensions.x} y={songScoreDimensions.y} dy=".35em">{item.score.toFixed(2)}</text>
+                    <text textAnchor="middle" className="comparison-item item-score" fontSize={3.7} fontWeight="bold" fill={determineTextColor(color)} x={songScoreDimensions.x} y={songScoreDimensions.y} dy=".35em">{item.score.toFixed(2)}</text>
                </g>
 
 } 
