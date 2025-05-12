@@ -2,9 +2,6 @@ import { Album, Artist, Song } from "../generated/graphql"
 
 export type MusicEntity = Artist | Album | Song 
 export type ScoreFilter = { start: number, end: number }
-export enum MusicZoomLevel {
-  ARTIST, ALBUM, SONG
-} 
 
 export type MusicState = {
   data: {
@@ -12,12 +9,11 @@ export type MusicState = {
     albums: Album[],
     songs: Song[]
   }
-  filters: {
-    artistIds: string[]
-    albumIds: string[]
-    songIds: string[]
+  , 
+  raterFilters: {
+    artistIds?: string[]
+    albumIds?: string[]
+    songIds?: string[]
     scoreFilter: { start: number, end: number }
-  }, 
-  zoomLevel:MusicZoomLevel
+  }
 }
-

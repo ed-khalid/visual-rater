@@ -84,6 +84,12 @@ div#main {
   grid-area: main;
 }
 
+svg.rater-style {
+  width: 25px;
+  height: 25px;
+  cursor: pointer;
+
+}
 /* rater */
 svg.rater {
   height: 95%; 
@@ -97,6 +103,10 @@ svg.rater {
     transform: rotate(-90deg) 
 }  
 
+.sort-button.descending {
+  transform: rotate(-180deg)
+}
+
 .expand-button.expanded {
   transform: rotate(-0deg) 
 }  
@@ -105,3 +115,4 @@ svg.rater {
     transition: transform 100ms ease-in-out 10ms;   
     transform: rotate(-90deg) 
 }  
+

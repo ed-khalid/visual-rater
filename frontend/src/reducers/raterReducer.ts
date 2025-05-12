@@ -1,11 +1,11 @@
 import { zoomIdentity } from "d3-zoom"
-import { RaterState } from "../models/RaterTypes"
+import { CartesianRaterState } from "../models/RaterTypes"
 import { Scaler } from "../functions/scale"
 import { interpolateRound } from "d3"
 
 
 
-export const raterReducer:React.Reducer<RaterState, RaterAction> = (state:RaterState, action:RaterAction) => {
+export const raterReducer:React.Reducer<CartesianRaterState, RaterAction> = (state:CartesianRaterState, action:RaterAction) => {
     switch(action.type) {
          case 'ZOOM': {
             const update = action.data  

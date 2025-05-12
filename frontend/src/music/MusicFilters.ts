@@ -15,7 +15,7 @@ export class MusicFilters {
 
 
   public filterByScore = <T extends MusicEntity> (arr: Array<T>) => arr.filter(it => ( this.scoreFilter && it.score) ? it.score >= this.scoreFilter.start && it.score <= this.scoreFilter.end : true)
-  private filterById = (id:string, arr?:String[]) => (arr && arr.length) ? arr.includes(id) : false
+  private filterById = (id:string, arr?:String[]) => (arr) ? arr.includes(id) : true   
   public filterArtists = (artists: Artist[]) => artists.filter(it => this.filterById(it.id, this.artistIds))
   public filterAlbums = (albums: Album[]) => albums.filter(it => this.filterById(it.id, this.albumIds))
   public filterAlbumsByArtist = (albums: Album[]) => albums.filter(it => this.filterById(it.artistId, this.artistIds))
@@ -25,4 +25,15 @@ export class MusicFilters {
 
 }
 
-export enum FilterMode { ADDITIVE, EXCLUSIVE }
+export enum FilterMode { ADDITIVE, EXCLUSIVE, REDUCTIVE }
+/* how does filtering work?
+data: artist, album, song  
+navigation filters: 
+someone clicks on an artist:
+artistIds: [Metallica]   
+someone clicks the album of the artist:
+albumIds: [Master Of Puppets]    
+
+
+
+*/

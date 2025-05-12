@@ -1,0 +1,50 @@
+
+div#grid-rater {
+    display:grid;
+    grid-template-columns: repeat(11,1fr) ;
+}
+div.grid-rater-item {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 16px;
+    color: white;
+    background-color: #2c3440;
+    border: 1px solid #000;
+    width: 30px;
+}
+img.grid-rater-item-thumbnail {
+    width: 40px;
+}
+div.grid-rater-item-name {
+    font-size: 12px;
+}
+
+div.grid-rater-column-header {
+    font-weight: bold;
+    text-align: center;
+    border-bottom: 1px solid #c9c9c970;
+}
+div.grid-rater-row-header {
+    font-weight: bold;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 60px;
+}
+
+div.grid-rater-cell {
+    user-select: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 120px;
+    height: 110px;
+    font-size: 16px;
+    opacity: 0.5;
+    color: white;
+    background-color: #2c3440;
+    border-left: 1px solid #c9c9c9;
+    border-bottom: 1px solid #c9c9c9;
+}

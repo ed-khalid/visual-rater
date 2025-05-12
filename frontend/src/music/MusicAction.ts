@@ -1,6 +1,5 @@
 import { Album, Artist, Song } from "../generated/graphql"
 import { FilterMode } from "./MusicFilters"
-import { MusicZoomLevel } from "./MusicState"
 
 export type DataChangeMusicAction = {
     type: 'DATA_CHANGE',
@@ -11,16 +10,15 @@ export type DataChangeMusicAction = {
     } 
 } 
 
-export type FilterChangeMusicAction = {
-    type: 'FILTER_CHANGE',
+export type RaterFilterChangeMusicAction = {
+    type: 'RATER_FILTER_CHANGE',
     filters?: {
             artistIds?: string[]
             albumIds?: string[]
             songIds?: string[]
             scoreFilter?: { start: number, end: number }
     },  
-    mode?:FilterMode, 
-    zoomLevel?: MusicZoomLevel  
+    mode:FilterMode, 
 }  
 
-export type MusicAction = FilterChangeMusicAction | DataChangeMusicAction  
+export type MusicAction = RaterFilterChangeMusicAction | DataChangeMusicAction  

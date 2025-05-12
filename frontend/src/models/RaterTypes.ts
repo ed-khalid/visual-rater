@@ -1,24 +1,36 @@
 import { Scaler } from '../functions/scale'
-import { RaterUIItem } from './ItemTypes'
+import { Album, Artist, Song } from '../generated/graphql'
 
-export type RaterState = {
+export type CartesianRaterState = {
     scaler:Scaler
     start:number
     end:number
     isReadonly:boolean
 }
-export interface RaterUIItemGrouped {
-        id:string
-        position:number
-        items:RaterUIItem[]
-}    
+// export interface RaterUIItemGrouped {
+//         id:string
+//         position:number
+//         items:RaterUIItem[]
+// }    
 
-export const RATER_Y_TOP:number = 10; 
-export const RATER_Y_BOTTOM:number = 740; 
-export const RATER_X:number = 10; 
-export const RATER_TIER_WIDTH:number = 50 
-export const SVG_IMAGE_SIZE:number = 40;  
-export const CLOSENESS_THRESHOLD:number = 100; 
+export const CARTESIAN_RATER_Y_TOP:number = 10; 
+export const CARTESIAN_RATER_Y_BOTTOM:number = 740; 
+export const CARTESIAN_RATER_X:number = 10; 
+export const CARTESIAN_RATER_TIER_WIDTH:number = 50 
+export const CARTESIAN_SVG_IMAGE_SIZE:number = 40;  
+export const CARTESIAN_CLOSENESS_THRESHOLD:number = 100; 
 
-export const SVG_WIDTH:number = 7000 
-export const SVG_HEIGHT:number = 770 
+export const CARTESIAN_SVG_WIDTH:number = 7000 
+export const CARTESIAN_SVG_HEIGHT:number = 770 
+
+
+export type RaterEntityRequest = {
+    artist: Artist
+    albumId?: string
+}   
+
+export type FatSong = {
+    artist: Artist 
+    album: Album
+    song: Song
+} 

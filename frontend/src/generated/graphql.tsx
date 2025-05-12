@@ -131,6 +131,7 @@ export type Mutation = {
   CreateArtist?: Maybe<Artist>;
   DeleteAlbum?: Maybe<Scalars['Boolean']['output']>;
   DeleteSong?: Maybe<Scalars['Boolean']['output']>;
+  UpdateAlbum?: Maybe<Album>;
   UpdateSong?: Maybe<Song>;
 };
 
@@ -152,6 +153,11 @@ export type MutationDeleteAlbumArgs = {
 
 export type MutationDeleteSongArgs = {
   songId: Scalars['String']['input'];
+};
+
+
+export type MutationUpdateAlbumArgs = {
+  album?: InputMaybe<UpdateAlbumInput>;
 };
 
 
@@ -251,6 +257,11 @@ export type Subscription = {
   __typename?: 'Subscription';
   albumUpdated?: Maybe<Album>;
   artistUpdated?: Maybe<Artist>;
+};
+
+export type UpdateAlbumInput = {
+  id: Scalars['String']['input'];
+  name: Scalars['String']['input'];
 };
 
 export type AlbumFieldsFragment = { __typename?: 'Album', id: string, artistId: string, name: string, year?: number | null, score?: number | null, dominantColor?: string | null, thumbnail?: string | null, songs: Array<{ __typename?: 'Song', id: string, albumId: string, artistId: string, name: string, number: number, discNumber: number, score: number }> };

@@ -1,0 +1,36 @@
+
+div.album-details-panel {
+    cursor:auto;
+    display: grid;
+    grid-template-columns: 5px 30px 1fr 70px;
+    grid-template-rows: 30px;
+    grid-auto-rows: 70px;
+} 
+div.header-cell {
+    border-bottom: 1px solid rgb(141, 141, 141);
+}
+
+div.album-song-number {
+    font-size: 30px;
+    font-weight: bold;
+    margin-top: 20px;
+} 
+div.album-song-name {
+    margin-top: 30px;
+
+}
+div.album-song-score {
+    border:1px solid  transparent;
+    height: 65px;
+} 
+div.album-song-score-text {
+    margin-top: 15px;
+    background:inherit;
+    font-size:30px;
+} 
+div.album-song-cell .sort-button {
+    padding-top: 4px;
+}
+div.album-song-controls {
+
+}
