@@ -4,6 +4,7 @@ import com.hawazin.visualrater.models.db.Album
 import com.hawazin.visualrater.models.db.Artist
 import com.hawazin.visualrater.models.db.Song
 import com.hawazin.visualrater.models.graphql.NewAlbumInput
+import com.hawazin.visualrater.models.graphql.UpdateAlbumInput
 import com.hawazin.visualrater.services.AlbumPublisher
 import com.hawazin.visualrater.services.ImageService
 import com.hawazin.visualrater.services.MusicService
@@ -47,6 +48,14 @@ class AlbumController(val musicService: MusicService, val imageService:ImageServ
         }
         return musicService.createAlbum(album)
     }
+
+    @MutationMapping
+    fun UpdateAlbum(@Argument album: UpdateAlbumInput) : Album {
+        val newAlbum = musicService.updateAlbum(album)
+        return newAlbum
+    }
+
+
     @MutationMapping
     fun deleteAlbum(@Argument albumId:String) : Boolean {
         return musicService.deleteAlbumById(UUID.fromString(albumId))

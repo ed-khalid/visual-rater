@@ -4,6 +4,7 @@ type Mutation {
     UpdateSong(song:SongInput) : Song
     DeleteSong(songId:String!) : Boolean
     DeleteAlbum(albumId:String!): Boolean
+    UpdateAlbum(album: UpdateAlbumInput): Album
 }
 
 input SongInput {
@@ -11,6 +12,11 @@ input SongInput {
     name:String
     number:Int
     score:Float
+}
+
+input UpdateAlbumInput {
+   id: String!
+   name: String!
 }
 
 input NewAlbumInput {

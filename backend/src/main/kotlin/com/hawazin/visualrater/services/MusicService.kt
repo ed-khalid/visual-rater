@@ -4,6 +4,7 @@ import com.hawazin.visualrater.models.graphql.NewAlbumInput
 import com.hawazin.visualrater.models.graphql.SongInput
 import com.hawazin.visualrater.models.db.*
 import com.hawazin.visualrater.models.graphql.ArtistInput
+import com.hawazin.visualrater.models.graphql.UpdateAlbumInput
 import graphql.GraphqlErrorException
 import jakarta.transaction.Transactional
 import org.springframework.data.domain.Page
@@ -16,7 +17,7 @@ import java.util.*
 class MusicService(private val songRepo: SongRepository, private val albumRepo: AlbumRepository, private val artistRepo: ArtistRepository, private val artistPublisherService: PublisherService<Artist>, private val albumPublisherService: PublisherService<Album>) {
 
     @Transactional
-    fun readArtists() : Page<Artist> = artistRepo.findAll(PageRequest.of(0,5))
+    fun readArtists() : Page<Artist> = artistRepo.findAll(PageRequest.of(0,50))
     @Transactional
     fun readAlbums(ids:List<UUID>): Iterable<Album> = albumRepo.findAllById(ids)
     @Transactional
@@ -73,6 +74,14 @@ class MusicService(private val songRepo: SongRepository, private val albumRepo: 
     fun compareOtherSongsSameArtist(songId:String, artistId:String, albumId:String) : Iterable<ComparisonSongProjection>  {
         val retv =  songRepo.findComparisonSongsForSameArtist(UUID.fromString(songId), UUID.fromString(artistId), UUID.fromString(albumId))
         return retv
+    }
+
+    @Transactional
+    fun updateAlbum(albumInput: UpdateAlbumInput): Album {
+        val album = albumRepo.findById(albumInput.id).get()
+        album.name = albumInput.name
+        albumRepo.save(album)
+        return album
     }
 
 

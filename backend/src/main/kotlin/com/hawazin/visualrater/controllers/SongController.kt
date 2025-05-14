@@ -37,7 +37,7 @@ class SongController(private val musicService: MusicService) {
     }
 
     @MutationMapping
-    fun deleteSong(@Argument songId:String) : Boolean {
+    fun DeleteSong(@Argument songId:String) : Boolean {
         return musicService.deleteSongById(UUID.fromString(songId))
     }
 
