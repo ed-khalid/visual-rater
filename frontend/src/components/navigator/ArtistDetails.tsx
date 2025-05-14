@@ -5,6 +5,7 @@ import { MusicAction } from "../../music/MusicAction"
 import { AlbumDetailsPanel } from "./AlbumDetailsPanel"
 import { MusicState } from "../../music/MusicState"
 import { MusicStore } from "../../music/MusicStore"
+import { FilterMode } from "../../music/MusicFilters"
 
 
 interface Props {
@@ -17,12 +18,12 @@ interface Props {
 
 export const ArtistDetails = ({musicDispatch, musicState, artist, dispatchAlbumToRater}: Props) => {
 
+    const store = new MusicStore(musicState)
+
     const [sortedAlbums ,setSortedAlbums] = useState<Album[]>([]) 
     const [albumUnderEdit, setAlbumUnderEdit] = useState<Album|undefined>(undefined) 
     const [editableAlbumName, setEditableAlbumName] = useState<string>('') 
-    const [expandedAlbums, setExpandedAlbums] =useState<Album[]>([])
-
-    
+    const expandedAlbumIds  = store.navigationFilters.find(it => it.artistId === artist.id)?.albumIds || []
 
     const { data, loading, error } = useGetAlbumsQuery({ variables: {
         ids: artist.albums.map((it:any) => it.id)
@@ -58,10 +59,9 @@ export const ArtistDetails = ({musicDispatch, musicState, artist, dispatchAlbumT
      }
 
     const onAlbumSelect = (album:Album) => {
-        const newAlbums = expandedAlbums.some(a => a.id === album.id) ? 
-            expandedAlbums.filter(it => it.id !== album.id)  :
-            [...expandedAlbums, album]
-            setExpandedAlbums(newAlbums)
+        expandedAlbumIds.some(id => id === album.id) ? 
+            musicDispatch({type: 'NAVIGATION_FILTER_ALBUM_CHANGE', artistId: artist.id, albumId: album.id, mode: FilterMode.REDUCTIVE}) :
+            musicDispatch({type: 'NAVIGATION_FILTER_ALBUM_CHANGE', artistId: artist.id, albumId: album.id, mode: FilterMode.ADDITIVE })
     }
 
 
@@ -112,7 +112,7 @@ export const ArtistDetails = ({musicDispatch, musicState, artist, dispatchAlbumT
                 {album.score.toFixed(2)}
             </div> 
         </div>
-            {expandedAlbums.some(a=> a.id === album.id) && <AlbumDetailsPanel key={"artist-"+artist.id+"-album-"+album.id} musicDispatch={musicDispatch} album={album} /> } 
+            {expandedAlbumIds.some(id=> id === album.id) && <AlbumDetailsPanel key={"artist-"+artist.id+"-album-"+album.id} musicDispatch={musicDispatch} album={album} /> } 
         </div>
         )}
     </div>

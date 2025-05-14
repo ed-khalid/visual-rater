@@ -1,5 +1,5 @@
 import { Dispatch, useState } from "react"
-import { Album, Artist } from "../../generated/graphql"
+import { Artist } from "../../generated/graphql"
 import { MusicAction } from "../../music/MusicAction"
 import { RaterEntityRequest } from "../../models/RaterTypes"
 import { ArtistDetails } from "./ArtistDetails"
@@ -7,6 +7,7 @@ import { Panel } from "../common/Panel"
 import { MusicState } from "../../music/MusicState"
 import { MusicStore } from "../../music/MusicStore"
 import { NavScoreInfo } from "./NavScoreInfo"
+import { FilterMode } from "../../music/MusicFilters"
 
 interface Props {
     artists: Artist[]
@@ -16,16 +17,16 @@ interface Props {
 }
 
 export const MusicNavigatorPanel = ({musicDispatch, musicState, artists, dispatchToRater}: Props) => {
+  const store = new MusicStore(musicState)   
 
   const sortedArtists = [...artists].sort((a,b) => b.score - a.score)  
-  const [expandedArtists, setExpandedArtists] = useState<Artist[]>([])
+  const expandedArtistIds = store.navigationFilters.map(it => it.artistId)   
 
 
   const onArtistSelect = (artist:Artist) => {
-    const newArtists = (expandedArtists.includes(artist)) ?  
-      expandedArtists.filter(it => it.id !== artist.id)  :
-      [...expandedArtists, artist]
-      setExpandedArtists(newArtists)
+    (expandedArtistIds.includes(artist.id)) ?  
+      musicDispatch({type: 'NAVIGATION_FILTER_ARTIST_CHANGE', artistId: artist.id, mode: FilterMode.REDUCTIVE }) :
+      musicDispatch({type: 'NAVIGATION_FILTER_ARTIST_CHANGE', artistId: artist.id, mode: FilterMode.ADDITIVE }) 
   }
 
   const onAction = (artist:Artist) => {
@@ -38,14 +39,6 @@ export const MusicNavigatorPanel = ({musicDispatch, musicState, artists, dispatc
   const isOnRater = (artist:Artist) => {
     const raterArtists = new MusicStore(musicState).getFatSongs()
     return raterArtists.some(it => it.artist.id === artist.id)
-  }
-
-  const onAddToRater = (album:Album, artist:Artist, shouldRemove:boolean) => {
-    const gridRaterAddition:RaterEntityRequest = {
-      artist: artist,
-      albumId: album.id
-    } 
-    dispatchToRater(gridRaterAddition, shouldRemove)
   }
 
   return <Panel className="nav-panel" title="Artists" >
@@ -62,7 +55,7 @@ export const MusicNavigatorPanel = ({musicDispatch, musicState, artists, dispatc
                     </div>
                     <NavScoreInfo item={artist} type="artist" />
                 </div> 
-                  { expandedArtists.includes(artist) && 
+                  { expandedArtistIds.includes(artist.id) && 
                       <ArtistDetails musicState={musicState} key={"artist-"+artist.id+"-details"} musicDispatch={musicDispatch} dispatchAlbumToRater={(album, shouldRemove) => dispatchToRater({ artist, albumId: album.id}, shouldRemove)} artist={artist} />    
                   } 
                 </li> 

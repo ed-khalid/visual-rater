@@ -1,31 +1,35 @@
 import { mapSongToUIItem } from "../../../functions/mapper";
 import { GetAlbumsSongsDocument, useUpdateSongMutation } from "../../../generated/graphql";
 import { SongUIItem } from "../../../models/ItemTypes";
-import { ArtistRaterItems } from "../../../models/RaterTypes"
 import { DndContext } from "@dnd-kit/core";
 import './BlockRater.css'
 import { BlockRaterRow } from "./BlockRaterRow";
+import { FatSong } from "../../../models/RaterTypes";
 
 interface Props {
-    items: ArtistRaterItems[]
-
-
+    items: FatSong[]
 }
 
+export type BlockRaterSongItem = SongUIItem & { rowIndex: number  }    
+
 export const BlockRater = ({items}:Props) => {
+
+    const uniqueAlbums = items.reduce<Record<string, boolean>>((acc,it) => {
+        if (acc[it.album.id]) return acc 
+        acc[it.album.id] = true
+        return acc
+     }, {})
+     const albumIds = Object.keys(uniqueAlbums)
 
 
     const [updateSong]  = useUpdateSongMutation();
 
-    const groupByScore = (items:ArtistRaterItems[]) => {
-        const songs = items.flatMap(it =>  {
-            const songs = it.songs.map(song => 
-                mapSongToUIItem(song, it.albums.find(it => it.id === song.albumId)!!, it.artist)
+    const groupByScore = (fatSongs:FatSong[]) => {
+        const songItems:BlockRaterSongItem[] = fatSongs.map(it =>  
+                ({ ...mapSongToUIItem(it.song, it.album, it.artist), rowIndex: albumIds.indexOf(it.album.id) })
             )  
-             return songs
-         })
         const retv:Record<number, SongUIItem[]|undefined> = {}  
-        for (const song of songs) {
+        for (const song of songItems) {
             const score = song.score
             if (!retv[score]) {
                 retv[score] = [] 

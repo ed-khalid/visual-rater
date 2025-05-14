@@ -15,6 +15,7 @@ export const ReducerProvider = () => {
         albums:[], 
         songs:[] 
       } , 
-      raterFilters: { artistIds: [], albumIds: [], songIds: [], scoreFilter: { start: 0 , end: 100}  } })
+      navigationFilters: [],
+      raterFilters: { hideAll: true, artistIds: [], albumIds: [], songIds: [], scoreFilter: { start: 0 , end: 100}  } })
   return <App musicState={musicState} musicDispatch={musicDispatch} /> 
 } 

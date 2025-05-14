@@ -1,4 +1,5 @@
 import { Album, Artist, Song } from "../generated/graphql"
+import { ArtistNavigationFilter } from "../models/ArtistNavigationFilter"
 import { FilterMode } from "./MusicFilters"
 
 export type DataChangeMusicAction = {
@@ -10,9 +11,21 @@ export type DataChangeMusicAction = {
     } 
 } 
 
+export type NavigationFilterArtistChange = {
+    type: 'NAVIGATION_FILTER_ARTIST_CHANGE'
+    artistId: string
+    mode: FilterMode
+}  
+export type NavigationFilterAlbumChange = {
+    type: 'NAVIGATION_FILTER_ALBUM_CHANGE'
+    artistId: string 
+    albumId: string
+    mode: FilterMode
+}  
+
 export type RaterFilterChangeMusicAction = {
     type: 'RATER_FILTER_CHANGE',
-    filters?: {
+    filters: {
             artistIds?: string[]
             albumIds?: string[]
             songIds?: string[]
@@ -21,4 +34,4 @@ export type RaterFilterChangeMusicAction = {
     mode:FilterMode, 
 }  
 
-export type MusicAction = RaterFilterChangeMusicAction | DataChangeMusicAction  
+export type MusicAction = NavigationFilterAlbumChange | NavigationFilterArtistChange | RaterFilterChangeMusicAction | DataChangeMusicAction  

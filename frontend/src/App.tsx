@@ -55,7 +55,7 @@ export const App = ({musicState, musicDispatch}:Props) => {
         return [...acc, ...curr!.songs]
       }, [])
       musicDispatch({ type: 'DATA_CHANGE', data: { artists: [$artistFull.data.artist] as Artist[], albums: $artistFull.data.artist?.albums as Album[], songs     }})
-      musicDispatch({ type: 'RATER_FILTER_CHANGE', filters: { artistIds:[$artistFull.data.artist!.id], albumIds: undefined, songIds: undefined  }, mode:FilterMode.ADDITIVE })
+      musicDispatch({ type: 'RATER_FILTER_CHANGE', filters: { artistIds:[$artistFull.data.artist!.id] }, mode:FilterMode.ADDITIVE })
     }
   }, [$artistFull.loading, $artistFull.data, musicDispatch])
   useEffect(() => {
@@ -67,7 +67,7 @@ export const App = ({musicState, musicDispatch}:Props) => {
       const albumId = songs?.at(0)!.albumId
       const artistId = songs?.at(0)!.artistId 
       if (albumId && artistId) {
-        musicDispatch({ type: 'RATER_FILTER_CHANGE', filters: { artistIds: [artistId], albumIds: [albumId], songIds: undefined} , mode: FilterMode.ADDITIVE })
+        musicDispatch({ type: 'RATER_FILTER_CHANGE', filters: { artistIds: [artistId] } , mode: FilterMode.ADDITIVE })
       }
     }
 

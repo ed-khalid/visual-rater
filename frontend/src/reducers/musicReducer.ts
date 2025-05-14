@@ -15,9 +15,9 @@ export const musicReducer: React.Reducer<MusicState, MusicAction> =  (state: Mus
         return [...data, ...newData]
     }
 
-    const reconcileFilters =  (oldFilters:string[]|undefined, newFilters:string[]|undefined, mode:FilterMode): string[]|undefined => {
+    const reconcileFilters =  (oldFilters:string[], newFilters:string[]|undefined, mode:FilterMode): string[] => {
         if (!newFilters) {
-            return undefined
+            return oldFilters
         }
         if (!oldFilters) {
             return newFilters
@@ -49,6 +49,43 @@ export const musicReducer: React.Reducer<MusicState, MusicAction> =  (state: Mus
             }
             return state
         }
+        case 'NAVIGATION_FILTER_ARTIST_CHANGE': {
+            const artistId = action.artistId
+            const mode = action.mode
+            const existing = state.navigationFilters.find(it => it.artistId === artistId)  
+            if (mode === FilterMode.EXCLUSIVE) {
+                const albumIds  = existing?.albumIds || []  
+                return {...state, navigationFilters: [{ artistId, albumIds }] } 
+            } else if (mode === FilterMode.ADDITIVE) {
+                if (existing) return state
+                return { ...state, navigationFilters: [...state.navigationFilters, { artistId, albumIds: [] }] } 
+            // reductive
+            } else  {
+                if (!existing) return state   
+                const newFilters = state.navigationFilters.filter(it => it.artistId !== artistId)
+                return { ...state, navigationFilters: newFilters }
+            }
+        }
+        case 'NAVIGATION_FILTER_ALBUM_CHANGE': {
+            const artistId = action.artistId
+            const albumId = action.albumId
+            const mode = action.mode
+            const existingArtist = state.navigationFilters.find(it => it.artistId === artistId)  
+            const existingAlbum = existingArtist?.albumIds.find(it => it === albumId)
+            if (mode === FilterMode.EXCLUSIVE) {
+                return { ...state, navigationFilters: [{ artistId, albumIds: [albumId] }] } 
+            } else if (mode === FilterMode.ADDITIVE) {
+                if (existingAlbum) return state
+                const albumIds = existingArtist?.albumIds || []  
+                return { ...state, navigationFilters: [...state.navigationFilters.filter(it => it.artistId !== artistId), { artistId, albumIds: [...albumIds, albumId] }] } 
+            // reductive
+            } else  {
+                if (!existingAlbum || !existingArtist) return state   
+                const albumIds = existingArtist.albumIds.filter(it => it !== albumId)    
+                const otherArtists = state.navigationFilters.filter(it => it.artistId !== artistId) 
+                return { ...state, navigationFilters: [...otherArtists, { artistId: existingArtist.artistId, albumIds }]  }
+            }
+        }
         case 'RATER_FILTER_CHANGE': {
             const newFilters = action.filters
             const mode = action.mode
@@ -58,10 +95,10 @@ export const musicReducer: React.Reducer<MusicState, MusicAction> =  (state: Mus
                 const albumIds = reconcileFilters(state.raterFilters.albumIds, newFilters.albumIds, mode) 
                 const songIds = reconcileFilters(state.raterFilters.songIds, newFilters.songIds, mode) 
                 const scoreFilter = newFilters.scoreFilter || state.raterFilters.scoreFilter 
-                raterFilters = { artistIds, albumIds, songIds, scoreFilter }  
+                const hideAll = (artistIds.length === 0 && albumIds.length === 0 && songIds.length === 0) 
+                raterFilters = { hideAll, artistIds, albumIds, songIds, scoreFilter }  
             }
             const newState = { ...state, raterFilters }
-            console.log('newState filter', newState)
             return newState
         }
     }
