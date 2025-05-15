@@ -45,6 +45,7 @@ export const musicReducer: React.Reducer<MusicState, MusicAction> =  (state: Mus
                 const albums = reconcileData<Album>(state.data.albums, newData.albums)
                 const songs = reconcileData<Song>(state.data.songs, newData.songs)
                 const newState= { ...state, data: { artists, albums, songs }}
+                console.log('newState post DATA_CHANGE', newState)
                 return newState
             }
             return state
@@ -58,12 +59,16 @@ export const musicReducer: React.Reducer<MusicState, MusicAction> =  (state: Mus
                 return {...state, navigationFilters: [{ artistId, albumIds }] } 
             } else if (mode === FilterMode.ADDITIVE) {
                 if (existing) return state
-                return { ...state, navigationFilters: [...state.navigationFilters, { artistId, albumIds: [] }] } 
+                const newState = { ...state, navigationFilters: [...state.navigationFilters, { artistId, albumIds: [] }] } 
+                console.log('newState post NAV_FILTER_ARTIST_CHANGE (Additive)', newState)
+                return newState
             // reductive
             } else  {
                 if (!existing) return state   
                 const newFilters = state.navigationFilters.filter(it => it.artistId !== artistId)
-                return { ...state, navigationFilters: newFilters }
+                const newState = { ...state, navigationFilters: newFilters }
+                console.log('newState post NAV_FILTER_ARTIST_CHANGE (Reductive)', newState )
+                return newState
             }
         }
         case 'NAVIGATION_FILTER_ALBUM_CHANGE': {
@@ -73,17 +78,23 @@ export const musicReducer: React.Reducer<MusicState, MusicAction> =  (state: Mus
             const existingArtist = state.navigationFilters.find(it => it.artistId === artistId)  
             const existingAlbum = existingArtist?.albumIds.find(it => it === albumId)
             if (mode === FilterMode.EXCLUSIVE) {
-                return { ...state, navigationFilters: [{ artistId, albumIds: [albumId] }] } 
+                const newState = { ...state, navigationFilters: [{ artistId, albumIds: [albumId] }] } 
+                console.log('newState post NAV_FILTER_ALBUM_CHANGE (Exclusive)', newState)
+                return newState
             } else if (mode === FilterMode.ADDITIVE) {
                 if (existingAlbum) return state
                 const albumIds = existingArtist?.albumIds || []  
-                return { ...state, navigationFilters: [...state.navigationFilters.filter(it => it.artistId !== artistId), { artistId, albumIds: [...albumIds, albumId] }] } 
+                const newState= { ...state, navigationFilters: [...state.navigationFilters.filter(it => it.artistId !== artistId), { artistId, albumIds: [...albumIds, albumId] }] } 
+                console.log('newState post NAV_FILTER_ALBUM_CHANGE (Additive)', newState)
+                return newState
             // reductive
             } else  {
                 if (!existingAlbum || !existingArtist) return state   
                 const albumIds = existingArtist.albumIds.filter(it => it !== albumId)    
                 const otherArtists = state.navigationFilters.filter(it => it.artistId !== artistId) 
-                return { ...state, navigationFilters: [...otherArtists, { artistId: existingArtist.artistId, albumIds }]  }
+                const newState = { ...state, navigationFilters: [...otherArtists, { artistId: existingArtist.artistId, albumIds }]  }
+                console.log('newState post NAV_FILTER_ALBUM_CHANGE (Reductive)', newState)
+                return newState
             }
         }
         case 'RATER_FILTER_CHANGE': {
@@ -99,6 +110,7 @@ export const musicReducer: React.Reducer<MusicState, MusicAction> =  (state: Mus
                 raterFilters = { hideAll, artistIds, albumIds, songIds, scoreFilter }  
             }
             const newState = { ...state, raterFilters }
+            console.log('newState post RATER_FILTER_CHANGE', newState)
             return newState
         }
     }

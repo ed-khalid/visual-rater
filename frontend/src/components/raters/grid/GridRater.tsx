@@ -53,20 +53,14 @@ export const GridRater = ({items}:Props) => {
 
     return <DndContext onDragEnd={handleDrag}>
     <div id="grid-rater">
-            {/* Column headers */}
-            <div>
-            </div> {/* Empty top-left corner */}
-            {Array.from({ length: 10 }, (_, i) => (
-                <div className="grid-rater-column-header" key={`col-header-${10 - i}`}>
-                    {9 - i}
-                </div>
-            ))}
 
             {/* Rows with headers */}
             {Array.from({ length: 10 }, (_, rowIndex) => (
                 <React.Fragment key={`row-${9 - rowIndex}`}>
                     <div className="grid-rater-row-header" key={`row-header-${90 - rowIndex * 10}`}>
-                        {rowHeaders[90 - rowIndex * 10]}
+                        <div className="grid-rater-row-header-text">
+                           {rowHeaders[90 - rowIndex * 10]}
+                        </div>
                     </div>
                     {Array.from({ length: 10 }, (_, colIndex) => (
                         <GridRaterBlock key={`cell-${90 - rowIndex * 10}-${colIndex}`} number={scoreFromRowAndCol(rowIndex, colIndex)} items={itemsByScore[scoreFromRowAndCol(rowIndex, colIndex)]} />

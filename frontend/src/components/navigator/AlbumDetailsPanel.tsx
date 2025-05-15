@@ -51,9 +51,9 @@ export const AlbumDetailsPanel = ({musicDispatch, album}: Props) => {
             }
         } else {
             if (scoreSortDirection === "ascending") {
-                setSortedTracks([...sortedTracks.sort((a, b) => b.score - a.score)])
+                setSortedTracks([...sortedTracks.sort((a, b) => (b.score && a.score) ? b.score - a.score : (b.score) ? b.score : (a.score) ? a.score : 0)])
             } else {
-                setSortedTracks([...sortedTracks.sort((a, b) => a.score - b.score)])
+                setSortedTracks([...sortedTracks.sort((a, b) => (a.score && b.score) ? a.score - b.score : (b.score) ? b.score : (a.score) ? a.score : 0 )])
             }
         }
     } 
@@ -91,7 +91,7 @@ export const AlbumDetailsPanel = ({musicDispatch, album}: Props) => {
                 </div>
                 <div className="album-song-score" style={{background: mapSongScoreToUI(song.score).color }}>
                     <div className="album-song-score-text">
-                        {song.score}
+                        {song.score || 'N/A' }
                     </div>
                 </div>
         </React.Fragment>

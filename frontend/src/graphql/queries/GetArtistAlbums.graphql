@@ -1,5 +1,5 @@
 
-query GetArtistAlbums($artistName:String) {
+query GetArtistAlbums($artistName:String!) {
   artist(name:$artistName) {
     id
     albums {

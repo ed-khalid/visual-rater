@@ -55,9 +55,9 @@ export const App = ({musicState, musicDispatch}:Props) => {
         return [...acc, ...curr!.songs]
       }, [])
       musicDispatch({ type: 'DATA_CHANGE', data: { artists: [$artistFull.data.artist] as Artist[], albums: $artistFull.data.artist?.albums as Album[], songs     }})
-      musicDispatch({ type: 'RATER_FILTER_CHANGE', filters: { artistIds:[$artistFull.data.artist!.id] }, mode:FilterMode.ADDITIVE })
     }
   }, [$artistFull.loading, $artistFull.data, musicDispatch])
+
   useEffect(() => {
     if (!$songsForAlbum.loading && $songsForAlbum.data) {
       const songs =  $songsForAlbum.data.albums?.reduce<Array<Song>>((acc,curr) => { 
@@ -88,8 +88,10 @@ export const App = ({musicState, musicDispatch}:Props) => {
     } else {
       if (!addition.albumId) {
         $loadArtistFull({ variables: { artistName: addition.artist.name } })
+        musicDispatch({ type: 'RATER_FILTER_CHANGE', filters: { artistIds:[addition.artist.id] }, mode:FilterMode.ADDITIVE })
       } else {
         $loadSongsForAlbum({ variables: { albumIds: [addition.albumId] } })
+        musicDispatch({ type: 'RATER_FILTER_CHANGE', filters: { artistIds: [addition.artist.id], albumIds: [addition.albumId] } , mode: FilterMode.ADDITIVE })
       }
     }
   } 
@@ -107,7 +109,7 @@ export const App = ({musicState, musicDispatch}:Props) => {
         VisRater 
       </div>
         <div id="left-sidebar" className="sidebar">
-          <AddSection onCreateAlbum={onCreateAlbum} />
+          <AddSection musicDispatch={musicDispatch} />
           {$artistsPage.data?.artists && 
             <MusicNavigatorPanel musicState={musicState} musicDispatch={musicDispatch} dispatchToRater={dispatchToRater} artists={$artistsPage.data?.artists.content as Artist[]}></MusicNavigatorPanel>
           }

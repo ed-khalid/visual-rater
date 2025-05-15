@@ -18,7 +18,7 @@ export const GridRaterItemUI = ({item}: Props) => {
         transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
     }: undefined;
 
-        return <div ref={setNodeRef} style={style} {...listeners} {...attributes}>
+        return <div className="grid-rater-item" ref={setNodeRef} style={style} {...listeners} {...attributes}>
             <img src={item.thumbnail} alt={item.name} className="grid-rater-item-thumbnail" />
             <div className="grid-rater-item-name">{item.name}</div>
         </div>

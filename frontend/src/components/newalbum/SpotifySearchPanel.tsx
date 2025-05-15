@@ -1,17 +1,37 @@
-import { useSearchExternalArtistQuery } from '../../generated/graphql'
+import { useState } from 'react'
+import { ExternalAlbumSearchResult, ExternalArtistSearchResult, useSearchExternalArtistQuery } from '../../generated/graphql'
 import { Panel } from '../common/Panel'
 import './SpotifySearchPanel.css'
 
 interface Props {
     term: string
-    onExternalAlbumSelect : any
+    onFinishAlbumSelections : any
     onCancel: any
 
 }
 
-export const SpotifySearchPanel = ({term, onExternalAlbumSelect, onCancel}: Props) => {
+export const SpotifySearchPanel = ({term, onFinishAlbumSelections, onCancel}: Props) => {
 
    const {data ,error,loading} = useSearchExternalArtistQuery({ variables: { name: term  }}) 
+   const [selectedAlbums, setSelectedAlbums] = useState<ExternalAlbumSearchResult[]>([])
+
+   const onExternalAlbumSelect = (album:ExternalAlbumSearchResult) => {
+    const isSelected = selectedAlbums.find(a => a.id === album.id)  
+    if (isSelected) {
+        setSelectedAlbums(selectedAlbums.filter(a => a.id !== album.id))
+    } else {
+        setSelectedAlbums([...selectedAlbums, album])
+    }
+
+   }
+
+   const submit = (artist:ExternalArtistSearchResult) => {
+        if (selectedAlbums.length > 0) {
+            onFinishAlbumSelections(artist, selectedAlbums)
+        } else {
+            onCancel()
+        }
+   } 
 
     return <Panel title="Spotify Search" id="spotify-search" isCloseable={true} onClose={onCancel}>
         
@@ -20,6 +40,9 @@ export const SpotifySearchPanel = ({term, onExternalAlbumSelect, onCancel}: Prop
                         {error && <p>Error!</p> }
                         {data?.searchExternalArtist && 
                                 <div id="search-results-artist" className="flex column">
+                                    <div id="search-action">
+                                        <button onClick={()=> submit(data?.searchExternalArtist)}>ADD</button>
+                                    </div>
                                     <div id="search-result-header">
                                         <div id="search-results-artist-thumbnail">
                                             <img className="search-artist-thumbnail" src={data?.searchExternalArtist.thumbnail || ''} alt={""} /> 
@@ -31,7 +54,7 @@ export const SpotifySearchPanel = ({term, onExternalAlbumSelect, onCancel}: Prop
 
                                     <div id="search-result-albums">
                                             {data?.searchExternalArtist.albums.map(album => 
-                                            <div className="search-result-album" onClick={()=> onExternalAlbumSelect( data?.searchExternalArtist, album) } key={'external-album'+album.name}>
+                                            <div className={"search-result-album" + (selectedAlbums.find(it => it.id === album.id)) ? ' selected' : '' }  onClick={()=> onExternalAlbumSelect(album) } key={'external-album'+album.name}>
                                                 <div className="search-result-album-thumbnail">
                                                     <img alt={album.name} src={album.thumbnail || '' } />
                                                 </div>

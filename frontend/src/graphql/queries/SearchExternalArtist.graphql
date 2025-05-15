@@ -1,4 +1,4 @@
-query SearchExternalArtist($name:String){
+query SearchExternalArtist($name:String!){
   searchExternalArtist(name:$name) {
       name
       id

@@ -1,13 +1,7 @@
 
-mutation CreateAlbum($albumInput:NewAlbumInput) 
+mutation CreateAlbumForExternalArtist($externalArtist:ExternalArtistInput!) 
 {
-    CreateAlbum(album:$albumInput) {
-        id
-        name
-        year
-        thumbnail
-        songs {
-            ...SongFields
-        }
+    createAlbumsForExternalArtist(externalArtist:$externalArtist) {
+        ...ArtistFields
     }
 }

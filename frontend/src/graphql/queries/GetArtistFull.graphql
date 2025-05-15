@@ -1,5 +1,5 @@
 
-query GetArtistFull($artistName:String) {
+query GetArtistFull($artistName:String!) {
   artist(name:$artistName) {
     ...ArtistFields
   }

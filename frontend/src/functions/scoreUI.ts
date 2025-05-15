@@ -1,4 +1,4 @@
-import { ArtistSongMetadata, Song } from "../generated/graphql"
+import { ArtistSongMetadata, Maybe, Song } from "../generated/graphql"
 import { SCORE_END, SCORE_START } from "../models/ItemTypes"
 import { ARTIST_SCORE_MAP, ArtistScoreUI, SONG_SCORE_DICTIONARY, SongScoreCategory, SongScoreCategoryUI , SongScoreUI } from "../models/ScoreTypes"
 
@@ -40,6 +40,7 @@ export const mapArtistSongMetadataToSongScoreUI =(metadata?:ArtistSongMetadata) 
             case 'POOR': return metadata.poor 
             case 'BAD': return metadata.bad 
             case 'OFFENSIVE': return metadata.offensive 
+            case 'UNRATED':  throw 'Artist cannot be unrated' 
         }
     }
     for (let[k] of SONG_SCORE_DICTIONARY) {
@@ -53,7 +54,7 @@ export const mapArtistSongMetadataToSongScoreUI =(metadata?:ArtistSongMetadata) 
   
 
 export const mapArtistScoreToUI = (score:number) : ArtistScoreUI => {
-    if (score < SCORE_START || score > SCORE_END ) {
+    if (score < SCORE_START) {
         throw Error("Invalid Score") 
     }
     for (let [,v] of ARTIST_SCORE_MAP) {
@@ -63,7 +64,10 @@ export const mapArtistScoreToUI = (score:number) : ArtistScoreUI => {
     throw Error('Score could not be found in dictionary')
 }  
  
-export const mapSongScoreToUI  = (score:number) : SongScoreUI  => {
+export const mapSongScoreToUI  = (score?:Maybe<number>) : SongScoreUI  => {
+    if (!score) {
+        return { ...SONG_SCORE_DICTIONARY.get('UNRATED')!, score: -Infinity }
+    }
     if (score < SCORE_START || score > SCORE_END ) {
         throw Error("Invalid Score") 
     }

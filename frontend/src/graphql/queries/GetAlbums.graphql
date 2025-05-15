@@ -2,7 +2,6 @@ query GetAlbums($ids:[String!]!) {
     albums(ids:$ids) {
         id
         artistId
-        artistName
         name
         year
         score
