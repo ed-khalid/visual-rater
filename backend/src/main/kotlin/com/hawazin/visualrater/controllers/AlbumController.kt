@@ -1,14 +1,14 @@
 package com.hawazin.visualrater.controllers
 
+import arrow.fx.coroutines.parMap
 import com.hawazin.visualrater.models.db.Album
 import com.hawazin.visualrater.models.db.Artist
 import com.hawazin.visualrater.models.db.Song
-import com.hawazin.visualrater.models.graphql.NewAlbumInput
-import com.hawazin.visualrater.models.graphql.UpdateAlbumInput
-import com.hawazin.visualrater.services.AlbumPublisher
-import com.hawazin.visualrater.services.ImageService
-import com.hawazin.visualrater.services.MusicService
-import com.hawazin.visualrater.services.PublisherService
+import com.hawazin.visualrater.models.graphql.*
+import com.hawazin.visualrater.services.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 import org.reactivestreams.Publisher
 import org.springframework.graphql.data.method.annotation.Argument
 import org.springframework.graphql.data.method.annotation.MutationMapping
@@ -18,7 +18,7 @@ import org.springframework.stereotype.Controller
 import java.util.*
 
 @Controller
-class AlbumController(val musicService: MusicService, val imageService:ImageService, val publisherService: AlbumPublisher) {
+class AlbumController(val musicService: MusicCrudService, val spotifyService: SpotifyApi, val imageService:ImageService, val publisherService: AlbumPublisher) {
 
     @QueryMapping
     fun albums(@Argument ids:List<String>) : Iterable<AlbumWithArtistName>  {
@@ -37,16 +37,53 @@ class AlbumController(val musicService: MusicService, val imageService:ImageServ
     }
 
     @MutationMapping
-    fun CreateAlbum(@Argument album:NewAlbumInput) : Album {
-        if (album.thumbnail != null) {
-            val dominantColorResponse = imageService.getDominantColor(album.thumbnail)
-            album.dominantColor = dominantColorResponse.colorString
+    fun createAlbumsForExternalArtist(@Argument externalArtist:ExternalSearchArtist) : Artist = runBlocking {
+        val dominantColorArtistDeferred = async(Dispatchers.IO) {
+            externalArtist.thumbnail?.let { thumbnail ->
+                imageService.getDominantColor(thumbnail)
+            }
         }
-        if(album.artist.thumbnail != null) {
-            val dominantColorResponse = imageService.getDominantColor(album.artist.thumbnail)
-            album.artist.dominantColor = dominantColorResponse.colorString
+        val dominantColorArtist = dominantColorArtistDeferred.await()?.colorString
+
+        val newArtist = musicService.createArtist(
+            ArtistInput(
+                name = externalArtist.name,
+                thumbnail = externalArtist.thumbnail,
+                vendorId =  externalArtist.id,
+                dominantColor = dominantColorArtist
+            )
+        )
+
+        val albumTracks = externalArtist.albums.parMap(Dispatchers.IO) {
+            val tracks = spotifyService.getTracksForAlbum(albumId = it.id)
+            val dominantColorAlbumDeferred = async {
+                it.thumbnail?.let { thumbnail ->
+                    imageService.getDominantColor(thumbnail)
+                }
+            }
+            val dominantColorAlbum = dominantColorAlbumDeferred.await()?.colorString
+            NewExternalAlbumInput(
+                name = it.name,
+                thumbnail = it.thumbnail,
+                dominantColor = dominantColorAlbum,
+                year = it.year,
+                songs = tracks.map {
+                    NewSongInput(
+                        name = it.name,
+                        number = it.trackNumber,
+                        discNumber = it.discNumber,
+                        score = null
+                    )
+                },
+                artistId = newArtist.id!!,
+                vendorId = it.id
+            )
         }
-        return musicService.createAlbum(album)
+
+        val newAlbums = albumTracks.parMap(Dispatchers.IO) { musicService.createAlbum(it) }
+        val retv = newArtist.copy(albums = newAlbums.toMutableList())
+        retv
+
     }
 
     @MutationMapping

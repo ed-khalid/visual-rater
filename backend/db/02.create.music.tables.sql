@@ -28,6 +28,8 @@ CREATE TABLE artist(
                        name varchar(100) NOT NULL,
                        thumbnail varchar(100),
                        score float,
+                       created_at timestamptz,
+                       updated_at timestamptz,
                        metadata_id uuid references artist_metadata
 );
 
@@ -40,6 +42,8 @@ CREATE TABLE album(
     year INTEGER NOT NULL,
     artist_id uuid references artist(id),
     dominant_color varchar(20),
+    created_at timestamptz,
+    updated_at timestamptz,
     score float
 );
 
@@ -51,6 +55,9 @@ CREATE TABLE song(
     disc_number int4,
     artist_id uuid references artist(id),
     album_id uuid references album(id),
+    created_at timestamptz,
+    updated_at timestamptz,
+    exclude_from_artist_rating bool,
     score FLOAT
 );
 

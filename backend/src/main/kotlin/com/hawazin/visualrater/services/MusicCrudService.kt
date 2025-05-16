@@ -1,6 +1,6 @@
 package com.hawazin.visualrater.services
 
-import com.hawazin.visualrater.models.graphql.NewAlbumInput
+import com.hawazin.visualrater.models.graphql.NewExternalAlbumInput
 import com.hawazin.visualrater.models.graphql.SongInput
 import com.hawazin.visualrater.models.db.*
 import com.hawazin.visualrater.models.graphql.ArtistInput
@@ -10,11 +10,16 @@ import jakarta.transaction.Transactional
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
 import org.springframework.stereotype.Service
+import java.time.OffsetDateTime
 import java.util.*
 
 
 @Service
-class MusicService(private val songRepo: SongRepository, private val albumRepo: AlbumRepository, private val artistRepo: ArtistRepository, private val artistPublisherService: PublisherService<Artist>, private val albumPublisherService: PublisherService<Album>) {
+class MusicCrudService(private val genreRepo: GenreRepository, private val songRepo: SongRepository, private val albumRepo: AlbumRepository, private val artistRepo: ArtistRepository, private val artistPublisherService: PublisherService<Artist>, private val albumPublisherService: PublisherService<Album>) {
+
+    val unratedGenre = genreRepo.findByName("NOT CHOSEN").get()
+
+    fun getAllGenres(): Page<Genre> = genreRepo.findAll(PageRequest.of(0, 50))
 
     @Transactional
     fun readArtists() : Page<Artist> = artistRepo.findAll(PageRequest.of(0,50))
@@ -22,8 +27,6 @@ class MusicService(private val songRepo: SongRepository, private val albumRepo: 
     fun readAlbums(ids:List<UUID>): Iterable<Album> = albumRepo.findAllById(ids)
     @Transactional
     fun readArtistByName(name:String) = artistRepo.findByName(name)
-    @Transactional
-    fun readAlbumsForArtists(artistIds:List<UUID>) : Iterable<Album> =  artistIds.map {  albumRepo.findByArtistId(it) }.flatten()
     @Transactional
     fun readArtists(artistIds:List<UUID>) : Iterable<Artist> =  artistIds.map {  artistRepo.findById(it) }.filter { (it.isPresent) }.map { it.get() }
     @Transactional
@@ -80,6 +83,7 @@ class MusicService(private val songRepo: SongRepository, private val albumRepo: 
     fun updateAlbum(albumInput: UpdateAlbumInput): Album {
         val album = albumRepo.findById(albumInput.id).get()
         album.name = albumInput.name
+        album.updatedAt = OffsetDateTime.now()
         albumRepo.save(album)
         return album
     }
@@ -96,6 +100,7 @@ class MusicService(private val songRepo: SongRepository, private val albumRepo: 
         }
         song.name = songInput.name ?: song.name
         song.number = songInput.number ?: song.number
+        song.updatedAt = OffsetDateTime.now()
         songRepo.save(song)
         return song
     }
@@ -103,18 +108,25 @@ class MusicService(private val songRepo: SongRepository, private val albumRepo: 
     @Transactional
     fun createArtist(artistInput: ArtistInput): Artist
     {
-        var artist:Artist = artistInput.let { Artist(id = null, vendorId= it.vendorId, name= it.name,thumbnail = it.thumbnail, score  = 0.0, metadata = ArtistMetadata(id = null, tier = 0, songs = ArtistSongMetadata(), totalAlbums = 0, totalSongs = 0 , ), dominantColor =  artistInput.dominantColor )   }
-        return artistRepo.save(artist)
+        val maybeArtist = artistRepo.findByName(artistInput.name)
+        if (!maybeArtist.isPresent) {
+            val artist:Artist = artistInput.let { Artist(id = null, vendorId= it.vendorId, name= it.name,thumbnail = it.thumbnail, score  = 0.0, metadata = ArtistMetadata(id = null, tier = 0, songs = ArtistSongMetadata(), totalAlbums = 0, totalSongs = 0 , ), dominantColor =  artistInput.dominantColor, createdAt = OffsetDateTime.now(), updatedAt = null, primaryGenre = unratedGenre, secondaryGenres = mutableListOf()   )   }
+            return artistRepo.save(artist)
+        } else
+       return maybeArtist.get()
     }
 
     @Transactional
-    fun createAlbum(albumInput: NewAlbumInput) : Album
+    fun createAlbum(albumInput: NewExternalAlbumInput) : Album
     {
-        val maybeArtist = artistRepo.findByName(albumInput.artist.name)
-        val artist = if (!maybeArtist.isPresent) createArtist(albumInput.artist) else maybeArtist.get()
-        var album = albumInput.let  { Album(id = UUID.randomUUID(),name = it.name, vendorId=it.artist.vendorId,  year= it.year, artistId = artist.id!!, thumbnail = it.thumbnail, score = 0.0, dominantColor = it.dominantColor, songs = null  ) }
+        val maybeArtist = artistRepo.findById(albumInput.artistId)
+        if (!maybeArtist.isPresent) {
+            throw IllegalStateException("cannot create an album for a nonexistent artist ${albumInput.artistId}")
+        }
+        val artist = maybeArtist.get()
+        val album = albumInput.let  { Album(id = UUID.randomUUID(),name = it.name, vendorId=it.vendorId,  year= it.year, artistId = artist.id!!, thumbnail = it.thumbnail, score = 0.0, dominantColor = it.dominantColor, songs = null, createdAt = OffsetDateTime.now(), updatedAt = null, primaryGenre = unratedGenre, secondaryGenres = mutableListOf()  ) }
         albumRepo.save(album)
-        var songs = albumInput.songs.map { Song( id =  UUID.randomUUID(), name = it.name, albumId = album.id!!, artistId = artist.id!!, score = it.score, number= it.number, discNumber = it.discNumber ) }
+        val songs = albumInput.songs.map { Song( id =  UUID.randomUUID(), name = it.name, albumId = album.id!!, artistId = artist.id!!, score = it.score, number= it.number, discNumber = it.discNumber, createdAt = OffsetDateTime.now(), updatedAt = null, primaryGenre = unratedGenre, secondaryGenres = mutableListOf()  ) }
         songRepo.saveAll(songs)
         album.songs = songs
         return album

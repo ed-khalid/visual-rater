@@ -1,12 +1,24 @@
 type Mutation {
-    CreateAlbum(album:NewAlbumInput): Album
-    CreateArtist(artist:ArtistInput): Artist
-    UpdateSong(song:SongInput) : Song
-    DeleteSong(songId:String!) : Boolean
-    DeleteAlbum(albumId:String!): Boolean
-    UpdateAlbum(album: UpdateAlbumInput): Album
+    createAlbumsForExternalArtist(externalArtist:ExternalArtistInput!): Artist!
+    UpdateSong(song:SongInput!) : Song!
+    DeleteSong(songId:String!) : Boolean!
+    DeleteAlbum(albumId:String!): Boolean!
+    UpdateAlbum(album: UpdateAlbumInput!): Album!
 }
 
+input ExternalArtistInput {
+    name:String!
+    id:String!
+    thumbnail:String
+    albums:[ExternalAlbumInput!]!
+}
+input ExternalAlbumInput {
+    id:String!
+    name:String!
+    thumbnail:String
+    vendorId:String
+    year: Int
+}
 input SongInput {
     id:String!
     name:String

@@ -1,12 +1,17 @@
 
 type Query {
-    searchExternalArtist(name:String): ExternalArtistSearchResult
-    searchExternalAlbumTracks(albumId:String): [ExternalTrackSearchResult!]!
+    searchExternalArtist(name:String!): ExternalArtistSearchResult!
     artists: ArtistPage!
     albums(ids:[String!]!): [Album!]
-    artist(name:String): Artist
+    artist(name:String!): Artist!
+    genres: [Genre!]!
     compareToOtherSongsBySameArtist(songId:String!, artistId:String!, albumId:String!) : [ComparisonSong!]!
     compareToOtherSongsByOtherArtists(songId:String!, artistId:String!) : [ComparisonSong!]!
+}
+
+type ExternalTracksSearchResponse {
+     albumId:String!
+     tracks:[ExternalTrackSearchResult!]!
 }
 
 type ExternalArtistSearchResult {

@@ -2,7 +2,7 @@ package com.hawazin.visualrater.controllers
 
 import com.hawazin.visualrater.models.db.Song
 import com.hawazin.visualrater.models.graphql.SongInput
-import com.hawazin.visualrater.services.MusicService
+import com.hawazin.visualrater.services.MusicCrudService
 import org.springframework.graphql.data.method.annotation.Argument
 import org.springframework.graphql.data.method.annotation.MutationMapping
 import org.springframework.graphql.data.method.annotation.QueryMapping
@@ -12,12 +12,12 @@ import java.util.*
 
 
 @Controller
-class SongController(private val musicService: MusicService) {
+class SongController(private val musicCrudService: MusicCrudService) {
 
 
     @QueryMapping
     fun songs(@Argument albumIds:List<String>): Iterable<Iterable<Song>>? {
-        return musicService.readSongsForAlbums(albumIds.map{ UUID.fromString(it) })
+        return musicCrudService.readSongsForAlbums(albumIds.map{ UUID.fromString(it) })
     }
 
     @SchemaMapping
@@ -31,14 +31,14 @@ class SongController(private val musicService: MusicService) {
 
     @MutationMapping
     fun UpdateSong(@Argument song: SongInput) : Song {
-        val newSong  = musicService.updateSong(song)
-        musicService.notifyOnSongUpdate(newSong)
+        val newSong  = musicCrudService.updateSong(song)
+        musicCrudService.notifyOnSongUpdate(newSong)
         return newSong
     }
 
     @MutationMapping
     fun DeleteSong(@Argument songId:String) : Boolean {
-        return musicService.deleteSongById(UUID.fromString(songId))
+        return musicCrudService.deleteSongById(UUID.fromString(songId))
     }
 
 }

@@ -1,21 +1,21 @@
 package com.hawazin.visualrater.services
 
-import com.hawazin.visualrater.models.db.Album
-import com.hawazin.visualrater.models.db.Artist
-import com.hawazin.visualrater.models.db.Song
-import com.hawazin.visualrater.models.db.ArtistMetadataProjection
-import com.hawazin.visualrater.models.db.ComparisonSongProjection
+import com.hawazin.visualrater.models.db.*
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
 import org.springframework.data.repository.CrudRepository
 import org.springframework.data.repository.query.Param
 import java.util.*
 
+interface GenreRepository : JpaRepository<Genre, Long> {
+    fun findByName(name:String): Optional<Genre>
+}
 
 
 interface ArtistRepository: JpaRepository<Artist, UUID>  {
     fun findByName(name:String) : Optional<Artist>
     fun findMetadataById(id:UUID) : Optional<ArtistMetadataProjection>
+    fun findByVendorId(vendorId:String): Optional<Artist>
 }
 
 

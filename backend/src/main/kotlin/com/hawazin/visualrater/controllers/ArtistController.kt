@@ -2,15 +2,16 @@ package com.hawazin.visualrater.controllers
 
 import com.hawazin.visualrater.models.api.ArtistPage
 import com.hawazin.visualrater.models.db.Artist
-import com.hawazin.visualrater.models.db.ArtistMetadata
 import com.hawazin.visualrater.models.graphql.ArtistInput
 import com.hawazin.visualrater.services.*
 import org.reactivestreams.Publisher
 import org.springframework.graphql.data.method.annotation.*
 import org.springframework.stereotype.Controller
+import java.time.OffsetDateTime
 
 @Controller
-class ArtistController(val musicService: MusicService, val publisherService: ArtistPublisher, val imageService: ImageService) {
+class ArtistController(val musicService: MusicCrudService, val publisherService: ArtistPublisher, val imageService: ImageService) {
+
 
     @QueryMapping
     fun artists() : ArtistPage {
@@ -23,7 +24,7 @@ class ArtistController(val musicService: MusicService, val publisherService: Art
         val maybeArtist = musicService.readArtistByName(name)
         return if (maybeArtist.isPresent) {
             val artist = maybeArtist.get()
-            return Artist(id= artist.id, vendorId = artist.vendorId, albums = artist.albums, score= artist.score, metadata = artist.metadata, thumbnail =  artist.thumbnail, name=artist.name, dominantColor = artist.dominantColor)
+            return Artist(id= artist.id, vendorId = artist.vendorId, albums = artist.albums, score= artist.score, metadata = artist.metadata, thumbnail =  artist.thumbnail, name=artist.name, dominantColor = artist.dominantColor, createdAt = artist.createdAt , updatedAt = artist.updatedAt, primaryGenre = artist.primaryGenre, secondaryGenres = artist.secondaryGenres)
         } else {
             null
         }

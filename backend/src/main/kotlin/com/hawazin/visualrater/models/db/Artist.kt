@@ -2,6 +2,7 @@ package com.hawazin.visualrater.models.db
 
 import jakarta.persistence.*
 import org.hibernate.annotations.GenericGenerator
+import java.time.OffsetDateTime
 import java.util.*
 
 @Entity
@@ -18,8 +19,26 @@ data class Artist(
     var albums:MutableList<Album>? = null,
     @OneToOne(cascade=[CascadeType.REMOVE, CascadeType.PERSIST])
     var metadata: ArtistMetadata,
-    var score:Double
+    @ManyToOne
+    @JoinColumn(name ="primary_genre_id", nullable = false)
+    var primaryGenre: Genre,
+    @ManyToMany
+    @JoinTable(
+        name = "artist_secondary_genre",
+        joinColumns = [JoinColumn(name = "artist_id")],
+        inverseJoinColumns = [JoinColumn(name = "genre_id")]
+    )
+    var secondaryGenres: MutableList<Genre>,
+    var score:Double,
+    var createdAt: OffsetDateTime?,
+    var updatedAt: OffsetDateTime?,
 ) {
+
+    val genres:Genres get() =
+        Genres(
+            primary = primaryGenre,
+            secondary = secondaryGenres.toList()
+        )
 
     override fun equals(other: Any?): Boolean {
         return when (other) {

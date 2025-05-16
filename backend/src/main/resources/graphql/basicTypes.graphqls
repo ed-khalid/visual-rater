@@ -1,7 +1,7 @@
 interface Item {
 id:String!
 name:String!
-score:Float!
+score:Float
 }
 
 enum ItemType {
@@ -12,22 +12,33 @@ type Song implements Item {
     id:String!
     albumId:String!
     artistId:String!
-    score:Float!
+    score:Float
     name: String!
     number:Int!
     discNumber:Int!
+    genres:Genres
+}
+
+type Genre {
+    id:Int!
+    name:String!
+}
+
+type Genres {
+    primary:Genre!
+    secondary:[Genre!]!
 }
 
 type Album {
     id: String!
     artistId:String!
-    artistName:String!
     name: String!
     year: Int
     thumbnail: String
     dominantColor: String
     songs:[Song!]!
     score:Float
+    genres:Genres
 }
 
 interface Page {
@@ -64,6 +75,7 @@ type Artist implements Pageable {
     albums:[Album!]!
     score: Float!
     metadata:ArtistMetadata!
+    genres:Genres
 }
 
 type ArtistSongMetadata {

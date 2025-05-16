@@ -8,6 +8,9 @@ plugins {
     kotlin("plugin.jpa") version "2.1.20"
 }
 
+val kotestVersion: String by project
+val mockkVersion: String by project
+
 group = "com.hawazin"
 version = "0.0.1-SNAPSHOT"
 
@@ -22,6 +25,8 @@ repositories {
 }
 
 dependencies {
+    // kotlin
+    implementation ("org.jetbrains.kotlinx:kotlinx-coroutines-core")
     // spring
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-graphql")
@@ -39,8 +44,13 @@ dependencies {
     testImplementation("org.springframework.boot:spring-boot-starter-test")
     testImplementation("org.springframework:spring-webflux")
     testImplementation("org.springframework.graphql:spring-graphql-test")
-    // misc
+    testImplementation("io.kotest:kotest-runner-junit5-jvm:$kotestVersion")
+    testImplementation("io.kotest:kotest-assertions-core-jvm:$kotestVersion")
+    testImplementation("io.kotest:kotest-property-jvm:$kotestVersion")
+    testImplementation("io.mockk:mockk:$mockkVersion")
+    // logging
     implementation("io.github.oshai:kotlin-logging-jvm:7.0.3")
+    // misc
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
