@@ -1,0 +1,70 @@
+
+div.context-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    max-height: 80vh;
+} 
+div.context-panel .title {
+    cursor: pointer;
+    text-transform: uppercase;
+    font-size: 24px;
+    font-weight: bold;
+    font-family: 'Arial', sans-serif;
+    background-color: black;
+}
+div.album-context {
+    grid-area: expanded-album;
+}
+div.albums-footer {
+    grid-area: albums-footer;
+}
+div.albums-footer  ul{
+    display:flex;
+}
+div.context-panel.collapsed {
+    background: black;
+    border: 1px solid white;
+    position: relative;
+    max-width: 25px;
+}
+div.context-panel.collapsed .title {
+    cursor: pointer;
+    transform: rotate(90deg);
+    font-size:20px;
+    white-space:nowrap;
+}
+div.context-panel-content {
+    height: 86vh;
+    border: 1px solid #ccc;
+}
+ul {
+    margin: 4px;
+    padding: 0;
+}
+div.list {
+    height: 100%;
+    max-height: 56vh;
+    overflow-y:scroll;
+}
+
+div.context-panel-content div.thumbnail {
+    grid-area: thumbnail;
+    border: 1px transparent;
+    border-radius: 5px;
+}  
+div.thumbnail img {
+    width: 100%;
+    height: 100%;
+}
+div.context-panel-content div.tier {
+    grid-area: tier;
+    font-weight: bold;
+}  
+div.context-panel-content div.tier div.big-text {
+    font-size: 6rem;
+    font-weight: bold;
+}  
+div.context-panel-content div.tier div.score {
+    font-size: 2rem;
+}  

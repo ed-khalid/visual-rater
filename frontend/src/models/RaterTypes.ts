@@ -1,5 +1,5 @@
 import { Scaler } from '../functions/scale'
-import { Album, Artist, Song } from '../generated/graphql'
+import { Album, Artist, Maybe, Song } from '../generated/graphql'
 
 export type CartesianRaterState = {
     scaler:Scaler
@@ -30,7 +30,7 @@ export type RaterEntityRequest = {
 }   
 
 export type FatSong = {
-    artist: Artist 
-    album: Album
+    artist: {name: string, id:string} 
+    album: { thumbnail?: Maybe<string>, dominantColor?:Maybe<string>, name:string}
     song: Song
 } 

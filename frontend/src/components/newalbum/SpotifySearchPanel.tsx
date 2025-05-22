@@ -54,7 +54,7 @@ export const SpotifySearchPanel = ({term, onFinishAlbumSelections, onCancel}: Pr
 
                                     <div id="search-result-albums">
                                             {data?.searchExternalArtist.albums.map(album => 
-                                            <div className={"search-result-album" + (selectedAlbums.find(it => it.id === album.id)) ? ' selected' : '' }  onClick={()=> onExternalAlbumSelect(album) } key={'external-album'+album.name}>
+                                            <div className={"search-result-album" + ((selectedAlbums.find(it => it.id === album.id)) ? ' selected' : '') }  onClick={()=> onExternalAlbumSelect(album) } key={'external-album'+album.name}>
                                                 <div className="search-result-album-thumbnail">
                                                     <img alt={album.name} src={album.thumbnail || '' } />
                                                 </div>

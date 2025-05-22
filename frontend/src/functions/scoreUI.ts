@@ -40,7 +40,7 @@ export const mapArtistSongMetadataToSongScoreUI =(metadata?:ArtistSongMetadata) 
             case 'POOR': return metadata.poor 
             case 'BAD': return metadata.bad 
             case 'OFFENSIVE': return metadata.offensive 
-            case 'UNRATED':  throw 'Artist cannot be unrated' 
+            case 'UNRATED':  return -1 
         }
     }
     for (let[k] of SONG_SCORE_DICTIONARY) {
@@ -53,14 +53,11 @@ export const mapArtistSongMetadataToSongScoreUI =(metadata?:ArtistSongMetadata) 
 
   
 
-export const mapArtistScoreToUI = (score:number) : ArtistScoreUI => {
-    if (score < SCORE_START) {
-        throw Error("Invalid Score") 
-    }
+export const mapArtistScoreToUI = (score?:Maybe<number>) : ArtistScoreUI => {
     for (let [,v] of ARTIST_SCORE_MAP) {
-      if (v.threshold.low <= score && v.threshold.high  >= score ) return { ...v, score:score.toFixed(1) }
+      let _score = score || -Infinity  
+      if (v.threshold.low <= _score && v.threshold.high  >= _score ) return { ...v, score:_score.toFixed(1) }
     }
-    console.log(score)
     throw Error('Score could not be found in dictionary')
 }  
  

@@ -1,0 +1,18 @@
+
+query GetUnratedAlbums {
+    unratedAlbums {
+        id
+        artist {
+            id
+            name
+        }
+        name
+        year
+        score
+        dominantColor
+        thumbnail
+        songs {
+            ...SongFields
+        }
+    }
+}

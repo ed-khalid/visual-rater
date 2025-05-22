@@ -1,24 +1,23 @@
-import { Dispatch, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import './ArtistDetails.css'
-import { Album, Artist, useGetAlbumsQuery } from "../../generated/graphql"
-import { MusicAction } from "../../music/MusicAction"
+import { Album, Artist, useGetAlbumsQuery } from "../../../../generated/graphql"
 import { AlbumDetailsPanel } from "./AlbumDetailsPanel"
-import { MusicState } from "../../music/MusicState"
-import { MusicStore } from "../../music/MusicStore"
-import { FilterMode } from "../../music/MusicFilters"
+import { FilterMode } from "../../../../music/MusicFilters"
+import { useMusicDispatch, useMusicState, useMusicStateOperator } from "../../../../hooks/MusicStateHooks"
 
 
 interface Props {
     artist:Artist
-    musicDispatch: Dispatch<MusicAction>
-    musicState: MusicState 
     dispatchAlbumToRater: (album:any, shouldRemove:boolean) => void 
 }
 
 
-export const ArtistDetails = ({musicDispatch, musicState, artist, dispatchAlbumToRater}: Props) => {
+export const ArtistDetails = ({artist, dispatchAlbumToRater}: Props) => {
 
-    const store = new MusicStore(musicState)
+    const musicDispatch = useMusicDispatch()
+    const musicState = useMusicState() 
+    const store = useMusicStateOperator()
+
 
     const [sortedAlbums ,setSortedAlbums] = useState<Album[]>([]) 
     const [albumUnderEdit, setAlbumUnderEdit] = useState<Album|undefined>(undefined) 
@@ -112,7 +111,7 @@ export const ArtistDetails = ({musicDispatch, musicState, artist, dispatchAlbumT
                 {album.score.toFixed(2)}
             </div> 
         </div>
-            {expandedAlbumIds.some(id=> id === album.id) && <AlbumDetailsPanel key={"artist-"+artist.id+"-album-"+album.id} musicDispatch={musicDispatch} album={album} /> } 
+            {expandedAlbumIds.some(id=> id === album.id) && <AlbumDetailsPanel key={"artist-"+artist.id+"-album-"+album.id} album={album} /> } 
         </div>
         )}
     </div>

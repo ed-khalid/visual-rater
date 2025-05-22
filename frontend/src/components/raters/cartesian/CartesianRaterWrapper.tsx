@@ -5,7 +5,7 @@ import { CartesianRaterState, CARTESIAN_RATER_X, CARTESIAN_RATER_Y_BOTTOM, CARTE
 import { RatedItem, CartesianRaterItem } from "../../../models/ItemTypes"
 import { RaterAction } from "../../../reducers/raterReducer"
 import { MusicState } from "../../../music/MusicState"
-import { MusicStore } from "../../../music/MusicStore"
+import { MusicStateOperator } from "../../../music/MusicStateOperator"
 import { sortByScore } from "../../../functions/sort"
 import { ComparisonRaterType } from "./comparison-rater/ComparisonRater"
 import { MusicAction } from "../../../music/MusicAction"
@@ -74,7 +74,7 @@ export const CartesianRaterWrapper = ({items}:Props) =>  {
       if (!musicState.data.artists.length) {
         return
       }
-      const store = new MusicStore(musicState)
+      const store = new MusicStateOperator(musicState)
       const items = store.getFatSongs().flatMap((it:ArtistRaterItems) => mapRaterItemToCartesianRaterItem(it))
        const groupCloseItems = (ratedItems:CartesianRaterItem[]) => {
             const groupedItems = ratedItems.reduce((acc:RaterUIItemGrouped[] , curr:CartesianRaterItem) => {

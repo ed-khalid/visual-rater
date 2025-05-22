@@ -6,6 +6,8 @@ import { mapSongToUIItem } from "../../../functions/mapper"
 import { DndContext } from  "@dnd-kit/core"
 import { GridRaterBlock } from "./GridRaterBlock"
 import { GetAlbumsSongsDocument, useUpdateSongMutation } from "../../../generated/graphql"
+import { GridRaterItemUI } from "./GridRaterItemUI"
+import { TransformComponent, TransformWrapper } from "react-zoom-pan-pinch"
 
 interface Props {
     items: FatSong[] 
@@ -27,22 +29,11 @@ export const GridRater = ({items}:Props) => {
         }
         return retv
     }    
-    const itemsByScore = groupByScore(items) 
+    const unratedItems = items.filter(it => !!!(it.song.score))  
+    const ratedItems = items.filter(it => !!(it.song.score)) 
+    const itemsByScore = groupByScore(ratedItems) 
 
     const scoreFromRowAndCol = (rowIndex: number, colIndex: number) => 99 - (rowIndex * 10 + colIndex) ;
-
-    const rowHeaders = {
-        90 : 'BEST',
-        80 : 'GOOD',
-        70 : 'DECENT',
-        60 : 'OK',
-        50: 'AVERAGE',
-        40: 'BORING',
-        30: 'POOR',
-        20: 'BAD',
-        10: 'AWFUL',
-        0: 'OFFENSIVE'
-    }    
 
     const handleDrag =(event:any) => {
         const songId = event.active.data.current.item.id  
@@ -52,21 +43,26 @@ export const GridRater = ({items}:Props) => {
     }
 
     return <DndContext onDragEnd={handleDrag}>
+        <TransformWrapper>
+            <TransformComponent>
     <div id="grid-rater">
+            <div className="grid-rater-cell" id="grid-rater-unrated">
+                <div className="grid-rater-cell-number">
+                    UNRATED
+                </div>
+                {unratedItems.map((unratedItem) => <GridRaterItemUI isUnrated={true} key={"unrated-item-"+unratedItem.song.id} item={mapSongToUIItem(unratedItem.song, unratedItem.album, unratedItem.artist)} />)}
+            </div>
 
             {/* Rows with headers */}
             {Array.from({ length: 10 }, (_, rowIndex) => (
                 <React.Fragment key={`row-${9 - rowIndex}`}>
-                    <div className="grid-rater-row-header" key={`row-header-${90 - rowIndex * 10}`}>
-                        <div className="grid-rater-row-header-text">
-                           {rowHeaders[90 - rowIndex * 10]}
-                        </div>
-                    </div>
                     {Array.from({ length: 10 }, (_, colIndex) => (
                         <GridRaterBlock key={`cell-${90 - rowIndex * 10}-${colIndex}`} number={scoreFromRowAndCol(rowIndex, colIndex)} items={itemsByScore[scoreFromRowAndCol(rowIndex, colIndex)]} />
                     ))}
                 </React.Fragment>
             ))}
     </div>
+            </TransformComponent>
+        </TransformWrapper>
     </DndContext>
 }

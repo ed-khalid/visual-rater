@@ -1,17 +1,18 @@
-import { Dispatch, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import './AlbumDetailsPanel.css' 
-import { mapSongScoreToUI } from "../../functions/scoreUI"
-import { Album, Song, useGetAlbumsSongsQuery } from "../../generated/graphql"
-import { MusicAction } from "../../music/MusicAction"
-import { SortButton, SortDirection } from "../ui-items/SortButton"
+import { mapSongScoreToUI } from "../../../../functions/scoreUI"
+import { Album, Song, useGetAlbumsSongsQuery } from "../../../../generated/graphql"
+import { SortButton, SortDirection } from "../../../ui-items/SortButton"
 import React from "react"
+import { useMusicDispatch } from "../../../../hooks/MusicStateHooks"
 
 interface Props {
     album: Album
-    musicDispatch: Dispatch<MusicAction>
 }
 
-export const AlbumDetailsPanel = ({musicDispatch, album}: Props) => {
+export const AlbumDetailsPanel = ({album}: Props) => {
+
+    const musicDispatch = useMusicDispatch()
 
     const { data, loading, error} = useGetAlbumsSongsQuery({ variables: { albumIds: [album.id]}})
     const [trackSortDirection, setTrackSortDirection] = useState<SortDirection>("ascending")

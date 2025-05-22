@@ -1,14 +1,14 @@
-import { mapArtistScoreToUI, mapSongScoreToUI } from "../../functions/scoreUI"
-import { Album, Artist, Song } from "../../generated/graphql"
+import { Maybe } from "graphql/jsutils/Maybe"
+import { mapArtistScoreToUI, mapSongScoreToUI } from "../../../functions/scoreUI"
 
 interface Props {
     type: 'artist' | 'album' | 'song'    
-    item: Artist | Album | Song
+    item: { score?: Maybe<number>} 
 }
 
 
 export const NavScoreInfo = ({item, type}: Props) => { 
-    const score = item.score ?? 0
+    const score = item.score 
 
     switch(type) {
         case "artist": 
@@ -21,9 +21,9 @@ export const NavScoreInfo = ({item, type}: Props) => {
                       <div className="nav-panel-item-info-score-descriptor">{mapArtistScoreToUI(score).score}</div>
                     </div> 
         case "album":
-            return <div className="nav-panel-item-info-score">
+            return <div style={{backgroundColor: mapArtistScoreToUI(score).color}} className="nav-panel-item-info-score">
                       <div className="nav-panel-item-info-score-text">
-                            {score.toFixed(2)}
+                            {(score) ? score.toFixed(2) : 'N/A'}
                       </div>
                    </div> 
         case "song":

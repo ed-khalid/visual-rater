@@ -21,6 +21,7 @@ export type Album = {
   __typename?: 'Album';
   artistId: Scalars['String']['output'];
   dominantColor?: Maybe<Scalars['String']['output']>;
+  genres?: Maybe<Genres>;
   id: Scalars['String']['output'];
   name: Scalars['String']['output'];
   score?: Maybe<Scalars['Float']['output']>;
@@ -33,6 +34,7 @@ export type Artist = Pageable & {
   __typename?: 'Artist';
   albums: Array<Album>;
   dominantColor: Scalars['String']['output'];
+  genres?: Maybe<Genres>;
   id: Scalars['String']['output'];
   metadata: ArtistMetadata;
   name: Scalars['String']['output'];
@@ -135,6 +137,18 @@ export type ExternalTracksSearchResponse = {
   tracks: Array<ExternalTrackSearchResult>;
 };
 
+export type Genre = {
+  __typename?: 'Genre';
+  id: Scalars['Int']['output'];
+  name: Scalars['String']['output'];
+};
+
+export type Genres = {
+  __typename?: 'Genres';
+  primary: Genre;
+  secondary: Array<Genre>;
+};
+
 export type Item = {
   id: Scalars['String']['output'];
   name: Scalars['String']['output'];
@@ -212,7 +226,9 @@ export type Query = {
   artists: ArtistPage;
   compareToOtherSongsByOtherArtists: Array<ComparisonSong>;
   compareToOtherSongsBySameArtist: Array<ComparisonSong>;
+  genres: Array<Genre>;
   searchExternalArtist: ExternalArtistSearchResult;
+  unratedAlbums: Array<UnratedAlbum>;
 };
 
 
@@ -248,6 +264,7 @@ export type Song = Item & {
   albumId: Scalars['String']['output'];
   artistId: Scalars['String']['output'];
   discNumber: Scalars['Int']['output'];
+  genres?: Maybe<Genres>;
   id: Scalars['String']['output'];
   name: Scalars['String']['output'];
   number: Scalars['Int']['output'];
@@ -265,6 +282,20 @@ export type Subscription = {
   __typename?: 'Subscription';
   albumUpdated?: Maybe<Album>;
   artistUpdated?: Maybe<Artist>;
+};
+
+export type UnratedAlbum = Item & {
+  __typename?: 'UnratedAlbum';
+  artist?: Maybe<Artist>;
+  artistId: Scalars['String']['output'];
+  dominantColor?: Maybe<Scalars['String']['output']>;
+  genres?: Maybe<Genres>;
+  id: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  score?: Maybe<Scalars['Float']['output']>;
+  songs: Array<Song>;
+  thumbnail?: Maybe<Scalars['String']['output']>;
+  year?: Maybe<Scalars['Int']['output']>;
 };
 
 export type UpdateAlbumInput = {
@@ -342,6 +373,11 @@ export type GetArtistsPageQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type GetArtistsPageQuery = { __typename?: 'Query', artists: { __typename?: 'ArtistPage', total: number, pageNumber: number, content: Array<{ __typename?: 'Artist', id: string, name: string, thumbnail?: string | null, dominantColor: string, score: number, albums: Array<{ __typename?: 'Album', id: string }>, metadata: { __typename?: 'ArtistMetadata', id: string, totalSongs: number, totalAlbums: number, songs: { __typename?: 'ArtistSongMetadata', classic: number, great: number, verygood: number, good: number, pleasant: number, decent: number, interesting: number, ok: number, meh: number, average: number, boring: number, poor: number, bad: number, offensive: number } } }> } };
+
+export type GetUnratedAlbumsQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type GetUnratedAlbumsQuery = { __typename?: 'Query', unratedAlbums: Array<{ __typename?: 'UnratedAlbum', id: string, name: string, year?: number | null, score?: number | null, dominantColor?: string | null, thumbnail?: string | null, artist?: { __typename?: 'Artist', id: string, name: string } | null, songs: Array<{ __typename?: 'Song', id: string, albumId: string, artistId: string, name: string, number: number, discNumber: number, score?: number | null }> }> };
 
 export type SearchExternalArtistQueryVariables = Exact<{
   name: Scalars['String']['input'];
@@ -757,6 +793,52 @@ export function useGetArtistsPageLazyQuery(baseOptions?: Apollo.LazyQueryHookOpt
 export type GetArtistsPageQueryHookResult = ReturnType<typeof useGetArtistsPageQuery>;
 export type GetArtistsPageLazyQueryHookResult = ReturnType<typeof useGetArtistsPageLazyQuery>;
 export type GetArtistsPageQueryResult = Apollo.QueryResult<GetArtistsPageQuery, GetArtistsPageQueryVariables>;
+export const GetUnratedAlbumsDocument = gql`
+    query GetUnratedAlbums {
+  unratedAlbums {
+    id
+    artist {
+      id
+      name
+    }
+    name
+    year
+    score
+    dominantColor
+    thumbnail
+    songs {
+      ...SongFields
+    }
+  }
+}
+    ${SongFieldsFragmentDoc}`;
+
+/**
+ * __useGetUnratedAlbumsQuery__
+ *
+ * To run a query within a React component, call `useGetUnratedAlbumsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetUnratedAlbumsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetUnratedAlbumsQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useGetUnratedAlbumsQuery(baseOptions?: Apollo.QueryHookOptions<GetUnratedAlbumsQuery, GetUnratedAlbumsQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetUnratedAlbumsQuery, GetUnratedAlbumsQueryVariables>(GetUnratedAlbumsDocument, options);
+      }
+export function useGetUnratedAlbumsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetUnratedAlbumsQuery, GetUnratedAlbumsQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetUnratedAlbumsQuery, GetUnratedAlbumsQueryVariables>(GetUnratedAlbumsDocument, options);
+        }
+export type GetUnratedAlbumsQueryHookResult = ReturnType<typeof useGetUnratedAlbumsQuery>;
+export type GetUnratedAlbumsLazyQueryHookResult = ReturnType<typeof useGetUnratedAlbumsLazyQuery>;
+export type GetUnratedAlbumsQueryResult = Apollo.QueryResult<GetUnratedAlbumsQuery, GetUnratedAlbumsQueryVariables>;
 export const SearchExternalArtistDocument = gql`
     query SearchExternalArtist($name: String!) {
   searchExternalArtist(name: $name) {

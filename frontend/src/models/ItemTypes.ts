@@ -1,3 +1,4 @@
+import { Album, Artist, Maybe } from "../generated/graphql";
 
 export interface Item {
     id:string
@@ -30,6 +31,11 @@ export interface CartesianRaterItem extends MusicUIItem {
 export interface ComparisonSongUIItem extends SongUIItem {
        isMain:boolean 
 }  
+
+export interface ContextArtist {
+    artist: {id:string, name:string, thumbnail?:Maybe<string>}
+    albums: {id: string, name: string, thumbnail?:Maybe<string>}[]
+}
 
 export type RatedSongUIItem = CartesianRaterItem & SongUIItem     
 

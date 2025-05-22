@@ -1,6 +1,6 @@
 
-export type ArtistScoreCategory  = 'A+'|'A'|'B+'|'B'|'C+'|'C'|'D'|'E'|'F'  
-export type AlbumScoreCategory   = 'A+'|'A'|'B+'|'B'|'C+'|'C'|'D'|'E'|'F'  
+export type ArtistScoreCategory  = 'A+'|'A'|'B+'|'B'|'C+'|'C'|'D'|'E'|'F'|'UNRATED'  
+export type AlbumScoreCategory   = 'A+'|'A'|'B+'|'B'|'C+'|'C'|'D'|'E'|'F'|'UNRATED'  
 export type SongScoreCategory    = 'CLASSIC'|'GREAT'|'VERY GOOD'|'GOOD'|'PLEASANT'|'DECENT'|'INTERESTING'|'OK'|'MEH'|'AVERAGE'|'BORING'|'POOR'|'BAD'|'OFFENSIVE'|'UNRATED'  
 
 export type ScoreThreshold = { low:number, high:number} 
@@ -24,7 +24,7 @@ export type AlbumScoreUIBase = {
 }
 
 export type SongScoreUI = SongScoreUIBase & { score?:number } 
-export type ArtistScoreUI = ArtistScoreUIBase & { score:string } 
+export type ArtistScoreUI = ArtistScoreUIBase & { score?:string } 
 
 export type SongScoreCategoryUI = {
     category:SongScoreCategory
@@ -90,6 +90,7 @@ ARTIST_SCORE_MAP.set('C',  { category: 'C', color: AVERAGE_COLOR, threshold: {lo
 ARTIST_SCORE_MAP.set('D',{ category: 'D' , color:  BORING_COLOR, threshold: {low:30,high:39.99} })
 ARTIST_SCORE_MAP.set('E',  { category: 'E' , color: POOR_COLOR, threshold: {low:10,high:29.99} })
 ARTIST_SCORE_MAP.set('F', { category: 'F' , color:  BAD_COLOR, threshold: {low:0,high:9.99}  })
+ARTIST_SCORE_MAP.set('UNRATED', { category: 'UNRATED' , color: UNRATED_COLOR, threshold: {low:-Infinity,high:-Infinity}  })
 
 
 

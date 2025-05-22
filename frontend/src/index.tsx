@@ -1,13 +1,12 @@
-import './wdyr'
 import React  from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
 import * as serviceWorker from './serviceWorker';
 import {  ApolloProvider } from '@apollo/client';
 import { client } from './setupApollo';
-import { DndProvider } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
-import { ReducerProvider } from './providers/ReducerProvider';
+import { MusicReducerProvider } from './providers/MusicReducerProvider';
+import { BrowserRouter } from 'react-router-dom';
+import App from './App';
 
 
 // app is inside ReducerProvider
@@ -17,9 +16,11 @@ if (container) {
   root.render(
     <React.StrictMode>
       <ApolloProvider client={client}>
-      <DndProvider backend={HTML5Backend}>
-        <ReducerProvider />
-        </DndProvider>
+        <BrowserRouter>
+            <MusicReducerProvider>
+              <App/>
+            </MusicReducerProvider>
+        </BrowserRouter>
       </ApolloProvider>
     </React.StrictMode>
   )

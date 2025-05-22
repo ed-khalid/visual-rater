@@ -1,19 +1,20 @@
 import { Artist, Album, Song } from "../generated/graphql"
-import { ArtistNavigationFilter } from "../models/ArtistNavigationFilter"
+import { MusicFilter } from "../models/ArtistNavigationFilter"
+import { ContextArtist } from "../models/ItemTypes"
 import { FatSong } from "../models/RaterTypes"
 import { MusicData } from "./MusicData"
-import { MusicFilters } from "./MusicFilters"
+import { MusicFilterOperator } from "./MusicFilters"
 import { MusicState } from "./MusicState"
 
 
-export class MusicStore {
+export class MusicStateOperator {
   public data:MusicData;  
-  public raterFilters:MusicFilters 
-  public navigationFilters:ArtistNavigationFilter[]
+  public raterFilters:MusicFilterOperator 
+  public navigationFilters:MusicFilter[]
      
   constructor(state:MusicState) {
     this.data = state.data
-    this.raterFilters = new MusicFilters(state.raterFilters) 
+    this.raterFilters = new MusicFilterOperator(state.raterFilters) 
     this.navigationFilters = state.navigationFilters
   }
 
@@ -32,6 +33,19 @@ export class MusicStore {
   public getSongsForAlbum(album:Album): Song[] {
     return this.data.songs.filter(it => it.albumId === album.id)
   }
+
+  public getContextArtists(): ContextArtist[] {
+    return []
+    // const artists = this.raterFilters.filterArtists(this.data.artists)
+    // return artists.map(it => {
+    //   const albums = this.getAlbumsForArtist(it)
+    //   return {
+    //     artist: 
+
+    //   }
+
+    // })
+  }  
 
   
   public getSongById = (id:String) => this.data.songs.find(it => it.id === id)  

@@ -1,5 +1,5 @@
 import { Album, Artist, Song } from "../generated/graphql"
-import { ArtistNavigationFilter } from "../models/ArtistNavigationFilter"
+import { MusicFilter } from "../models/ArtistNavigationFilter"
 import { FilterMode } from "./MusicFilters"
 
 export type DataChangeMusicAction = {

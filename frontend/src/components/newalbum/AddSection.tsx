@@ -1,7 +1,6 @@
 import { Dispatch, useEffect, useState } from "react"
-import { Artist, ExternalAlbumSearchResult, ExternalArtistSearchResult, NewSongInput, useCreateAlbumForExternalArtistMutation } from "../../generated/graphql"
+import { Artist, ExternalAlbumSearchResult, ExternalArtistSearchResult, useCreateAlbumForExternalArtistMutation } from "../../generated/graphql"
 import { AddPanel } from "./AddPanel"
-import { ExternalFullSearchResult } from "../../models/ExternalFullSearchResult"
 import { SpotifySearchPanel } from "./SpotifySearchPanel"
 import { MusicAction } from "../../music/MusicAction"
 import { FilterMode } from "../../music/MusicFilters"
@@ -46,7 +45,7 @@ export const AddSection = ({musicDispatch}:Props) => {
 
   useEffect(() => {
     if (searchArtist && searchAlbums) {
-       $createAlbumsForExternalArtist({ variables: { externalArtist: { id: searchArtist?.id, name: searchArtist?.name, albums: searchAlbums }, }})
+       $createAlbumsForExternalArtist({ variables: { externalArtist: { id: searchArtist.id, name: searchArtist.name, thumbnail: searchArtist.thumbnail, albums: searchAlbums }, }})
     }
   }, [searchAlbums, searchArtist, $createAlbumsForExternalArtist])
 

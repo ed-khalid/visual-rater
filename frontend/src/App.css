@@ -2,9 +2,26 @@
 @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@500');
 /* general styles */ 
 * {
-  font-family: 'Raleway', sans-serif;
+  font-family: 'Arial', sans-serif;
   color: #bccddf;
+}
+
+*::-webkit-scrollbar {
+    width: 15px;
+}
+*::-webkit-scrollbar-thumb {
+    background-color: #3c4758;
+}
+*::-webkit-scrollbar-thumb:hover {
+    background-color: #667893;
+}
+*::-webkit-scrollbar-track {
+    background-color: #20252e;
+}
+body {
   background:#2c3440;
+  height: 100%;
+  margin: 0;
 }
 .font-title {
   font-family: 'Abril Fatface', serif;
@@ -12,84 +29,56 @@
 .font-normal {
   font-family: 'Raleway', sans-serif;
 }
-.grid {
-  display:grid;
-}
-.flex {
-  display: flex;
-}
-.flex.column {
-  flex-direction:column;
-}
-.flex.col {
-  flex-direction:column;
-}
-.flex.center {
-  align-items:center;
-}
-.absolute {
-  position: absolute;
-}
-.relative {
-  position:relative;
-}
-.fixed {
-  position:fixed;
-}
 /* drag & drop */ 
-.draggable {
-  cursor:move;
-}
 
- 
-.App.filterMode {
-  cursor:crosshair;
-
-}
 .App {
-  display: grid;
-  grid-template-columns: 500px 1fr; 
-  grid-template-rows: auto 1fr; 
-  grid-template-areas: "left header"
-  "left main";
   text-align: center;
   background-color:#2c3440;
-  color: #000; 
   height: 100vh;
-  overflow:hidden;
 }
-div.header {
-  grid-area: header;
+
+div#header {
+  height: 60px;
   padding: 1em;
   text-align: center;
+  display: flex;
 }
-/* sidebar */
+div#header div#add-panel-buttons {
+  width: 10%;
+  display: flex;
+}
+div#header div#title {
+  flex: 1;
+  font-size: 72px;
+  font-weight: bold;
+  transform: matrix3d(0,4,0)
+}
+div#header svg {
+    width: 65px;
+    height: 65px;
+    cursor: pointer;
+    transition: fill ease 0.3s, transform ease 0.3s;
+    transform: rotate(0deg);
+}  
+div#header svg:hover {
+    fill: rgba(1, 167, 1, 0.753);
+}  
+div.add-panel-option svg.clicked {
+    transform:rotate(180deg);
+}
 
-div.sidebar {
+/* left-nav */
+
+div#left-nav {
+  position: absolute;
+  background-color: #2c3440; 
+  top: 90px;
   flex-direction: column;
   display:flex;
-}
-div#left-sidebar {
-  margin-left: 5px;
-  grid-area: left;
-  grid-row: 1 / span 2;
-} 
-div.sidebar .panel {
-  margin-top: 2px;
-  margin-right:5px;
-} 
-
-
-div#main {
-  grid-area: main;
+  height: 100vh;
+  z-index: 10;
 }
 
-svg.rater-style {
-  width: 25px;
-  height: 25px;
-  cursor: pointer;
-
-}
 /* rater */
 svg.rater {
   height: 95%; 

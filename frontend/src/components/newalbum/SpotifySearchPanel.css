@@ -26,6 +26,9 @@ div.search-result-album {
     flex-direction: row;
     cursor: pointer;
 }
+div.search-result-album.selected {
+    background-color: rgba(131, 59, 190, 0.373)
+}
 div.search-result-album-text {
     margin: auto;
 }

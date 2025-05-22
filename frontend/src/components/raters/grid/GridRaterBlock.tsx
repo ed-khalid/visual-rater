@@ -19,19 +19,24 @@ export const GridRaterBlock = ({number, items}: Props) => {
         }
     }) 
     const cellBackground = mapSongScoreToUI(number).color     
+    const cellDescription = mapSongScoreToUI(number).category  
     const style = { color: isOver ? 'green': undefined } 
 
-    const cellNumberClass= "grid-rater-cell-number" +( (items?.length) ? " corner" : "")   
 
 
     return <React.Fragment key={`grid-rater-cell-${number}`}>
-             <div ref={setNodeRef} style={style}  className="grid-rater-cell">
-                <div className={cellNumberClass} >
-                   {number}
+             <div  ref={setNodeRef} className="grid-rater-cell">
+                <div style={{backgroundColor: cellBackground}} className="grid-rater-ribbon">
+                    <div className="grid-rater-ribbon-number">
+                        {number}
+                    </div>
+                    <div   className="grid-rater-ribbon-text">
+                        {cellDescription}
+                    </div>
                 </div>
                 <div className="grid-rater-cell-items">
                     {items?.map((item) =>(
-                        <GridRaterItemUI key={"grid-rater-item-" + item.id } item ={item}  />
+                        <GridRaterItemUI isUnrated={false} key={"grid-rater-item-" + item.id } item ={item}  />
                     ))}
                 </div>
              </div>

@@ -1,7 +1,7 @@
 import React, { Dispatch } from "react"
 import { Panel } from "./Panel"
 import { MusicZoomLevel, MusicState } from "../../../music/MusicState"
-import { MusicStore } from "../../../music/MusicStore"
+import { MusicStateOperator } from "../../../music/MusicStateOperator"
 import { sortByScore } from "../../../functions/sort"
 import { mapArtistScoreToUI, mapSongScoreToUI } from "../../../functions/scoreUI"
 import { AlbumUIItem, MusicUIItem, SongUIItem } from "../../../models/ItemTypes"
@@ -120,7 +120,7 @@ export const ScorecardPanel = ({musicState, musicDispatch}:Props) => {
       }
     }
 
-    const store = new MusicStore(musicState)
+    const store = new MusicStateOperator(musicState)
         return <Panel id="scorecard" className="relative" title="Scorecard">
             <ul>
               {renderItems()}
