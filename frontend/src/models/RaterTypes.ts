@@ -25,7 +25,7 @@ export const CARTESIAN_SVG_HEIGHT:number = 770
 
 
 export type RaterEntityRequest = {
-    artist: Artist
+    artistId: string
     albumId?: string
 }   
 

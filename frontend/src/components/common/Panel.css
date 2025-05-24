@@ -1,5 +1,5 @@
 
-/* panel styles */ 
+/* global panel styles */ 
 .panel {
   user-select: none;
   border-left: 1px solid rgb(123, 128, 133);
@@ -18,57 +18,24 @@
 .panel.overview-panel {
     background: rgb(44,52,64) 
 }
-.panel .panel-header {
+div.panel div.panel-header {
   display: flex;
   background-color:#14181c;
   height:150px;
+  position:relative;
+  justify-content: space-evenly;
 }
-.panel .panel-header .panel-title {
+div.panel div.panel-header div.panel-title {
   font-size: 3rem;
-  margin-left: 10px;
   text-transform: uppercase;
   font-weight: bold;
 }
-.panel .collapse-button {
-    cursor:pointer;
-    position: absolute;
-    box-shadow: 2px 2px 8px 4px rgba(3, 3, 3, 0.5);
-    border-radius: 30px;
-    height:30px;
-    font-size: 30px;
-    width:30px;
-    background-color: black;
-    border: 1px solid black;
-    z-index:-1;
+div.panel div.panel-header div.panel-control-icons {
+    width: 90%;
+    background-color: transparent;
 }
-.panel .collapse-button.left {
-    top: 40%;
-    right:-25px;
-} 
-.panel .collapse-button.up {
-    left:45%; 
-    bottom: -25px;
-} 
-.panel.collpased .collapse-button-left {
-    right:-96px;
-} 
-.panel.collpased .collapse-button-up {
-    top:-96px;
-} 
-.panel .panel-header .panel-control-icons {
-    top: 0px;
-    left: 2px;
-    background-color: inherit;
-} 
 
-.panel .panel-header .panel-control-icons svg.button.right {
-    position: absolute;
-    top: 3px;
-    right: 3px;
-    background-color: inherit;
-} 
-
-.panel-content {
+div.panel .panel-content {
   display:flex;
   position:relative;
   transition: height 200ms ease-in-out 10ms; 
@@ -104,11 +71,8 @@ div.nav-panel {
     width:400px;
     background: inherit;
 } 
-div.nav-panel .panel-padding {
-    padding:0px;
-    width: 100%;
-}
 div.nav-panel ul {
+    width: 100%;
     margin: 0;
     padding:0;
     overflow-y:auto;
@@ -211,4 +175,18 @@ img.nav-panel-item-thumbnail.smaller {
 .nav-item-subpanel {
     display: flex;
     flex-direction: column;
+}
+
+
+/* rater nav panel */ 
+div.panel.rater-nav-panel {
+    position: absolute;
+    width: fit-content;
+    height: fit-content;
+}
+div.panel.rater-nav-panel.top {
+    top: 0;
+}
+div.panel.rater-nav-panel.bottom {
+    bottom: 0;
 }

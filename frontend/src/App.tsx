@@ -29,7 +29,6 @@ export const App = () => {
   return (
     <div className="App" >
       <div id='header'>
-        <RaterContextPanel />
         <div id="add-panel-buttons">
             <div  className="add-panel-option">
                 <PlusIconSvg onClick={() => {}} />

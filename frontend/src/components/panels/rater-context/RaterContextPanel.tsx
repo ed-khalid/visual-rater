@@ -3,8 +3,13 @@ import { Panel } from "../../common/Panel"
 import './RaterContextPanel.css'
 import '../../common/Panel.css'
 
+interface Props {
+    isCollpased:boolean
 
-export const RaterContextPanel = () => {
+}
+
+
+export const RaterContextPanel = ({isCollpased}:Props) => {
 
     const { state, dispatch } = useMusicStateAndDispatch() 
     const operator = useMusicStateOperator()  

@@ -4,6 +4,7 @@ import { Album, Artist, useGetAlbumsQuery } from "../../../../generated/graphql"
 import { AlbumDetailsPanel } from "./AlbumDetailsPanel"
 import { FilterMode } from "../../../../music/MusicFilters"
 import { useMusicDispatch, useMusicState, useMusicStateOperator } from "../../../../hooks/MusicStateHooks"
+import { MusicNavigatorAlbum } from "./MusicNavigatorAlbum"
 
 
 interface Props {
@@ -20,8 +21,6 @@ export const ArtistDetails = ({artist, dispatchAlbumToRater}: Props) => {
 
 
     const [sortedAlbums ,setSortedAlbums] = useState<Album[]>([]) 
-    const [albumUnderEdit, setAlbumUnderEdit] = useState<Album|undefined>(undefined) 
-    const [editableAlbumName, setEditableAlbumName] = useState<string>('') 
     const expandedAlbumIds  = store.navigationFilters.find(it => it.artistId === artist.id)?.albumIds || []
 
     const { data, loading, error } = useGetAlbumsQuery({ variables: {
@@ -36,26 +35,6 @@ export const ArtistDetails = ({artist, dispatchAlbumToRater}: Props) => {
         }
 
      }, [data])
-
-     const onEdit = (album:Album) => {
-        if (!albumUnderEdit) {
-            setAlbumUnderEdit(album)
-            setEditableAlbumName(album.name)
-        } else {
-            setAlbumUnderEdit(undefined)
-            setEditableAlbumName('')
-        }
-
-     }
-
-     const onSaveNewAlbumName = () => {
-
-     }
-
-     const isOnRater = (album:Album) => { 
-        const raterFilters = musicState.raterFilters 
-        return (raterFilters.albumIds) ? raterFilters.albumIds.some(it => it === album.id) : false  
-     }
 
     const onAlbumSelect = (album:Album) => {
         expandedAlbumIds.some(id => id === album.id) ? 
@@ -82,35 +61,7 @@ export const ArtistDetails = ({artist, dispatchAlbumToRater}: Props) => {
 
         {  sortedAlbums.map((album:any) => 
         <div key={`artist-album-${album.id}`}>
-        <div  className="nav-panel-item smaller">
-            <div className="nav-item-controls" onClick={() => dispatchAlbumToRater(album, isOnRater(album))} >
-                {isOnRater(album) ? '-' : '+'}
-            </div> 
-            <img className="nav-panel-item-thumbnail smaller" src={album.thumbnail!!} /> 
-            <div className="nav-panel-item-info">
-                {!(albumUnderEdit === album) && <div onClick={() => onAlbumSelect(album)} className="nav-panel-item-info-name smaller">
-                {album.name}
-                </div>}
-                {(albumUnderEdit === album) && <input className="nav-panel-item-info-name-input" value={editableAlbumName} />
-                }
-            </div>
-            <div className="nav-panel-edit-controls">
-                {!(albumUnderEdit === album) && <button onClick={() => onEdit(album) }>EDIT</button>}
-                {(albumUnderEdit === album) && 
-                <div className="edit-buttons">
-                
-                <button onClick={() => onSaveNewAlbumName() }>✓</button>
-                <button onClick={() => onEdit(album) }>X</button>
-                </div>
-                }
-             </div> 
-            <div className="nav-panel-item-year">
-                {album.year}
-            </div> 
-            <div className="nav-panel-item-score smaller">
-                {album.score.toFixed(2)}
-            </div> 
-        </div>
+            <MusicNavigatorAlbum album={album} onAlbumSelect={onAlbumSelect} dispatchAlbumToRater={dispatchAlbumToRater} />
             {expandedAlbumIds.some(id=> id === album.id) && <AlbumDetailsPanel key={"artist-"+artist.id+"-album-"+album.id} album={album} /> } 
         </div>
         )}

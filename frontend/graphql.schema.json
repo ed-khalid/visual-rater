@@ -1,19 +1,23 @@
 {
   "__schema": {
     "queryType": {
-      "name": "Query"
+      "name": "Query",
+      "kind": "OBJECT"
     },
     "mutationType": {
-      "name": "Mutation"
+      "name": "Mutation",
+      "kind": "OBJECT"
     },
     "subscriptionType": {
-      "name": "Subscription"
+      "name": "Subscription",
+      "kind": "OBJECT"
     },
     "types": [
       {
         "kind": "OBJECT",
         "name": "Album",
         "description": null,
+        "isOneOf": null,
         "fields": [
           {
             "name": "artistId",
@@ -157,6 +161,7 @@
         "kind": "OBJECT",
         "name": "Artist",
         "description": null,
+        "isOneOf": null,
         "fields": [
           {
             "name": "albums",
@@ -302,6 +307,7 @@
         "kind": "INPUT_OBJECT",
         "name": "ArtistInput",
         "description": null,
+        "isOneOf": false,
         "fields": null,
         "inputFields": [
           {
@@ -353,6 +359,7 @@
         "kind": "OBJECT",
         "name": "ArtistMetadata",
         "description": null,
+        "isOneOf": null,
         "fields": [
           {
             "name": "id",
@@ -428,6 +435,7 @@
         "kind": "OBJECT",
         "name": "ArtistPage",
         "description": null,
+        "isOneOf": null,
         "fields": [
           {
             "name": "content",
@@ -498,9 +506,46 @@
         "possibleTypes": null
       },
       {
+        "kind": "INPUT_OBJECT",
+        "name": "ArtistSearchParams",
+        "description": null,
+        "isOneOf": false,
+        "fields": null,
+        "inputFields": [
+          {
+            "name": "id",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "name",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "String",
+              "ofType": null
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          }
+        ],
+        "interfaces": null,
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
         "kind": "OBJECT",
         "name": "ArtistSongMetadata",
         "description": null,
+        "isOneOf": null,
         "fields": [
           {
             "name": "average",
@@ -736,6 +781,7 @@
         "kind": "SCALAR",
         "name": "Boolean",
         "description": "The `Boolean` scalar type represents `true` or `false`.",
+        "isOneOf": null,
         "fields": null,
         "inputFields": null,
         "interfaces": null,
@@ -746,6 +792,7 @@
         "kind": "OBJECT",
         "name": "ComparisonSong",
         "description": null,
+        "isOneOf": null,
         "fields": [
           {
             "name": "albumDominantColor",
@@ -865,6 +912,7 @@
         "kind": "INPUT_OBJECT",
         "name": "ExternalAlbumInput",
         "description": null,
+        "isOneOf": false,
         "fields": null,
         "inputFields": [
           {
@@ -944,6 +992,7 @@
         "kind": "OBJECT",
         "name": "ExternalAlbumSearchResult",
         "description": null,
+        "isOneOf": null,
         "fields": [
           {
             "name": "id",
@@ -1015,6 +1064,7 @@
         "kind": "INPUT_OBJECT",
         "name": "ExternalArtistInput",
         "description": null,
+        "isOneOf": false,
         "fields": null,
         "inputFields": [
           {
@@ -1094,6 +1144,7 @@
         "kind": "OBJECT",
         "name": "ExternalArtistSearchResult",
         "description": null,
+        "isOneOf": null,
         "fields": [
           {
             "name": "albums",
@@ -1173,6 +1224,7 @@
         "kind": "OBJECT",
         "name": "ExternalTrackSearchResult",
         "description": null,
+        "isOneOf": null,
         "fields": [
           {
             "name": "discNumber",
@@ -1248,6 +1300,7 @@
         "kind": "OBJECT",
         "name": "ExternalTracksSearchResponse",
         "description": null,
+        "isOneOf": null,
         "fields": [
           {
             "name": "albumId",
@@ -1299,6 +1352,7 @@
         "kind": "SCALAR",
         "name": "Float",
         "description": "The `Float` scalar type represents signed double-precision fractional values as specified by [IEEE 754](https://en.wikipedia.org/wiki/IEEE_floating_point).",
+        "isOneOf": null,
         "fields": null,
         "inputFields": null,
         "interfaces": null,
@@ -1309,6 +1363,7 @@
         "kind": "OBJECT",
         "name": "Genre",
         "description": null,
+        "isOneOf": null,
         "fields": [
           {
             "name": "id",
@@ -1352,6 +1407,7 @@
         "kind": "OBJECT",
         "name": "Genres",
         "description": null,
+        "isOneOf": null,
         "fields": [
           {
             "name": "primary",
@@ -1403,6 +1459,7 @@
         "kind": "SCALAR",
         "name": "Int",
         "description": "The `Int` scalar type represents non-fractional signed whole numeric values. Int can represent values between -(2^31) and 2^31 - 1.",
+        "isOneOf": null,
         "fields": null,
         "inputFields": null,
         "interfaces": null,
@@ -1413,6 +1470,7 @@
         "kind": "INTERFACE",
         "name": "Item",
         "description": null,
+        "isOneOf": null,
         "fields": [
           {
             "name": "id",
@@ -1479,6 +1537,7 @@
         "kind": "ENUM",
         "name": "ItemType",
         "description": null,
+        "isOneOf": null,
         "fields": null,
         "inputFields": null,
         "interfaces": null,
@@ -1496,6 +1555,7 @@
         "kind": "OBJECT",
         "name": "Mutation",
         "description": null,
+        "isOneOf": null,
         "fields": [
           {
             "name": "DeleteAlbum",
@@ -1672,6 +1732,7 @@
         "kind": "INPUT_OBJECT",
         "name": "NewAlbumInput",
         "description": null,
+        "isOneOf": false,
         "fields": null,
         "inputFields": [
           {
@@ -1775,6 +1836,7 @@
         "kind": "INPUT_OBJECT",
         "name": "NewSongInput",
         "description": null,
+        "isOneOf": false,
         "fields": null,
         "inputFields": [
           {
@@ -1838,6 +1900,7 @@
         "kind": "INTERFACE",
         "name": "Page",
         "description": null,
+        "isOneOf": null,
         "fields": [
           {
             "name": "content",
@@ -1911,6 +1974,7 @@
         "kind": "INTERFACE",
         "name": "Pageable",
         "description": null,
+        "isOneOf": null,
         "fields": [
           {
             "name": "id",
@@ -1944,6 +2008,7 @@
         "kind": "OBJECT",
         "name": "Query",
         "description": null,
+        "isOneOf": null,
         "fields": [
           {
             "name": "albums",
@@ -1995,14 +2060,14 @@
             "description": null,
             "args": [
               {
-                "name": "name",
+                "name": "params",
                 "description": null,
                 "type": {
                   "kind": "NON_NULL",
                   "name": null,
                   "ofType": {
-                    "kind": "SCALAR",
-                    "name": "String",
+                    "kind": "INPUT_OBJECT",
+                    "name": "ArtistSearchParams",
                     "ofType": null
                   }
                 },
@@ -2260,6 +2325,7 @@
         "kind": "OBJECT",
         "name": "Song",
         "description": null,
+        "isOneOf": null,
         "fields": [
           {
             "name": "albumId",
@@ -2314,9 +2380,13 @@
             "description": null,
             "args": [],
             "type": {
-              "kind": "OBJECT",
-              "name": "Genres",
-              "ofType": null
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "Genres",
+                "ofType": null
+              }
             },
             "isDeprecated": false,
             "deprecationReason": null
@@ -2397,6 +2467,7 @@
         "kind": "INPUT_OBJECT",
         "name": "SongInput",
         "description": null,
+        "isOneOf": false,
         "fields": null,
         "inputFields": [
           {
@@ -2460,6 +2531,7 @@
         "kind": "SCALAR",
         "name": "String",
         "description": "The `String` scalar type represents textual data, represented as UTF-8 character sequences. The String type is most often used by GraphQL to represent free-form human-readable text.",
+        "isOneOf": null,
         "fields": null,
         "inputFields": null,
         "interfaces": null,
@@ -2470,6 +2542,7 @@
         "kind": "OBJECT",
         "name": "Subscription",
         "description": null,
+        "isOneOf": null,
         "fields": [
           {
             "name": "albumUpdated",
@@ -2505,15 +2578,20 @@
         "kind": "OBJECT",
         "name": "UnratedAlbum",
         "description": null,
+        "isOneOf": null,
         "fields": [
           {
             "name": "artist",
             "description": null,
             "args": [],
             "type": {
-              "kind": "OBJECT",
-              "name": "Artist",
-              "ofType": null
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "Artist",
+                "ofType": null
+              }
             },
             "isDeprecated": false,
             "deprecationReason": null
@@ -2551,9 +2629,13 @@
             "description": null,
             "args": [],
             "type": {
-              "kind": "OBJECT",
-              "name": "Genres",
-              "ofType": null
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": {
+                "kind": "OBJECT",
+                "name": "Genres",
+                "ofType": null
+              }
             },
             "isDeprecated": false,
             "deprecationReason": null
@@ -2666,6 +2748,7 @@
         "kind": "INPUT_OBJECT",
         "name": "UpdateAlbumInput",
         "description": null,
+        "isOneOf": false,
         "fields": null,
         "inputFields": [
           {
@@ -2709,6 +2792,7 @@
         "kind": "OBJECT",
         "name": "__Directive",
         "description": "A Directive provides a way to describe alternate runtime execution and type validation behavior in a GraphQL document.\n\nIn some cases, you need to provide options to alter GraphQL's execution behavior in ways field arguments will not suffice, such as conditionally including or skipping a field. Directives provide this by describing additional information to the executor.",
+        "isOneOf": null,
         "fields": [
           {
             "name": "name",
@@ -2825,6 +2909,7 @@
         "kind": "ENUM",
         "name": "__DirectiveLocation",
         "description": "A Directive can be adjacent to many parts of the GraphQL language, a __DirectiveLocation describes one such possible adjacencies.",
+        "isOneOf": null,
         "fields": null,
         "inputFields": null,
         "interfaces": null,
@@ -2950,6 +3035,7 @@
         "kind": "OBJECT",
         "name": "__EnumValue",
         "description": "One possible value for a given Enum. Enum values are unique values, not a placeholder for a string or numeric value. However an Enum value is returned in a JSON response as a string.",
+        "isOneOf": null,
         "fields": [
           {
             "name": "name",
@@ -3017,6 +3103,7 @@
         "kind": "OBJECT",
         "name": "__Field",
         "description": "Object and Interface types are described by a list of Fields, each of which has a name, potentially a list of arguments, and a return type.",
+        "isOneOf": null,
         "fields": [
           {
             "name": "name",
@@ -3137,6 +3224,7 @@
         "kind": "OBJECT",
         "name": "__InputValue",
         "description": "Arguments provided to Fields or Directives and the input fields of an InputObject are represented as Input Values which describe their type and optionally a default value.",
+        "isOneOf": null,
         "fields": [
           {
             "name": "name",
@@ -3232,6 +3320,7 @@
         "kind": "OBJECT",
         "name": "__Schema",
         "description": "A GraphQL Schema defines the capabilities of a GraphQL server. It exposes all available types and directives on the server, as well as the entry points for query, mutation, and subscription operations.",
+        "isOneOf": null,
         "fields": [
           {
             "name": "description",
@@ -3343,6 +3432,7 @@
         "kind": "OBJECT",
         "name": "__Type",
         "description": "The fundamental unit of any GraphQL Schema is the type. There are many kinds of types in GraphQL as represented by the `__TypeKind` enum.\n\nDepending on the kind of a type, certain fields describe information about that type. Scalar types provide no information beyond a name, description and optional `specifiedByURL`, while Enum types provide their values. Object and Interface types provide the fields they describe. Abstract types, Union and Interface, provide the Object types possible at runtime. List and NonNull types compose other types.",
+        "isOneOf": null,
         "fields": [
           {
             "name": "kind",
@@ -3546,6 +3636,18 @@
             },
             "isDeprecated": false,
             "deprecationReason": null
+          },
+          {
+            "name": "isOneOf",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "Boolean",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
           }
         ],
         "inputFields": null,
@@ -3557,6 +3659,7 @@
         "kind": "ENUM",
         "name": "__TypeKind",
         "description": "An enum describing what kind of type a given `__Type` is.",
+        "isOneOf": null,
         "fields": null,
         "inputFields": null,
         "interfaces": null,

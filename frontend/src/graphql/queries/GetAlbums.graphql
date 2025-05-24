@@ -7,5 +7,15 @@ query GetAlbums($ids:[String!]!) {
         score
         dominantColor
         thumbnail
+        genres {
+            primary {
+                id 
+                name
+            }
+            secondary {
+                id 
+                name
+            }
+        }
     }
 }

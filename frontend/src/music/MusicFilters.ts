@@ -1,23 +1,20 @@
 import { Album, Artist, Song } from "../generated/graphql"
-import { MusicEntity, ScoreFilter } from "./MusicState"
+import { ScoreFilter } from "./MusicState"
 
 export class MusicFilters {
   private artistIds: String[]
   private albumIds: String[]
   private songIds: String[]
-  private scoreFilter: ScoreFilter
   private hideAll:boolean
 
-  constructor(filtersObj: { hideAll:boolean, artistIds: String[], albumIds: String[], songIds: String[], scoreFilter: ScoreFilter }) {
+  constructor(filtersObj: { hideAll:boolean, artistIds: String[], albumIds: String[], songIds: String[]}) {
     this.artistIds = filtersObj.artistIds
     this.albumIds = filtersObj.albumIds
     this.songIds = filtersObj.songIds
-    this.scoreFilter = filtersObj.scoreFilter
     this.hideAll = filtersObj.hideAll
   }
 
 
-  public filterByScore = <T extends MusicEntity> (arr: Array<T>) => arr.filter(it => ( this.scoreFilter && it.score) ? it.score >= this.scoreFilter.start && it.score <= this.scoreFilter.end : true)
   private filterById = (id:string, arr:String[]) => (arr && arr.length) ? arr.includes(id) : true   
   public filterArtists = (artists: Artist[]) => artists.filter(it => this.filterById(it.id, this.artistIds))
   public filterAlbums = (albums: Album[]) => albums.filter(it => this.filterById(it.id, this.albumIds))

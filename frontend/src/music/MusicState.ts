@@ -14,6 +14,8 @@ export type MusicState = {
   ,
   raterFilters: {
     hideAll: boolean
-    filters: MusicFilter[] 
+    artistIds: string[]
+    albumIds: string[]
+    songIds: string[]
   }
 }

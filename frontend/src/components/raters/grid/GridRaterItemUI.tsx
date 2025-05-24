@@ -10,16 +10,13 @@ interface Props {
 
 export const GridRaterItemUI = ({item, isUnrated}: Props) => {
     const { attributes, listeners, setNodeRef, transform } = useDraggable({
-        id: 'draggable-item-' + item.id,
+        id: 'draggable-fat-song-' + item.id,
         data: {
-            item: item
+            id: item.id
         }
     })
-    const style = transform ? {
-        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-    }: undefined;
 
-        return <div className={"grid-rater-item" + (isUnrated? " unrated" : "")} ref={setNodeRef} style={style} {...listeners} {...attributes}>
+        return <div className={"grid-rater-item" + (isUnrated? " unrated" : "")} ref={setNodeRef} {...listeners} {...attributes}>
             <img src={item.thumbnail} alt={item.name} className="grid-rater-item-thumbnail" />
             <div className="grid-rater-item-name">{item.name}</div>
         </div>

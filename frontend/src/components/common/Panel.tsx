@@ -1,11 +1,12 @@
-import React, { ReactElement, useState } from 'react'
-import { CollapseButton } from '../ui-items/CollapseButton'
+import { ReactElement, useEffect, useState } from 'react'
 import { CloseButton } from '../ui-items/CloseButton'
+import { CollapseButton } from '../ui-items/CollapseButton'
 
 interface PanelProps {
     title?:string
     className?:string
     id?:string
+    customTitle?:ReactElement
     children:ReactElement
     isMoveable?:boolean
     isResizable?:boolean
@@ -13,15 +14,18 @@ interface PanelProps {
     isCollapsible?:boolean
     collapseDirection?:'up'|'down'|'left'|'right'
     onClose?: any
+    onCollapse?:any
 }
 
-export const Panel = ({title, id, className, children, collapseDirection, isMoveable=false, isResizable=false, isCloseable=false, isCollapsible=false, onClose }:PanelProps) => {
+export const Panel = ({title, id, className, children, customTitle, isMoveable=false, isResizable=false, isCloseable=false, isCollapsible=false, onClose, onCollapse }:PanelProps) => {
 
     const [ isCollapsed, setIsCollapsed ] = useState<boolean>(false) 
 
-    const handleCollapseButtonClick = () => {
-        setIsCollapsed(isCollapsed => !isCollapsed)
-    }  
+    useEffect(() => {
+      if (onCollapse) {
+        onCollapse(isCollapsed)
+      }
+    }, [isCollapsed])
 
     let classes = 'panel' 
     if (className) {
@@ -35,25 +39,19 @@ export const Panel = ({title, id, className, children, collapseDirection, isMove
     }
 
     return <div className={classes} id={id} >
-        {title && <div  className={"panel-header" + (isCollapsed ? " collapsed": "") } >
+        {customTitle}
+        {!customTitle && title && <div  className={"panel-header" + (isCollapsed ? " collapsed": "") } >
+            <div className="panel-title">{title}</div> 
             <div className="panel-control-icons">
                 {isCloseable && <CloseButton onClose={onClose}/>  }
+                {isCollapsible && <CollapseButton isCollapsed={isCollapsed} setIsCollapsed={setIsCollapsed} />} 
             </div>
-            <div className="panel-title">{title}</div> 
         </div>}
           {<div className="panel-content ">
             <div className="panel-padding">
               {children}
             </div>
           </div>}
-          {isCollapsible && collapseDirection === 'left' && <div className="collapse-button left">
-            {!isCollapsed && <div onClick={() => handleCollapseButtonClick()} className="collapse-anchor"> {'<'}  </div> }
-            {isCollapsed && <div onClick={() => handleCollapseButtonClick()} className="collapse-anchor"> {'>'}  </div> }
-          </div> }
-          {isCollapsible && collapseDirection === 'up' && <div className="collapse-button up">
-            {!isCollapsed && <div onClick={() => handleCollapseButtonClick()} className="collapse-anchor"> {'^'}  </div> }
-            {isCollapsed && <div onClick={() => handleCollapseButtonClick()} className="collapse-anchor"> {'v'}  </div> }
-          </div> }
     </div>
 }
 

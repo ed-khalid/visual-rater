@@ -1,4 +1,3 @@
-import { DndContext } from "@dnd-kit/core"
 import { FatSong } from "../../../models/RaterTypes"
 import { SONG_SCORE_DICTIONARY, SongScoreUIBase } from "../../../models/ScoreTypes"
 import './SimpleRater.css'
@@ -35,7 +34,7 @@ export const SimpleRater = ({items, onUpdate}: Props) => {
         onUpdate(newSong)
     }
 
-    return <DndContext onDragEnd={handleDragEnd}><div id="simple-rater">
+    return <div id="simple-rater">
         {categories.map((it) => 
         <SimpleRaterCategoryRow key={it.category + '-row'} 
         category={it}
@@ -43,7 +42,6 @@ export const SimpleRater = ({items, onUpdate}: Props) => {
         />
         )}
     </div>
-    </DndContext>
 
 
 

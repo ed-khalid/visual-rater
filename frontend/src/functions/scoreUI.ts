@@ -56,7 +56,12 @@ export const mapArtistSongMetadataToSongScoreUI =(metadata?:ArtistSongMetadata) 
 export const mapArtistScoreToUI = (score?:Maybe<number>) : ArtistScoreUI => {
     for (let [,v] of ARTIST_SCORE_MAP) {
       let _score = score || -Infinity  
-      if (v.threshold.low <= _score && v.threshold.high  >= _score ) return { ...v, score:_score.toFixed(1) }
+      if (v.threshold.low <= _score && v.threshold.high  >= _score ) { 
+            if (v.category === 'N/A')  {
+                return { ...v, score: 'unrated' }
+            } else 
+            return { ...v, score:_score.toFixed(1) }
+      } 
     }
     throw Error('Score could not be found in dictionary')
 }  

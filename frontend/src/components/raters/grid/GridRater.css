@@ -1,10 +1,11 @@
 
 div#grid-rater {
-    width: 99vw;
     display:grid;
     gap: 10px;
-    grid-template-columns: repeat(10,1fr) ;
+    width: 100%;
+    grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
     border: 1px solid #c9c9c970;
+    margin-top: 10px;
 }
 div#grid-rater-unrated {
     display: flex;
@@ -12,6 +13,7 @@ div#grid-rater-unrated {
     height: 90px;
 }
 div.grid-rater-cell {
+    transition: opacity 0.3s ease;
     border: 1px solid #727272;
     position:relative;
     height: 120px;
@@ -51,9 +53,15 @@ div.grid-rater-item:hover {
     opacity: 1;
 }
 div.grid-rater-item.unrated {
-    display: flex;
+    margin-right: 10px;
+    width: 100px;
+}
+div.grid-rater-item.unrated div.grid-rater-item-name {
+    font-size: 12px;
+    width: 80px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
     border: 1px solid #c9c9c970;
-    flex-direction: column;
 }
 img.grid-rater-item-thumbnail {
     width: 20px;

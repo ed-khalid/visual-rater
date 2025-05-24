@@ -3,18 +3,18 @@ import { MusicFilter } from "../models/ArtistNavigationFilter"
 import { ContextArtist } from "../models/ItemTypes"
 import { FatSong } from "../models/RaterTypes"
 import { MusicData } from "./MusicData"
-import { MusicFilterOperator } from "./MusicFilters"
+import { MusicFilters } from "./MusicFilters"
 import { MusicState } from "./MusicState"
 
 
 export class MusicStateOperator {
   public data:MusicData;  
-  public raterFilters:MusicFilterOperator 
+  public raterFilters:MusicFilters 
   public navigationFilters:MusicFilter[]
      
   constructor(state:MusicState) {
     this.data = state.data
-    this.raterFilters = new MusicFilterOperator(state.raterFilters) 
+    this.raterFilters = new MusicFilters(state.raterFilters) 
     this.navigationFilters = state.navigationFilters
   }
 
@@ -22,16 +22,17 @@ export class MusicStateOperator {
     return this.data.artists
   }
 
-  public getArtistForAlbum(album:Album): Artist|undefined {
-    return this.data.artists.find(it => it.id === album.artistId)
+  public getArtistForAlbum({albumId}:{albumId: string}): Artist|undefined {
+    const album = this.data.albums.find(it => it.id === albumId)
+    return this.data.artists.find(it => it.id === album?.artistId)
   } 
 
-  public getAlbumsForArtist(artist:Artist) :Album[] {
-    return this.data.albums.filter(it => it.artistId === artist.id)
+  public getAlbumsForArtist({id}:{id:string}) :Album[] {
+    return this.data.albums.filter(it => it.artistId === id)
   }
 
-  public getSongsForAlbum(album:Album): Song[] {
-    return this.data.songs.filter(it => it.albumId === album.id)
+  public getSongsForAlbum({id}:{id:string}): Song[] {
+    return this.data.songs.filter(it => it.albumId === id)
   }
 
   public getContextArtists(): ContextArtist[] {
@@ -60,8 +61,7 @@ export class MusicStateOperator {
     const artistFilteredSongs = this.raterFilters.filterSongsByArtist(songs)
     const albumFilteredSongs = this.raterFilters.filterSongsByAlbum(artistFilteredSongs) 
     const songFilteredSongs = this.raterFilters.filterSongs(albumFilteredSongs)
-    const scoreFilteredSongs = this.raterFilters.filterByScore(songFilteredSongs)    
-    return scoreFilteredSongs.map(song => (
+    return songFilteredSongs.map(song => (
       {
         artist: this.getArtistById(song.artistId)!!,
         album: this.getAlbumById(song.albumId)!!, 

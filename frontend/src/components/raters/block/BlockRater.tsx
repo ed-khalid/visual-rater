@@ -1,18 +1,19 @@
 import { mapSongToUIItem } from "../../../functions/mapper";
 import { GetAlbumsSongsDocument, useUpdateSongMutation } from "../../../generated/graphql";
 import { SongUIItem } from "../../../models/ItemTypes";
-import { DndContext } from "@dnd-kit/core";
 import './BlockRater.css'
 import { BlockRaterRow } from "./BlockRaterRow";
 import { FatSong } from "../../../models/RaterTypes";
+import { RefObject } from "react";
 
 interface Props {
     items: FatSong[]
+    rowRefs: RefObject<HTMLDivElement>[] 
 }
 
 export type BlockRaterSongItem = SongUIItem & { rowIndex: number  }    
 
-export const BlockRater = ({items}:Props) => {
+export const BlockRater = ({items, rowRefs}:Props) => {
 
     const uniqueAlbums = items.reduce<Record<string, boolean>>((acc,it) => {
         if (acc[it.album.id]) return acc 
@@ -47,11 +48,9 @@ export const BlockRater = ({items}:Props) => {
         updateSong({ variables: {song:  { id: songId , score} }, refetchQueries: [{ query: GetAlbumsSongsDocument, variables: { albumIds: [albumId] }  }]})
     }
 
-    return <DndContext onDragEnd={handleDrag}>
-        <div id="block-rater">
+    return <div id="block-rater">
                 {Array.from({ length: 100 }, (_, index) => (
                     <BlockRaterRow key={index} index={index} items={itemsByScore[99-index]} /> 
                 ))}
         </div>
-    </DndContext>
 }

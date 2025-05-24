@@ -1,0 +1,12 @@
+
+
+fragment GenreFields on Genres {
+    primary {
+        id 
+        name
+    }
+    secondary {
+        id
+        name
+    }
+}

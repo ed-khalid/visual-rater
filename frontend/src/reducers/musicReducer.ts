@@ -1,4 +1,5 @@
 import { Album, Artist, Song } from "../generated/graphql";
+import { MusicFilter } from "../models/ArtistNavigationFilter";
 import { MusicAction } from "../music/MusicAction";
 import { FilterMode } from "../music/MusicFilters";
 import { MusicEntity, MusicState } from "../music/MusicState";
@@ -75,7 +76,7 @@ export const musicReducer: React.Reducer<MusicState, MusicAction> =  (state: Mus
             const artistId = action.artistId
             const albumId = action.albumId
             const mode = action.mode
-            const existingArtist = state.navigationFilters.find(it => it.artistId === artistId)  
+            const existingArtist:MusicFilter = state.navigationFilters.find(it => it.artistId === artistId)  
             const existingAlbum = existingArtist?.albumIds.find(it => it === albumId)
             if (mode === FilterMode.EXCLUSIVE) {
                 const newState = { ...state, navigationFilters: [{ artistId, albumIds: [albumId] }] } 
@@ -105,9 +106,8 @@ export const musicReducer: React.Reducer<MusicState, MusicAction> =  (state: Mus
                 const artistIds = reconcileFilters(state.raterFilters.artistIds, newFilters.artistIds, mode)
                 const albumIds = reconcileFilters(state.raterFilters.albumIds, newFilters.albumIds, mode) 
                 const songIds = reconcileFilters(state.raterFilters.songIds, newFilters.songIds, mode) 
-                const scoreFilter = newFilters.scoreFilter || state.raterFilters.scoreFilter 
                 const hideAll = (artistIds.length === 0 && albumIds.length === 0 && songIds.length === 0) 
-                raterFilters = { hideAll, artistIds, albumIds, songIds, scoreFilter }  
+                raterFilters = { hideAll, artistIds, albumIds, songIds }  
             }
             const newState = { ...state, raterFilters }
             console.log('newState post RATER_FILTER_CHANGE', newState)

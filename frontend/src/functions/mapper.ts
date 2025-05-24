@@ -12,7 +12,7 @@ export const mapRaterItemToCartesianRaterItem = (fatSongs:FatSong[]): CartesianR
     return songUIs.map(it => ({...it, tier: undefined, nodeRef: undefined, shouldDrawLine: true}))
 } 
 
-export const mapSongToFatSong = (song:Song, album:{thumbnail?:Maybe<string>, dominantColor?:Maybe<string>, name:string }, artist:{name: string} ): FatSong  => {
+export const mapSongToFatSong = (song:Song, album:{thumbnail?:Maybe<string>, dominantColor?:Maybe<string>, name:string }, artist:{name: string, id: string} ): FatSong  => {
     return {
         song,
         album,
