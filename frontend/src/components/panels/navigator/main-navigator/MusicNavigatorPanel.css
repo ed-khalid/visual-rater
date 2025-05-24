@@ -1,0 +1,29 @@
+
+div#left-nav div.panel-header {
+    position: relative;
+}
+div.alternate-titles {
+    display: flex;
+    cursor: pointer;
+    flex-direction:column;
+    border-left: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+}
+div.uncollapse-button {
+    cursor: pointer;
+    position: absolute;
+    background-color: white;
+    color: black;
+    width: 100px;
+    top: 200px;
+    height: 20px;
+    right:-100px;
+    transition: right 300ms ease-in-out; 
+    z-index:15;
+}
+div.uncollapse-button.hidden {
+    right:435px;
+}
+div.uncollapse-button:hover {
+    color: green;
+}

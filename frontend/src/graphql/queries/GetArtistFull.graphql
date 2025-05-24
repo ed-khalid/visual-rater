@@ -1,6 +1,6 @@
 
-query GetArtistFull($artistName:String) {
-  artist(name:$artistName) {
+query GetArtistFull($artistName:String, $artistId:String) {
+  artist(params: {name:$artistName, id: $artistId}) {
     ...ArtistFields
   }
 }

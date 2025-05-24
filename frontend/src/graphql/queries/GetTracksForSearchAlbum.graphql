@@ -1,8 +1,0 @@
-query GetTracksForSearchAlbum($albumId:String!) {
-  searchExternalAlbumTracks(albumId:$albumId) {
-        id
-        name
-        trackNumber
-        discNumber
-  }
-}

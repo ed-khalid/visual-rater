@@ -1,0 +1,41 @@
+
+div#block-rater {
+    border: 1px solid #ccc;
+    height: 90vh;
+    overflow: scroll;
+    overflow-x:hidden;
+}
+div.block-rater-row {
+    display: flex;
+    height: 100px;
+    border-bottom: 1px solid #ccc;
+}
+div.block-rater-row-header { 
+    width: 100px;
+    font-weight: bold;
+    border-right: 1px solid #ccc;
+}
+div.block-rater-row-header-score-text {
+    font-size: 36px;
+}
+div.block-rater-row-header-score-category {
+    font-size: 16px;
+}
+
+div.block-rater-item { 
+    width: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border: 1px solid #ccc;
+}
+div.block-rater-item img { 
+    width: 70px;
+    border-bottom: 1px solid #ccc;
+}
+div.block-rater-item-name { 
+    font-size: 16px;
+    width: 200px;
+    overflow: hidden;
+}

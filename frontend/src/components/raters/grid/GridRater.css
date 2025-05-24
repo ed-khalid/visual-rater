@@ -1,0 +1,78 @@
+
+div#grid-rater {
+    display:grid;
+    gap: 10px;
+    width: 100%;
+    grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+    border: 1px solid #c9c9c970;
+    margin-top: 10px;
+}
+div#grid-rater-unrated {
+    display: flex;
+    grid-column: 1/-1;
+    height: 90px;
+}
+div.grid-rater-cell {
+    transition: opacity 0.3s ease;
+    border: 1px solid #727272;
+    position:relative;
+    height: 120px;
+    display: flex;
+    flex-direction:column;
+    overflow:hidden;
+    box-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+div.grid-rater-ribbon {
+    display: flex;
+    justify-content: space-between;
+    font-weight:bold;
+    font-size: 1.5rem;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+div.grid-rater-cell-number {
+    opacity: 0.5;
+    top: 50%;
+    left: 50%;
+} 
+div.grid-rater-cell-items {
+    user-select: none;
+    display: flex;
+    flex-direction:column;
+    font-size: 16px;
+    flex: 1;
+    width: 100%;
+    overflow-y:auto;
+}
+div.grid-rater-item {
+    cursor:move;
+    display: flex;
+    height:20px;
+    opacity:0.7;
+}
+div.grid-rater-item:hover {
+    opacity: 1;
+}
+div.grid-rater-item.unrated {
+    margin-right: 10px;
+    width: 100px;
+}
+div.grid-rater-item.unrated div.grid-rater-item-name {
+    font-size: 12px;
+    width: 80px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    border: 1px solid #c9c9c970;
+}
+img.grid-rater-item-thumbnail {
+    width: 20px;
+    height: 20px;
+    border: 1px solid #c9c9c970;
+}
+div.grid-rater-item-name {
+    font-size: 16px;
+    text-overflow: ellipsis;
+    overflow:hidden;
+    flex:1;
+    border: 1px solid #c9c9c970;
+}
+

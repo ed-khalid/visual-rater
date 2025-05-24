@@ -7,6 +7,9 @@ fragment AlbumFields on Album {
         score
         dominantColor
         thumbnail
+        genres {
+                ...GenreFields
+        }
         songs {
                 ...SongFields
         }

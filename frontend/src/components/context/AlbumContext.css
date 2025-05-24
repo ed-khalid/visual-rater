@@ -1,0 +1,47 @@
+
+div.context-panel-content.album {
+    display: grid;
+    grid-template-columns: 150px 300px 1fr 50%; 
+    grid-template-rows: 300px 1fr;
+    grid-template-areas: "tier thumbnail alb-year alb-year" 
+    "alb-tracks alb-tracks alb-tracks rater"
+} 
+div#simple-rater {
+    grid-area:rater
+}
+div.album-year {
+    grid-area: alb-year;
+}
+div.album-tracks {
+    grid-area: alb-tracks;
+}
+li.track-row {
+    cursor:pointer;
+    display: flex;
+    align-items:center;
+    border-bottom: 1px solid #ccc;
+}
+div.track-number {
+    width: 10%;
+    font-size: 36px;
+    font-weight: bold;
+}
+div.track-name {
+    flex: 1;
+    font-size: 20px;
+}
+div.track-score {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 20%;
+    height: 80px;
+    font-weight: bold;
+}
+div.track-score-value {
+    font-size: 36px; 
+}
+div.track-score-category {
+    font-size: 12px; 
+    text-transform: lowercase;
+}

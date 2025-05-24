@@ -1,4 +1,4 @@
-mutation UpdateSong($song:SongInput){
+mutation UpdateSong($song:SongInput!){
   UpdateSong(song:$song) {
     ...SongFields
   }

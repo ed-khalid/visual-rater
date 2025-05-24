@@ -2,7 +2,6 @@ import { Dispatch, SetStateAction } from "react";
 import { Album, Artist } from "../generated/graphql";
 import { BreadcrumbEntry } from "../components/floats/Breadcrumb";
 import { MusicAction } from "../music/MusicAction";
-import { MusicZoomLevel } from "../music/MusicState";
 
 
 

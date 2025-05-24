@@ -1,0 +1,52 @@
+div.context-panel-content.artist {
+    display: grid;
+    grid-template-columns: 100px 300px 1fr; 
+    grid-template-rows: 300px 1fr; 
+    grid-template-areas: "tier thumbnail metadata" 
+    "albums albums albums";
+}  
+div.context-panel-content div.metadata {
+    grid-area: metadata;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    height:100%;
+    margin-left: 2px;
+    margin-right: 2px;
+    overflow-y:scroll;
+}  
+div.metadata-cell {
+    display: flex;
+    justify-content: center;
+    align-items:center ;
+    border-bottom: 1px solid #ccc;
+    text-align:center;
+}
+div.metadata-cell.category {
+    border-bottom: 1px solid #ccc;
+    border-right: 1px solid #ccc;
+    border-left: 1px solid #ccc;
+}
+div.albums {
+    grid-area:albums;
+}
+div.albums .title {
+    width: 100%;
+}
+li.album-row {
+    cursor:pointer;
+    display: flex;
+    align-items:center;
+    border-bottom: 1px solid #ccc;
+}
+div.album-thumbnail {
+    width: 10%;
+}
+div.album-name {
+    flex: 1;
+}
+div.album-year {
+    width: 20%;
+}
+div.album-score {
+    width: 20%;
+}

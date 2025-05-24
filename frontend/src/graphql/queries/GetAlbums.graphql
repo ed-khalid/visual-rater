@@ -2,11 +2,20 @@ query GetAlbums($ids:[String!]!) {
     albums(ids:$ids) {
         id
         artistId
-        artistName
         name
         year
         score
         dominantColor
         thumbnail
+        genres {
+            primary {
+                id 
+                name
+            }
+            secondary {
+                id 
+                name
+            }
+        }
     }
 }

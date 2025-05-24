@@ -1,0 +1,192 @@
+
+/* global panel styles */ 
+.panel {
+  user-select: none;
+  border-left: 1px solid rgb(123, 128, 133);
+  z-index:15;
+  left: 0px;
+  box-shadow: 9px 19px 8px 4px rgba(3, 3, 3, 0.3);
+  transition: left 300ms ease-in-out 10ms, 
+              top 300ms ease-in-out 10ms; 
+}
+.panel.moveable {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    z-index: 3;
+}
+.panel.overview-panel {
+    background: rgb(44,52,64) 
+}
+div.panel div.panel-header {
+  display: flex;
+  background-color:#14181c;
+  height:150px;
+  position:relative;
+  justify-content: space-evenly;
+}
+div.panel div.panel-header div.panel-title {
+  font-size: 3rem;
+  text-transform: uppercase;
+  font-weight: bold;
+}
+div.panel div.panel-header div.panel-control-icons {
+    width: 90%;
+    background-color: transparent;
+}
+
+div.panel .panel-content {
+  display:flex;
+  position:relative;
+  transition: height 200ms ease-in-out 10ms; 
+  background-color: inherit;
+}
+.panel-padding {
+  padding: 10px;
+}
+
+div#left-nav.collapsed {
+    left:-408px;
+}
+div#rater-context-panel.collapsed {
+    top: -100px; 
+}
+
+/* context panel */
+div#rater-context-panel {
+    position: absolute;
+    top: 0;
+    left:150px;
+    width:36vw;
+    height:90px;
+    z-index: 1;
+}
+ 
+/* left panels */ 
+ /* nav panel */ 
+div.nav-panel {
+    margin-top: 3px;
+    cursor: auto;
+    user-select: none;
+    width:400px;
+    background: inherit;
+} 
+div.nav-panel ul {
+    width: 100%;
+    margin: 0;
+    padding:0;
+    overflow-y:auto;
+}
+div.nav-panel li {
+    align-items:center;
+    font-size: 16px;
+    text-align:center;
+    border-bottom:1px solid black;
+    overflow-y:hidden;
+}
+div.nav-panel-item:hover {
+    background-color: #1d1c1c42; 
+    cursor:pointer;
+}
+div.nav-panel-item {
+    display: flex;
+    align-items:center;
+    text-align:center;
+    border-bottom:1px solid black;
+    transition: background-color 100ms ease-in-out 20ms;  
+} 
+div.nav-panel-header-item {
+    height: 20px;
+    display: flex;
+    background: black;
+} 
+div.nav-panel-header-item div {
+    background: inherit;
+    text-align: center;
+}
+div.nav-panel-item.smaller {
+    height:50px;
+}
+li:last-child {
+    border-bottom:none;
+}
+img.nav-panel-item-thumbnail {
+    width: 60px;
+    height: 100%;
+}
+img.nav-panel-item-thumbnail.smaller {
+    width: 30px;
+    height: 30px;
+    height:100%;
+}
+.nav-panel-item-info {
+    flex: 1;
+    background: inherit;
+}
+.nav-panel-item-info-name {
+    cursor: pointer;
+    font-size: 20px;
+}
+.nav-panel-item-info-name-input {
+    font-size: 16px;
+    color: #ccc;
+}
+.nav-panel-item-info-name.smaller {
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.nav-item-controls:hover {
+    background-color: #442aad;
+}
+.nav-item-controls {
+    width: 26px;
+    font-size: 42px;
+    height: 100%;
+}
+.nav-panel-item-score {
+    display: flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content: center;
+    background:inherit;
+    width: 80px;
+}
+.nav-panel-item-score.smaller {
+    display: flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content: center;
+    background:inherit;
+    width: 60px;
+}
+.nav-panel-item-info-score-text {
+    margin-top: 10px;
+    height: 100%;
+    font-weight:bold;
+    font-size:28px;
+    background: inherit;
+}  
+.nav-panel-item-info-score-descriptor {
+    background: inherit;
+    font-size: 16px;
+    margin-bottom: 10px;
+}  
+.nav-item-subpanel {
+    display: flex;
+    flex-direction: column;
+}
+
+
+/* rater nav panel */ 
+div.panel.rater-nav-panel {
+    position: absolute;
+    width: fit-content;
+    height: fit-content;
+}
+div.panel.rater-nav-panel.top {
+    top: 0;
+}
+div.panel.rater-nav-panel.bottom {
+    bottom: 0;
+}

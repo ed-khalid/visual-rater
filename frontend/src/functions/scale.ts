@@ -1,6 +1,6 @@
 
 import { scaleLinear, ScaleLinear } from 'd3-scale';
-import { RATER_Y_BOTTOM, RATER_Y_TOP } from '../models/RaterTypes';
+import { CARTESIAN_RATER_Y_BOTTOM, CARTESIAN_RATER_Y_TOP } from '../models/RaterTypes';
 import { SCORE_END, SCORE_START } from '../models/ItemTypes';
 
 interface ScalerArguments {
@@ -16,8 +16,8 @@ export class Scaler {
         ,end: SCORE_END
     }     
     private line  = {
-        start: RATER_Y_TOP 
-        ,end: RATER_Y_BOTTOM 
+        start: CARTESIAN_RATER_Y_TOP 
+        ,end: CARTESIAN_RATER_Y_BOTTOM 
     } 
     public scale:ScaleLinear<number,number>;
     public get yScale() { 

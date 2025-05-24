@@ -1,0 +1,7 @@
+
+div#unrated-rater-panel {
+    display: flex;
+}
+div#unrated-rater-panel div.title {
+    font-size: 16px;
+}

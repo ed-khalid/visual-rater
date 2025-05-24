@@ -1,0 +1,23 @@
+
+div#rater-context-panel .panel-content {
+    overflow-x:auto;
+}
+div.context-wrapper {
+    display: flex;
+}
+div.context-artist {
+    display: flex;
+    cursor:pointer;
+    align-items: center;
+    width: 50px;
+    flex-direction: column;
+}
+div.context-artist-name {
+    font-size: 10px;
+    white-space: nowrap;
+}
+div.context-artist-thumbnail img {
+    width: 20px;
+    height: 20px;
+    border-radius:10px;
+}

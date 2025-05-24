@@ -2,8 +2,27 @@
 @import url('https://fonts.googleapis.com/css2?family=Raleway:wght@500');
 /* general styles */ 
 * {
-  font-family: 'Raleway', sans-serif;
-  color: rgb(145, 153, 161);
+  font-family: 'Arial', sans-serif;
+  color: #bccddf;
+}
+
+*::-webkit-scrollbar {
+    width: 15px;
+}
+*::-webkit-scrollbar-thumb {
+    background-color: #3c4758;
+}
+*::-webkit-scrollbar-thumb:hover {
+    background-color: #667893;
+}
+*::-webkit-scrollbar-track {
+    background-color: #20252e;
+}
+body {
+  background:#2c3440;
+  height: 100%;
+  margin: 0;
+  overflow:hidden;
 }
 .font-title {
   font-family: 'Abril Fatface', serif;
@@ -11,90 +30,66 @@
 .font-normal {
   font-family: 'Raleway', sans-serif;
 }
-.grid {
-  display:grid;
-}
-.flex {
-  display: flex;
-}
-.flex.column {
-  flex-direction:column;
-}
-.flex.col {
-  flex-direction:column;
-}
-.flex.center {
-  align-items:center;
-}
-img.item-thumbnail {
-  width:40px;
-  height:40px;
-  border-radius:50%;
-} 
-.absolute {
-  position: absolute;
-}
-.relative {
-  position:relative;
-}
-.fixed {
-  position:fixed;
-}
 /* drag & drop */ 
-.draggable {
-  cursor:move;
-}
-div.drop-target {
-  height:100vh;
-} 
 
- 
-.App.filterMode {
-  cursor:crosshair;
-
-}
 .App {
   text-align: center;
   background-color:#2c3440;
-  color: #000; 
   height: 100vh;
-  overflow:hidden;
 }
-/* sidebar */
-div.sidebar {
-  position:absolute;
+
+div#header {
+  height: 60px;
+  padding: 1em;
+  text-align: center;
+  display: flex;
+}
+div#header div#add-panel-buttons {
+  width: 10%;
+  display: flex;
+}
+div#header div#title {
+  flex: 1;
+  font-size: 72px;
+  font-weight: bold;
+  transform: matrix3d(0,4,0)
+}
+div#header svg {
+    width: 65px;
+    height: 65px;
+    cursor: pointer;
+    transition: fill ease 0.3s, transform ease 0.3s;
+    transform: rotate(0deg);
+}  
+div#header svg:hover {
+    fill: rgba(1, 167, 1, 0.753);
+}  
+div.add-panel-option svg.clicked {
+    transform:rotate(180deg);
+}
+
+/* left-nav */
+
+div#left-nav {
+  position: absolute;
+  background-color: #2c3440; 
+  top: 90px;
   flex-direction: column;
   display:flex;
+  height: 90vh;
+  overflow-y:auto;
+  z-index: 10;
 }
-div#right-sidebar {
-  top:0px;
-  right:0px;
-} 
-div#right-sidebar .panel {
-  margin-top: 2px;
-  margin-right:2px;
-} 
-div#left-sidebar .panel {
-  margin-top: 2px;
-  margin-left:5px;
-} 
-div#left-sidebar {
-  top:10px;
-  left:0px;
-} 
 
-
+div#rater.droppable {
+  opacity: 0.1;
+}
 
 
 /* rater */
 svg.rater {
+  height: 95%; 
   width: 100%;
-  height: 100%; 
-  position: absolute;
-  top: 0;
-  bottom: 0;
-  left:275px;
-  right:0;
 }
 /* ui items */
 .collapse-button {
@@ -104,6 +99,10 @@ svg.rater {
     transform: rotate(-90deg) 
 }  
 
+.sort-button.descending {
+  transform: rotate(-180deg)
+}
+
 .expand-button.expanded {
   transform: rotate(-0deg) 
 }  
@@ -112,3 +111,21 @@ svg.rater {
     transition: transform 100ms ease-in-out 10ms;   
     transform: rotate(-90deg) 
 }  
+
+div.dragged-item {
+  width: 100px;
+  height: 100px;
+  background-color: transparent;
+}
+img.dragged-item-thumbnail {
+  border-radius: 50px;
+  width: 70px;
+  height: 70px;
+  box-shadow: 4px 4px 2px rgba(0,0,0,0.5)
+}
+div.dragged-item-text {
+  font-size: 16px;
+  color: white;
+  text-shadow: 2px 2px 2px rgba(0,0,0,0.5)
+}
+

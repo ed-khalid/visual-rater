@@ -1,4 +1,4 @@
-import { ArtistSongMetadata, Song } from "../generated/graphql"
+import { ArtistSongMetadata, Maybe, Song } from "../generated/graphql"
 import { SCORE_END, SCORE_START } from "../models/ItemTypes"
 import { ARTIST_SCORE_MAP, ArtistScoreUI, SONG_SCORE_DICTIONARY, SongScoreCategory, SongScoreCategoryUI , SongScoreUI } from "../models/ScoreTypes"
 
@@ -40,6 +40,7 @@ export const mapArtistSongMetadataToSongScoreUI =(metadata?:ArtistSongMetadata) 
             case 'POOR': return metadata.poor 
             case 'BAD': return metadata.bad 
             case 'OFFENSIVE': return metadata.offensive 
+            case 'UNRATED':  return -1 
         }
     }
     for (let[k] of SONG_SCORE_DICTIONARY) {
@@ -52,24 +53,28 @@ export const mapArtistSongMetadataToSongScoreUI =(metadata?:ArtistSongMetadata) 
 
   
 
-export const mapArtistScoreToUI = (score:number) : ArtistScoreUI => {
-    if (score < SCORE_START || score > SCORE_END ) {
-        throw Error("Invalid Score") 
-    }
+export const mapArtistScoreToUI = (score?:Maybe<number>) : ArtistScoreUI => {
     for (let [,v] of ARTIST_SCORE_MAP) {
-      if (v.threshold.low <= score && v.threshold.high  >= score ) return { ...v, score:score.toFixed(1) }
+      let _score = score || -Infinity  
+      if (v.threshold.low <= _score && v.threshold.high  >= _score ) { 
+            if (v.category === 'N/A')  {
+                return { ...v, score: 'unrated' }
+            } else 
+            return { ...v, score:_score.toFixed(1) }
+      } 
     }
-    console.log(score)
     throw Error('Score could not be found in dictionary')
 }  
  
-export const mapSongScoreToUI  = (score:number) : SongScoreUI  => {
+export const mapSongScoreToUI  = (score?:Maybe<number>) : SongScoreUI  => {
+    if (!score) {
+        return { ...SONG_SCORE_DICTIONARY.get('UNRATED')!, score: -Infinity }
+    }
     if (score < SCORE_START || score > SCORE_END ) {
         throw Error("Invalid Score") 
     }
     for (let [,v] of SONG_SCORE_DICTIONARY) {
         if (v.threshold.low <= score && v.threshold.high >= score) return { ...v, score } 
     } 
-    console.log(score)
     throw Error('Score could not be found in dictionary')
 }  

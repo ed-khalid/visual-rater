@@ -1,0 +1,16 @@
+
+div#rater-wrapper {
+    position:relative;
+    width: 99vw;
+    height: 92vh;
+    transition: margin-left 0.5s ease;
+    margin-left: 10px;
+}
+div#rater-content {
+  height: 100%;
+  overflow-y:auto;
+}
+div#rater-wrapper.mini {
+  width: calc(99vw - 420px);
+  margin-left: 410px;
+}

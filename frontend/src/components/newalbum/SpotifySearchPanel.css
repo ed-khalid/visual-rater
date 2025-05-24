@@ -1,0 +1,34 @@
+
+div#search-result-header {
+    display: flex;
+    border: 1px solid white;
+}
+img.search-artist-thumbnail {
+  width:80px;
+  height:80px;
+  border-right: 1px solid white;
+} 
+div#search-artist-title {
+    font-size: 36px;
+    text-align: center;
+    padding: 0;
+    margin: auto;
+} 
+div#search-result-albums {
+    margin-top: 5px;
+    display: flex;
+    flex-direction: column;
+    overflow-y: scroll;
+    height: 500px;
+}
+div.search-result-album {
+    display: flex;
+    flex-direction: row;
+    cursor: pointer;
+}
+div.search-result-album.selected {
+    background-color: rgba(131, 59, 190, 0.373)
+}
+div.search-result-album-text {
+    margin: auto;
+}
