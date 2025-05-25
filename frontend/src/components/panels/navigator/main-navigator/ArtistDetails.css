@@ -11,9 +11,6 @@ div.artist-albums-subpanel .artist-album-controls {
     font-size: 42px;
     height: 60px;
 }
-div.artist-albums-subpanel .artist-album-controls:hover {
-    background-color: #442aad;
-}
 div.artist-albums-subpanel .artist-album-thumbnail {
     width: 65px;
 }

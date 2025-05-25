@@ -1,14 +1,17 @@
 import { useDraggable } from "@dnd-kit/core"
 import { Album } from "../../../../generated/graphql"
 import { useMusicState } from "../../../../hooks/MusicStateHooks"
+import { NavScoreInfo } from "../NavScoreInfo"
+import { motion } from 'framer-motion'
 
 interface Props {
     album: Album
+    isExpanded:boolean
     onAlbumSelect: any
     dispatchAlbumToRater: any
 }
 
-export const MusicNavigatorAlbum = ({album, onAlbumSelect, dispatchAlbumToRater}: Props) => {
+export const MusicNavigatorAlbum = ({album, isExpanded, onAlbumSelect, dispatchAlbumToRater}: Props) => {
 
     const { attributes, listeners, setNodeRef} = useDraggable({
         id: 'draggable-album-' + album.id,
@@ -20,6 +23,10 @@ export const MusicNavigatorAlbum = ({album, onAlbumSelect, dispatchAlbumToRater}
         }
     }) 
 
+    const openAlbumOverview = (album:Album) => {
+
+    }
+
     const musicState = useMusicState()
 
      const isOnRater = (album:Album) => { 
@@ -27,12 +34,14 @@ export const MusicNavigatorAlbum = ({album, onAlbumSelect, dispatchAlbumToRater}
         return (raterFilters.albumIds) ? raterFilters.albumIds.some(it => it === album.id) : false  
      }
         return <div ref={setNodeRef} className="nav-panel-item smaller">
-            <div className="nav-item-controls" onClick={() => dispatchAlbumToRater(album, isOnRater(album))} >
-                {isOnRater(album) ? '-' : '+'}
+            <div className="nav-item-controls">
+                <motion.button onClick={() => dispatchAlbumToRater(album, isOnRater(album))}>{isOnRater(album) ? '-' : '+'}</motion.button> 
+                <motion.button onClick={() => openAlbumOverview(album)}>{'O'}</motion.button> 
+                <motion.button animate={{rotate: isExpanded ? 90 : 0}} onClick={() => onAlbumSelect(album)}>{'>'}</motion.button> 
             </div> 
             <img {...attributes} {...listeners} ref={setNodeRef} className="nav-panel-item-thumbnail smaller" src={album.thumbnail!!} /> 
             <div className="nav-panel-item-info">
-                <div onClick={() => onAlbumSelect(album)} className="nav-panel-item-info-name smaller">
+                <div className="nav-panel-item-info-name smaller">
                 {album.name}
                 </div>
             </div>
@@ -40,7 +49,7 @@ export const MusicNavigatorAlbum = ({album, onAlbumSelect, dispatchAlbumToRater}
                 {album.year}
             </div> 
             <div className="nav-panel-item-score smaller">
-                {album.score?.toFixed(2) || 'N/A'}
+                <NavScoreInfo item={album} type={'album'}/>
             </div> 
         </div>
 

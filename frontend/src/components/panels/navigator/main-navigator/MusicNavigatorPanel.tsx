@@ -2,10 +2,11 @@ import { Artist } from "../../../../generated/graphql"
 import { FilterMode } from "../../../../music/MusicFilters"
 import { useMusicDispatch, useMusicStateOperator } from "../../../../hooks/MusicStateHooks"
 import { MusicNavigatorArtist } from "./MusicNavigatorArtist"
-import { useEffect, useState } from "react"
+import { useContext, useEffect, useState } from "react"
 import './MusicNavigatorPanel.css'
 import { motion, Transition } from 'framer-motion'
 import { arc } from "d3"
+import { MusicNavigationContext, MusicNavigatorContext } from "../../../../providers/MusicNavigationProvider"
 
 interface Props {
     artists: Artist[]

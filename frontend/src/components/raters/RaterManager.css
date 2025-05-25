@@ -1,10 +1,7 @@
 
 div#rater-wrapper {
     position:relative;
-    width: 99vw;
-    height: 92vh;
-    transition: margin-left 0.5s ease;
-    margin-left: 10px;
+    height: 90vh;
 }
 div#rater-content {
   height: 100%;

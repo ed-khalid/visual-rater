@@ -67,7 +67,7 @@ export const mapArtistScoreToUI = (score?:Maybe<number>) : ArtistScoreUI => {
 }  
  
 export const mapSongScoreToUI  = (score?:Maybe<number>) : SongScoreUI  => {
-    if (!score) {
+    if (score == undefined) {
         return { ...SONG_SCORE_DICTIONARY.get('UNRATED')!, score: -Infinity }
     }
     if (score < SCORE_START || score > SCORE_END ) {

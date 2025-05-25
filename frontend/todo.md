@@ -1,5 +1,6 @@
-### CURRENT 
-
+# BACKEND PROCEDURES
+- total album metadata is not updating
+- songs metadata might be wrong (boring is wrong)
 
 # RATING
 - scroll to album to which song belongs 
@@ -9,9 +10,8 @@
 )
 - when updating a score (on block rater atleast) the raterfilters/navfilters reset to show all artist albums if you had them changed to anything else   
 - update artist/album score when rating (not happening)
-- hide unrated 0 block (grid-rater)
 
-# REVIEW
+# REVIEW (COMMENTS)
 - add a review table associated to artist/album/song
 
 # DEPLOYMENT
@@ -24,9 +24,6 @@
 icon for dragging (dragging a row is challengin
 because it disables click-events ont he row) 
 
-# RATER 
-- add a RaterWrapper to introduce top/bottom
-helper nav panels 
 
 # UNRATED
 - fix album tier (top left) 
@@ -43,6 +40,10 @@ helper nav panels
 # SEARCH
 - take AddSection out of Sidebar and make it a floating panel 
 
+# RATER  
+- (maybe?) add a RaterWrapper to introduce top/bottom
+helper nav panels 
+
 
 # DB
 - add index to (artist.name)
@@ -57,18 +58,6 @@ helper nav panels
 # SCORECARD REVISITED
 - add a view showing greatest albums
 - add a view showing greatest songs
-
-# NAV-FILTER
-- standardize the scoring coloring themes (right now they're adhoc) - create a dummy album with all categories accounted for   
-# GENERAL RATER
-- add a context 
-
-
-# GRID-RATER
-- explore rewrite with svg/canvas
-- left-handside column labels: rotate and align to outer left border
-- account for small data state update flicker when song score is to be updated    
-- layout gridblock better (dynamic size? label moving around when items are added? what to do when too many items...) 
 
 # CARTESIAN-RATER
 bring it back!

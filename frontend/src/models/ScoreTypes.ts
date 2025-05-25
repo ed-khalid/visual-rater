@@ -31,26 +31,24 @@ export type SongScoreCategoryUI = {
     value:number
 }
 
-const CLASSIC_COLOR = 'rgb(80,90,179)'
-const GREAT_COLOR = 'rgb(1, 71, 97)'
-const VERY_GOOD_COLOR = 'rgb(10, 100, 37)'
-const GOOD_COLOR = 'rgb(0,130,40)'
-const PLEASANT_COLOR = 'rgb(100,170,120)'     
-const DECENT_COLOR = 'rgb(120,170,100)'
-const INTERESTING_COLOR = 'rgb(112, 150, 93)'
-const OK_COLOR = 'rgb(110, 130, 80)'    
-const MEH_COLOR = 'rgb(137, 137, 17)'
+const CLASSIC_COLOR = 'rgb(79, 85, 144)'
+const GREAT_COLOR = 'rgb(32, 79, 96)'
+const VERY_GOOD_COLOR = 'rgb(40, 83, 53)'
+const GOOD_COLOR = 'rgb(47, 101, 63)'
+const PLEASANT_COLOR = 'rgb(78, 118, 90)'     
+const DECENT_COLOR = 'rgb(128, 145, 114)'
+const INTERESTING_COLOR = 'rgb(91, 100, 71)'
+const MEH_COLOR = 'rgb(122, 122, 82)'
+const OK_COLOR = 'rgb(78, 81, 74)'    
 const AVERAGE_COLOR = 'rgb(130, 130, 80)'
-const BORING_COLOR = 'rgb(170,130,90)'
-const POOR_COLOR = 'rgb(201, 63, 41)'
-const BAD_COLOR = 'rgb(221, 31, 21)'
-const OFFENSIVE_COLOR = 'rgb(13, 20, 20)'
+const BORING_COLOR = 'rgb(144, 120, 97)'
+const POOR_COLOR = 'rgb(167, 55, 38)'
+const BAD_COLOR = 'rgb(88, 19, 16)'
+const OFFENSIVE_COLOR = 'rgb(8, 22, 22)'
 const UNRATED_COLOR = 'rgb(96, 94, 94)'
 
 
 export const SONG_SCORE_DICTIONARY = new Map<SongScoreCategory, SongScoreUIBase>()   
-SONG_SCORE_DICTIONARY.set('UNRATED', {
-    category: 'UNRATED', color: UNRATED_COLOR, threshold: { low: 0, high: 0} })
 SONG_SCORE_DICTIONARY.set('CLASSIC', 
     { category: 'CLASSIC', color: CLASSIC_COLOR, threshold: { low: 95, high: 100} })
 SONG_SCORE_DICTIONARY.set('GREAT', 
@@ -78,15 +76,15 @@ SONG_SCORE_DICTIONARY.set('POOR',
 SONG_SCORE_DICTIONARY.set('BAD', 
     { category: 'BAD', color: BAD_COLOR, threshold: {low:10,high:29} })
 SONG_SCORE_DICTIONARY.set('OFFENSIVE', 
-    { category: 'OFFENSIVE', color: OFFENSIVE_COLOR, threshold: {low:0,high:9} })
+    { category: 'OFFENSIVE', color: OFFENSIVE_COLOR, threshold: {low:-1,high:9} })
 
 export const ARTIST_SCORE_MAP:Map<ArtistScoreCategory, ArtistScoreUIBase> = new Map()   
 ARTIST_SCORE_MAP.set('A+',{ category: 'A+', color: CLASSIC_COLOR, threshold: {low:90,high:Infinity} }) 
 ARTIST_SCORE_MAP.set('A' ,{ category: 'A' , color: GREAT_COLOR, threshold: {low:80,high:89.99}  }) 
 ARTIST_SCORE_MAP.set('B+',{ category: 'B+', color: VERY_GOOD_COLOR, threshold: {low:70,high:79.99}  })
 ARTIST_SCORE_MAP.set('B', { category: 'B' , color: GOOD_COLOR, threshold: {low:60,high:69.99}  })
-ARTIST_SCORE_MAP.set('C+', { category: 'C+' , color: DECENT_COLOR, threshold: {low:50, high:59.99} })
-ARTIST_SCORE_MAP.set('C',  { category: 'C', color: AVERAGE_COLOR, threshold: {low:40,high:49.99} })
+ARTIST_SCORE_MAP.set('C+', { category: 'C+' , color: PLEASANT_COLOR, threshold: {low:50, high:59.99} })
+ARTIST_SCORE_MAP.set('C',  { category: 'C', color: INTERESTING_COLOR, threshold: {low:40,high:49.99} })
 ARTIST_SCORE_MAP.set('D',{ category: 'D' , color:  BORING_COLOR, threshold: {low:30,high:39.99} })
 ARTIST_SCORE_MAP.set('E',  { category: 'E' , color: POOR_COLOR, threshold: {low:10,high:29.99} })
 ARTIST_SCORE_MAP.set('F', { category: 'F' , color:  BAD_COLOR, threshold: {low:0,high:9.99}  })

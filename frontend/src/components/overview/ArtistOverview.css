@@ -1,0 +1,50 @@
+div.artist-overview {
+    display: grid;
+    grid-template-columns: 100px 300px 1fr 1fr; 
+    grid-template-rows: 30px 300px 1fr; 
+    grid-template-areas: 
+    "title title title title"
+    "tier thumbnail metadata trajectory" 
+    "albums albums albums albums";
+}  
+div.artist-overview div.title  {
+    background: #14181c;
+    font-weight: bold;
+    font-size: 26px;
+}
+
+div.artist-overview div.metadata {
+    grid-area: metadata;
+    margin-left: 5px;
+    margin-right: 5px;
+}  
+div.title {
+    grid-area: title;
+}
+div.albums {
+    grid-area:albums;
+}
+div.albums .title {
+    width: 100%;
+}
+div.career-trajectory {
+    grid-area: trajectory;
+}
+li.album-row {
+    cursor:pointer;
+    display: flex;
+    align-items:center;
+    border-bottom: 1px solid #ccc;
+}
+div.album-thumbnail {
+    width: 10%;
+}
+div.album-name {
+    flex: 1;
+}
+div.album-year {
+    width: 20%;
+}
+div.album-score {
+    width: 20%;
+}

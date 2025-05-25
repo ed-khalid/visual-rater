@@ -3,20 +3,15 @@ div#grid-rater {
     display:grid;
     gap: 10px;
     width: 100%;
-    grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+    grid-template-columns: repeat(auto-fit,minmax(210px,1fr));
     border: 1px solid #c9c9c970;
     margin-top: 10px;
-}
-div#grid-rater-unrated {
-    display: flex;
-    grid-column: 1/-1;
-    height: 90px;
 }
 div.grid-rater-cell {
     transition: opacity 0.3s ease;
     border: 1px solid #727272;
     position:relative;
-    height: 120px;
+    height: 130px;
     display: flex;
     flex-direction:column;
     overflow:hidden;
@@ -27,7 +22,7 @@ div.grid-rater-ribbon {
     justify-content: space-between;
     font-weight:bold;
     font-size: 1.5rem;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+    text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.9);
 }
 div.grid-rater-cell-number {
     opacity: 0.5;

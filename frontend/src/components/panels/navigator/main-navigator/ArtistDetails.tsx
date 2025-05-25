@@ -16,7 +16,6 @@ interface Props {
 export const ArtistDetails = ({artist, dispatchAlbumToRater}: Props) => {
 
     const musicDispatch = useMusicDispatch()
-    const musicState = useMusicState() 
     const store = useMusicStateOperator()
 
 
@@ -61,7 +60,7 @@ export const ArtistDetails = ({artist, dispatchAlbumToRater}: Props) => {
 
         {  sortedAlbums.map((album:any) => 
         <div key={`artist-album-${album.id}`}>
-            <MusicNavigatorAlbum album={album} onAlbumSelect={onAlbumSelect} dispatchAlbumToRater={dispatchAlbumToRater} />
+            <MusicNavigatorAlbum isExpanded={expandedAlbumIds.includes(album.id)} album={album} onAlbumSelect={onAlbumSelect} dispatchAlbumToRater={dispatchAlbumToRater} />
             {expandedAlbumIds.some(id=> id === album.id) && <AlbumDetailsPanel key={"artist-"+artist.id+"-album-"+album.id} album={album} /> } 
         </div>
         )}

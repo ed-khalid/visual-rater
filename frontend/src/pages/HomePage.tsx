@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { ReactNode, useEffect, useState } from "react"
 import { MusicNavigatorPanel } from "../components/panels/navigator/main-navigator/MusicNavigatorPanel"
 import { Album, Artist, Song, useGetAlbumsSongsLazyQuery, useGetArtistFullLazyQuery, useGetArtistsPageQuery } from "../generated/graphql"
 import { useMusicDispatch, useMusicStateOperator } from "../hooks/MusicStateHooks"
@@ -9,6 +9,9 @@ import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, useDroppable } f
 import { MusicNavigatorContext } from "../providers/MusicNavigationProvider"
 import { snapCenterToCursor } from "@dnd-kit/modifiers"
 import { RaterManager } from "../components/raters/RaterManager"
+import { AnimatePresence } from "framer-motion"
+import { Modal } from "../components/common/Modal"
+import { OverviewManager } from "../components/overview/OverviewManager"
 
 
 interface Props {
@@ -22,6 +25,9 @@ export type DraggableItem = {
 } 
 export const HomePage = ({raterStyle}:Props) => {
 
+  const [modalOpen, setModalOpen] = useState<boolean>() 
+  const [modalContent,setModalContent] = useState<ReactNode|undefined>()
+
   const { isOver, setNodeRef } = useDroppable({
     id: 'droppable-rater',
   })
@@ -31,7 +37,7 @@ export const HomePage = ({raterStyle}:Props) => {
   const musicStateOperator = useMusicStateOperator()
   const $artistsPage  =  useGetArtistsPageQuery()
   const [draggedItem, setDraggedItem] = useState<DraggableItem|undefined>(undefined)
-  const [raterMiniMode, setRaterMiniMode] = useState<boolean>(true)
+  const [compactMode, setCompactMode] = useState<boolean>(true)
 
   const [$loadArtistFull, $artistFull] = useGetArtistFullLazyQuery()
   const [$loadSongsForAlbum, $songsForAlbum] = useGetAlbumsSongsLazyQuery()
@@ -90,11 +96,17 @@ export const HomePage = ({raterStyle}:Props) => {
   } 
   const [contextArtists, setContextArtists] = useState<Artist[]>([])
 
-  const openArtistOverview = (artist:Artist) => { 
-    if (contextArtists.includes(artist)) {
-      setContextArtists(contextArtists.filter(it => it.id !== artist.id))
+  const openOverview = ({id, type}:{id:string, type: 'artist'|'album'}) => { 
+    if (type === 'artist') {
+      const artist = musicStateOperator.getArtistById(id)
+      if (!artist) throw "artist not found in data"
+      setModalContent(
+        <OverviewManager item={{id, type: 'artist' }} />
+      )
+      setModalOpen(true)
     } else {
-      setContextArtists([...contextArtists, artist])
+      const album = musicStateOperator.getAlbumById(id)
+      if (!album) throw "album not found in data"
     }
   }
   const onContextArtistClose = (artist:Artist) => { 
@@ -127,10 +139,16 @@ export const HomePage = ({raterStyle}:Props) => {
         }
   } 
 
+  const handleModalClose = () => {
+    setModalOpen(false)
+    setModalContent(undefined)
+  } 
+
   const handleOnMusicNavExpand = (isExpanded:boolean) => {
-      setRaterMiniMode(isExpanded)
+      setCompactMode(isExpanded)
   }
        
+  const mainClassNames = "" + (isOver ? "droppable " : "") + (compactMode ? "compact " : "")  
 
         return <DndContext modifiers={[snapCenterToCursor]} onDragEnd={handleDragEnd} onDragStart={handleDragStart}>
           <DragOverlay>
@@ -142,21 +160,16 @@ export const HomePage = ({raterStyle}:Props) => {
             }
           </DragOverlay>
           {$artistsPage.data?.artists && 
-          <MusicNavigatorContext.Provider value={{openArtistOverview, dispatchToRater }}>
+          <MusicNavigatorContext.Provider value={{openOverview, dispatchToRater }}>
               <MusicNavigatorPanel onExpand={handleOnMusicNavExpand} artists={$artistsPage.data?.artists.content as Artist[]}></MusicNavigatorPanel>
           </MusicNavigatorContext.Provider>
           }
-        {/* <ContextManager onClose={onContextArtistClose}  musicDispatch={musicDispatch} artists={contextArtists} /> */}
-        <div className={ isOver ? 'droppable' : ''  }  ref={setNodeRef} id="main">
-          <RaterManager items={items} raterStyle={raterStyle} isMiniMode={raterMiniMode}   
-            totalRows={raterMiniMode ? 20 : 15 }
+        <div className={mainClassNames}  ref={setNodeRef} id="main">
+          <AnimatePresence initial={false} onExitComplete={() => null}>
+            {modalOpen && <Modal handleClose={() => handleModalClose()} children={modalContent} />}
+          </AnimatePresence>
+          <RaterManager items={items} raterStyle={raterStyle}   
+            totalRows={compactMode ? 20 : 15 }
           />
-          {/* {raterStyle === RaterStyle.CARTESIAN && 
-            <CartesianRaterWrapper
-            items={raterItems}
-            musicDispatch={musicDispatch}
-            musicState={musicState}
-            />
-          } */}
         </div></DndContext>
 }

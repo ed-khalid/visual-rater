@@ -1,15 +1,17 @@
-import { Dispatch, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { Album, Artist } from "../../generated/graphql"
 import { ContextPanel, ContextPanelAlbumModel, ContextPanelArtistModel, ContextPanelBaseModel } from './ContextPanel'
-import { MusicAction } from "../../music/MusicAction"
+import { useMusicDispatch } from "../../hooks/MusicStateHooks"
 
 interface Props {
+    item: { id: string, type: 'artist'|'album' }
     artists: Artist[]
     onClose: (artist:Artist) => void 
-    musicDispatch: Dispatch<MusicAction>
 }
 
-export const ContextManager = ({artists, musicDispatch, onClose}:Props) => {
+export const ContextManager = ({artists, onClose}:Props) => {
+
+    const musicDispatch = useMusicDispatch()
 
     const [collapsedPanels, setCollpasedPanels] = useState<ContextPanelBaseModel[]>([])
     const [expandedPanels, setExpandedPanels] = useState<ContextPanelBaseModel[]>([])

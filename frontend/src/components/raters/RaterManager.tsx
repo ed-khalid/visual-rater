@@ -1,27 +1,28 @@
-import { cloneElement, createRef, ReactElement, RefObject } from "react"
-import { useEffect, useRef, useState } from "react"
+import { RefObject } from "react"
+import { useState } from "react"
 import './RaterManager.css'
 import { FatSong } from "../../models/RaterTypes"
 import { RaterStyle } from "../../App"
 import { GridRater } from "./grid/GridRater"
 import { BlockRater } from "./block/BlockRater"
 import { UnratedRaterPanel } from "./UnratedRaterPanel"
-import { Album, Artist, GetAlbumsSongsDocument, Song, useUpdateSongMutation } from "../../generated/graphql"
+import { GetAlbumsSongsDocument, useUpdateSongMutation } from "../../generated/graphql"
 import { DndContext, DragOverlay, DragStartEvent } from "@dnd-kit/core"
 import { DraggableItem } from "../../pages/HomePage"
+import { AnimatePresence } from "framer-motion"
+import { Modal } from "../common/Modal"
 
-type RaterProps = {
-    rowRefs: RefObject<HTMLDivElement>[] 
-} 
+// type RaterProps = {
+//     rowRefs: RefObject<HTMLDivElement>[] 
+// } 
 
 interface Props {
     items:FatSong[]
     raterStyle:RaterStyle
-    isMiniMode: boolean
     totalRows: number
 }
 
-export const RaterManager = ({items, raterStyle, isMiniMode, totalRows}:Props) => {
+export const RaterManager = ({items, raterStyle, totalRows}:Props) => {
 
     const ratedItems = items.filter(it => it.song.score)
     const unratedItems= items.filter(it => !(it.song.score))
@@ -102,10 +103,10 @@ export const RaterManager = ({items, raterStyle, isMiniMode, totalRows}:Props) =
               </div>
             }
           </DragOverlay>
-        <div id="rater-wrapper" className={isMiniMode ? 'mini': ''}>
+        <div id="rater-wrapper">
             {(unratedItems.length > 0) && <UnratedRaterPanel items={unratedItems} />}
             <div id="rater-content">
-                {(raterStyle=== RaterStyle.GRID) && <GridRater rowRefs={[]} isMiniMode={isMiniMode} items={ratedItems}  />}
+                {(raterStyle=== RaterStyle.GRID) && <GridRater rowRefs={[]} items={ratedItems}  />}
                 {(raterStyle=== RaterStyle.LIST) && <BlockRater items={ratedItems}  rowRefs={[]} />}
             </div>
             {/* {(raterStyle=== RaterStyle.CARTESIAN) && <CartesianRater />} */}

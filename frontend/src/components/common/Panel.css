@@ -84,10 +84,6 @@ div.nav-panel li {
     border-bottom:1px solid black;
     overflow-y:hidden;
 }
-div.nav-panel-item:hover {
-    background-color: #1d1c1c42; 
-    cursor:pointer;
-}
 div.nav-panel-item {
     display: flex;
     align-items:center;
@@ -124,7 +120,6 @@ img.nav-panel-item-thumbnail.smaller {
     background: inherit;
 }
 .nav-panel-item-info-name {
-    cursor: pointer;
     font-size: 20px;
 }
 .nav-panel-item-info-name-input {
@@ -136,13 +131,24 @@ img.nav-panel-item-thumbnail.smaller {
     font-size: 12px;
 }
 
-.nav-item-controls:hover {
-    background-color: #442aad;
-}
 .nav-item-controls {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     width: 26px;
     font-size: 42px;
     height: 100%;
+}
+.nav-item-controls button {
+    background-color: rgb(17, 17, 17);
+    margin-bottom: 2px;
+    font-size: 16px;
+    cursor: pointer;
+    color: white;
+    border: none;
+}
+.nav-item-controls button:hover {
+    background-color: rgb(111, 40, 111);
 }
 .nav-panel-item-score {
     display: flex;

@@ -5,6 +5,8 @@ import { NavScoreInfo } from "../NavScoreInfo"
 import { ArtistDetails } from "./ArtistDetails"
 import { MusicNavigatorContext } from "../../../../providers/MusicNavigationProvider"
 import { useDraggable } from "@dnd-kit/core"
+import { motion } from 'framer-motion'
+import './MusicNavigatorArtist.css'
 
 interface Props {
     artist:Artist
@@ -14,7 +16,7 @@ interface Props {
 
 export const MusicNavigatorArtist = ({artist, onArtistSelect, isExpanded}:Props) => {
 
-    const { openArtistOverview, dispatchToRater } = useContext(MusicNavigatorContext) 
+    const { openOverview, dispatchToRater } = useContext(MusicNavigatorContext) 
 
     const { attributes, listeners, setNodeRef }= useDraggable({
         id : 'draggable-artist' + artist.id,  
@@ -28,15 +30,15 @@ export const MusicNavigatorArtist = ({artist, onArtistSelect, isExpanded}:Props)
 
   const musicStateOperator = useMusicStateOperator()  
 
-  const onArtistNameClick = (artist:Artist, e:React.MouseEvent) => {
+  const onOverviewClick = (artist:Artist, e:React.MouseEvent) => {
     e.stopPropagation()
-    openArtistOverview(artist)
+    openOverview({ id: artist.id, type: 'artist'})
   }
 
-  const onAction = (artist:Artist) => {
+  const raterAction = (artist:Artist) => {
     const shouldRemove = isOnRater(artist)
     dispatchToRater({
-      artist: artist,
+      artistId: artist.id,
     }, shouldRemove)
   }
 
@@ -47,11 +49,17 @@ export const MusicNavigatorArtist = ({artist, onArtistSelect, isExpanded}:Props)
 
                 return <li  key={'artists-panel-item-' + artist.id}>
                 <div className="nav-panel-item" >
-                    <div className="nav-item-controls" onClick={() => onAction(artist)}>
+                    <div className="nav-item-controls">
+                      <motion.button whileTap={{scale: 0.9}} whileHover={{scale:1.1}} onClick={() => raterAction(artist)} className="nav-item-action-button"> 
                        { isOnRater(artist)? '-' : '+' }
+                      </motion.button>
+                      <motion.button whileTap={{scale: 0.9}} whileHover={{scale:1.1}} onClick={(e) => onOverviewClick(artist, e)} className="nav-item-action-button"> 
+                       { 'O' }
+                      </motion.button>
+                      <motion.button animate={{rotate: isExpanded ? 90: 0}} whileTap={{scale:0.9, rotate: 0.9}} whileHover={{scale:1.1}} onClick={() => onArtistSelect(artist)} className="nav-item-action-button">{'>'} </motion.button>
                     </div> 
                     <img {...listeners} {...attributes}  ref={setNodeRef} className="nav-panel-item-thumbnail" src={artist.thumbnail!} />
-                    <div onClick={() => onArtistSelect(artist)}className="nav-panel-item-info">
+                    <div className="nav-panel-item-info">
                         <div className="nav-panel-item-info-name">{artist.name} </div>
                     </div>
                     <NavScoreInfo item={artist} type="artist" />

@@ -7,11 +7,10 @@ import { GridRaterBlock } from "./GridRaterBlock"
 
 interface Props {
     items: FatSong[] 
-    isMiniMode:boolean
     rowRefs: RefObject<HTMLDivElement>[] 
 }
 
-export const GridRater = ({items, isMiniMode, rowRefs}:Props) => {
+export const GridRater = ({items, rowRefs}:Props) => {
     const totalItems = 100
     const itemsPerRow = 5 
 
@@ -32,7 +31,7 @@ export const GridRater = ({items, isMiniMode, rowRefs}:Props) => {
     const itemsByScore = groupByScore(ratedItems) 
 
 
-    return <div id="grid-rater" className={ isMiniMode ? "mini" : ""}>
+    return <div id="grid-rater">
             {/* Rows with headers */}
             {Array.from({ length: totalItems }, (_, i) => {
                 const row = Math.floor(i/itemsPerRow) 
