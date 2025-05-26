@@ -1,24 +1,21 @@
-import React, { Dispatch, useEffect, useRef, useState } from "react"
-import { Album, Artist, GetAlbumsDocument, Song, useUpdateSongMutation } from "../../../generated/graphql"
+import React, { useEffect, useRef, useState } from "react"
+import { GetAlbumsDocument, Song, useUpdateSongMutation } from "../../../generated/graphql"
 import { CartesianRater } from "./CartesianRater"
-import { CartesianRaterState, CARTESIAN_RATER_X, CARTESIAN_RATER_Y_BOTTOM, CARTESIAN_RATER_Y_TOP, CARTESIAN_SVG_HEIGHT, CARTESIAN_SVG_WIDTH, CARTESIAN_CLOSENESS_THRESHOLD, RaterUIItemGrouped, ArtistRaterItems } from "../../../models/RaterTypes"
-import { RatedItem, CartesianRaterItem } from "../../../models/ItemTypes"
-import { RaterAction } from "../../../reducers/raterReducer"
-import { MusicState } from "../../../music/MusicState"
-import { MusicStateOperator } from "../../../music/MusicStateOperator"
+import { FatSong } from "../../../models/CoreModels"
 import { sortByScore } from "../../../functions/sort"
-import { ComparisonRaterType } from "./comparison-rater/ComparisonRater"
-import { MusicAction } from "../../../music/MusicAction"
 import { mapRaterItemToCartesianRaterItem } from "../../../functions/mapper"
+import { CARTESIAN_RATER_X, CARTESIAN_RATER_Y_TOP, CARTESIAN_SVG_HEIGHT, CARTESIAN_SVG_WIDTH, CartesianRaterItem, CartesianRaterState } from "../../../models/CartesianRaterModels"
+import { useMusicStateAndDispatch } from "../../../hooks/MusicStateHooks"
 
 interface Props {
-    items:ArtistRaterItems[]
-    musicState:MusicState
-    musicDispatch:Dispatch<MusicAction>
+    items:FatSong[]
+    state: CartesianRaterState
 }
 
 
-export const CartesianRaterWrapper = ({items}:Props) =>  {
+export const CartesianRaterWrapper = ({items, state}:Props) =>  {
+
+    const { state: musicState, dispatch } = useMusicStateAndDispatch() 
     const gWrapper = useRef<SVGGElement>(null)
     const svgRef = useRef<SVGSVGElement>(null) 
     const [updateSong]  = useUpdateSongMutation();
@@ -27,20 +24,21 @@ export const CartesianRaterWrapper = ({items}:Props) =>  {
     const [dragUpdate, setDragUpdate] = useState<{itemId:string,score:number}|undefined>()
 
 
-    // const loadComparisonSongs = (itemId:string) => {
-    //   const song = musicState.data.songs.find(it => it.id === itemId )
-    //   if (song) {
-    //     setSongBeingDragged(song)
-    //   }
-    // }    
+    const loadComparisonSongs = (itemId:string) => {
+      const song = musicState.data.songs.find(it => it.id === itemId )
+      if (song) {
+        setSongBeingDragged(song)
+      }
+    }    
+
     const duringDrag =  (itemId:string, score:number) => {
       setDragUpdate({itemId, score})
     } 
 
     const onSongScoreUpdate = (id:string, score:number) => {
-        const artistRaterItem = items.find(item => item.albums.find(it => it.songs.some(it => it.id === id)))
-        if (artistRaterItem) {
-          updateSong({ variables: {song:  { id , score} }, refetchQueries: [{ query: GetAlbumsDocument, variables: { ids: [album.id] }  }]})
+        const item = items.find(item => item.song.id === id)
+        if (item) {
+          updateSong({ variables: {song:  { id , score} }, refetchQueries: [{ query: GetAlbumsDocument, variables: { ids: [item.song.albumId] }  }]})
         }
     }  
 
@@ -74,8 +72,7 @@ export const CartesianRaterWrapper = ({items}:Props) =>  {
       if (!musicState.data.artists.length) {
         return
       }
-      const store = new MusicStateOperator(musicState)
-      const items = store.getFatSongs().flatMap((it:ArtistRaterItems) => mapRaterItemToCartesianRaterItem(it))
+      const cartesianItems = mapRaterItemToCartesianRaterItem(items).flatMap(it => it)
        const groupCloseItems = (ratedItems:CartesianRaterItem[]) => {
             const groupedItems = ratedItems.reduce((acc:RaterUIItemGrouped[] , curr:CartesianRaterItem) => {
                 const position =  state.scaler.toPosition(curr.score) 
@@ -96,10 +93,10 @@ export const CartesianRaterWrapper = ({items}:Props) =>  {
             },  [])
             return groupedItems
         }  
-        const groups =  groupCloseItems(items)
+        const groups =  groupCloseItems(cartesianItems)
         const finalItems = unwrapGroups([...groups]) 
         setRaterItems(finalItems)
-    }, [musicState.data, musicState.navigationFilters, state.scaler, musicState])
+    }, [musicState.data, musicState.navigationFilters, state.scaler, state])
 
 
     return <React.Fragment>

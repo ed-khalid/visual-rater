@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { mapSongToUIItem } from "../../../functions/mapper";
 import { useUpdateSongMutation } from "../../../generated/graphql";
-import { SongUIItem } from "../../../models/ItemTypes";
-import { FatSong } from "../../../models/RaterTypes";
+import { SongUIItem } from "../../../models/CoreModels";
+import { FatSong } from "../../../models/RaterModels";
 import './GridRaterSvg.css'
 
 interface Props {

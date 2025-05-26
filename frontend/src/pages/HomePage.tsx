@@ -1,10 +1,9 @@
-import { ReactNode, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { MusicNavigatorPanel } from "../components/panels/navigator/main-navigator/MusicNavigatorPanel"
 import { Album, Artist, Song, useGetAlbumsSongsLazyQuery, useGetArtistFullLazyQuery, useGetArtistsPageQuery } from "../generated/graphql"
-import { useMusicDispatch, useMusicStateOperator } from "../hooks/MusicStateHooks"
-import { RaterEntityRequest } from "../models/RaterTypes"
+import { useMusicDispatch, useMusicState, useMusicStateOperator } from "../hooks/MusicStateHooks"
+import { RaterEntityRequest, RaterStyle } from "../models/RaterModels"
 import { FilterMode } from "../music/MusicFilters"
-import { RaterStyle } from "../App"
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, useDroppable } from "@dnd-kit/core"
 import { MusicNavigatorContext } from "../providers/MusicNavigationProvider"
 import { snapCenterToCursor } from "@dnd-kit/modifiers"
@@ -12,21 +11,15 @@ import { RaterManager } from "../components/raters/RaterManager"
 import { AnimatePresence } from "framer-motion"
 import { Modal } from "../components/common/Modal"
 import { OverviewManager } from "../components/overview/OverviewManager"
+import { DraggableItem } from "../models/DragModels"
+import { OverviewItem, OverviewLink } from "../models/OverviewModels"
 
 
 interface Props {
     raterStyle: RaterStyle
 }
 
-export type DraggableItem = {
-  id: string
-  name: string
-  thumbnail: string
-} 
 export const HomePage = ({raterStyle}:Props) => {
-
-  const [modalOpen, setModalOpen] = useState<boolean>() 
-  const [modalContent,setModalContent] = useState<ReactNode|undefined>()
 
   const { isOver, setNodeRef } = useDroppable({
     id: 'droppable-rater',
@@ -34,10 +27,12 @@ export const HomePage = ({raterStyle}:Props) => {
 
 
   const musicDispatch = useMusicDispatch()
+  const musicState = useMusicState()
   const musicStateOperator = useMusicStateOperator()
   const $artistsPage  =  useGetArtistsPageQuery()
   const [draggedItem, setDraggedItem] = useState<DraggableItem|undefined>(undefined)
   const [compactMode, setCompactMode] = useState<boolean>(true)
+  const [overviewItem, setOverviewItem] =useState<OverviewItem|undefined>(undefined)
 
   const [$loadArtistFull, $artistFull] = useGetArtistFullLazyQuery()
   const [$loadSongsForAlbum, $songsForAlbum] = useGetAlbumsSongsLazyQuery()
@@ -94,23 +89,19 @@ export const HomePage = ({raterStyle}:Props) => {
       }
     }
   } 
-  const [contextArtists, setContextArtists] = useState<Artist[]>([])
 
-  const openOverview = ({id, type}:{id:string, type: 'artist'|'album'}) => { 
-    if (type === 'artist') {
-      const artist = musicStateOperator.getArtistById(id)
-      if (!artist) throw "artist not found in data"
-      setModalContent(
-        <OverviewManager item={{id, type: 'artist' }} />
-      )
-      setModalOpen(true)
+  const handleOverviewLinkClick = (link:OverviewLink) => {
+    if (link.type === 'artist') {
+      const artist = musicState.data.artists.find(it => it.id === link.id)
+      if (!artist) throw `artist with id ${link.id} not found in data!`
+      setOverviewItem({ entity:  artist})
     } else {
-      const album = musicStateOperator.getAlbumById(id)
-      if (!album) throw "album not found in data"
+      const album = musicState.data.albums.find(it => it.id === link.id)
+      if (!album) throw `album with id ${link.id} not found in data!`
+      const artist = musicState.data.artists.find(it => it.id == album.artistId) 
+      if (!artist) throw `artist with id ${album.artistId} not found in data!`
+      setOverviewItem({entity: album, parentEntity: artist})
     }
-  }
-  const onContextArtistClose = (artist:Artist) => { 
-    setContextArtists(contextArtists.filter(it => it.id !== artist.id))
   }
 
   const handleDragStart = (event:DragStartEvent) => {
@@ -119,7 +110,7 @@ export const HomePage = ({raterStyle}:Props) => {
         const dataItem:Artist|Album|undefined = (item.type ==='artist') ? musicStateOperator.data.artists.find(it => it.id === item.id) :
         musicStateOperator.data.albums.find(it => it.id === item.id)   
         if (dataItem) {
-          setDraggedItem({ id: dataItem.id, name: dataItem.name, thumbnail: dataItem.thumbnail!  })
+          setDraggedItem({ type: item.type,id: dataItem.id, name: dataItem.name, thumbnail: dataItem.thumbnail!  })
         }
     }
   } 
@@ -140,8 +131,7 @@ export const HomePage = ({raterStyle}:Props) => {
   } 
 
   const handleModalClose = () => {
-    setModalOpen(false)
-    setModalContent(undefined)
+    setOverviewItem(undefined)
   } 
 
   const handleOnMusicNavExpand = (isExpanded:boolean) => {
@@ -160,13 +150,15 @@ export const HomePage = ({raterStyle}:Props) => {
             }
           </DragOverlay>
           {$artistsPage.data?.artists && 
-          <MusicNavigatorContext.Provider value={{openOverview, dispatchToRater }}>
+          <MusicNavigatorContext.Provider value={{openOverview: handleOverviewLinkClick, dispatchToRater }}>
               <MusicNavigatorPanel onExpand={handleOnMusicNavExpand} artists={$artistsPage.data?.artists.content as Artist[]}></MusicNavigatorPanel>
           </MusicNavigatorContext.Provider>
           }
         <div className={mainClassNames}  ref={setNodeRef} id="main">
           <AnimatePresence initial={false} onExitComplete={() => null}>
-            {modalOpen && <Modal handleClose={() => handleModalClose()} children={modalContent} />}
+            {overviewItem && <Modal handleClose={() => handleModalClose()} >
+              <OverviewManager item={overviewItem} onClose={handleModalClose} onLinkClick={handleOverviewLinkClick} />
+              </Modal>}
           </AnimatePresence>
           <RaterManager items={items} raterStyle={raterStyle}   
             totalRows={compactMode ? 20 : 15 }

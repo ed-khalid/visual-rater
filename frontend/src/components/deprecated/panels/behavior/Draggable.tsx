@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect, useCallback } from "react";
-import { Position } from "../../../../models/Position";
+import { Position } from "../../../../models/CartesianRaterModels";
 
 // call `f` no more frequently than once a frame
 export const throttle = (f:(...args:any[]) => void) => {

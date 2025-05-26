@@ -1,5 +1,5 @@
 import { Scaler } from "../../../../functions/scale";
-import { Position } from "../../../../models/Position";
+import { Position } from "../../../../models/CartesianRaterModels";
 
 export const PanBehavior =  () => {
 

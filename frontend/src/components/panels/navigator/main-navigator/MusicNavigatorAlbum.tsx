@@ -2,7 +2,7 @@ import { useDraggable } from "@dnd-kit/core"
 import { Album } from "../../../../generated/graphql"
 import { useMusicState } from "../../../../hooks/MusicStateHooks"
 import { NavScoreInfo } from "../NavScoreInfo"
-import { motion } from 'framer-motion'
+import { VisualRaterButton } from "../../../common/VisRaterButton"
 
 interface Props {
     album: Album
@@ -35,9 +35,13 @@ export const MusicNavigatorAlbum = ({album, isExpanded, onAlbumSelect, dispatchA
      }
         return <div ref={setNodeRef} className="nav-panel-item smaller">
             <div className="nav-item-controls">
-                <motion.button onClick={() => dispatchAlbumToRater(album, isOnRater(album))}>{isOnRater(album) ? '-' : '+'}</motion.button> 
-                <motion.button onClick={() => openAlbumOverview(album)}>{'O'}</motion.button> 
-                <motion.button animate={{rotate: isExpanded ? 90 : 0}} onClick={() => onAlbumSelect(album)}>{'>'}</motion.button> 
+                <VisualRaterButton onClick={() => dispatchAlbumToRater(album, isOnRater(album))}>
+                    {isOnRater(album) ? '-' : '+'}  
+                    </VisualRaterButton> 
+                <VisualRaterButton onClick={() => openAlbumOverview(album)}>
+                    O
+                </VisualRaterButton>  
+                <VisualRaterButton animate={{rotate: isExpanded ? 90 : 0}} onClick={() => onAlbumSelect(album)}>{'>'}</VisualRaterButton>   
             </div> 
             <img {...attributes} {...listeners} ref={setNodeRef} className="nav-panel-item-thumbnail smaller" src={album.thumbnail!!} /> 
             <div className="nav-panel-item-info">

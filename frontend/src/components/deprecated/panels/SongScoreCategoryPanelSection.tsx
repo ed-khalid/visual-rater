@@ -1,5 +1,5 @@
 import React from "react"
-import { SongScoreCategory, SongScoreCategoryUI } from "../../../models/ScoreTypes"
+import { SongScoreCategory, SongScoreCategoryUI } from "../../../models/ScoreModels"
 
 interface Props {
     songScoreCategories:SongScoreCategoryUI[]

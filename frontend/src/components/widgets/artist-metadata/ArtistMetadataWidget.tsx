@@ -1,9 +1,7 @@
-import { motion } from 'framer-motion'
 import './ArtistMetadataWidget.css'
 import { ArtistMetadata } from '../../../generated/graphql';
-import { SONG_SCORE_DICTIONARY } from '../../../models/ScoreTypes';
+import { SONG_SCORE_DICTIONARY } from '../../../models/ScoreModels';
 import { HorizontalBarChart } from './HorizontalBarChart';
-import { max } from 'd3';
 
 interface Props {
     metadata: ArtistMetadata

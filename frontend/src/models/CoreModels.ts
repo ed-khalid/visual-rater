@@ -1,4 +1,4 @@
-import { Album, Artist, Maybe } from "../generated/graphql";
+import { Maybe, Song } from "../generated/graphql";
 
 export interface Item {
     id:string
@@ -21,12 +21,6 @@ export interface SongUIItem extends AlbumUIItem {
     albumId:string
     number?:number
 } 
-export type RaterTier = number
-export interface CartesianRaterItem extends MusicUIItem {
-    tier?:RaterTier
-    nodeRef:any 
-    shouldDrawLine:boolean
-}
 
 export interface ComparisonSongUIItem extends SongUIItem {
        isMain:boolean 
@@ -37,7 +31,12 @@ export interface ContextArtist {
     albums: {id: string, name: string, thumbnail?:Maybe<string>}[]
 }
 
-export type RatedSongUIItem = CartesianRaterItem & SongUIItem     
+export type FatSong = {
+    artist: {name: string, id:string} 
+    album: { thumbnail?: Maybe<string>, dominantColor?:Maybe<string>, name:string}
+    song: Song
+} 
+
 
 export const SCORE_START = 0  
 export const SCORE_END = 100  

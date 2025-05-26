@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { SongUIItem } from '../../../models/ItemTypes';
+import { SongUIItem } from '../../../models/CoreModels';
 import { useDroppable } from '@dnd-kit/core';
 import { BlockRaterItem } from './BlockRaterItem';
 import { mapSongScoreToUI } from '../../../functions/scoreUI';

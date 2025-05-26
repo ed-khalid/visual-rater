@@ -8,11 +8,11 @@ div.overview-panel {
     "tier thumbnail title title title title title title"
     "tracks tracks  tracks tracks rater rater rater rater";
 }
-div.title {
+/* div.title {
     font-size: 76px;
     font-weight:bold;
     grid-area: title;
-}
+} */
 div.title-text {
     width: 100%;
     min-width: 0;

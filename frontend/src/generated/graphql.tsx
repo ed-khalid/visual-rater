@@ -168,9 +168,10 @@ export type Mutation = {
   __typename?: 'Mutation';
   DeleteAlbum: Scalars['Boolean']['output'];
   DeleteSong: Scalars['Boolean']['output'];
-  UpdateAlbum: Album;
   UpdateSong: Song;
   createAlbumsForExternalArtist: Artist;
+  updateAlbum: Album;
+  updateArtist: Artist;
 };
 
 
@@ -184,11 +185,6 @@ export type MutationDeleteSongArgs = {
 };
 
 
-export type MutationUpdateAlbumArgs = {
-  album: UpdateAlbumInput;
-};
-
-
 export type MutationUpdateSongArgs = {
   song: SongInput;
 };
@@ -196,6 +192,16 @@ export type MutationUpdateSongArgs = {
 
 export type MutationCreateAlbumsForExternalArtistArgs = {
   externalArtist: ExternalArtistInput;
+};
+
+
+export type MutationUpdateAlbumArgs = {
+  album: UpdateAlbumInput;
+};
+
+
+export type MutationUpdateArtistArgs = {
+  artist: UpdateArtistInput;
 };
 
 export type NewAlbumInput = {
@@ -308,6 +314,12 @@ export type UpdateAlbumInput = {
   name: Scalars['String']['input'];
 };
 
+export type UpdateArtistInput = {
+  id: Scalars['String']['input'];
+  name?: InputMaybe<Scalars['String']['input']>;
+  thumbnail?: InputMaybe<Scalars['String']['input']>;
+};
+
 export type AlbumFieldsFragment = { __typename?: 'Album', id: string, artistId: string, name: string, year?: number | null, score?: number | null, dominantColor?: string | null, thumbnail?: string | null, genres?: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } | null, songs: Array<{ __typename?: 'Song', id: string, albumId: string, artistId: string, name: string, number: number, discNumber: number, score?: number | null, genres: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } }> };
 
 export type ArtistFieldsFragment = { __typename?: 'Artist', id: string, name: string, thumbnail?: string | null, dominantColor: string, score: number, genres?: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } | null, albums: Array<{ __typename?: 'Album', id: string, artistId: string, name: string, year?: number | null, score?: number | null, dominantColor?: string | null, thumbnail?: string | null, genres?: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } | null, songs: Array<{ __typename?: 'Song', id: string, albumId: string, artistId: string, name: string, number: number, discNumber: number, score?: number | null, genres: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } }> }>, metadata: { __typename?: 'ArtistMetadata', id: string, totalSongs: number, totalAlbums: number, songs: { __typename?: 'ArtistSongMetadata', classic: number, great: number, verygood: number, good: number, pleasant: number, decent: number, interesting: number, ok: number, meh: number, average: number, boring: number, poor: number, bad: number, offensive: number } } };
@@ -340,6 +352,20 @@ export type DeleteSongMutationVariables = Exact<{
 
 
 export type DeleteSongMutation = { __typename?: 'Mutation', DeleteSong: boolean };
+
+export type UpdateAlbumMutationVariables = Exact<{
+  album: UpdateAlbumInput;
+}>;
+
+
+export type UpdateAlbumMutation = { __typename?: 'Mutation', updateAlbum: { __typename?: 'Album', id: string, artistId: string, name: string, year?: number | null, score?: number | null, dominantColor?: string | null, thumbnail?: string | null, genres?: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } | null, songs: Array<{ __typename?: 'Song', id: string, albumId: string, artistId: string, name: string, number: number, discNumber: number, score?: number | null, genres: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } }> } };
+
+export type UpdateArtistMutationVariables = Exact<{
+  artist: UpdateArtistInput;
+}>;
+
+
+export type UpdateArtistMutation = { __typename?: 'Mutation', updateArtist: { __typename?: 'Artist', id: string, name: string, thumbnail?: string | null, dominantColor: string, score: number, genres?: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } | null, albums: Array<{ __typename?: 'Album', id: string, artistId: string, name: string, year?: number | null, score?: number | null, dominantColor?: string | null, thumbnail?: string | null, genres?: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } | null, songs: Array<{ __typename?: 'Song', id: string, albumId: string, artistId: string, name: string, number: number, discNumber: number, score?: number | null, genres: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } }> }>, metadata: { __typename?: 'ArtistMetadata', id: string, totalSongs: number, totalAlbums: number, songs: { __typename?: 'ArtistSongMetadata', classic: number, great: number, verygood: number, good: number, pleasant: number, decent: number, interesting: number, ok: number, meh: number, average: number, boring: number, poor: number, bad: number, offensive: number } } } };
 
 export type UpdateSongMutationVariables = Exact<{
   song: SongInput;
@@ -591,6 +617,72 @@ export function useDeleteSongMutation(baseOptions?: Apollo.MutationHookOptions<D
 export type DeleteSongMutationHookResult = ReturnType<typeof useDeleteSongMutation>;
 export type DeleteSongMutationResult = Apollo.MutationResult<DeleteSongMutation>;
 export type DeleteSongMutationOptions = Apollo.BaseMutationOptions<DeleteSongMutation, DeleteSongMutationVariables>;
+export const UpdateAlbumDocument = gql`
+    mutation updateAlbum($album: UpdateAlbumInput!) {
+  updateAlbum(album: $album) {
+    ...AlbumFields
+  }
+}
+    ${AlbumFieldsFragmentDoc}`;
+export type UpdateAlbumMutationFn = Apollo.MutationFunction<UpdateAlbumMutation, UpdateAlbumMutationVariables>;
+
+/**
+ * __useUpdateAlbumMutation__
+ *
+ * To run a mutation, you first call `useUpdateAlbumMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateAlbumMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateAlbumMutation, { data, loading, error }] = useUpdateAlbumMutation({
+ *   variables: {
+ *      album: // value for 'album'
+ *   },
+ * });
+ */
+export function useUpdateAlbumMutation(baseOptions?: Apollo.MutationHookOptions<UpdateAlbumMutation, UpdateAlbumMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateAlbumMutation, UpdateAlbumMutationVariables>(UpdateAlbumDocument, options);
+      }
+export type UpdateAlbumMutationHookResult = ReturnType<typeof useUpdateAlbumMutation>;
+export type UpdateAlbumMutationResult = Apollo.MutationResult<UpdateAlbumMutation>;
+export type UpdateAlbumMutationOptions = Apollo.BaseMutationOptions<UpdateAlbumMutation, UpdateAlbumMutationVariables>;
+export const UpdateArtistDocument = gql`
+    mutation updateArtist($artist: UpdateArtistInput!) {
+  updateArtist(artist: $artist) {
+    ...ArtistFields
+  }
+}
+    ${ArtistFieldsFragmentDoc}`;
+export type UpdateArtistMutationFn = Apollo.MutationFunction<UpdateArtistMutation, UpdateArtistMutationVariables>;
+
+/**
+ * __useUpdateArtistMutation__
+ *
+ * To run a mutation, you first call `useUpdateArtistMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdateArtistMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updateArtistMutation, { data, loading, error }] = useUpdateArtistMutation({
+ *   variables: {
+ *      artist: // value for 'artist'
+ *   },
+ * });
+ */
+export function useUpdateArtistMutation(baseOptions?: Apollo.MutationHookOptions<UpdateArtistMutation, UpdateArtistMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdateArtistMutation, UpdateArtistMutationVariables>(UpdateArtistDocument, options);
+      }
+export type UpdateArtistMutationHookResult = ReturnType<typeof useUpdateArtistMutation>;
+export type UpdateArtistMutationResult = Apollo.MutationResult<UpdateArtistMutation>;
+export type UpdateArtistMutationOptions = Apollo.BaseMutationOptions<UpdateArtistMutation, UpdateArtistMutationVariables>;
 export const UpdateSongDocument = gql`
     mutation UpdateSong($song: SongInput!) {
   UpdateSong(song: $song) {

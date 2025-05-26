@@ -1,6 +1,7 @@
 import React  from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
+import './colors.css'
 import * as serviceWorker from './serviceWorker';
 import {  ApolloProvider } from '@apollo/client';
 import { client } from './setupApollo';

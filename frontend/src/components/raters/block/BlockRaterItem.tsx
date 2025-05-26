@@ -1,5 +1,5 @@
 import { useDraggable } from "@dnd-kit/core";
-import { SongUIItem } from "../../../models/ItemTypes"
+import { SongUIItem } from "../../../models/CoreModels"
 
 interface Props {
     item: SongUIItem 

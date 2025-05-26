@@ -3,9 +3,9 @@ import { zoom } from 'd3-zoom'
 import { Scaler } from '../../../../functions/scale';
 import { ScaleLinear } from 'd3-scale' 
 import { Dispatch, } from 'react';
-import {  RaterUIItemGrouped } from '../../../../models/RaterTypes';
+import {  RaterUIItemGrouped } from '../../../../models/RaterModels';
 import { RaterAction } from '../../../../reducers/raterReducer';
-import { SCORE_END, SCORE_START } from '../../../../models/ItemTypes';
+import { SCORE_END, SCORE_START } from '../../../../models/CoreModels';
 interface Props {
     listener:SVGRectElement|null
     axis:Selection<SVGGElement,unknown, null, undefined>

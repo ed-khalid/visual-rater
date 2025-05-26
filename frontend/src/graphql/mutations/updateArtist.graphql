@@ -1,0 +1,6 @@
+
+mutation updateArtist($artist:UpdateArtistInput!) {
+    updateArtist(artist:$artist) {
+        ...ArtistFields
+    }
+}

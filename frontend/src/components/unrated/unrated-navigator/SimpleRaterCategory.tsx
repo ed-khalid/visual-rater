@@ -1,5 +1,5 @@
 import { useDroppable } from "@dnd-kit/core"
-import { FatSong } from "../../../models/RaterTypes"
+import { FatSong } from "../../../models/RaterModels"
 
 interface Props {
     category:string

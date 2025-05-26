@@ -1,0 +1,67 @@
+div.album-overview {
+    display: grid;
+    user-select: none;
+    grid-template-columns: 100px 300px 1fr 50%; 
+    grid-template-rows: 32px 300px 1fr;
+    grid-template-areas: 
+    "header header header header"
+    "tier thumbnail alb-year alb-year" 
+    "alb-tracks alb-tracks alb-tracks rater"
+} 
+div.rater {
+    grid-area:rater;
+}
+div.header {
+    grid-area:header;
+    display: flex;
+    background: var(--color-general-header); 
+}
+div.album-overview div.header div.title {
+    display: flex;
+    font-size: 26px;
+    flex: 1;
+}
+div.album-overview div.header div.action-buttons {
+    width: 10%;
+}
+div.album-overview div.header div.close-button {
+    width: 10%;
+}
+div.album-year {
+    grid-area: alb-year;
+}
+div.album-tracks {
+    grid-area: alb-tracks;
+    max-height: 775px;
+    overflow-y:hidden;
+}
+li.track-row {
+    cursor:pointer;
+    display: flex;
+    align-items:center;
+    border-bottom: 1px solid #ccc;
+}
+div.track-number {
+    width: 10%;
+    font-size: 36px;
+    font-weight: bold;
+}
+div.track-name {
+    flex: 1;
+    font-size: 20px;
+}
+div.track-score {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 20%;
+    height: 80px;
+    font-weight: bold;
+}
+div.track-score-value {
+    font-size: 36px; 
+}
+div.track-score-category {
+    font-size: 12px; 
+    text-transform: lowercase;
+}

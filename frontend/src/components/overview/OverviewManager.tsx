@@ -1,27 +1,26 @@
-import { useMusicStateAndDispatch } from "../../hooks/MusicStateHooks"
+import { OverviewItem, OverviewLink } from "../../models/OverviewModels"
+import { isAlbum, isArtist } from "../../music/MusicState"
+import { AlbumOverview } from "./AlbumOverview"
 import { ArtistOverview } from "./ArtistOverview"
 
 interface Props {
-    item: { id: string, type: 'artist'|'album'}
+    item:OverviewItem
+    onClose:any
+    onLinkClick:(link:OverviewLink) => void
 }
 
-type OverviewLink = {
-    id: string
-    type: 'artist'|'album'
-    parentId: string 
-} 
 
-export const OverviewManager = ({item}: Props) => {
-    const { state, dispatch } = useMusicStateAndDispatch() 
+export const OverviewManager = ({item , onClose, onLinkClick}: Props) => {
 
-    const artist = state.data.artists.find(it => it.id === item.id)  
-    if (!artist) return null
-
-    const onLinkClick = (link:OverviewLink) => {
+    if (isArtist(item.entity)) {
+        return <div id="overview">
+            <ArtistOverview artist={item.entity} onClose={onClose} onLinkClick={onLinkClick} />
+        </div>
+    } else if (isAlbum(item.entity)) {
+        return <div id="overview">
+            <AlbumOverview album={item.entity} artist={item.parentEntity!} onClose={onClose} onLinkClick={onLinkClick} />
+        </div>
     }
 
-    return <div id="overview">
-        <ArtistOverview artist={artist} />
-    </div>
 
 }

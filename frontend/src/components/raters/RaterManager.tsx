@@ -1,16 +1,13 @@
-import { RefObject } from "react"
 import { useState } from "react"
 import './RaterManager.css'
-import { FatSong } from "../../models/RaterTypes"
-import { RaterStyle } from "../../App"
 import { GridRater } from "./grid/GridRater"
 import { BlockRater } from "./block/BlockRater"
 import { UnratedRaterPanel } from "./UnratedRaterPanel"
 import { GetAlbumsSongsDocument, useUpdateSongMutation } from "../../generated/graphql"
 import { DndContext, DragOverlay, DragStartEvent } from "@dnd-kit/core"
-import { DraggableItem } from "../../pages/HomePage"
-import { AnimatePresence } from "framer-motion"
-import { Modal } from "../common/Modal"
+import { FatSong } from "../../models/CoreModels"
+import { RaterStyle } from "../../models/RaterModels"
+import { DraggableItem } from "../../models/DragModels"
 
 // type RaterProps = {
 //     rowRefs: RefObject<HTMLDivElement>[] 
@@ -78,7 +75,7 @@ export const RaterManager = ({items, raterStyle, totalRows}:Props) => {
     if (id) {
         const dataItem:FatSong|undefined = items.find(it => it.song.id === id) 
         if (dataItem) {
-          setDraggedItem({ id: dataItem.song.id, name: dataItem.song.number + '. ' + dataItem.song.name, thumbnail: dataItem.album.thumbnail!  })
+          setDraggedItem({ type:'song', id: dataItem.song.id, name: dataItem.song.number + '. ' + dataItem.song.name, thumbnail: dataItem.album.thumbnail!  })
         }
     }
   } 

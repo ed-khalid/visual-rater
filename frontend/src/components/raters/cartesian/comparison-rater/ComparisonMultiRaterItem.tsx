@@ -1,6 +1,6 @@
 import React from "react";
 import './ComparisonMultiRaterItem.css'
-import { RatedItem } from "../../../../models/ItemTypes";
+import { RatedItem } from "../../../../models/CoreModels";
 
 interface Props {
     items:RatedItem[]

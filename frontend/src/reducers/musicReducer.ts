@@ -1,5 +1,5 @@
 import { Album, Artist, Song } from "../generated/graphql";
-import { MusicFilter } from "../models/ArtistNavigationFilter";
+import { MusicFilter } from "../music/ArtistNavigationFilter";
 import { MusicAction } from "../music/MusicAction";
 import { FilterMode } from "../music/MusicFilters";
 import { MusicEntity, MusicState } from "../music/MusicState";

@@ -4,7 +4,7 @@ import { MusicZoomLevel, MusicState } from "../../../music/MusicState"
 import { MusicStateOperator } from "../../../music/MusicStateOperator"
 import { sortByScore } from "../../../functions/sort"
 import { mapArtistScoreToUI, mapSongScoreToUI } from "../../../functions/scoreUI"
-import { AlbumUIItem, MusicUIItem, SongUIItem } from "../../../models/ItemTypes"
+import { AlbumUIItem, MusicUIItem, SongUIItem } from "../../../models/CoreModels"
 import { MusicAction } from "../../../music/MusicAction"
 
 interface Props {

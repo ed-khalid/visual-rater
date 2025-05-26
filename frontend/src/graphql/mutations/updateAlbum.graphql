@@ -1,0 +1,7 @@
+
+mutation updateAlbum($album:UpdateAlbumInput!) {
+    updateAlbum(album:$album) {
+        ...AlbumFields
+    }
+
+}

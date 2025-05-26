@@ -4,17 +4,14 @@ import './components/common/Panel.css'
 import { RaterIconGridSvg } from './components/svg/RaterIconGridSvg';
 import { RaterIconListSvg } from './components/svg/RaterIconListSvg';
 import { RaterIconCartesianSvg } from './components/svg/RaterIconCartesianSvg';
-import { Routes, Route, Link } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { HomePage } from './pages/HomePage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { UnratedPage } from './pages/UnratedPage';
 import { PlusIconSvg } from './components/svg/PlusIconSvg';
 import { SpotifyIconSvg } from './components/svg/SpotifyIconSvg';
-import { RaterContextPanel } from './components/panels/rater-context/RaterContextPanel';
+import { RaterStyle } from './models/RaterModels';
 
-export enum RaterStyle {
-  GRID, LIST, CARTESIAN
-}
 
 interface Props {}
 

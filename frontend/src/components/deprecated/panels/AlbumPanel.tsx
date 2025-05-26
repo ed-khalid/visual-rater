@@ -2,7 +2,7 @@ import React from "react"
 import { Album } from "../../../generated/graphql"
 import { mapAlbumSongsToSongScoreUI, mapArtistScoreToUI, mapSongScoreCategoryToScoreFilter } from "../../../functions/scoreUI"
 import { SongScoreCategoryPanelSection } from "./SongScoreCategoryPanelSection"
-import { SongScoreCategory } from "../../../models/ScoreTypes"
+import { SongScoreCategory } from "../../../models/ScoreModels"
 import { Panel } from "../../common/Panel"
 
 interface Props {

@@ -170,7 +170,7 @@ export const CareerTrajectoryWidget = ({ items }: Props) => {
           initial={{ pathLength: 0 }}
           animate={{ pathLength: 1 }}
           transition={{
-            duration: 1.5,
+            duration: 1.0,
             ease: "easeInOut",
             delay: lineAnimDelay,
           }}

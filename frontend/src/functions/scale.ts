@@ -1,7 +1,7 @@
 
 import { scaleLinear, ScaleLinear } from 'd3-scale';
-import { CARTESIAN_RATER_Y_BOTTOM, CARTESIAN_RATER_Y_TOP } from '../models/RaterTypes';
-import { SCORE_END, SCORE_START } from '../models/ItemTypes';
+import { CARTESIAN_RATER_Y_BOTTOM, CARTESIAN_RATER_Y_TOP } from '../models/RaterModels';
+import { SCORE_END, SCORE_START } from '../models/CoreModels';
 
 interface ScalerArguments {
     line?: {start:number, end:number}

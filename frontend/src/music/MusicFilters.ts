@@ -1,6 +1,9 @@
 import { Album, Artist, Song } from "../generated/graphql"
-import { ScoreFilter } from "./MusicState"
 
+export type MusicFilter = {
+    artistId: string
+    albumIds: string[]
+}
 export class MusicFilters {
   private artistIds: String[]
   private albumIds: String[]

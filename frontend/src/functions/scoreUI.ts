@@ -1,6 +1,6 @@
 import { ArtistSongMetadata, Maybe, Song } from "../generated/graphql"
-import { SCORE_END, SCORE_START } from "../models/ItemTypes"
-import { ARTIST_SCORE_MAP, ArtistScoreUI, SONG_SCORE_DICTIONARY, SongScoreCategory, SongScoreCategoryUI , SongScoreUI } from "../models/ScoreTypes"
+import { SCORE_END, SCORE_START } from "../models/CoreModels"
+import { ARTIST_SCORE_MAP, ArtistScoreUI, SONG_SCORE_DICTIONARY, SongScoreCategory, SongScoreCategoryUI , SongScoreUI } from "../models/ScoreModels"
 
 
 export const mapAlbumSongsToSongScoreUI = (songs:Song[]) => {

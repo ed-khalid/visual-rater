@@ -1,14 +1,11 @@
 import { axisRight } from 'd3-axis'
 import { select } from 'd3-selection';
 import { AxisScale, Selection } from 'd3';
-import { RatedItem, CartesianRaterItem } from "../../../models/ItemTypes";
+import { RatedItem } from "../../../models/CoreModels";
 import { CartesianRaterSingleItem } from "./CartesianRaterItem";
-import { Position } from '../../../models/Position';
+import { ANIMATION_DURATION, CARTESIAN_RATER_Y_TOP, CartesianRaterItem, CartesianRaterState, Position } from '../../../models/CartesianRaterModels';
 import { Dispatch, useEffect, useRef, useState, } from 'react';
-import React from 'react';
-import { CartesianRaterState, CARTESIAN_RATER_Y_TOP } from '../../../models/RaterTypes';
 import { ZoomBehavior } from './behaviors/ZoomBehavior';
-import { ANIMATION_DURATION } from '../../../models/Animation';
 import { Transition, TransitionGroup } from 'react-transition-group';
 import { RaterAction } from '../../../reducers/raterReducer';
 import { animateOnEnter, animateOnExit } from './CartesianRaterItemAnimation';

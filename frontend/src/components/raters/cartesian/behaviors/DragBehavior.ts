@@ -1,8 +1,8 @@
 import { select, selectAll } from "d3-selection";
 import { Scaler, clampToNearestIncrement } from "../../../../functions/scale";
-import { Position, SongItemPosition } from "../../../../models/Position";
-import { RatedItem } from "../../../../models/ItemTypes";
-import { CARTESIAN_RATER_Y_BOTTOM } from "../../../../models/RaterTypes";
+import { Position, SongItemPosition } from "../../../../models/CartesianRaterModels";
+import { RatedItem } from "../../../../models/CoreModels";
+import { CARTESIAN_RATER_Y_BOTTOM } from "../../../../models/RaterModels";
 
 interface Props {
     g:SVGGElement|undefined

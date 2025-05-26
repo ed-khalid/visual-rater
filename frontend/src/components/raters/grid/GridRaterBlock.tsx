@@ -1,5 +1,5 @@
 import React, { RefObject } from "react";
-import { SongUIItem } from "../../../models/ItemTypes";
+import { SongUIItem } from "../../../models/CoreModels";
 import { useDroppable } from "@dnd-kit/core";
 import { GridRaterItemUI } from "./GridRaterItemUI";
 import { mapSongScoreToUI } from "../../../functions/scoreUI";

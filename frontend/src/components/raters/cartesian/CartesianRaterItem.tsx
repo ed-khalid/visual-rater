@@ -1,11 +1,11 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { select } from 'd3-selection'
 import { drag } from 'd3-drag'
 import { Scaler } from "../../../functions/scale";
 import { DragBehavior } from "./behaviors/DragBehavior";
 import './SingleRaterItem.css' 
-import { RatedItem, CartesianRaterItem } from "../../../models/ItemTypes";
-import { CARTESIAN_RATER_TIER_WIDTH, CARTESIAN_SVG_IMAGE_SIZE } from "../../../models/RaterTypes";
+import { RatedItem } from "../../../models/CoreModels";
+import { CARTESIAN_RATER_TIER_WIDTH, CARTESIAN_SVG_IMAGE_SIZE, CartesianRaterItem } from "../../../models/CartesianRaterModels";
 
 interface Props {
     item:CartesianRaterItem

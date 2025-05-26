@@ -1,0 +1,18 @@
+:root {
+    --color-general-hover:rgb(111,40,111); 
+    --color-general-text:rgb(188, 205, 223);
+    --color-background: rgb(44, 52, 64);
+    --color-general-border: rgb(128, 121, 121);
+    --color-general-header: rgb(20, 24, 28);
+    --color-general-button: rgb(17,17,17);
+
+    --color-panel-item-border: rgb(0,0,0);
+
+    --color-scrollbar-thumb: rgb(60, 71, 88);
+    --color-scrollbar-thumb-hover: rgb(102, 120, 147); 
+    --color-scrollbar-track: rgb(32, 37, 46);
+
+    --color-droppable-zone: rgb(255, 228, 196);
+
+    --color-box-shadow: rgba(0,0,0,0.5);
+}

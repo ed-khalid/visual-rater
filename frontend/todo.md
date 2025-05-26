@@ -1,3 +1,9 @@
+# BUGS
+Overview: Title Pencil slightly down 
+Overview: Trajectory Chart/cant see axis
+Overview: Metadata Height Needs To Be FIXED 
+so that total artists/songs always hug border 
+
 # BACKEND PROCEDURES
 - total album metadata is not updating
 - songs metadata might be wrong (boring is wrong)

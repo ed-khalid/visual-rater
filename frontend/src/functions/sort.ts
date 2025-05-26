@@ -1,4 +1,4 @@
-import { RatedItem } from "../models/ItemTypes";
+import { RatedItem } from "../models/CoreModels";
 
 
 

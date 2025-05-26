@@ -4,7 +4,7 @@ import { MusicData } from './MusicData'
 import typia from 'typia'
 import { Album, Artist, Song } from '../generated/graphql'
 import { MusicFilters } from './MusicFilters'
-import { ArtistNavigationFilter } from '../models/ArtistNavigationFilter'
+import { ArtistNavigationFilter } from './ArtistNavigationFilter'
 
 
 test('it should load correctly', () => {

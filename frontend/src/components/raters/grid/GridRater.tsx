@@ -1,7 +1,6 @@
 import { RefObject } from "react"
-import { SongUIItem } from "../../../models/ItemTypes"
+import { FatSong, SongUIItem } from "../../../models/CoreModels"
 import './GridRater.css'
-import { FatSong } from "../../../models/RaterTypes"
 import { mapSongToUIItem } from "../../../functions/mapper"
 import { GridRaterBlock } from "./GridRaterBlock"
 

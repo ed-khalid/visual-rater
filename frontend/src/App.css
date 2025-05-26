@@ -3,38 +3,25 @@
 /* general styles */ 
 * {
   font-family: 'Arial', sans-serif;
-  color: #bccddf;
+  color: var(--color-general-text); 
 }
 
 *::-webkit-scrollbar {
     width: 15px;
 }
 *::-webkit-scrollbar-thumb {
-    background-color: #3c4758;
+    background-color: var(--color-scrollbar-thumb); 
 }
 *::-webkit-scrollbar-thumb:hover {
-    background-color: #667893;
+    background-color: var(--color-scrollbar-thumb-hover);
 }
 *::-webkit-scrollbar-track {
-    background-color: #20252e;
+    background-color: var(--color-scrollbar-track);
 }
-body {
-  background:#2c3440;
-  height: 100%;
-  margin: 0;
-  overflow:hidden;
-}
-.font-title {
-  font-family: 'Abril Fatface', serif;
-}
-.font-normal {
-  font-family: 'Raleway', sans-serif;
-}
-/* drag & drop */ 
 
 .App {
   text-align: center;
-  background-color:#2c3440;
+  background-color: var(--color-background);
   height: 100vh;
 }
 
@@ -62,7 +49,7 @@ div#header svg {
     transform: rotate(0deg);
 }  
 div#header svg:hover {
-    fill: rgba(1, 167, 1, 0.753);
+    fill: var(--color-general-hover); 
 }  
 div.add-panel-option svg.clicked {
     transform:rotate(180deg);
@@ -72,7 +59,6 @@ div.add-panel-option svg.clicked {
 
 div#left-nav {
   position: absolute;
-  background-color: #2c3440; 
   top: 90px;
   flex-direction: column;
   display:flex;
@@ -121,12 +107,12 @@ img.dragged-item-thumbnail {
   border-radius: 50px;
   width: 70px;
   height: 70px;
-  box-shadow: 4px 4px 2px rgba(0,0,0,0.5)
+  box-shadow: 4px 4px 2px var(--color-box-shadow); 
 }
 div.dragged-item-text {
   font-size: 16px;
   color: white;
-  text-shadow: 2px 2px 2px rgba(0,0,0,0.5)
+  text-shadow: 2px 2px 2px var(--color-box-shadow);
 }
 div#main {
   position:relative;
@@ -137,19 +123,19 @@ div#main.compact {
   margin-left: 410px;
 }
 div#main.droppable {
-  background-color:bisque;
+  background-color: var(--color-droppable-zone);
 }
 div.modal {
   margin: 10px 50px;
   height: 88vh;
-  box-shadow: 2px 2px 21px rgba(0,0,0,0.5);
-  border: 0.5px solid #807979;
+  box-shadow: 2px 2px 21px var(--color-box-shadow);
+  border: 0.5px solid var(--color-general-border); 
   overflow: hidden;
-  background-color: #2c3440; 
+  background-color: var(--color-background); 
 }
 div.backdrop {
   position: absolute;
-  background-color: rgb(0 0 0 / 0.1);
+  background-color: var(--color-box-shadow); 
   backdrop-filter: blur(3px);
   --webkit-backdrop-filter: blur(3px);
   z-index: 10;
@@ -157,3 +143,7 @@ div.backdrop {
   height: 100%;
 }
 
+div.big-text {
+    font-size: 6rem;
+    font-weight: bold;
+}  

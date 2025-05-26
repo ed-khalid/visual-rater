@@ -5,7 +5,7 @@ import { UnratedAlbum } from "../../pages/UnratedPage";
 import { SimpleRater } from "../raters/simple/SimpleRater";
 import { KeyboardEvent } from "react";
 import './UnratedAlbumOverview.css'
-import { FatSong } from "../../models/RaterTypes";
+import { FatSong } from "../../models/RaterModels";
 import { mapSongToFatSong } from "../../functions/mapper";
 
 interface Props {

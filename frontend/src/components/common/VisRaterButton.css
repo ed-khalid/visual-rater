@@ -1,0 +1,15 @@
+
+button.vis-rater-button {
+    background-color: var(--color-general-button);
+    margin-bottom: 2px;
+    font-size: 16px;
+    cursor: pointer;
+    color: white;
+    border: none;
+}
+button.vis-rater-button:hover {
+    background-color: var(--color-general-hover); 
+}
+button.vis-rater-button.toggle.pressed {
+    background-color: var(--color-general-hover);
+}

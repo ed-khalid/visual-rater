@@ -1,10 +1,8 @@
 import { select } from "d3-selection";
-import { CARTESIAN_RATER_TIER_WIDTH, CARTESIAN_SVG_IMAGE_SIZE } from "../../../models/RaterTypes";
-import { ANIMATION_DURATION } from "../../../models/Animation";
-import { CartesianRaterItem } from "../../../models/ItemTypes";
+import { ANIMATION_DURATION, CARTESIAN_RATER_TIER_WIDTH, CARTESIAN_SVG_IMAGE_SIZE, CartesianRaterItem } from "../../../models/CartesianRaterModels";
 
     export const animateOnEnter = (item:CartesianRaterItem, mainlineX:number) => {
-        const tierOffset = CARTESIAN_RATER_TIER_WIDTH * item.tier 
+        const tierOffset = CARTESIAN_RATER_TIER_WIDTH * item.tier! 
         const imageSize = CARTESIAN_SVG_IMAGE_SIZE;
         const x = (mainlineX + tierOffset) 
         select(item.nodeRef.current).select('.rater-item.item-scoreline').transition().duration(ANIMATION_DURATION).attr('x1', x)
@@ -17,7 +15,7 @@ import { CartesianRaterItem } from "../../../models/ItemTypes";
 
     export const animateOnExit = (item:CartesianRaterItem, mainlineX:number)  => {
         const EXIT_DURATION = ANIMATION_DURATION + 200; 
-        const tierOffset = CARTESIAN_RATER_TIER_WIDTH * item.tier 
+        const tierOffset = CARTESIAN_RATER_TIER_WIDTH * item.tier!
         const imageSize = CARTESIAN_SVG_IMAGE_SIZE;
         const x = (mainlineX - tierOffset) 
         select(item.nodeRef.current).select('.rater-item.item-thumbnail').transition().duration(EXIT_DURATION).attr('x', x)
