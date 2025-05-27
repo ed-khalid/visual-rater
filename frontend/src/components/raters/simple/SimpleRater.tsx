@@ -1,4 +1,4 @@
-import { FatSong } from "../../../models/RaterModels"
+import { FatSong } from "../../../models/CoreModels"
 import { SONG_SCORE_DICTIONARY, SongScoreUIBase } from "../../../models/ScoreModels"
 import './SimpleRater.css'
 import { SimpleRaterCategoryRow } from "./SimpleRaterCategoryRow"

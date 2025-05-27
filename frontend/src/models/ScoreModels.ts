@@ -31,21 +31,21 @@ export type SongScoreCategoryUI = {
     value:number
 }
 
-const CLASSIC_COLOR = 'rgb(79, 85, 144)'
-const GREAT_COLOR = 'rgb(32, 79, 96)'
-const VERY_GOOD_COLOR = 'rgb(40, 83, 53)'
-const GOOD_COLOR = 'rgb(47, 101, 63)'
-const PLEASANT_COLOR = 'rgb(78, 118, 90)'     
-const DECENT_COLOR = 'rgb(96, 130, 70)'
-const INTERESTING_COLOR = 'rgb(86, 98, 40)'
-const MEH_COLOR = 'rgb(122, 122, 82)'
-const OK_COLOR = 'rgb(78, 81, 74)'    
-const AVERAGE_COLOR = 'rgb(130, 130, 80)'
-const BORING_COLOR = 'rgb(144, 120, 97)'
-const POOR_COLOR = 'rgb(167, 55, 38)'
-const BAD_COLOR = 'rgb(88, 19, 16)'
-const OFFENSIVE_COLOR = 'rgb(8, 22, 22)'
-const UNRATED_COLOR = 'rgb(96, 94, 94)'
+export const CLASSIC_COLOR = 'rgb(79, 85, 144)'
+export const GREAT_COLOR = 'rgb(32, 79, 96)'
+export const VERY_GOOD_COLOR = 'rgb(40, 83, 53)'
+export const GOOD_COLOR = 'rgb(47, 101, 63)'
+export const PLEASANT_COLOR = 'rgb(78, 118, 90)'     
+export const DECENT_COLOR = 'rgb(96, 130, 70)'
+export const INTERESTING_COLOR = 'rgb(86, 98, 40)'
+export const OK_COLOR = 'rgb(122, 122, 82)'
+export const AVERAGE_COLOR = 'rgb(78, 81, 74)'    
+export const MEH_COLOR = 'rgb(130, 130, 80)'
+export const BORING_COLOR = 'rgb(144, 120, 97)'
+export const POOR_COLOR = 'rgb(167, 55, 38)'
+export const BAD_COLOR = 'rgb(88, 19, 16)'
+export const OFFENSIVE_COLOR = 'rgb(8, 22, 22)'
+export const UNRATED_COLOR = 'rgb(96, 94, 94)'
 
 
 export const SONG_SCORE_DICTIONARY = new Map<SongScoreCategory, SongScoreUIBase>()   

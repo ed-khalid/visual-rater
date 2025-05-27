@@ -1,11 +1,11 @@
 import React, { useEffect, useRef, useState } from "react"
-import { GetAlbumsDocument, Song, useUpdateSongMutation } from "../../../generated/graphql"
+import { GetAlbumsDocument, Song, useUpdateSongMutation } from "../../../src/generated/graphql"
 import { CartesianRater } from "./CartesianRater"
-import { FatSong } from "../../../models/CoreModels"
-import { sortByScore } from "../../../functions/sort"
-import { mapRaterItemToCartesianRaterItem } from "../../../functions/mapper"
-import { CARTESIAN_RATER_X, CARTESIAN_RATER_Y_TOP, CARTESIAN_SVG_HEIGHT, CARTESIAN_SVG_WIDTH, CartesianRaterItem, CartesianRaterState } from "../../../models/CartesianRaterModels"
-import { useMusicStateAndDispatch } from "../../../hooks/MusicStateHooks"
+import { FatSong } from "../../../src/models/CoreModels"
+import { sortByScore } from "../../functions/sort"
+import { mapRaterItemToCartesianRaterItem } from "../../../src/functions/mapper"
+import { CARTESIAN_RATER_X, CARTESIAN_RATER_Y_TOP, CARTESIAN_SVG_HEIGHT, CARTESIAN_SVG_WIDTH, CartesianRaterItem, CartesianRaterState } from "../../models/CartesianRaterModels"
+import { useMusicStateAndDispatch } from "../../../src/hooks/MusicStateHooks"
 
 interface Props {
     items:FatSong[]

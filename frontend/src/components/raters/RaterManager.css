@@ -1,13 +1,11 @@
 
 div#rater-wrapper {
-    position:relative;
-    height: 90vh;
+  height: 100%;
+  width: 100%;
 }
 div#rater-content {
   height: 100%;
+  width: 100%;
+  overflow-x:hidden;
   overflow-y:auto;
-}
-div#rater-wrapper.mini {
-  width: calc(99vw - 420px);
-  margin-left: 410px;
 }

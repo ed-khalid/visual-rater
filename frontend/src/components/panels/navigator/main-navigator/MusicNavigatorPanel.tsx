@@ -2,26 +2,21 @@ import { Artist } from "../../../../generated/graphql"
 import { FilterMode } from "../../../../music/MusicFilters"
 import { useMusicDispatch, useMusicStateOperator } from "../../../../hooks/MusicStateHooks"
 import { MusicNavigatorArtist } from "./MusicNavigatorArtist"
-import { useContext, useEffect, useState } from "react"
+import { useState } from "react"
 import './MusicNavigatorPanel.css'
-import { motion, Transition } from 'framer-motion'
-import { arc } from "d3"
-import { MusicNavigationContext, MusicNavigatorContext } from "../../../../providers/MusicNavigationProvider"
+import { motion } from 'motion/react'
 
 interface Props {
     artists: Artist[]
-    onExpand: any
+    onCollapse: ()  => void
 }
 
-export const MusicNavigatorPanel = ({artists, onExpand}: Props) => {
-
+export const MusicNavigatorPanel = ({artists, onCollapse}: Props) => {
 
 
   const [primaryTitle, setPrimaryTitle] = useState<string>('artists')
   const [secondaryTitleOne, setSecondaryTitleOne] = useState<string>('albums')
   const [secondaryTitleTwo, setSecondaryTitleTwo] = useState<string>('songs')
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(false)
-  const [showUncollapseButton, setShowUnCollapseButton] = useState<boolean>(false)
   const musicDispatch = useMusicDispatch()
   const musicStateOperator = useMusicStateOperator() 
 
@@ -55,18 +50,6 @@ export const MusicNavigatorPanel = ({artists, onExpand}: Props) => {
 
   } 
 
-  useEffect(() => {
-    setTimeout(() => {
-      setShowUnCollapseButton(isCollapsed)
-    }, 100)
-
-  }, [isCollapsed])
-  useEffect(() => {
-    setTimeout(() => {
-      setIsCollapsed(showUncollapseButton)
-      onExpand(!showUncollapseButton)
-    }, 100)
-  }, [showUncollapseButton])
 
   const onArtistSelect = (artist:Artist) => {
     (expandedArtistIds.includes(artist.id)) ?  
@@ -74,10 +57,7 @@ export const MusicNavigatorPanel = ({artists, onExpand}: Props) => {
       musicDispatch({type: 'NAVIGATION_FILTER_ARTIST_CHANGE', artistId: artist.id, mode: FilterMode.ADDITIVE }) 
   }
   const handleCollapseClick = () => {
-    setIsCollapsed(prev => !prev)
-  } 
-  const handleUncollapseButtonClick = () => {
-    setShowUnCollapseButton(prev => !prev)
+    onCollapse()
   } 
 
   const handleTitleSwitch = (isFirst:boolean) => {
@@ -104,9 +84,8 @@ export const MusicNavigatorPanel = ({artists, onExpand}: Props) => {
   };
 
 
-  return <div id="left-nav" className={"panel nav-panel" + (isCollapsed ? " collapsed": "")} >
+  return <>
         <div  className="panel-header">
-        <div className={"uncollapse-button " + (showUncollapseButton ? "": "hidden")} onClick={() => handleUncollapseButtonClick() }>NAVPANEL</div> 
                   <motion.div custom="down" variants={arcVariant} initial="initial" animate="animate" exit="exit" className="panel-title">{primaryTitle}</motion.div> 
                   <div className="alternate-titles">
                     <motion.div custom="up" variants={arcVariant} initial="initial" animate="animate" exit="exit" onClick={() => handleTitleSwitch(true)} className="alternate-title">{secondaryTitleOne}</motion.div>
@@ -123,6 +102,6 @@ export const MusicNavigatorPanel = ({artists, onExpand}: Props) => {
               )}
         </ul>
         </div>
-  </div>
+  </>
 
 }

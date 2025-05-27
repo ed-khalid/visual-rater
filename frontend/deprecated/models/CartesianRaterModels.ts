@@ -1,5 +1,5 @@
 import { Scaler } from "../functions/scale";
-import { MusicUIItem, SongUIItem } from "./CoreModels";
+import { MusicUIItem, SongUIItem } from "../../src/models/CoreModels";
 
 export const ANIMATION_DURATION = 300;
 export type Position =  {

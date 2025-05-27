@@ -1,11 +1,11 @@
 import { select, Selection } from 'd3-selection';
 import { zoom } from 'd3-zoom'
-import { Scaler } from '../../../../functions/scale';
+import { Scaler } from '../../../../src/functions/scale';
 import { ScaleLinear } from 'd3-scale' 
 import { Dispatch, } from 'react';
-import {  RaterUIItemGrouped } from '../../../../models/RaterModels';
-import { RaterAction } from '../../../../reducers/raterReducer';
-import { SCORE_END, SCORE_START } from '../../../../models/CoreModels';
+import {  RaterUIItemGrouped } from '../../../../src/models/RaterModels';
+import { RaterAction } from '../../../../src/reducers/raterReducer';
+import { SCORE_END, SCORE_START } from '../../../../src/models/CoreModels';
 interface Props {
     listener:SVGRectElement|null
     axis:Selection<SVGGElement,unknown, null, undefined>

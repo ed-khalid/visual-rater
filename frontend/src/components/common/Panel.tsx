@@ -1,6 +1,6 @@
 import { ReactElement, useEffect, useState } from 'react'
-import { CloseButton } from '../ui-items/CloseButton'
-import { CollapseButton } from '../ui-items/CollapseButton'
+import { CloseButton } from './CloseButton'
+import { CollapseButton } from './CollapseButton'
 
 interface PanelProps {
     title?:string

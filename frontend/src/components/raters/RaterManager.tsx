@@ -8,6 +8,7 @@ import { DndContext, DragOverlay, DragStartEvent } from "@dnd-kit/core"
 import { FatSong } from "../../models/CoreModels"
 import { RaterStyle } from "../../models/RaterModels"
 import { DraggableItem } from "../../models/DragModels"
+import { LinearRater } from "./linear/LinearRater"
 
 // type RaterProps = {
 //     rowRefs: RefObject<HTMLDivElement>[] 
@@ -105,6 +106,7 @@ export const RaterManager = ({items, raterStyle, totalRows}:Props) => {
             <div id="rater-content">
                 {(raterStyle=== RaterStyle.GRID) && <GridRater rowRefs={[]} items={ratedItems}  />}
                 {(raterStyle=== RaterStyle.LIST) && <BlockRater items={ratedItems}  rowRefs={[]} />}
+                {(raterStyle=== RaterStyle.LINEAR) && <LinearRater items={ratedItems}  rowRefs={[]} />}
             </div>
             {/* {(raterStyle=== RaterStyle.CARTESIAN) && <CartesianRater />} */}
         </div> 

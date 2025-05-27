@@ -8,7 +8,7 @@ import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, useDroppable } f
 import { MusicNavigatorContext } from "../providers/MusicNavigationProvider"
 import { snapCenterToCursor } from "@dnd-kit/modifiers"
 import { RaterManager } from "../components/raters/RaterManager"
-import { AnimatePresence } from "framer-motion"
+import { AnimatePresence, motion } from "motion/react"
 import { Modal } from "../components/common/Modal"
 import { OverviewManager } from "../components/overview/OverviewManager"
 import { DraggableItem } from "../models/DragModels"
@@ -31,7 +31,7 @@ export const HomePage = ({raterStyle}:Props) => {
   const musicStateOperator = useMusicStateOperator()
   const $artistsPage  =  useGetArtistsPageQuery()
   const [draggedItem, setDraggedItem] = useState<DraggableItem|undefined>(undefined)
-  const [compactMode, setCompactMode] = useState<boolean>(true)
+  const [showNavPanel, setShowNavPanel] = useState<boolean>(true)
   const [overviewItem, setOverviewItem] =useState<OverviewItem|undefined>(undefined)
 
   const [$loadArtistFull, $artistFull] = useGetArtistFullLazyQuery()
@@ -134,11 +134,11 @@ export const HomePage = ({raterStyle}:Props) => {
     setOverviewItem(undefined)
   } 
 
-  const handleOnMusicNavExpand = (isExpanded:boolean) => {
-      setCompactMode(isExpanded)
+  const handleOnMusicNavCollapse = () => {
+      setShowNavPanel(false)
   }
        
-  const mainClassNames = "" + (isOver ? "droppable " : "") + (compactMode ? "compact " : "")  
+  const mainClassNames = "" + (isOver ? "droppable " : "")   
 
         return <DndContext modifiers={[snapCenterToCursor]} onDragEnd={handleDragEnd} onDragStart={handleDragStart}>
           <DragOverlay>
@@ -149,19 +149,28 @@ export const HomePage = ({raterStyle}:Props) => {
               </div>
             }
           </DragOverlay>
-          {$artistsPage.data?.artists && 
-          <MusicNavigatorContext.Provider value={{openOverview: handleOverviewLinkClick, dispatchToRater }}>
-              <MusicNavigatorPanel onExpand={handleOnMusicNavExpand} artists={$artistsPage.data?.artists.content as Artist[]}></MusicNavigatorPanel>
-          </MusicNavigatorContext.Provider>
-          }
-        <div className={mainClassNames}  ref={setNodeRef} id="main">
-          <AnimatePresence initial={false} onExitComplete={() => null}>
-            {overviewItem && <Modal handleClose={() => handleModalClose()} >
-              <OverviewManager item={overviewItem} onClose={handleModalClose} onLinkClick={handleOverviewLinkClick} />
-              </Modal>}
-          </AnimatePresence>
-          <RaterManager items={items} raterStyle={raterStyle}   
-            totalRows={compactMode ? 20 : 15 }
-          />
-        </div></DndContext>
+          <div id="layout">
+            {$artistsPage.data?.artists && 
+             <motion.div animate={{ width: showNavPanel ? '420px': 0 }} transition={{ duration: 0.3, ease: "easeInOut"}}     id="left-nav" className="panel nav-panel">
+                <MusicNavigatorContext.Provider value={{openOverview: handleOverviewLinkClick, dispatchToRater }}>
+                    <MusicNavigatorPanel onCollapse={handleOnMusicNavCollapse} artists={$artistsPage.data?.artists.content as Artist[]}></MusicNavigatorPanel>
+                </MusicNavigatorContext.Provider>
+            </motion.div>
+            }
+            <motion.div animate={{width: showNavPanel? `calc(100% - 420px)`: '100%'}} transition={{duration: 0.3, ease: "easeInOut"}} className={mainClassNames}  ref={setNodeRef} id="main">
+              {!showNavPanel && 
+                <motion.button className="show-left-nav-button" initial={{x:0, opacity:0}} animate={{x:0,opacity:1}} exit={{opacity: 0}} transition={{duration: 0.3}} onClick={() => setShowNavPanel(true) }>
+                  NAVPANEL
+              </motion.button> }
+              <AnimatePresence initial={false} onExitComplete={() => null}>
+                {overviewItem && <Modal handleClose={() => handleModalClose()} >
+                  <OverviewManager item={overviewItem} onClose={handleModalClose} onLinkClick={handleOverviewLinkClick} />
+                  </Modal>}
+              </AnimatePresence>
+              <RaterManager items={items} raterStyle={raterStyle}   
+                totalRows={showNavPanel ? 20 : 15 }
+              />
+            </motion.div>
+          </div> 
+        </DndContext>
 }

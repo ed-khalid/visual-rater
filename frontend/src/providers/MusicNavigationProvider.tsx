@@ -1,5 +1,3 @@
-
-
 import { createContext } from "react"
 
 export const MusicNavigatorContext = createContext<MusicNavigationContext>({ openOverview: undefined, dispatchToRater: undefined })  

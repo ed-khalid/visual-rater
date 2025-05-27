@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
-import { Album, GetAlbumsSongsDocument, Maybe, Song, useGetUnratedAlbumsQuery, useUpdateSongMutation } from "../generated/graphql"
-import { useMusicDispatch } from "../hooks/MusicStateHooks"
+import { Album, GetAlbumsSongsDocument, Maybe, Song, useGetUnratedAlbumsQuery, useUpdateSongMutation } from "../../src/generated/graphql"
+import { useMusicDispatch } from "../../src/hooks/MusicStateHooks"
 import { UnratedAlbumsNavigator } from "../components/unrated/unrated-navigator/UnratedAlbumsNavigator"
 import { DndContext } from "@dnd-kit/core"
 import { UnratedAlbumsMain } from "../components/unrated/UnratedAlbumsMain"

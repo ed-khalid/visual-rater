@@ -1,5 +1,4 @@
 import { ComparisonSong, Maybe, Song } from "../generated/graphql";
-import { CartesianRaterItem } from "../models/CartesianRaterModels";
 import { ComparisonSongUIItem, FatSong, SongUIItem } from "../models/CoreModels";
 
 
@@ -7,10 +6,6 @@ export const mapComparisonSongToComparisonSongUIItem = (comparisonSong:Compariso
 
 export const mapSongToUIItem = (song: Song, album: { thumbnail?:Maybe<string>, dominantColor?:Maybe<string>, name: string }, artist:{ name: string}): SongUIItem   => ({ id: song.id, artistId: song.artistId, albumId: song.albumId, name: song.name , score:song.score!, thumbnail:album.thumbnail!, overlay:album.dominantColor!, number:song.number,albumName:album.name, artistName:artist.name});
 
-export const mapRaterItemToCartesianRaterItem = (fatSongs:FatSong[]): CartesianRaterItem[] =>  { 
-    const songUIs = fatSongs.map(fatSong => mapSongToUIItem(fatSong.song, fatSong.album, fatSong.artist))
-    return songUIs.map(it => ({...it, tier: undefined, nodeRef: undefined, shouldDrawLine: true}))
-} 
 
 export const mapSongToFatSong = (song:Song, album:{thumbnail?:Maybe<string>, dominantColor?:Maybe<string>, name:string }, artist:{name: string, id: string} ): FatSong  => {
     return {

@@ -1,12 +1,10 @@
 import { select, selectAll } from "d3-selection";
-import { Scaler, clampToNearestIncrement } from "../../../../functions/scale";
-import { Position, SongItemPosition } from "../../../../models/CartesianRaterModels";
-import { RatedItem } from "../../../../models/CoreModels";
-import { CARTESIAN_RATER_Y_BOTTOM } from "../../../../models/RaterModels";
+import { RatedItem } from "../../../../src/models/CoreModels";
+import { ScaleLinear } from "d3";
 
 interface Props {
     g:SVGGElement|undefined
-    scaler:Scaler
+    scaler:ScaleLinear<number,number,never>
     item:RatedItem
     onDragEnd:(id:string, score:number ) => void
     duringDrag:(id:string, score:number) => void

@@ -7,7 +7,6 @@ import { RaterIconCartesianSvg } from './components/svg/RaterIconCartesianSvg';
 import { Routes, Route } from 'react-router-dom';
 import { HomePage } from './pages/HomePage';
 import { NotFoundPage } from './pages/NotFoundPage';
-import { UnratedPage } from './pages/UnratedPage';
 import { PlusIconSvg } from './components/svg/PlusIconSvg';
 import { SpotifyIconSvg } from './components/svg/SpotifyIconSvg';
 import { RaterStyle } from './models/RaterModels';
@@ -17,7 +16,7 @@ interface Props {}
 
 export const App = () => {
   const [newAlbumName, setNewAlbumName] =useState<string|undefined>() 
-  const [raterStyle, setRaterStyle] = useState<RaterStyle>(RaterStyle.GRID)  
+  const [raterStyle, setRaterStyle] = useState<RaterStyle>(RaterStyle.LINEAR)  
 
   const onCreateAlbum = (artistName:string, albumName:string) => {
     setNewAlbumName(albumName)
@@ -38,12 +37,11 @@ export const App = () => {
         <div className="rater-style">
         <RaterIconGridSvg onClick={() => setRaterStyle(RaterStyle.GRID)  }/>
         <RaterIconListSvg onClick={() => setRaterStyle(RaterStyle.LIST) }/>
-        <RaterIconCartesianSvg onClick={() => setRaterStyle(RaterStyle.CARTESIAN) }/>
+        <RaterIconCartesianSvg onClick={() => setRaterStyle(RaterStyle.LINEAR) }/>
         </div>
       </div>
       <Routes>
         <Route path="/" element={<HomePage raterStyle={raterStyle}/>} />
-        <Route path="/unrated" element={<UnratedPage />} />
         <Route path="*" element={<NotFoundPage/>} /> 
       </Routes>
     </div>

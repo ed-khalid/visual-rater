@@ -1,5 +1,5 @@
 import { zoomIdentity } from "d3-zoom"
-import { CartesianRaterState } from "../models/RaterModels"
+import { CartesianRaterState } from "../../src/models/RaterModels"
 import { Scaler } from "../functions/scale"
 import { interpolateRound } from "d3"
 

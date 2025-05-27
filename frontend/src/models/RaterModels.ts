@@ -1,3 +1,4 @@
+import { Ref } from "react"
 
 export type RaterEntityRequest = {
     artistId: string
@@ -5,5 +6,17 @@ export type RaterEntityRequest = {
 }   
 
 export enum RaterStyle {
-  GRID, LIST, CARTESIAN
+  GRID, LIST, LINEAR
+}
+
+export type LinearRaterCircleModel = {
+  id: string
+  name: string 
+  nodeRef: Ref<SVGCircleElement|null>
+}
+
+export type LinearRaterItemModel = {
+  id: string
+  score:number
+  items:LinearRaterCircleModel[]
 }

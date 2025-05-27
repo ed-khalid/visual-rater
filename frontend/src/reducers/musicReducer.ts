@@ -1,5 +1,4 @@
 import { Album, Artist, Song } from "../generated/graphql";
-import { MusicFilter } from "../music/ArtistNavigationFilter";
 import { MusicAction } from "../music/MusicAction";
 import { FilterMode } from "../music/MusicFilters";
 import { MusicEntity, MusicState } from "../music/MusicState";
@@ -76,7 +75,7 @@ export const musicReducer: React.Reducer<MusicState, MusicAction> =  (state: Mus
             const artistId = action.artistId
             const albumId = action.albumId
             const mode = action.mode
-            const existingArtist:MusicFilter = state.navigationFilters.find(it => it.artistId === artistId)  
+            const existingArtist = state.navigationFilters.find(it => it.artistId === artistId)  
             const existingAlbum = existingArtist?.albumIds.find(it => it === albumId)
             if (mode === FilterMode.EXCLUSIVE) {
                 const newState = { ...state, navigationFilters: [{ artistId, albumIds: [albumId] }] } 

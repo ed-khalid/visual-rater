@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion } from 'motion/react'
 import './VisRaterButton.css'
 import { ReactNode, useState } from 'react'
 interface Props {

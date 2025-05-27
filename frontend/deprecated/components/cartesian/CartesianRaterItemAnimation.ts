@@ -1,5 +1,5 @@
 import { select } from "d3-selection";
-import { ANIMATION_DURATION, CARTESIAN_RATER_TIER_WIDTH, CARTESIAN_SVG_IMAGE_SIZE, CartesianRaterItem } from "../../../models/CartesianRaterModels";
+import { ANIMATION_DURATION, CARTESIAN_RATER_TIER_WIDTH, CARTESIAN_SVG_IMAGE_SIZE, CartesianRaterItem } from "../../models/CartesianRaterModels";
 
     export const animateOnEnter = (item:CartesianRaterItem, mainlineX:number) => {
         const tierOffset = CARTESIAN_RATER_TIER_WIDTH * item.tier! 

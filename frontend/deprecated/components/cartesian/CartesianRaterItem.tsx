@@ -4,8 +4,8 @@ import { drag } from 'd3-drag'
 import { Scaler } from "../../../functions/scale";
 import { DragBehavior } from "./behaviors/DragBehavior";
 import './SingleRaterItem.css' 
-import { RatedItem } from "../../../models/CoreModels";
-import { CARTESIAN_RATER_TIER_WIDTH, CARTESIAN_SVG_IMAGE_SIZE, CartesianRaterItem } from "../../../models/CartesianRaterModels";
+import { RatedItem } from "../../../src/models/CoreModels";
+import { CARTESIAN_RATER_TIER_WIDTH, CARTESIAN_SVG_IMAGE_SIZE, CartesianRaterItem } from "../../models/CartesianRaterModels";
 
 interface Props {
     item:CartesianRaterItem

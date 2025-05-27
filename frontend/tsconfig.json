@@ -27,7 +27,8 @@
   },
   "include": [
     "src"
-  ],
+, "deprecated/components/cartesian/CartesianRaterItem.tsx"  ],
+  "exclude": ["deprecated"],
   "references": [{"path": "./tsconfig.node.json" }]
  
 }

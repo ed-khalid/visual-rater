@@ -7,6 +7,7 @@ import { VisualRaterToggleButton } from "../common/VisRaterToggleButton"
 import { Editable } from "../common/Editable"
 import { VisualRaterButton } from "../common/VisRaterButton"
 import { OverviewLink } from "../../models/OverviewModels"
+import { LinearRater } from "../raters/linear/LinearRater"
 
 interface Props {
     artist: { id: string, name: string} 
@@ -72,6 +73,8 @@ export const AlbumOverview = ({album, artist, onClose, onLinkClick }:Props) => {
                 <img src={album.thumbnail || ''} alt="" />
             </div>
             <div className="album-year">{album.year}</div>
+            <div className="rater">
+            </div>
             <div className="album-tracks">
             <div className="title">Tracklist</div> 
             <div className="list">
