@@ -3,6 +3,7 @@ import { LinearRaterCircleModel } from "../../../models/RaterModels"
 import { select } from "d3-selection"
 import { drag } from "d3-drag"
 import { LinearRaterContext } from "../../../providers/LinearRaterProvider"
+import { easeCubicInOut } from "d3"
 
 interface Props {
     item:LinearRaterCircleModel 
@@ -13,13 +14,19 @@ interface Props {
 
 export const LinearRaterCircle = ({item, i, color, position }: Props) => {
 
-    const { mainlineX, raterHeight, scale, getScoreCategoryDetails, onDragEnd, onDragStart } = useContext(LinearRaterContext) 
+    const { mainlineX, raterHeight, yToScore, getScoreCategoryDetails, onDragEnd, onDragStart } = useContext(LinearRaterContext) 
 
     const nodeRef = useRef<SVGGElement>(null)  
 
     useEffect(() => {
         if(nodeRef?.current) {
             const g = select(nodeRef.current)
+            g.attr('transform', `translate(${mainlineX + 300}, 0) ` )
+            g.transition()
+            .duration(300)
+            .ease(easeCubicInOut)
+            .attr('transform', 'translate(0,0)')
+
             const circle = g.select('circle')
             const text = g.select('text')
             const dragbehavior = drag<SVGCircleElement, unknown>().on(
@@ -28,7 +35,8 @@ export const LinearRaterCircle = ({item, i, color, position }: Props) => {
                     circle.attr('cy', newY)
                     text.attr('y', newY - 15)
                     g.select('#dragline-line').attr('y1', newY).attr('y2', newY)
-                    g.select('#dragline-label').attr('y', newY-2).text(getScoreCategoryDetails(scale(newY)).category)
+                    g.select('#dragline-label').attr('y', newY-2).text(getScoreCategoryDetails(yToScore(newY)).category)
+                    g.select('#dragline-score').attr('y', newY).text(Math.round(yToScore(newY)))
                 }
             ).on('start', (event) => {
                 onDragStart(item)
@@ -46,19 +54,29 @@ export const LinearRaterCircle = ({item, i, color, position }: Props) => {
                 group.append('text')
                             .attr('x',mainlineX + 20)
                             .attr('y', Number(circle.attr('cy')) - 2)
-                            .attr('fontSize', 12)
-                            .attr('fill', '#fff')
+                            .attr('font-size', 12)
+                            .attr('fill', 'yellow')
                             .attr('id', 'dragline-label')
-                            .text(getScoreCategoryDetails(scale(position)).category)
+                            .text(getScoreCategoryDetails(yToScore(position)).category)
+                group.append('text')
+                            .attr('x',Number(circle.attr('cx')) + 30)
+                            .attr('y', Number(circle.attr('cy')) + 5)
+                            .attr('font-size', 12)
+                            .attr('fill', 'yellow')
+                            .attr('id', 'dragline-score')
+                            .text(yToScore(Number(circle.attr('cy'))))
+                
             })
             .on('end', (event) => {
-                onDragEnd(item, 0)
+                const newY = Math.max(0, Math.min(raterHeight, event.y)) 
+                const score = yToScore(newY) 
+                onDragEnd(item, Math.round(score))
                 g.select('#dragline-group').remove()
             })
             circle.call(dragbehavior as any)
         }
 
-    }, [nodeRef, mainlineX, scale])
+    }, [nodeRef, mainlineX, yToScore])
 
     return  (<g ref={nodeRef} id={"linear-rater-item-" + item.id}>
                 <circle 

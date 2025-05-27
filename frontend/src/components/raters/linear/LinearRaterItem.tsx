@@ -10,9 +10,9 @@ interface Props {
 
 export const LinearRaterItem = ({ item}: Props) => {
 
-    const { mainlineX, scale, getScoreCategoryDetails  } = useContext(LinearRaterContext)
+    const { mainlineX, yToScore, getScoreCategoryDetails  } = useContext(LinearRaterContext)
 
-    const position = scale.invert(item.score)   
+    const position = yToScore.invert(item.score)   
     const { category, color } = getScoreCategoryDetails(item.score) 
 
     return <g className="linear-rater-group" id={`linear-rater-item-${item.id}`}>

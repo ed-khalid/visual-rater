@@ -6,8 +6,9 @@ import { LinearRaterItem } from "./LinearRaterItem";
 import { LinearRaterCircleModel, LinearRaterItemModel } from "../../../models/RaterModels";
 import { LinearRaterContext } from "../../../providers/LinearRaterProvider";
 import { mapSongScoreToUI } from "../../../functions/scoreUI";
-import { BaseType, select, Selection } from "d3";
+import { select, selectAll } from "d3";
 import './LinearRater.css'
+import { Song } from "../../../generated/graphql";
 
 const CATEGORIES = SONG_SCORE_DICTIONARY.values().map((it) => ({ label: it.category, color: it.color, stop: it.threshold.high  }) ).toArray().reverse()
 
@@ -15,14 +16,11 @@ const CATEGORIES = SONG_SCORE_DICTIONARY.values().map((it) => ({ label: it.categ
 interface Props {
     items: FatSong[]
     rowRefs: any[]
+    onScoreUpdate: (updatedSong:Song) => void
 }
 
-export const LinearRater = ({}: Props) => {
+export const LinearRater = ({items, onScoreUpdate}: Props) => {
 
-  const items:FatSong[] =  [
-    { song: { id: '1234', genres: { primary: { id: 1, name: 'Rock' } , secondary: [] },  name:  'Song1', albumId: '1', artistId: '1', number: 1, discNumber: 1, score: 75 }, artist: { id:'1', name: 'Sadoon' }, album: { name: 'Jabir'}  },
-    { song: { id: '5678', genres: { primary: { id: 1, name: 'Rock' } , secondary: [] },  name:  'Song2', albumId: '1', artistId: '1', number: 1, discNumber: 1, score: 75 }, artist: { id:'1', name: 'Sadoon' }, album: { name: 'Jabir'}  }
-   ] 
 
   const unratedItems = items.filter(it => it.song.score === undefined || it.song.score === null)    
   const ratedItems = items.filter(it => it.song.score !== undefined && it.song.score !== null)
@@ -71,10 +69,13 @@ export const LinearRater = ({}: Props) => {
   const onDragEnd = (item:LinearRaterCircleModel, newScore:number) => {
     select("g.linear-rater-group").classed('dimmed', false)
     select(`g#linear-rater-item-${item.id}`).classed('selected', false)
+    const song = items.map(it => it.song).find(it => it.id === item.id)  
+    if (!song) throw `LinearRater: song ${item.id} not found in items!`
+    onScoreUpdate({ ...song, score: newScore  })
   } 
 
   const onDragStart = (item:LinearRaterCircleModel) =>  {
-    select("g.linear-rater-group").classed('dimmed', true)
+    selectAll("g.linear-rater-group").classed('dimmed', true)
     select(`g#linear-rater-item-${item.id}`).classed('selected', true)
   } 
 
@@ -85,7 +86,7 @@ export const LinearRater = ({}: Props) => {
 
 
   return (
-    <LinearRaterContext.Provider value={{ getScoreCategoryDetails, mainlineX: mainlineX , scale: yToScore, raterHeight: height-5, onDragStart, onDragEnd }}>
+    <LinearRaterContext.Provider value={{ getScoreCategoryDetails, mainlineX: mainlineX , yToScore, raterHeight: height-5, onDragStart, onDragEnd }}>
 
     <div ref={containerRef} style={{ width: "100%", height: "100%", position: 'relative' }}>
         {height > 0 && <svg ref={svgRef} width={width} height={height-5}>

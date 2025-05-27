@@ -10,6 +10,7 @@ export enum RaterStyle {
 }
 
 export type LinearRaterCircleModel = {
+  // song id
   id: string
   name: string 
   nodeRef: Ref<SVGCircleElement|null>

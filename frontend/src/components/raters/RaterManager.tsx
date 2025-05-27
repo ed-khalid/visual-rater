@@ -3,7 +3,7 @@ import './RaterManager.css'
 import { GridRater } from "./grid/GridRater"
 import { BlockRater } from "./block/BlockRater"
 import { UnratedRaterPanel } from "./UnratedRaterPanel"
-import { GetAlbumsSongsDocument, useUpdateSongMutation } from "../../generated/graphql"
+import { GetAlbumsSongsDocument, Song, useUpdateSongMutation } from "../../generated/graphql"
 import { DndContext, DragOverlay, DragStartEvent } from "@dnd-kit/core"
 import { FatSong } from "../../models/CoreModels"
 import { RaterStyle } from "../../models/RaterModels"
@@ -71,6 +71,11 @@ export const RaterManager = ({items, raterStyle, totalRows}:Props) => {
     // const max = visibleRows.size ? Math.max(...visibleRows) : totalRows - 1
     // console.log('visibleRows', visibleRows)
 
+  const onLinearRaterScoreUpdate = (updatedSong:Song) => {
+    updateSong({ variables: { song: { id: updatedSong.id, score: updatedSong.score  } }})
+  } 
+
+
   const handleDragStart = (event:DragStartEvent) => {
     const id = event.active.data.current?.id
     if (id) {
@@ -106,7 +111,7 @@ export const RaterManager = ({items, raterStyle, totalRows}:Props) => {
             <div id="rater-content">
                 {(raterStyle=== RaterStyle.GRID) && <GridRater rowRefs={[]} items={ratedItems}  />}
                 {(raterStyle=== RaterStyle.LIST) && <BlockRater items={ratedItems}  rowRefs={[]} />}
-                {(raterStyle=== RaterStyle.LINEAR) && <LinearRater items={ratedItems}  rowRefs={[]} />}
+                {(raterStyle=== RaterStyle.LINEAR) && <LinearRater items={ratedItems} onScoreUpdate={onLinearRaterScoreUpdate}  rowRefs={[]} />}
             </div>
             {/* {(raterStyle=== RaterStyle.CARTESIAN) && <CartesianRater />} */}
         </div> 
