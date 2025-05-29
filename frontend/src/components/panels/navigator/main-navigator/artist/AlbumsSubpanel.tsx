@@ -8,7 +8,7 @@ import { MusicNavigatorAlbumRow } from "../album/MusicNavigatorAlbumRow"
 
 interface Props {
     artist:Artist
-    dispatchAlbumToRater: (album:any, shouldRemove:boolean) => void 
+    dispatchAlbumToRater: (album:any, mode:FilterMode) => void 
 }
 
 

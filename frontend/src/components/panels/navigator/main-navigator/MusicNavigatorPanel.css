@@ -73,6 +73,13 @@ img.nav-panel-item-thumbnail.smaller {
 .nav-panel-item-info-name {
     font-size: 20px;
 }
+.nav-panel-item-info-name span {
+    display: inline-block;
+}
+.nav-panel-item-info-name span:hover {
+    text-decoration: underline;
+    cursor: pointer;
+}
 .nav-panel-item-info-name.smaller {
     cursor: pointer;
     font-size: 14px;

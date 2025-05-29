@@ -4,14 +4,11 @@ import { Album, Artist, Song, useGetAlbumsSongsLazyQuery, useGetArtistFullLazyQu
 import { useMusicDispatch, useMusicState, useMusicStateOperator } from "../hooks/MusicStateHooks"
 import { RaterEntityRequest, RaterStyle } from "../models/RaterModels"
 import { FilterMode } from "../music/MusicFilters"
-import { DndContext, DragEndEvent, DragOverlay, DragStartEvent, useDroppable } from "@dnd-kit/core"
 import { MusicNavigatorContext } from "../providers/MusicNavigationProvider"
-import { snapCenterToCursor } from "@dnd-kit/modifiers"
 import { RaterManager } from "../components/raters/RaterManager"
 import { AnimatePresence, motion } from "motion/react"
 import { Modal } from "../components/common/Modal"
 import { OverviewManager } from "../components/overview/OverviewManager"
-import { DraggableItem } from "../models/DragModels"
 import { OverviewItem, OverviewLink } from "../models/OverviewModels"
 
 
@@ -25,16 +22,10 @@ export const HomePage = ({raterStyle}:Props) => {
   useOnArtistUpdateSubscription()
   useOnAlbumUpdateSubscription()
 
-  const { isOver, setNodeRef } = useDroppable({
-    id: 'droppable-rater',
-  })
-
-
   const musicDispatch = useMusicDispatch()
   const musicState = useMusicState()
   const musicStateOperator = useMusicStateOperator()
   const $artistsPage  =  useGetArtistsPageQuery()
-  const [draggedItem, setDraggedItem] = useState<DraggableItem|undefined>(undefined)
   const [showNavPanel, setShowNavPanel] = useState<boolean>(true)
   const [overviewItem, setOverviewItem] =useState<OverviewItem|undefined>(undefined)
 
@@ -76,22 +67,18 @@ export const HomePage = ({raterStyle}:Props) => {
 
   }, [$songsForAlbum.loading, $songsForAlbum.data, musicDispatch])
 
-  const dispatchToRater = (addition:RaterEntityRequest, shouldRemove:boolean) => {
-    if (shouldRemove) {
+  const dispatchToRater = (addition:RaterEntityRequest, mode:FilterMode) => {
       if (!addition.albumId) {
-        musicDispatch({ type: 'RATER_FILTER_CHANGE', filters: { artistIds: [addition.artistId] }, mode: FilterMode.REDUCTIVE })
-      } else {
-        musicDispatch({ type: 'RATER_FILTER_CHANGE', filters: { albumIds: [addition.albumId] }, mode: FilterMode.REDUCTIVE })
-      }
-    } else {
-      if (!addition.albumId) {
+        if (mode !== FilterMode.REDUCTIVE) {
         $loadArtistFull({ variables: { artistId: addition.artistId } })
-        musicDispatch({ type: 'RATER_FILTER_CHANGE', filters: { artistIds:[addition.artistId] }, mode:FilterMode.ADDITIVE })
+        }
+        musicDispatch({ type: 'RATER_FILTER_CHANGE', filters: { artistIds: [addition.artistId] }, mode })
       } else {
-        $loadSongsForAlbum({ variables: { albumIds: [addition.albumId] } })
-        musicDispatch({ type: 'RATER_FILTER_CHANGE', filters: { artistIds: [addition.artistId], albumIds: [addition.albumId] } , mode: FilterMode.ADDITIVE })
+        if (mode !== FilterMode.REDUCTIVE) {
+          $loadSongsForAlbum({ variables: { albumIds: [addition.albumId] } })
+        }
+        musicDispatch({ type: 'RATER_FILTER_CHANGE', filters: { albumIds: [addition.albumId] }, mode })
       }
-    }
   } 
 
   const handleOverviewLinkClick = (link:OverviewLink) => {
@@ -108,31 +95,7 @@ export const HomePage = ({raterStyle}:Props) => {
     }
   }
 
-  const handleDragStart = (event:DragStartEvent) => {
-    const item = event.active.data.current?.item
-    if (item && item.type) {
-        const dataItem:Artist|Album|undefined = (item.type ==='artist') ? musicStateOperator.data.artists.find(it => it.id === item.id) :
-        musicStateOperator.data.albums.find(it => it.id === item.id)   
-        if (dataItem) {
-          setDraggedItem({ type: item.type,id: dataItem.id, name: dataItem.name, thumbnail: dataItem.thumbnail!  })
-        }
-    }
-  } 
-
   const items = musicStateOperator.getFatSongs()
-
-  const handleDragEnd = (event:DragEndEvent) => {
-        const item = event.active.data.current?.item
-        if (item) {
-          if (item.type === 'artist') {
-            dispatchToRater({ artistId: item.id },  false)
-          } else {
-            const artist = musicStateOperator.getArtistForAlbum({ albumId: item.id })
-            if (!artist) throw "Artist not found!"
-            dispatchToRater({ albumId: item.id, artistId: artist.id },  false)
-          }
-        }
-  } 
 
   const handleModalClose = () => {
     setOverviewItem(undefined)
@@ -142,18 +105,7 @@ export const HomePage = ({raterStyle}:Props) => {
       setShowNavPanel(false)
   }
        
-  const mainClassNames = "" + (isOver ? "droppable " : "")   
-
-        return <DndContext modifiers={[snapCenterToCursor]} onDragEnd={handleDragEnd} onDragStart={handleDragStart}>
-          <DragOverlay>
-            { draggedItem && 
-              <div className="dragged-item">
-                  <img className="dragged-item-thumbnail" src={draggedItem.thumbnail!} />
-                  <div className="dragged-item-text">{draggedItem.name}</div>
-              </div>
-            }
-          </DragOverlay>
-          <div id="layout">
+        return <div id="layout">
             {$artistsPage.data?.artists && 
              <motion.div animate={{ width: showNavPanel ? '420px': 0 }} transition={{ duration: 0.3, ease: "easeInOut"}}     id="left-nav" className="panel nav-panel">
                 <MusicNavigatorContext.Provider value={{openOverview: handleOverviewLinkClick, dispatchToRater }}>
@@ -161,7 +113,7 @@ export const HomePage = ({raterStyle}:Props) => {
                 </MusicNavigatorContext.Provider>
             </motion.div>
             }
-            <motion.div animate={{width: showNavPanel? `calc(100% - 420px)`: '100%'}} transition={{duration: 0.3, ease: "easeInOut"}} className={mainClassNames}  ref={setNodeRef} id="main">
+            <motion.div animate={{width: showNavPanel? `calc(100% - 420px)`: '100%'}} transition={{duration: 0.3, ease: "easeInOut"}} id="main">
               {!showNavPanel && 
                 <motion.button className="show-left-nav-button" initial={{x:0, opacity:0}} animate={{x:0,opacity:1}} exit={{opacity: 0}} transition={{duration: 0.3}} onClick={() => setShowNavPanel(true) }>
                   NAVPANEL
@@ -176,5 +128,4 @@ export const HomePage = ({raterStyle}:Props) => {
               />
             </motion.div>
           </div> 
-        </DndContext>
 }

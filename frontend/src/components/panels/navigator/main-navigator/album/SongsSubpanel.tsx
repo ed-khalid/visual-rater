@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react"
-import { mapSongScoreToUI } from "../../../../../functions/scoreUI"
 import { Album, Song, useGetAlbumsSongsQuery } from "../../../../../generated/graphql"
 import { SortButton, SortDirection } from "../../../../common/SortButton"
-import React from "react"
 import { useMusicDispatch } from "../../../../../hooks/MusicStateHooks"
 import './SongsSubpanel.css' 
 import { NavScoreInfo } from "../../NavScoreInfo"
