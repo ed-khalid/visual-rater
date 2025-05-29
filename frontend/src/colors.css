@@ -6,6 +6,9 @@
     --color-general-header: rgb(20, 24, 28);
     --color-general-button: rgb(17,17,17);
 
+    --color-nav-album: rgb(39, 46, 56); 
+    --color-nav-song: rgb(44, 52,64); 
+
     --color-panel-item-border: rgb(0,0,0);
 
     --color-scrollbar-thumb: rgb(60, 71, 88);

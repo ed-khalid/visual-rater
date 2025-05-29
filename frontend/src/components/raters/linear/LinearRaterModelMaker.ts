@@ -30,7 +30,11 @@ export class LinearRaterModelMaker  {
               res.push(word)
             }
           }
-          return res[0]
+          if (res.length) {
+            return res[0]
+          } else {
+            return song.name.toLowerCase().split(' ')[0]
+          }
         } 
     }
 

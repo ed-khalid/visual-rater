@@ -27,7 +27,7 @@
   },
   "include": [
     "src"
-, "deprecated/components/cartesian/CartesianRaterItem.tsx"  ],
+, "deprecated/components/cartesian/CartesianRaterItem.tsx", "src/components/panels/navigator/main-navigator/artist/AlbumsSubpanel.tsx", "src/components/panels/navigator/main-navigator/album/SongsSubpanel.tsx"  ],
   "exclude": ["deprecated"],
   "references": [{"path": "./tsconfig.node.json" }]
  

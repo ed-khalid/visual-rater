@@ -26,6 +26,18 @@ div.nav-panel-header-item {
     display: flex;
     background: var(--color-general-header); 
 } 
+div.nav-panel-header-item div.nav-panel-empty {
+    width: 80px;
+} 
+div.nav-panel-header-item div.nav-panel-header-main {
+    flex: 1
+} 
+div.nav-panel-header-item div.nav-panel-header-first {
+    width: 60px;
+} 
+div.nav-panel-header-item div.nav-panel-header-second {
+    width: 80px;
+} 
 div.alternate-titles {
     display: flex;
     cursor: pointer;
@@ -38,7 +50,10 @@ div.nav-panel-header-item div {
     text-align: center;
 }
 div.nav-panel-item.smaller {
-    height:50px;
+    height:55px;
+}
+div.nav-panel-item.album{
+    background-color: var(--color-nav-album);
 }
 li:last-child {
     border-bottom:none;
@@ -48,9 +63,8 @@ img.nav-panel-item-thumbnail {
     height: 100%;
 }
 img.nav-panel-item-thumbnail.smaller {
-    width: 30px;
-    height: 30px;
-    height:100%;
+    width: 55px;
+    height: 55px;
 }
 .nav-panel-item-info {
     flex: 1;
@@ -59,13 +73,9 @@ img.nav-panel-item-thumbnail.smaller {
 .nav-panel-item-info-name {
     font-size: 20px;
 }
-.nav-panel-item-info-name-input {
-    font-size: 16px;
-    color: #ccc;
-}
 .nav-panel-item-info-name.smaller {
     cursor: pointer;
-    font-size: 12px;
+    font-size: 14px;
 }
 
 .nav-item-controls {
@@ -76,13 +86,25 @@ img.nav-panel-item-thumbnail.smaller {
     font-size: 42px;
     height: 100%;
 }
+.nav-item-controls.smaller button.vis-rater-button {
+    font-size:12px;
+    width: 24px;
+    height: 24px;
+}
 .nav-panel-item-score {
     display: flex;
     flex-direction:column;
     align-items:center;
     justify-content: center;
     background:inherit;
+    height: 100%;
     width: 80px;
+}
+.nav-panel-item-score.album {
+    font-size: 26px;
+}
+.nav-panel-item-year {
+    width: 60px;
 }
 .nav-panel-item-score.smaller {
     display: flex;
@@ -90,10 +112,11 @@ img.nav-panel-item-thumbnail.smaller {
     align-items:center;
     justify-content: center;
     background:inherit;
-    width: 60px;
+    margin-top: 0;
+    width: 70px;
+    height: 100%;
 }
 .nav-panel-item-info-score-text {
-    margin-top: 10px;
     height: 100%;
     font-weight:bold;
     font-size:28px;
@@ -107,4 +130,17 @@ img.nav-panel-item-thumbnail.smaller {
 .nav-item-subpanel {
     display: flex;
     flex-direction: column;
+}
+
+div.nav-panel-item.song {
+    height: 30px;
+    background-color: var(--color-nav-song);
+}
+div.nav-panel-item.song div.nav-item-number {
+    font-weight: bold;
+    width: 80px;
+}
+div.nav-panel-item-score.song div.nav-panel-item-info-score-text {
+    font-size: 26px;
+    font-weight: 100;
 }

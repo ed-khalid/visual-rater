@@ -1,5 +1,4 @@
 import { Album, Artist, Song } from "../../../generated/graphql"
-import { ArtistDetails } from "../unrated/unrated-navigator/ArtistDetails"
 import { NavScoreInfo } from "./NavScoreInfo"
 
 interface Props {

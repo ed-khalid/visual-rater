@@ -1,12 +1,11 @@
 import { useContext } from "react"
-import { Artist } from "../../../../generated/graphql"
-import { useMusicStateOperator } from "../../../../hooks/MusicStateHooks"
-import { NavScoreInfo } from "../NavScoreInfo"
-import { ArtistDetails } from "./ArtistDetails"
-import { MusicNavigatorContext } from "../../../../providers/MusicNavigationProvider"
+import { Artist } from "../../../../../generated/graphql"
+import { useMusicStateOperator } from "../../../../../hooks/MusicStateHooks"
+import { NavScoreInfo } from "../../NavScoreInfo"
+import { MusicNavigatorContext } from "../../../../../providers/MusicNavigationProvider"
 import { useDraggable } from "@dnd-kit/core"
-import './MusicNavigatorArtist.css'
-import { VisualRaterButton } from "../../../common/VisRaterButton"
+import { VisualRaterButton } from "../../../../common/VisRaterButton"
+import { AlbumsSubpanel } from "./AlbumsSubpanel"
 
 interface Props {
     artist:Artist
@@ -14,7 +13,7 @@ interface Props {
     isExpanded:boolean
 }
 
-export const MusicNavigatorArtist = ({artist, onArtistSelect, isExpanded}:Props) => {
+export const MusicNavigatorArtistRow = ({artist, onArtistSelect, isExpanded}:Props) => {
 
     const { openOverview, dispatchToRater } = useContext(MusicNavigatorContext) 
 
@@ -63,7 +62,7 @@ export const MusicNavigatorArtist = ({artist, onArtistSelect, isExpanded}:Props)
                     <NavScoreInfo item={artist} type="artist" />
                 </div> 
                   { isExpanded && 
-                      <ArtistDetails key={"artist-"+artist.id+"-details"} dispatchAlbumToRater={(album, shouldRemove) => dispatchToRater({ artist, albumId: album.id}, shouldRemove)} artist={artist} />    
+                      <AlbumsSubpanel key={"artist-"+artist.id+"-details"} dispatchAlbumToRater={(album, shouldRemove) => dispatchToRater({ artist, albumId: album.id}, shouldRemove)} artist={artist} />    
                   } 
                 </li> 
 }

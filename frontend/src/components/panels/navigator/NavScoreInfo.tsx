@@ -21,13 +21,11 @@ export const NavScoreInfo = ({item, type}: Props) => {
                       <div className="nav-panel-item-info-score-descriptor">{mapArtistScoreToUI(score).score}</div>
                     </div> 
         case "album":
-            return <div style={{backgroundColor: mapArtistScoreToUI(score).color}} className="nav-panel-item-info-score">
-                      <div className="nav-panel-item-info-score-text">
+            return <div style={{backgroundColor: mapArtistScoreToUI(score).color}} className="nav-panel-item-score album">
                             {(score) ? score.toFixed(2) : 'N/A'}
-                      </div>
                    </div> 
         case "song":
-                return <div className="nav-panel-item-info-score" style={{background: mapSongScoreToUI(score).color }}>
+                return <div className="nav-panel-item-score song" style={{background: mapSongScoreToUI(score).color }}>
                     <div className="nav-panel-item-info-score-text">
                         {score}
                     </div>

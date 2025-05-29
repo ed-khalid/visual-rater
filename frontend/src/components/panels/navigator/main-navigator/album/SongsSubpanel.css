@@ -2,8 +2,7 @@
 div.album-details-panel {
     cursor:auto;
     display: grid;
-    grid-template-columns: 5px 30px 1fr 70px;
-    grid-template-rows: 30px;
+    grid-template-columns: 2px 30px 1fr 70px;
     grid-auto-rows: 70px;
 } 
 div.header-cell {

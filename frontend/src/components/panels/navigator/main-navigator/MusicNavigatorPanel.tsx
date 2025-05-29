@@ -1,7 +1,7 @@
 import { Artist } from "../../../../generated/graphql"
 import { FilterMode } from "../../../../music/MusicFilters"
 import { useMusicDispatch, useMusicStateOperator } from "../../../../hooks/MusicStateHooks"
-import { MusicNavigatorArtist } from "./MusicNavigatorArtist"
+import { MusicNavigatorArtistRow } from "./artist/MusicNavigatorArtistRow"
 import { useState } from "react"
 import './MusicNavigatorPanel.css'
 import { motion } from 'motion/react'
@@ -98,7 +98,7 @@ export const MusicNavigatorPanel = ({artists, onCollapse}: Props) => {
         <div className="panel-content">
         <ul id="artists-list">
                 {sortedArtists.map(artist => 
-                <MusicNavigatorArtist key={'music-nav-artist-' + artist.id} artist={artist} isExpanded={expandedArtistIds.includes(artist.id)} onArtistSelect={onArtistSelect} />
+                <MusicNavigatorArtistRow key={'music-nav-artist-' + artist.id} artist={artist} isExpanded={expandedArtistIds.includes(artist.id)} onArtistSelect={onArtistSelect} />
               )}
         </ul>
         </div>

@@ -1,16 +1,17 @@
 import { useEffect, useState } from "react"
-import './AlbumDetailsPanel.css' 
-import { mapSongScoreToUI } from "../../../../functions/scoreUI"
-import { Album, Song, useGetAlbumsSongsQuery } from "../../../../generated/graphql"
-import { SortButton, SortDirection } from "../../../common/SortButton"
+import { mapSongScoreToUI } from "../../../../../functions/scoreUI"
+import { Album, Song, useGetAlbumsSongsQuery } from "../../../../../generated/graphql"
+import { SortButton, SortDirection } from "../../../../common/SortButton"
 import React from "react"
-import { useMusicDispatch } from "../../../../hooks/MusicStateHooks"
+import { useMusicDispatch } from "../../../../../hooks/MusicStateHooks"
+import './SongsSubpanel.css' 
+import { NavScoreInfo } from "../../NavScoreInfo"
 
 interface Props {
     album: Album
 }
 
-export const AlbumDetailsPanel = ({album}: Props) => {
+export const SongsSubpanel = ({album}: Props) => {
 
     const musicDispatch = useMusicDispatch()
 
@@ -63,39 +64,32 @@ export const AlbumDetailsPanel = ({album}: Props) => {
 
 
 
-    return <div className="album-details-panel">
-                <div className="album-song-cell header-cell">
-                    &nbsp;
-                </div>
-                <div className="album-song-cell header-cell">
-                    #
-                    <SortButton sortDirection={trackSortDirection} flipDirection={flipDirection} />
-                </div>
-                <div className="album-song-cell header-cell">
-                    Track Name
-                </div>
-                <div className="album-song-cell header-cell">
-                    Score
-                    <SortButton sortDirection={scoreSortDirection} flipDirection={scoreFlipDirection} />
-                </div>
+    return <div className="nav-item-subpanel">
+                  <div className="nav-panel-header-item">
+                        <div className="nav-panel-empty">
+                            #
+                        </div> 
+                        <div className="nav-panel-header-main">
+                            TITLE
+                        </div>
+                        <div className="nav-panel-header-second">
+                            SCORE
+                            <SortButton sortDirection={scoreSortDirection} flipDirection={scoreFlipDirection} />
+                        </div> 
+                </div> 
 
         { sortedTracks.map(song =>
-        <React.Fragment key={"track-"+song.id}>
-          <div className="album-song-controls">
-                    &nbsp;
-                </div>
-                <div className="album-song-number">
+        <div className="nav-panel-item song smaller">
+          <div className="nav-item-number smaller">
                     {song.number}
-                </div>
-                <div className="album-song-name">
+             </div>
+                <div className="nav-panel-item-info">
+                    <div className="nav-panel-item-info-name smaller">
                   {song.name}
-                </div>
-                <div className="album-song-score" style={{background: mapSongScoreToUI(song.score).color }}>
-                    <div className="album-song-score-text">
-                        {song.score || 'N/A' }
                     </div>
                 </div>
-        </React.Fragment>
+                <NavScoreInfo item={song} type={'song'} />
+        </div> 
         )
        }
     </div>

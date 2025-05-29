@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react"
-import './ArtistDetails.css'
-import { Album, Artist, useGetAlbumsQuery } from "../../../../generated/graphql"
-import { AlbumDetailsPanel } from "./AlbumDetailsPanel"
-import { FilterMode } from "../../../../music/MusicFilters"
-import { useMusicDispatch, useMusicState, useMusicStateOperator } from "../../../../hooks/MusicStateHooks"
-import { MusicNavigatorAlbum } from "./MusicNavigatorAlbum"
+import { Album, Artist, useGetAlbumsQuery } from "../../../../../generated/graphql"
+import { SongsSubpanel } from "../album/SongsSubpanel"
+import { FilterMode } from "../../../../../music/MusicFilters"
+import { useMusicDispatch, useMusicStateOperator } from "../../../../../hooks/MusicStateHooks"
+import { MusicNavigatorAlbumRow } from "../album/MusicNavigatorAlbumRow"
 
 
 interface Props {
@@ -13,14 +12,14 @@ interface Props {
 }
 
 
-export const ArtistDetails = ({artist, dispatchAlbumToRater}: Props) => {
+export const AlbumsSubpanel = ({artist, dispatchAlbumToRater}: Props) => {
 
     const musicDispatch = useMusicDispatch()
     const store = useMusicStateOperator()
 
 
     const [sortedAlbums ,setSortedAlbums] = useState<Album[]>([]) 
-    const expandedAlbumIds  = store.navigationFilters.find(it => it.artistId === artist.id)?.albumIds || []
+    const expandedAlbumIds:string[]  = store.navigationFilters.find(it => it.artistId === artist.id)?.albumIds || []
 
     const { data, loading, error } = useGetAlbumsQuery({ variables: {
         ids: artist.albums.map((it:any) => it.id)
@@ -44,24 +43,24 @@ export const ArtistDetails = ({artist, dispatchAlbumToRater}: Props) => {
 
     return <div className="nav-item-subpanel">
         <div className="nav-panel-header-item">
-            <div style={{width: '140px'}} className="nav-panel-empty">
+            <div className="nav-panel-empty">
                 
             </div> 
-            <div style={{width: '310px'}}>
+            <div className="nav-panel-header-main">
                 TITLE
             </div>
-            <div style={{width: '60px'}}>
+            <div className="nav-panel-header-first">
                 YEAR
             </div> 
-            <div style={{width: '60px', background:'inherit'}} >
+            <div className="nav-panel-header-second">
                 SCORE
             </div> 
        </div> 
 
         {  sortedAlbums.map((album:any) => 
         <div key={`artist-album-${album.id}`}>
-            <MusicNavigatorAlbum isExpanded={expandedAlbumIds.includes(album.id)} album={album} onAlbumSelect={onAlbumSelect} dispatchAlbumToRater={dispatchAlbumToRater} />
-            {expandedAlbumIds.some(id=> id === album.id) && <AlbumDetailsPanel key={"artist-"+artist.id+"-album-"+album.id} album={album} /> } 
+            <MusicNavigatorAlbumRow isExpanded={expandedAlbumIds.includes(album.id)} album={album} onAlbumSelect={onAlbumSelect} dispatchAlbumToRater={dispatchAlbumToRater} />
+            {expandedAlbumIds.some(id=> id === album.id) && <SongsSubpanel key={"artist-"+artist.id+"-album-"+album.id} album={album} /> } 
         </div>
         )}
     </div>

@@ -1,8 +1,8 @@
 import { useDraggable } from "@dnd-kit/core"
-import { Album } from "../../../../generated/graphql"
-import { useMusicState } from "../../../../hooks/MusicStateHooks"
-import { NavScoreInfo } from "../NavScoreInfo"
-import { VisualRaterButton } from "../../../common/VisRaterButton"
+import { Album } from "../../../../../generated/graphql"
+import { useMusicState } from "../../../../../hooks/MusicStateHooks"
+import { NavScoreInfo } from "../../NavScoreInfo"
+import { VisualRaterButton } from "../../../../common/VisRaterButton"
 
 interface Props {
     album: Album
@@ -11,7 +11,7 @@ interface Props {
     dispatchAlbumToRater: any
 }
 
-export const MusicNavigatorAlbum = ({album, isExpanded, onAlbumSelect, dispatchAlbumToRater}: Props) => {
+export const MusicNavigatorAlbumRow = ({album, isExpanded, onAlbumSelect, dispatchAlbumToRater}: Props) => {
 
     const { attributes, listeners, setNodeRef} = useDraggable({
         id: 'draggable-album-' + album.id,
@@ -33,8 +33,8 @@ export const MusicNavigatorAlbum = ({album, isExpanded, onAlbumSelect, dispatchA
         const raterFilters = musicState.raterFilters 
         return (raterFilters.albumIds) ? raterFilters.albumIds.some(it => it === album.id) : false  
      }
-        return <div ref={setNodeRef} className="nav-panel-item smaller">
-            <div className="nav-item-controls">
+        return <div ref={setNodeRef} className="nav-panel-item album smaller">
+            <div className="nav-item-controls smaller">
                 <VisualRaterButton onClick={() => dispatchAlbumToRater(album, isOnRater(album))}>
                     {isOnRater(album) ? '-' : '+'}  
                     </VisualRaterButton> 
@@ -52,9 +52,7 @@ export const MusicNavigatorAlbum = ({album, isExpanded, onAlbumSelect, dispatchA
             <div className="nav-panel-item-year">
                 {album.year}
             </div> 
-            <div className="nav-panel-item-score smaller">
-                <NavScoreInfo item={album} type={'album'}/>
-            </div> 
+            <NavScoreInfo item={album} type={'album'}/>
         </div>
 
 }

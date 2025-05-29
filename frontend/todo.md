@@ -1,5 +1,11 @@
+# MUSIC NAV
+- rethink the buttons [ accordion expand bottom of row, name clicking opens overview, rater controls to the left]
+- add exclusive filter button
 # LINEAR RATER 
+- comparison songs!
+
 - better proximity: (group by category first) 
+- think about multiple raters
 
 # ALBUM OVERVIEW
 - improve linking 
@@ -13,11 +19,6 @@
 
 # REVIEW (COMMENTS)
 - add a review table associated to artist/album/song
-
-# DRAGGING ALBUM
-- make the whole row draggable somehow, or introduce an
-icon for dragging (dragging a row is challengin
-because it disables click-events ont he row) 
 
 # SEARCH
 - take AddSection out of Sidebar and make it a floating panel 

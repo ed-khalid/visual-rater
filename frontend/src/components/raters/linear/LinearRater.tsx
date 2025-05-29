@@ -2,17 +2,17 @@ import { useEffect, useRef, useState } from "react";
 import { scaleLinear } from "d3-scale";
 import { FatSong } from "../../../models/CoreModels";
 import { SONG_SCORE_DICTIONARY, UNRATED_COLOR } from "../../../models/ScoreModels";
-import { LinearRaterItem } from "./LinearRaterItem";
 import { isMultiple, isSingle, LinearRaterCircleModel } from "../../../models/RaterModels";
 import { LinearRaterContext } from "../../../providers/LinearRaterProvider";
 import { mapSongScoreToUI } from "../../../functions/scoreUI";
 import { select, selectAll } from "d3";
 import './LinearRater.css'
 import { Song } from "../../../generated/graphql";
-import { LinearRaterGroupItem } from "./LinearRaterGroupItem";
-import { LinearRaterModelMaker } from "./LinearRaterModelMaker";
-import { UnratedLinearRaterItem } from "./UnratedLinearRaterItem";
 import { LinearRaterConfig } from "../../../models/LinearRaterModel";
+import { LinearRaterItem } from "./LinearRaterItem";
+import { LinearRaterGroupItem } from "./LinearRaterGroupItem";
+import { UnratedLinearRaterItem } from "./UnratedLinearRaterItem";
+import { LinearRaterModelMaker } from "./LinearRaterModelMaker";
 
 const CATEGORIES = SONG_SCORE_DICTIONARY.values().filter(it => it.category !== 'UNRATED').map((it) => ({ label: it.category, color: it.color, stop: it.threshold.high  }) ).toArray().reverse()
 
