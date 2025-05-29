@@ -52,7 +52,7 @@ export const LinearRaterGroupItem = ({item, largestGroupItemCount}:Props) => {
           stroke={config.stroke}
           strokeWidth={config.strokeWidth}
         />
-        {circleModels.map((circle, i) => <LinearRaterCircle item={circle.circleModel} i={i} position={circle.position} color={circle.color} />)}
+        {circleModels.map((circle, i) => <LinearRaterCircle key={`linear-rater-circle-${circle.circleModel.id}`} item={circle.circleModel} i={i} position={circle.position} color={circle.color} />)}
 
         <motion.text 
         initial={{opacity: 0}}

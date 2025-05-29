@@ -35,7 +35,7 @@ export const LinearRaterCircle = ({item, i, color, position }: Props) => {
                     circle.attr('cy', newY)
                     text.attr('y', circleConfig.songName.y(newY))
                     g.select('#dragline-line').attr('y1', newY).attr('y2', newY)
-                    g.select('#dragline-label').attr('y', connectingLineConfig.category.y(newY)).text(getScoreCategoryDetails(yToScore(newY)).category)
+                    g.select('#dragline-label').attr('y', connectingLineConfig.category.y(newY)).text(getScoreCategoryDetails(Math.round(yToScore(newY))).category)
                     g.select('#dragline-score').attr('y', newY).text(Math.round(yToScore(newY)))
                 }
             ).on('start', (event) => {

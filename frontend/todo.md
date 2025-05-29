@@ -1,7 +1,10 @@
 # LINEAR RATER 
+- better proximity: (group by category first) 
 
 # ALBUM OVERVIEW
+- improve linking 
 - shows a line chart of the album and a descriptor of its flow
+- tracklist scroll doesnt show the full height of last item
 # RATING
 6. - scroll to album to which song belongs 
 7. - color-code albums on rater (change color on navpanel and color of items )

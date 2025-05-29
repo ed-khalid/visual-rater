@@ -26,7 +26,7 @@ const LinearRaterCircleConfig = {
     x: (i:number) => LinearRaterMainRectConfig.x + firstCircleDistance + (i* distanceBetweenCircles),
     radius: 8,
     stroke: "#fff",
-    strokeWidth: 2,
+    strokeWidth: 1.5,
   }, 
   songName: {
     x: (i:number) => LinearRaterMainRectConfig.x + firstCircleDistance + (i* distanceBetweenCircles), 

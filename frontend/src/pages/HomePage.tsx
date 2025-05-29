@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { MusicNavigatorPanel } from "../components/panels/navigator/main-navigator/MusicNavigatorPanel"
-import { Album, Artist, Song, useGetAlbumsSongsLazyQuery, useGetArtistFullLazyQuery, useGetArtistsPageQuery } from "../generated/graphql"
+import { Album, Artist, Song, useGetAlbumsSongsLazyQuery, useGetArtistFullLazyQuery, useGetArtistsPageQuery, useOnAlbumUpdateSubscription, useOnArtistUpdateSubscription } from "../generated/graphql"
 import { useMusicDispatch, useMusicState, useMusicStateOperator } from "../hooks/MusicStateHooks"
 import { RaterEntityRequest, RaterStyle } from "../models/RaterModels"
 import { FilterMode } from "../music/MusicFilters"
@@ -20,6 +20,10 @@ interface Props {
 }
 
 export const HomePage = ({raterStyle}:Props) => {
+
+  // those will update apollo client data automagically 
+  useOnArtistUpdateSubscription()
+  useOnAlbumUpdateSubscription()
 
   const { isOver, setNodeRef } = useDroppable({
     id: 'droppable-rater',

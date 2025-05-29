@@ -35,7 +35,7 @@ export const UnratedLinearRaterItem = ({y, item}:Props) => {
         />
 
         {item.items.map( (circleModel, i) => 
-            (<LinearRaterCircle color={UNRATED_COLOR} item={circleModel} i={i} position={y} />
+            (<LinearRaterCircle key={`unrated-linear-circle-${circleModel.id}`} color={UNRATED_COLOR} item={circleModel} i={i} position={y} />
             )
         )}
 

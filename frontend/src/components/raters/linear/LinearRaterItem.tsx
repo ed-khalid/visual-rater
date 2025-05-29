@@ -41,7 +41,7 @@ export const LinearRaterItem = ({ item, largestGroupItemCount}: Props) => {
         />
 
         {item.items.map( (circleModel, i) => 
-            (<LinearRaterCircle color={color} item={circleModel} i={i} position={position} />
+            (<LinearRaterCircle key={`linear-rater-item-circle-${circleModel.id}`} color={color} item={circleModel} i={i} position={position} />
             )
         )}
         {/* Score */}

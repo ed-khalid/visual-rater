@@ -55,7 +55,7 @@ export const LinearRater = ({items, onScoreUpdate}: Props) => {
   console.log('largestGroupItemCount', largestGroupItemCount)
 
   const onDragEnd = (item:LinearRaterCircleModel, newScore:number) => {
-    select("g.linear-rater-group").classed('dimmed', false)
+    selectAll("g.linear-rater-group").classed('dimmed', false)
     select(`g#linear-rater-item-${item.id}`).classed('selected', false)
     const song = items.map(it => it.song).find(it => it.id === item.id)  
     if (!song) throw `LinearRater: song ${item.id} not found in items!`
