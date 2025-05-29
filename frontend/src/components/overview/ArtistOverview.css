@@ -8,6 +8,16 @@ div.artist-overview {
     "tier thumbnail metadata trajectory" 
     "albums albums albums albums";
 }  
+div.tier {
+    grid-area: tier;
+}
+div.thumbnail {
+    grid-area: thumbnail;
+}
+div.thumbnail img {
+    width: 100%;
+    height: 100%;
+}
 div.artist-overview div.header  {
     background: var(--color-general-header); 
 }

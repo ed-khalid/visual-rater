@@ -57,7 +57,7 @@ export const mapArtistScoreToUI = (score?:Maybe<number>) : ArtistScoreUI => {
     for (let [,v] of ARTIST_SCORE_MAP) {
       let _score = score || -Infinity  
       if (v.threshold.low <= _score && v.threshold.high  >= _score ) { 
-            if (v.category === 'N/A')  {
+            if (v.category === 'U')  {
                 return { ...v, score: 'unrated' }
             } else 
             return { ...v, score:_score.toFixed(1) }
@@ -67,7 +67,7 @@ export const mapArtistScoreToUI = (score?:Maybe<number>) : ArtistScoreUI => {
 }  
  
 export const mapSongScoreToUI  = (score?:Maybe<number>) : SongScoreUI  => {
-    if (score == undefined) {
+    if (score === undefined || score === null) {
         return { ...SONG_SCORE_DICTIONARY.get('UNRATED')!, score: -Infinity }
     }
     if (score < SCORE_START || score > SCORE_END ) {

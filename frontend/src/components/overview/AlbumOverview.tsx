@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { Album, Song, useGetAlbumsSongsQuery, useUpdateAlbumMutation } from "../../generated/graphql"
+import { Album, GetAlbumsSongsDocument, Song, useGetAlbumsSongsQuery, useUpdateAlbumMutation, useUpdateSongMutation } from "../../generated/graphql"
 import './AlbumOverview.css'
 import { mapArtistScoreToUI, mapSongScoreToUI } from "../../functions/scoreUI"
 import { useMusicDispatch } from "../../hooks/MusicStateHooks"
@@ -8,6 +8,8 @@ import { Editable } from "../common/Editable"
 import { VisualRaterButton } from "../common/VisRaterButton"
 import { OverviewLink } from "../../models/OverviewModels"
 import { LinearRater } from "../raters/linear/LinearRater"
+import { mapSongToFatSong } from "../../functions/mapper"
+import { FatSong } from "../../models/CoreModels"
 
 interface Props {
     artist: { id: string, name: string} 
@@ -20,6 +22,9 @@ export const AlbumOverview = ({album, artist, onClose, onLinkClick }:Props) => {
     const musicDispatch = useMusicDispatch()
     const { data, loading, error} = useGetAlbumsSongsQuery({ variables: { albumIds: [album.id]}})
     const [tracks,setTracks] = useState<Song[]>([]) 
+    const [fatSongs, setFatSongs] = useState<FatSong[]>([])
+
+    const [updateSongMutation, ] = useUpdateSongMutation()
 
     const [updateAlbumMutation, _ ] = useUpdateAlbumMutation() 
 
@@ -31,12 +36,20 @@ export const AlbumOverview = ({album, artist, onClose, onLinkClick }:Props) => {
         if (data?.albums?.at(0)?.songs) {
             musicDispatch({ type: 'DATA_CHANGE', data: { songs: data.albums[0].songs as Song[] }})
             setTracks([...data.albums[0].songs])
+            setFatSongs(data.albums[0].songs.map((it) => mapSongToFatSong(it, { name: album.name }, artist )))
         }
     }, [data])
 
     const onArtistNameClick = () => {
         onLinkClick({ id: artist.id, type: 'artist' })
     }
+
+    const onSongScoreUpdate = (song:Song) => {
+        updateSongMutation({ variables: {song:  { id: song.id , score: song.score} }, refetchQueries: [{ query: GetAlbumsSongsDocument, variables: { albumIds: [album.id] }  }]})
+    }
+
+
+
 
     const scoreCategory = mapArtistScoreToUI(album.score)
 
@@ -74,9 +87,11 @@ export const AlbumOverview = ({album, artist, onClose, onLinkClick }:Props) => {
             </div>
             <div className="album-year">{album.year}</div>
             <div className="rater">
+                <div className="title">Ratings</div>
+                <LinearRater items={fatSongs} rowRefs={[]} onScoreUpdate={onSongScoreUpdate}  />
             </div>
             <div className="album-tracks">
-            <div className="title">Tracklist</div> 
+            <div className="title">Songs</div> 
             <div className="list">
                 <ul>
                 {tracks.map((track:Song) => <li key={"track-"+track.id} className="track-row">
@@ -84,7 +99,7 @@ export const AlbumOverview = ({album, artist, onClose, onLinkClick }:Props) => {
                     <div className="track-name">{track.name}</div>
                     <div className="track-score" style={{backgroundColor: mapSongScoreToUI(track.score).color }}>
                         <div className="track-score-value">
-                            {track.score}
+                            {track.score || 'U' }
                         </div>
                         <div className="track-score-category">
                             {mapSongScoreToUI(track.score).category}

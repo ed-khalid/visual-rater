@@ -107,11 +107,11 @@ export const RaterManager = ({items, raterStyle, totalRows}:Props) => {
             }
           </DragOverlay>
         <div id="rater-wrapper">
-            {(unratedItems.length > 0) && <UnratedRaterPanel items={unratedItems} />}
+            {(raterStyle !== RaterStyle.LINEAR) && (unratedItems.length > 0) && <UnratedRaterPanel items={unratedItems} />}
             <div id="rater-content">
                 {(raterStyle=== RaterStyle.GRID) && <GridRater rowRefs={[]} items={ratedItems}  />}
                 {(raterStyle=== RaterStyle.LIST) && <BlockRater items={ratedItems}  rowRefs={[]} />}
-                {(raterStyle=== RaterStyle.LINEAR) && <LinearRater items={ratedItems} onScoreUpdate={onLinearRaterScoreUpdate}  rowRefs={[]} />}
+                {(raterStyle=== RaterStyle.LINEAR) && <LinearRater items={items} onScoreUpdate={onLinearRaterScoreUpdate}  rowRefs={[]} />}
             </div>
             {/* {(raterStyle=== RaterStyle.CARTESIAN) && <CartesianRater />} */}
         </div> 

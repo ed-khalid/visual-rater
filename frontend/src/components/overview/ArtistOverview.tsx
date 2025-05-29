@@ -65,15 +65,15 @@ export const ArtistOverview = ({artist, onClose, onLinkClick: onAlbumTitleClick}
                         </VisualRaterButton>
                     </div>
                 </div>
-               <div className="thumbnail">
-                  <img className="thumbnail" src={artist.thumbnail!} alt="" />
-               </div>
-               <div style={{backgroundColor: mapArtistScoreToUI(artist.score || 0).color}}  className="tier flex col">
+               <div style={{backgroundColor: mapArtistScoreToUI(artist.score || 0).color}}  className="tier">
                   <div  className="big-text">
                       { mapArtistScoreToUI(artist.score|| 0 ).category}
                   </div>
                   <div className="score">{artist.score}</div>
                 </div>
+               <div className="thumbnail">
+                  <img className="thumbnail" src={artist.thumbnail!} alt="" />
+               </div>
                <div className="metadata">
                 <ArtistMetadataWidget metadata={artist.metadata} />
                 <div className="metadata-songs-albums">

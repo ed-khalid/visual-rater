@@ -30,7 +30,6 @@ export const Modal = ({ handleClose, children }:Props) => {
             exit="hidden"
           >
             {children}
-            <button onClick={handleClose}>Close</button>
           </motion.div>
       </Backdrop>
     );

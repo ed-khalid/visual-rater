@@ -1,42 +1,66 @@
 import { LinearRaterItemModel } from "../../../models/RaterModels"
 import { LinearRaterCircle } from "./LinearRaterCircle"
 import { LinearRaterContext } from "../../../providers/LinearRaterProvider"
+import { motion } from 'motion/react'
 import { useContext } from "react"
+import { LinearRaterConfig } from "../../../models/LinearRaterModel"
 
 interface Props {
     item:LinearRaterItemModel
+    largestGroupItemCount: number
 }
 
 
-export const LinearRaterItem = ({ item}: Props) => {
+export const LinearRaterItem = ({ item, largestGroupItemCount}: Props) => {
 
-    const { mainlineX, yToScore, getScoreCategoryDetails  } = useContext(LinearRaterContext)
+    const { yToScore, getScoreCategoryDetails  } = useContext(LinearRaterContext)
 
     const position = yToScore.invert(item.score)   
     const { category, color } = getScoreCategoryDetails(item.score) 
+    const config = LinearRaterConfig.connectingLine
+    const fontConfig = LinearRaterConfig.font
 
-    return <g className="linear-rater-group" id={`linear-rater-item-${item.id}`}>
-        <line
-          x1={mainlineX+20}
+    const lineOffsetX = config.end(item.items.length) 
+
+    return <g
+              className="linear-rater-group" 
+              id={`linear-rater-item-group-${item.id}`}
+           >
+        {/* Connecting Line */}
+        <motion.line
+          initial={{opacity: 0, x2: config.start}}
+          animate={{opacity: 1, x2: lineOffsetX}}
+          exit={{opacity: 0, x2:config.start}}
+          transition={{ duration: config.animation.duration, ease: 'easeInOut'}}
+          x1={config.start}
           y1={position}
-          x2={mainlineX + 200 + ( 50 * (item.items.length - 1)) }
+          x2={lineOffsetX}
           y2={position}
-          stroke="#999"
-          strokeWidth={1}
+          stroke={config.stroke}
+          strokeWidth={config.strokeWidth}
         />
 
         {item.items.map( (circleModel, i) => 
             (<LinearRaterCircle color={color} item={circleModel} i={i} position={position} />
             )
         )}
-        <text x={mainlineX + 230 + (30 * (item.items.length))  } y={position+5} fontSize={12} fill="#fff">
+        {/* Score */}
+        <motion.text 
+        initial={{opacity: 0}}
+        animate={{opacity: 1}}
+        transition={{ delay: config.scoreLabel.animation.delay, ease: 'easeInOut' }}
+        x={config.scoreLabel.x(largestGroupItemCount)} y={config.scoreLabel.y(position)} fontSize={fontConfig.size} fill={fontConfig.fill}>
             {item.score}
-        </text>
+        </motion.text>
 
-        {/* Label */}
-        <text x={mainlineX + 20} y={position - 2} fontSize={12} fill="#fff">
+        {/* Category */}
+        <motion.text
+        initial={{opacity: 0}}
+        animate={{opacity: 1}}
+        transition={{ delay: config.category.animation.delay, ease: 'easeInOut' }}
+         x={config.category.x} y={config.category.y(position)} fontSize={fontConfig.size} fill={fontConfig.fill}>
           {category}
-        </text>
+        </motion.text>
     </g>
 
 } 

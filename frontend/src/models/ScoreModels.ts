@@ -1,6 +1,6 @@
 
-export type ArtistScoreCategory  = 'A+'|'A'|'B+'|'B'|'C+'|'C'|'D'|'E'|'F'|'N/A'  
-export type AlbumScoreCategory   = 'A+'|'A'|'B+'|'B'|'C+'|'C'|'D'|'E'|'F'|'UNRATED'  
+export type ArtistScoreCategory  = 'A+'|'A'|'B+'|'B'|'C+'|'C'|'D'|'E'|'F'|'U'  
+export type AlbumScoreCategory   = 'A+'|'A'|'B+'|'B'|'C+'|'C'|'D'|'E'|'F'|'U'  
 export type SongScoreCategory    = 'CLASSIC'|'GREAT'|'VERY GOOD'|'GOOD'|'PLEASANT'|'DECENT'|'INTERESTING'|'OK'|'MEH'|'AVERAGE'|'BORING'|'POOR'|'BAD'|'OFFENSIVE'|'UNRATED'  
 
 export type ScoreThreshold = { low:number, high:number} 
@@ -38,10 +38,10 @@ export const GOOD_COLOR = 'rgb(47, 101, 63)'
 export const PLEASANT_COLOR = 'rgb(78, 118, 90)'     
 export const DECENT_COLOR = 'rgb(96, 130, 70)'
 export const INTERESTING_COLOR = 'rgb(86, 98, 40)'
-export const OK_COLOR = 'rgb(122, 122, 82)'
-export const AVERAGE_COLOR = 'rgb(78, 81, 74)'    
-export const MEH_COLOR = 'rgb(130, 130, 80)'
-export const BORING_COLOR = 'rgb(144, 120, 97)'
+export const OK_COLOR = 'rgb(156, 156, 58)'
+export const MEH_COLOR = 'rgb(162, 140, 75)'
+export const AVERAGE_COLOR = 'rgb(179, 140, 55)'    
+export const BORING_COLOR = 'rgb(161, 107, 57)'
 export const POOR_COLOR = 'rgb(167, 55, 38)'
 export const BAD_COLOR = 'rgb(88, 19, 16)'
 export const OFFENSIVE_COLOR = 'rgb(8, 22, 22)'
@@ -77,6 +77,8 @@ SONG_SCORE_DICTIONARY.set('BAD',
     { category: 'BAD', color: BAD_COLOR, threshold: {low:10,high:29} })
 SONG_SCORE_DICTIONARY.set('OFFENSIVE', 
     { category: 'OFFENSIVE', color: OFFENSIVE_COLOR, threshold: {low:-1,high:9} })
+SONG_SCORE_DICTIONARY.set('UNRATED', 
+    { category: 'UNRATED', color: UNRATED_COLOR, threshold: {low:-Infinity,high:-Infinity} })
 
 export const ARTIST_SCORE_MAP:Map<ArtistScoreCategory, ArtistScoreUIBase> = new Map()   
 ARTIST_SCORE_MAP.set('A+',{ category: 'A+', color: CLASSIC_COLOR, threshold: {low:90,high:Infinity} }) 
@@ -88,7 +90,7 @@ ARTIST_SCORE_MAP.set('C',  { category: 'C', color: INTERESTING_COLOR, threshold:
 ARTIST_SCORE_MAP.set('D',{ category: 'D' , color:  BORING_COLOR, threshold: {low:30,high:39.99} })
 ARTIST_SCORE_MAP.set('E',  { category: 'E' , color: POOR_COLOR, threshold: {low:10,high:29.99} })
 ARTIST_SCORE_MAP.set('F', { category: 'F' , color:  BAD_COLOR, threshold: {low:0,high:9.99}  })
-ARTIST_SCORE_MAP.set('N/A', { category: 'N/A' , color: UNRATED_COLOR, threshold: {low:-Infinity,high:-Infinity}  })
+ARTIST_SCORE_MAP.set('U', { category: 'U' , color: UNRATED_COLOR, threshold: {low:-Infinity,high:-Infinity}  })
 
 
 

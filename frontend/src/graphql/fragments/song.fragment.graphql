@@ -7,6 +7,7 @@ fragment SongFields on Song {
     number
     discNumber
     score
+    shortname
     genres {
         ...GenreFields
     }
