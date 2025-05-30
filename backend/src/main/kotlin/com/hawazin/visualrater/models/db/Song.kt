@@ -26,7 +26,27 @@ data class Song(
         inverseJoinColumns = [JoinColumn(name = "genre_id")]
     )
     var secondaryGenres: MutableList<Genre>,
+
+    @OneToOne(mappedBy = "song", fetch = FetchType.LAZY, cascade = [CascadeType.ALL])
+    private var shortNameEntity: SongShortname? = null
 ) {
+
+    var shortname: String?
+        get() = shortNameEntity?.shortName
+        set(newShortName: String?) {
+            newShortName?.let {
+                shortNameEntity?.let {
+                    it.shortName = newShortName
+                }  ?: run {
+                    shortNameEntity = SongShortname(
+                        shortName = newShortName,
+                        song = this
+                    )
+                }
+            } ?: run {
+                shortNameEntity = null
+            }
+        }
 
     val genres:Genres get() =
         Genres(

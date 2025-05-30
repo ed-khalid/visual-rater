@@ -8,6 +8,19 @@ enum ItemType {
 MUSIC
 }
 
+type UnratedAlbum implements Item {
+    id: String!
+    artistId:String!
+    name: String!
+    year: Int
+    thumbnail: String
+    dominantColor: String
+    songs:[Song!]!
+    score:Float
+    genres:Genres!
+    artist:Artist!
+}
+
 type Song implements Item {
     id:String!
     albumId:String!
@@ -16,7 +29,8 @@ type Song implements Item {
     name: String!
     number:Int!
     discNumber:Int!
-    genres:Genres
+    genres:Genres!
+    shortname: String
 }
 
 type Genre {

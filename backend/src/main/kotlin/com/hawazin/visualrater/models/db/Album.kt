@@ -13,7 +13,8 @@ data class Album(
     var thumbnail:String?,
     var year:Int,
     var dominantColor:String?,
-    var score:Double,
+    var score:Double?,
+    @Column(name="artistId", insertable =  false, updatable = false)
     val artistId: UUID,
     val vendorId:String?,
     var createdAt: OffsetDateTime?,
@@ -22,7 +23,12 @@ data class Album(
     @OrderBy("number ASC")
     @JoinColumn(name = "albumId")
     var songs:List<Song>?,
-    @ManyToOne
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "artistId")
+    var artist:Artist? = null,
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name ="primary_genre_id", nullable = false)
     var primaryGenre: Genre,
     @ManyToMany

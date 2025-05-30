@@ -3,10 +3,16 @@ type Query {
     searchExternalArtist(name:String!): ExternalArtistSearchResult!
     artists: ArtistPage!
     albums(ids:[String!]!): [Album!]
-    artist(name:String!): Artist!
+    unratedAlbums: [UnratedAlbum!]!
+    artist(params: ArtistSearchParams!): Artist!
     genres: [Genre!]!
     compareToOtherSongsBySameArtist(songId:String!, artistId:String!, albumId:String!) : [ComparisonSong!]!
     compareToOtherSongsByOtherArtists(songId:String!, artistId:String!) : [ComparisonSong!]!
+}
+
+input ArtistSearchParams {
+    id: String
+    name: String
 }
 
 type ExternalTracksSearchResponse {

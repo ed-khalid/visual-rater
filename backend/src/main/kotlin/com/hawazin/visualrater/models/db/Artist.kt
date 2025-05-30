@@ -14,8 +14,7 @@ data class Artist(
     var name:String,
     var thumbnail:String?,
     var dominantColor:String?,
-    @OneToMany(cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
-    @JoinColumn(name = "artistId")
+    @OneToMany(mappedBy = "artist", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
     var albums:MutableList<Album>? = null,
     @OneToOne(cascade=[CascadeType.REMOVE, CascadeType.PERSIST])
     var metadata: ArtistMetadata,
@@ -29,7 +28,7 @@ data class Artist(
         inverseJoinColumns = [JoinColumn(name = "genre_id")]
     )
     var secondaryGenres: MutableList<Genre>,
-    var score:Double,
+    var score:Double?,
     var createdAt: OffsetDateTime?,
     var updatedAt: OffsetDateTime?,
 ) {

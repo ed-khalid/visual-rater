@@ -7,5 +7,6 @@ data class NewSongInput(val name:String, val score:Double?, val number:Int, val 
 // artistId being a UUID enforces that an artist exists and is created before any new albums can be created
 data class NewExternalAlbumInput(val name:String, val thumbnail:String?, val vendorId:String?, val year:Int, val artistId:UUID, val songs:List<NewSongInput>, var dominantColor:String?)
 data class UpdateAlbumInput(val name: String, val id:UUID)
-data class SongInput(val id: UUID, val score:Double?, val name:String?, val number:Int?)
+data class UpdateArtistInput(val name: String?, val thumbnail:String?, val id:UUID)
+data class SongInput(val id: UUID, val score:Double?, val name:String?, val number:Int?, val shortname: String?)
 data class ArtistInput(val name:String, val thumbnail:String?, val vendorId:String?, var dominantColor:String?)

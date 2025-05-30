@@ -30,6 +30,10 @@ class AlbumController(val musicService: MusicCrudService, val spotifyService: Sp
             AlbumWithArtistName(it.id, it.name, it.thumbnail, it.year, it.dominantColor, it.score, it.artistId, it.songs , artist?.name ?: "" )
         }
     }
+    @QueryMapping
+    fun unratedAlbums(): Iterable<Album> = musicService.getUnratedAlbums()
+
+
 
     @SubscriptionMapping
     fun albumUpdated() : Publisher<Album> {
@@ -87,7 +91,7 @@ class AlbumController(val musicService: MusicCrudService, val spotifyService: Sp
     }
 
     @MutationMapping
-    fun UpdateAlbum(@Argument album: UpdateAlbumInput) : Album {
+    fun updateAlbum(@Argument album: UpdateAlbumInput) : Album {
         val newAlbum = musicService.updateAlbum(album)
         return newAlbum
     }
@@ -106,7 +110,7 @@ data class AlbumWithArtistName(
     val thumbnail:String?,
     val year:Int,
     val dominantColor:String?,
-    val score:Double,
+    val score:Double?,
     val artistId:UUID,
     val songs:List<Song>?,
     val artistName:String

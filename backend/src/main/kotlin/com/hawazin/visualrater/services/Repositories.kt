@@ -21,6 +21,13 @@ interface ArtistRepository: JpaRepository<Artist, UUID>  {
 
 interface AlbumRepository: CrudRepository<Album, UUID> {
     fun findByArtistId(artistId: UUID?) : List<Album>
+    @Query("""
+        select distinct a from Album a  
+        LEFT JOIN FETCH a.artist
+        LEFT JOIN FETCH a.songs
+        WHERE a.score IS NULL
+    """)
+    fun findUnratedAlbums() : List<Album>
 }
 
 interface SongRepository:CrudRepository<Song,UUID> {

@@ -3,7 +3,14 @@ type Mutation {
     UpdateSong(song:SongInput!) : Song!
     DeleteSong(songId:String!) : Boolean!
     DeleteAlbum(albumId:String!): Boolean!
-    UpdateAlbum(album: UpdateAlbumInput!): Album!
+    updateAlbum(album: UpdateAlbumInput!): Album!
+    updateArtist(artist: UpdateArtistInput!): Artist!
+}
+
+input UpdateArtistInput {
+    id: String!
+    name: String
+    thumbnail: String
 }
 
 input ExternalArtistInput {

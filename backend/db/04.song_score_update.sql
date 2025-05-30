@@ -53,6 +53,7 @@ BEGIN
         offensive = offensive$,
         bad = bad$,
         poor = poor$,
+        boring = boring$,
         average = average$,
         meh = meh$,
         ok = ok$,

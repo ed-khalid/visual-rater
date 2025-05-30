@@ -1,10 +1,7 @@
 package com.hawazin.visualrater.services
 
-import com.hawazin.visualrater.models.graphql.NewExternalAlbumInput
-import com.hawazin.visualrater.models.graphql.SongInput
 import com.hawazin.visualrater.models.db.*
-import com.hawazin.visualrater.models.graphql.ArtistInput
-import com.hawazin.visualrater.models.graphql.UpdateAlbumInput
+import com.hawazin.visualrater.models.graphql.*
 import graphql.GraphqlErrorException
 import jakarta.transaction.Transactional
 import org.springframework.data.domain.Page
@@ -20,6 +17,19 @@ class MusicCrudService(private val genreRepo: GenreRepository, private val songR
     val unratedGenre = genreRepo.findByName("NOT CHOSEN").get()
 
     fun getAllGenres(): Page<Genre> = genreRepo.findAll(PageRequest.of(0, 50))
+
+    fun getUnratedAlbums(): List<Album> = albumRepo.findUnratedAlbums()
+
+
+    fun getArtist(params:ArtistSearchParams): Optional<Artist> =
+        if (params.id !== null) {
+            artistRepo.findById(params.id)
+        } else if (!params.name.isNullOrBlank()) {
+            artistRepo.findByName(params.name)
+        } else {
+            throw Error("getArtist: all params are null")
+        }
+
 
     @Transactional
     fun readArtists() : Page<Artist> = artistRepo.findAll(PageRequest.of(0,50))
@@ -80,6 +90,19 @@ class MusicCrudService(private val genreRepo: GenreRepository, private val songR
     }
 
     @Transactional
+    fun updateArtist(artistInput: UpdateArtistInput): Artist   {
+        val artist = artistRepo.findById(artistInput.id).get()
+        artistInput.name?.let {
+            artist.name = it
+        }
+        artistInput.thumbnail?.let {
+            artist.thumbnail = it
+        }
+        artistRepo.save(artist)
+        return artist
+    }
+
+    @Transactional
     fun updateAlbum(albumInput: UpdateAlbumInput): Album {
         val album = albumRepo.findById(albumInput.id).get()
         album.name = albumInput.name
@@ -98,12 +121,14 @@ class MusicCrudService(private val genreRepo: GenreRepository, private val songR
         if (song.score != null && song.score!! < 0) {
             song.score = null
         }
+        song.shortname = songInput.shortname ?: song.shortname
         song.name = songInput.name ?: song.name
         song.number = songInput.number ?: song.number
         song.updatedAt = OffsetDateTime.now()
         songRepo.save(song)
         return song
     }
+
 
     @Transactional
     fun createArtist(artistInput: ArtistInput): Artist
@@ -126,7 +151,7 @@ class MusicCrudService(private val genreRepo: GenreRepository, private val songR
         val artist = maybeArtist.get()
         val album = albumInput.let  { Album(id = UUID.randomUUID(),name = it.name, vendorId=it.vendorId,  year= it.year, artistId = artist.id!!, thumbnail = it.thumbnail, score = 0.0, dominantColor = it.dominantColor, songs = null, createdAt = OffsetDateTime.now(), updatedAt = null, primaryGenre = unratedGenre, secondaryGenres = mutableListOf()  ) }
         albumRepo.save(album)
-        val songs = albumInput.songs.map { Song( id =  UUID.randomUUID(), name = it.name, albumId = album.id!!, artistId = artist.id!!, score = it.score, number= it.number, discNumber = it.discNumber, createdAt = OffsetDateTime.now(), updatedAt = null, primaryGenre = unratedGenre, secondaryGenres = mutableListOf()  ) }
+        val songs = albumInput.songs.map { Song( id =  UUID.randomUUID(), name = it.name, albumId = album.id, artistId = artist.id!!, score = it.score, number= it.number, discNumber = it.discNumber, createdAt = OffsetDateTime.now(), updatedAt = null, primaryGenre = unratedGenre, secondaryGenres = mutableListOf()  ) }
         songRepo.saveAll(songs)
         album.songs = songs
         return album

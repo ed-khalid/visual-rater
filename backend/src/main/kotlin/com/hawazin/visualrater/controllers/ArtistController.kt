@@ -3,6 +3,8 @@ package com.hawazin.visualrater.controllers
 import com.hawazin.visualrater.models.api.ArtistPage
 import com.hawazin.visualrater.models.db.Artist
 import com.hawazin.visualrater.models.graphql.ArtistInput
+import com.hawazin.visualrater.models.graphql.ArtistSearchParams
+import com.hawazin.visualrater.models.graphql.UpdateArtistInput
 import com.hawazin.visualrater.services.*
 import org.reactivestreams.Publisher
 import org.springframework.graphql.data.method.annotation.*
@@ -20,8 +22,8 @@ class ArtistController(val musicService: MusicCrudService, val publisherService:
     }
 
     @QueryMapping
-    fun artist(@Argument name:String) : Artist? {
-        val maybeArtist = musicService.readArtistByName(name)
+    fun artist(@Argument params: ArtistSearchParams) : Artist? {
+        val maybeArtist = musicService.getArtist(params)
         return if (maybeArtist.isPresent) {
             val artist = maybeArtist.get()
             return Artist(id= artist.id, vendorId = artist.vendorId, albums = artist.albums, score= artist.score, metadata = artist.metadata, thumbnail =  artist.thumbnail, name=artist.name, dominantColor = artist.dominantColor, createdAt = artist.createdAt , updatedAt = artist.updatedAt, primaryGenre = artist.primaryGenre, secondaryGenres = artist.secondaryGenres)
@@ -33,6 +35,11 @@ class ArtistController(val musicService: MusicCrudService, val publisherService:
     @SubscriptionMapping
     fun artistUpdated() : Publisher<Artist>  {
         return publisherService
+    }
+
+    @MutationMapping
+    fun updateArtist(@Argument artist: UpdateArtistInput) : Artist {
+        return musicService.updateArtist(artist)
     }
 
     @MutationMapping
