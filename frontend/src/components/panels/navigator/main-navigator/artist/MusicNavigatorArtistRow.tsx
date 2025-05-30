@@ -6,8 +6,9 @@ import { MusicNavigatorContext } from "../../../../../providers/MusicNavigationP
 import { useDraggable } from "@dnd-kit/core"
 import { VisualRaterButton } from "../../../../common/VisRaterButton"
 import { AlbumsSubpanel } from "./AlbumsSubpanel"
-import { FiEye, FiEyeOff } from "react-icons/fi"
+import { FiChevronDown, FiChevronUp, FiEye, FiEyeOff } from "react-icons/fi"
 import { FilterMode } from "../../../../../music/MusicFilters"
+import { motion } from "motion/react"
 
 interface Props {
     artist:Artist
@@ -43,8 +44,11 @@ export const MusicNavigatorArtistRow = ({artist, onArtistSelect, isExpanded}:Pro
                 return <li  key={'artists-panel-item-' + artist.id}>
                 <div className="nav-panel-item" >
                     <div className="nav-item-controls">
-                      <VisualRaterButton onClick={() => dispatchToRater({artistId: artist.id}, isOnRater(artist)? FilterMode.REDUCTIVE : FilterMode.ADDITIVE )} >
-                       {isOnRater(artist) ? <FiEyeOff/>: <FiEye/>}  
+                      <div className="controls-label">
+                        rater 
+                      </div>
+                      <VisualRaterButton additionalClassNames={ isOnRater(artist) ? 'toggle pressed' : ''} onClick={() => dispatchToRater({artistId: artist.id}, isOnRater(artist)? FilterMode.REDUCTIVE : FilterMode.ADDITIVE )} >
+                       <FiEye/>  
                        </VisualRaterButton> 
                       <VisualRaterButton onClick={() => dispatchToRater({artistId: artist.id}, FilterMode.EXCLUSIVE)} >
                         !
@@ -58,7 +62,11 @@ export const MusicNavigatorArtistRow = ({artist, onArtistSelect, isExpanded}:Pro
                           </span> 
                         </div>
                         <div className="accordion-toggle">
-                            <VisualRaterButton animate={{rotate:isExpanded ? 90 : 0}} onClick={(_) => onArtistSelect(artist)} >{'>'}</VisualRaterButton> 
+                            <button onClick={(_) => onArtistSelect(artist)} >
+                              <motion.span animate={{rotate: isExpanded ? 100: 0 }} transition={{duration: 0.25}}>
+                                  {isExpanded ? <FiChevronUp size={16}/> : <FiChevronDown size={16} />}
+                              </motion.span>
+                              </button> 
                         </div>
                     </div>
                     <NavScoreInfo item={artist} type="artist" />

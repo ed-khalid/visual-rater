@@ -4,6 +4,7 @@ import { SongsSubpanel } from "../album/SongsSubpanel"
 import { FilterMode } from "../../../../../music/MusicFilters"
 import { useMusicDispatch, useMusicStateOperator } from "../../../../../hooks/MusicStateHooks"
 import { MusicNavigatorAlbumRow } from "../album/MusicNavigatorAlbumRow"
+import { AnimatePresence, motion } from 'motion/react'
 
 
 interface Props {
@@ -41,7 +42,9 @@ export const AlbumsSubpanel = ({artist, dispatchAlbumToRater}: Props) => {
     }
 
 
-    return <div className="nav-item-subpanel">
+    return <AnimatePresence initial={false}>
+
+    <motion.div initial="collapsed" animate="open" exit="collapsed" variants={{ open: { height: 'auto', opacity: 1}, collapsed: { height: 0 , opacity: 0} }} transition={{ duration: 0.3, ease: 'easeInOut'}} className="nav-item-subpanel">
         <div className="nav-panel-header-item">
             <div className="nav-panel-empty">
                 
@@ -63,5 +66,6 @@ export const AlbumsSubpanel = ({artist, dispatchAlbumToRater}: Props) => {
             {expandedAlbumIds.some(id=> id === album.id) && <SongsSubpanel key={"artist-"+artist.id+"-album-"+album.id} album={album} /> } 
         </div>
         )}
-    </div>
+    </motion.div>
+    </AnimatePresence>
 }

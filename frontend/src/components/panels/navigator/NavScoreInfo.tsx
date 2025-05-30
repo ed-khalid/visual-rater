@@ -1,5 +1,5 @@
 import { Maybe } from "graphql/jsutils/Maybe"
-import { mapArtistScoreToUI, mapSongScoreToUI } from "../../../functions/scoreUI"
+import { mapAlbumScoreToUI, mapArtistScoreToUI, mapSongScoreToUI } from "../../../functions/scoreUI"
 
 interface Props {
     type: 'artist' | 'album' | 'song'    
@@ -21,7 +21,7 @@ export const NavScoreInfo = ({item, type}: Props) => {
                       <div className="nav-panel-item-info-score-descriptor">{mapArtistScoreToUI(score).score}</div>
                     </div> 
         case "album":
-            return <div style={{backgroundColor: mapArtistScoreToUI(score).color}} className="nav-panel-item-score album">
+            return <div style={{backgroundColor: mapAlbumScoreToUI(score).color}} className="nav-panel-item-score album">
                             {(score) ? score.toFixed(2) : 'N/A'}
                    </div> 
         case "song":

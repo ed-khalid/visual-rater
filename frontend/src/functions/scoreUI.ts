@@ -1,6 +1,6 @@
 import { ArtistSongMetadata, Maybe, Song } from "../generated/graphql"
 import { SCORE_END, SCORE_START } from "../models/CoreModels"
-import { ARTIST_SCORE_MAP, ArtistScoreUI, SONG_SCORE_DICTIONARY, SongScoreCategory, SongScoreCategoryUI , SongScoreUI } from "../models/ScoreModels"
+import { ALBUM_SCORE_MAP, AlbumScoreUI, ARTIST_SCORE_MAP, ArtistScoreUI, SONG_SCORE_DICTIONARY, SongScoreCategory, SongScoreCategoryUI , SongScoreUI } from "../models/ScoreModels"
 
 
 export const mapAlbumSongsToSongScoreUI = (songs:Song[]) => {
@@ -65,7 +65,23 @@ export const mapArtistScoreToUI = (score?:Maybe<number>) : ArtistScoreUI => {
     }
     throw Error('Score could not be found in dictionary')
 }  
+
+export const mapAlbumScoreToUI = (score?:Maybe<number>) : AlbumScoreUI => {
+    for (let [,v] of ALBUM_SCORE_MAP) {
+      let _score = score || -Infinity  
+      if (v.threshold.low <= _score && v.threshold.high  >= _score ) { 
+            if (v.category === 'U')  {
+                return { ...v, score: 'unrated' }
+            } else 
+            return { ...v, score:_score.toFixed(1) }
+      } 
+    }
+    throw Error('Score could not be found in dictionary')
+
+} 
  
+
+
 export const mapSongScoreToUI  = (score?:Maybe<number>) : SongScoreUI  => {
     if (score === undefined || score === null) {
         return { ...SONG_SCORE_DICTIONARY.get('UNRATED')!, score: -Infinity }

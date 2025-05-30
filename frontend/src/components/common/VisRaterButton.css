@@ -1,6 +1,9 @@
 
 button.vis-rater-button {
     background-color: var(--color-general-button);
+    display: inline-flex;
+    width:100%;
+    justify-content: center;
     margin-bottom: 2px;
     font-size: 16px;
     cursor: pointer;

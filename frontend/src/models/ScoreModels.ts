@@ -25,6 +25,7 @@ export type AlbumScoreUIBase = {
 
 export type SongScoreUI = SongScoreUIBase & { score?:number } 
 export type ArtistScoreUI = ArtistScoreUIBase & { score?:string } 
+export type AlbumScoreUI = AlbumScoreUIBase & {score?: string}
 
 export type SongScoreCategoryUI = {
     category:SongScoreCategory
@@ -93,4 +94,15 @@ ARTIST_SCORE_MAP.set('F', { category: 'F' , color:  BAD_COLOR, threshold: {low:0
 ARTIST_SCORE_MAP.set('U', { category: 'U' , color: UNRATED_COLOR, threshold: {low:-Infinity,high:-Infinity}  })
 
 
+export const ALBUM_SCORE_MAP:Map<AlbumScoreCategory, AlbumScoreUIBase> = new Map()
+ALBUM_SCORE_MAP.set('A+',{ category: 'A+', color: CLASSIC_COLOR, threshold: {low:80,high:Infinity} }) 
+ALBUM_SCORE_MAP.set('A' ,{ category: 'A' , color: GREAT_COLOR, threshold: {low:75,high:79.99}  }) 
+ALBUM_SCORE_MAP.set('B+',{ category: 'B+', color: VERY_GOOD_COLOR, threshold: {low:70,high:74.99}  })
+ALBUM_SCORE_MAP.set('B', { category: 'B' , color: GOOD_COLOR, threshold: {low:65,high:69.99}  })
+ALBUM_SCORE_MAP.set('C+', { category: 'C+' , color: INTERESTING_COLOR, threshold: {low:60, high:64.99} })
+ALBUM_SCORE_MAP.set('C',  { category: 'C', color: AVERAGE_COLOR, threshold: {low:55,high:59.99} })
+ALBUM_SCORE_MAP.set('D',{ category: 'D' , color:  POOR_COLOR, threshold: {low:50,high:54.99} })
+ALBUM_SCORE_MAP.set('E',  { category: 'E' , color: BAD_COLOR, threshold: {low:40,high:49.99} })
+ALBUM_SCORE_MAP.set('F', { category: 'F' , color:  OFFENSIVE_COLOR, threshold: {low:0,high:39.99}  })
+ALBUM_SCORE_MAP.set('U', { category: 'U' , color: UNRATED_COLOR, threshold: {low:-Infinity,high:-Infinity}  })
 
