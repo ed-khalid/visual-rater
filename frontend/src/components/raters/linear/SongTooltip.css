@@ -1,0 +1,65 @@
+
+div.linear-rater-tooltip {
+    position: fixed;
+    height: 100px;
+    background-color: rgb(79, 90, 141);
+    box-shadow: 2px 2px 2px rgb(0,0,0);
+    border-radius: 10px;
+    padding: 10px;
+    display: grid;
+    grid-template-columns: 110px 50px 29px 1fr; 
+    grid-template-rows: 1fr 26px 1fr 1fr; 
+    grid-template-areas: "thumbnail title title title"
+    "thumbnail number on album-name"
+    "thumbnail empty  by artist-name"
+    "thumbnail empty score-label score" 
+     ;
+}
+div.italic {
+    color:rgb(69, 67, 67);
+    font-style: italic;
+}
+div.on {
+    grid-area: on;
+}
+div.by {
+    grid-area: by;
+}
+div.score-label {
+    grid-area: score-label;
+}
+div.empty {
+    grid-area: empty;
+}
+div.linear-rater-tooltip div.title {
+    font-size: 16px;
+    background-color: inherit;
+    color: black;
+    grid-area: title;
+}
+div.linear-rater-tooltip div.thumbnail {
+    grid-area: thumbnail;
+    opacity: 0.8;
+    margin-right: 5px;
+}
+div.linear-rater-tooltip div.score {
+    font-size: 14px;
+    grid-area: score;
+    color: black;
+}
+div.linear-rater-tooltip div.number {
+    font-size: 24px;
+    font-weight: bold;
+    grid-area: number;
+    color: black;
+}
+div.linear-rater-tooltip div.album-name {
+    font-size: 14px;
+    grid-area: album-name;
+    color: black;
+}
+div.linear-rater-tooltip div.artist-name {
+    font-size: 14px;
+    grid-area: artist-name;
+    color: black;
+}

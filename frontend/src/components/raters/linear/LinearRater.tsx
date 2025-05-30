@@ -13,6 +13,7 @@ import { LinearRaterItem } from "./LinearRaterItem";
 import { LinearRaterGroupItem } from "./LinearRaterGroupItem";
 import { UnratedLinearRaterItem } from "./UnratedLinearRaterItem";
 import { LinearRaterModelMaker } from "./LinearRaterModelMaker";
+import { SongTooltip } from "./SongTooltip";
 
 const CATEGORIES = SONG_SCORE_DICTIONARY.values().filter(it => it.category !== 'UNRATED').map((it) => ({ label: it.category, color: it.color, stop: it.threshold.high  }) ).toArray().reverse()
 
@@ -23,13 +24,36 @@ interface Props {
     onScoreUpdate: (updatedSong:Song) => void
 }
 
+type HoveredSong = {
+    song:FatSong
+    position: {x:number,y:number}
+}
+
 export const LinearRater = ({items, onScoreUpdate}: Props) => {
 
   const containerRef = useRef<HTMLDivElement|null>(null)   
   const svgRef = useRef<SVGSVGElement|null>(null)   
   const [containerSize, setContainerSize] = useState({ width: 0, height: 0})
+  const timeoutRef = useRef<number|undefined>(null)
   const config = LinearRaterConfig.rater
   const unratedConfig = LinearRaterConfig.unrated
+  const [hovered, setHovered] = useState<HoveredSong|null>(null)
+
+  const onCircleHover = (circleModel?:LinearRaterCircleModel, position?:{x:number,y:number}) => {
+      if (!circleModel || !position) {
+              setHovered(null)
+          return
+      }
+      else {
+          if (timeoutRef.current) {
+              window.clearTimeout(timeoutRef.current)
+              timeoutRef.current = undefined
+          }
+          const song  = items.find(it => it.song.id === circleModel?.id)
+          if (!song) throw "LinearRater: song not found "
+          setHovered({ song, position })
+      }
+  }
 
   useEffect(() => {
     const el = containerRef.current
@@ -75,9 +99,10 @@ export const LinearRater = ({items, onScoreUpdate}: Props) => {
 
 
   return (
-    <LinearRaterContext.Provider value={{ getScoreCategoryDetails, yToScore, raterHeight , onDragStart, onDragEnd }}>
+    <LinearRaterContext.Provider value={{ getScoreCategoryDetails, yToScore, raterHeight , onDragStart, onDragEnd, onCircleHover }}>
 
     <div ref={containerRef} style={{ width: "100%", height: "100%", position: 'relative' }}>
+      {hovered && <SongTooltip fatSong={hovered.song} position={hovered.position}  /> }
         {height > 0 && <svg ref={svgRef} width={width} height={height}>
             <defs>
             <linearGradient id="rater-gradient" x1="0" y1="1" x2="0" y2="0">

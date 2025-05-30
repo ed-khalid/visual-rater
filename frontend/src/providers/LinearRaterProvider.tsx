@@ -3,7 +3,7 @@ import { createContext } from "react";
 import { LinearRaterCircleModel } from "../models/RaterModels";
 
 
-export const LinearRaterContext = createContext<LinearRaterContext>({ yToScore: scaleLinear(), raterHeight: 0, onDragEnd: () => {}, onDragStart: () => {}, getScoreCategoryDetails: () => ({ color: '', category: ''}) })   
+export const LinearRaterContext = createContext<LinearRaterContext>({ yToScore: scaleLinear(), raterHeight: 0, onDragEnd: () => {}, onDragStart: () => {}, getScoreCategoryDetails: () => ({ color: '', category: ''}), onCircleHover: () => {} })   
 
 export interface LinearRaterContext {
     yToScore:ScaleLinear<number,number,never> 
@@ -11,5 +11,5 @@ export interface LinearRaterContext {
     onDragStart: (item:LinearRaterCircleModel) => void
     onDragEnd: (item:LinearRaterCircleModel, newScore:number) => void 
     getScoreCategoryDetails: (score:number) => { color: string, category: string } 
-
+    onCircleHover: (item?: LinearRaterCircleModel, position?: {x:number,y:number} ) => void  
 } 
