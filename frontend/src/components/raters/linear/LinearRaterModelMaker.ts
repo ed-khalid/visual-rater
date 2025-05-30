@@ -42,6 +42,7 @@ export class LinearRaterModelMaker  {
       const circleModels = this.unratedItems.map<LinearRaterCircleModel>((fatSong) => (
           ({ id: fatSong.song.id, name: this.determineSongNameLabel(fatSong.song)}) ) 
       ) 
+      circleModels.sort((a,b) => a.name.localeCompare(b.name))
       return {
         id: 'linear-rater-unrated-items',
         type: 'single',
@@ -50,6 +51,22 @@ export class LinearRaterModelMaker  {
         items: circleModels
       }
     } 
+
+    private mapFatSongsToLinearRaterCircleModel(fatSongs:FatSong[]): LinearRaterCircleModel[] {
+      const sortedSongs = fatSongs.sort((a,b) => {
+        if (a.song.score !== b.song.score) {
+          return b.song.score! - a.song.score!
+        }
+        return a.song.name.localeCompare(b.song.name)
+      }) 
+      const circleModels = sortedSongs.map((fatSong) => ({
+        id: fatSong.song.id,
+        name: this.determineSongNameLabel(fatSong.song)  
+      }))
+      return circleModels
+    }
+
+
 
     public groupByScore() {
         const scoreMap = new Map<number, FatSong[]>() 
@@ -62,7 +79,7 @@ export class LinearRaterModelMaker  {
             scoreMap.set(fatSong.song.score!, [fatSong] )
         }
         })
-        this.finalItems = scoreMap.entries().map<LinearRaterSingleItemModel>((entry, i) => ({ type: 'single', id: 'linear-rater-group-' + i, position: this.yToScore.invert(entry[0]), score: entry[0],  items: entry[1].map((fatSong) =>  ({ id: fatSong.song.id, name: this.determineSongNameLabel(fatSong.song)}) ) })).toArray()
+        this.finalItems = scoreMap.entries().map<LinearRaterSingleItemModel>((entry, i) => ({ type: 'single', id: 'linear-rater-group-' + i, position: this.yToScore.invert(entry[0]), score: entry[0],  items: this.mapFatSongsToLinearRaterCircleModel(entry[1]) })).toArray()
         return this
     }
   public getLargestItemCount() {
@@ -104,6 +121,7 @@ export class LinearRaterModelMaker  {
     } else throw "impossible"
   }
 
+  private sortByScore = (a:LinearRaterSingleItemModel, b:LinearRaterSingleItemModel) => b.score - a.score
 
   public groupByProximity(threshold:number) {
     const retv = this.finalItems.reduce<LinearRaterBaseModel[]>((acc, it) => {
@@ -117,16 +135,18 @@ export class LinearRaterModelMaker  {
             scoreRange: this.determineScoreRange(overlap, it),
             position: (overlap.position + it.position)/2  
           }  
+          newGroup.items.sort(this.sortByScore)
           const accWithoutOverlap = acc.filter(it => it !== overlap)  
           return [...accWithoutOverlap, newGroup]
         } else if (isMultiple(overlap)) {
           const newGroup:LinearRaterGroup = {
             id: `linear-rater-group-${overlap.position}-${it.position}`,
             type: 'multiple',
-            items : (isSingle(it)) ? [...overlap.items, it] : isMultiple(it) ? [...overlap.items, ...it.items] : [], 
+            items : (isSingle(it)) ? ([...overlap.items, it]) : isMultiple(it) ? [...overlap.items, ...it.items] : [], 
             scoreRange: this.determineScoreRange(overlap, it), 
             position: (overlap.position + it.position)/2  
           }
+          newGroup.items.sort(this.sortByScore)
           const accWithoutOverlap = acc.filter(it => it !== overlap)  
           return [...accWithoutOverlap, newGroup]
         } else {

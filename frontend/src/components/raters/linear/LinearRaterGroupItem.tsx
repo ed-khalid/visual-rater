@@ -3,7 +3,6 @@ import { LinearRaterCircleModel, LinearRaterGroup } from "../../../models/RaterM
 import { LinearRaterContext } from "../../../providers/LinearRaterProvider";
 import { motion } from 'motion/react'
 import { LinearRaterCircle } from "./LinearRaterCircle";
-import { mapSongScoreToUI } from "../../../functions/scoreUI";
 import { LinearRaterConfig } from "../../../models/LinearRaterModel";
 
 interface Props {
