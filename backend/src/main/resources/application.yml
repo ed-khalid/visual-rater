@@ -7,7 +7,7 @@ spring:
   datasource:
     url: "jdbc:postgresql://localhost:5432/visual_rater"
     username: visual_rater_app
-    password: {:default}
+    password: ${VISUAL_RATER_DATABASE_PW:default}
   application:
     name: visrater-backend
   graphql:
@@ -39,7 +39,7 @@ logging:
 spotify:
   client:
     id: 793c68b38b06461d8127f90148edc66a
-    secret: {f245c4d9b1ad42399f98e922c91d02ea:default}
+    secret: ${VISUAL_RATER_SPOTIFY_CLIENT_SECRET:default}
   accounts: 'https://accounts.spotify.com'
   api: 'https://api.spotify.com/v1'
 image-service:
