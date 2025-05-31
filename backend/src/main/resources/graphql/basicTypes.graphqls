@@ -1,0 +1,117 @@
+interface Item {
+id:String!
+name:String!
+score:Float
+}
+
+enum ItemType {
+MUSIC
+}
+
+type UnratedAlbum implements Item {
+    id: String!
+    artistId:String!
+    name: String!
+    year: Int
+    thumbnail: String
+    dominantColor: String
+    songs:[Song!]!
+    score:Float
+    genres:Genres!
+    artist:Artist!
+}
+
+type Song implements Item {
+    id:String!
+    albumId:String!
+    artistId:String!
+    score:Float
+    name: String!
+    number:Int!
+    discNumber:Int!
+    genres:Genres!
+    shortname: String
+}
+
+type Genre {
+    id:Int!
+    name:String!
+}
+
+type Genres {
+    primary:Genre!
+    secondary:[Genre!]!
+}
+
+type Album {
+    id: String!
+    artistId:String!
+    name: String!
+    year: Int
+    thumbnail: String
+    dominantColor: String
+    songs:[Song!]!
+    score:Float
+    genres:Genres
+}
+
+interface Page {
+    total: Int!
+    pageNumber: Int!
+    content:[Pageable!]!
+}
+
+interface Pageable {
+    id:String!
+}
+
+type ArtistPage implements Page {
+    total:Int!
+    pageNumber:Int!
+    content:[Artist!]!
+}
+
+type ComparisonSong {
+    id:String!
+    songName:String!
+    songScore:Float!
+    albumName:String!
+    albumDominantColor:String!
+    artistName:String!
+    thumbnail:String
+}
+
+type Artist implements Pageable {
+    id: String!
+    name:String!
+    thumbnail: String
+    dominantColor: String!
+    albums:[Album!]!
+    score: Float!
+    metadata:ArtistMetadata!
+    genres:Genres
+}
+
+type ArtistSongMetadata {
+    classic:Int!
+    great:Int!
+    verygood:Int!
+    good:Int!
+    pleasant:Int!
+    decent:Int!
+    interesting:Int!
+    ok:Int!
+    meh:Int!
+    average:Int!
+    boring:Int!
+    poor:Int!
+    bad:Int!
+    offensive:Int!
+}
+
+type ArtistMetadata {
+    id:String!
+    songs:ArtistSongMetadata!
+    totalSongs:Int!
+    totalAlbums:Int!
+}

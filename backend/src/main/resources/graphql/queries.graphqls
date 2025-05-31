@@ -1,0 +1,42 @@
+
+type Query {
+    searchExternalArtist(name:String!): ExternalArtistSearchResult!
+    artists: ArtistPage!
+    albums(ids:[String!]!): [Album!]
+    unratedAlbums: [UnratedAlbum!]!
+    artist(params: ArtistSearchParams!): Artist!
+    genres: [Genre!]!
+    compareToOtherSongsBySameArtist(songId:String!, artistId:String!, albumId:String!) : [ComparisonSong!]!
+    compareToOtherSongsByOtherArtists(songId:String!, artistId:String!) : [ComparisonSong!]!
+}
+
+input ArtistSearchParams {
+    id: String
+    name: String
+}
+
+type ExternalTracksSearchResponse {
+     albumId:String!
+     tracks:[ExternalTrackSearchResult!]!
+}
+
+type ExternalArtistSearchResult {
+    name:String!
+    id:String!
+    thumbnail:String
+    albums:[ExternalAlbumSearchResult!]!
+}
+
+type ExternalAlbumSearchResult {
+    id:String!
+    name:String!
+    thumbnail:String!
+    year: Int
+}
+
+type ExternalTrackSearchResult {
+    id:String!
+    name:String!
+    trackNumber:Int!
+    discNumber:Int!
+}
