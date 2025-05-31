@@ -1,11 +1,6 @@
-# MUSIC NAV
-- rethink the buttons [ accordion expand bottom of row, name clicking opens overview, rater controls to the left]
-- add exclusive filter button
 # LINEAR RATER 
 - comparison songs!
-
 - better proximity: (group by category first) 
-- think about multiple raters
 
 # ALBUM OVERVIEW
 - improve linking 
@@ -36,8 +31,6 @@
 # SCORECARD REVISITED
 - add a view showing greatest albums
 - add a view showing greatest songs
-# MISC
-- change all thumbnails to high qualify (albums are low)   
 # AUTH
 - employ multi-tenant model with Row Based Security
 - roll out auth using auth0  
