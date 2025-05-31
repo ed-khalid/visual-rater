@@ -1,8 +1,9 @@
 HELP.md
 .gradle
+.kotlin/
 build/
 !gradle/wrapper/gradle-wrapper.jar
-!**/src/mauin/**
+!**/src/main/**
 !**/src/test/**
 node_modules/
 
@@ -21,13 +22,6 @@ node_modules/
 *.iml
 *.ipr
 out/
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
 
 ### VS Code ###
 .vscode/
