@@ -7,6 +7,8 @@ import com.hawazin.visualrater.models.graphql.ExternalSearchTracks
 import com.hawazin.visualrater.configurations.SpotifyConfiguration
 import com.hawazin.visualrater.graphql.CustomRestTemplateCustomizer
 import com.hawazin.visualrater.models.graphql.ExternalSearchAlbum
+import com.hawazin.visualrater.scripts.SpotifyAlbumThumbnail
+import com.hawazin.visualrater.scripts.SpotifyThumbnails
 import org.springframework.boot.web.client.RestTemplateBuilder
 import org.springframework.http.HttpEntity
 import org.springframework.http.HttpHeaders
@@ -60,6 +62,19 @@ class SpotifyApi(private val configuration: SpotifyConfiguration) {
         return accountsTemplate.postForObject<SpotifyAuthToken>("/api/token", request, SpotifyAuthToken::class.java)
     }
 
+    fun getSpotifyThumbnailsByArtistName(artistName: String): SpotifyThumbnails {
+        val artistResponse = makeCall { api().getForObject<SpotifyArtistListResponse>("/search?q={name}&type=artist", artistName) }
+        val artist = artistResponse.artists.items[0]
+        val albumResponse = makeCall {
+            api().getForObject<SpotifyAlbumList>(
+                "/artists/{artistId}/albums?limit=50&county=US&include_groups=album",
+                artist.id
+            )
+        }
+        val albumThumbnails = albumResponse.items.map { album -> SpotifyAlbumThumbnail(albumId = album.id, albumName= album.name, thumbnailUrl =  album.images[0].url  ) }
+        return SpotifyThumbnails(artistName, artistId = artist.id, thumbnailUrl = artist.images[0].url, albumThumbnails)
+    }
+
     fun searchArtist(name:String) : ExternalSearchArtist {
         val response = makeCall { api().getForObject<SpotifyArtistListResponse>("/search?q={name}&type=artist", name) }
         val artist = response.artists.items[0]
@@ -96,5 +111,7 @@ data class SpotifyArtist(val id:String, val name:String, val images:Array<Spotif
 data class SpotifyArtistList(val items:List<SpotifyArtist>)
 data class SpotifyAlbum(val id:String, val name:String, val images:Array<SpotifyImage>, val release_date:String)
 data class SpotifyAlbumList(val items:List<SpotifyAlbum>)
-data class SpotifyImage(val url:String, val width:Int, val height:Int)
+data class SpotifyImage(val url:String, val width:Int, val height:Int) {
+    override fun toString() = "url: $url, width: $width, height $height "
+}
 data class SpotifyTrackList(val items:List<ExternalSearchTracks>)

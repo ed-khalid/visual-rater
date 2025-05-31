@@ -28,6 +28,7 @@ interface AlbumRepository: CrudRepository<Album, UUID> {
         WHERE a.score IS NULL
     """)
     fun findUnratedAlbums() : List<Album>
+    fun findByVendorId(vendorId:String) : Optional<Album>
 }
 
 interface SongRepository:CrudRepository<Song,UUID> {
