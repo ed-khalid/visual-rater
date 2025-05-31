@@ -14,7 +14,6 @@ data class Album(
     var name:String,
     var thumbnail:String?,
     var year:Int,
-    var dominantColor:String?,
     @Type(StringArrayType::class)
     @Column(name="thumbnail_dominant_colors", columnDefinition = "text[]")
     var thumbnailDominantColors: Array<String>? = null,

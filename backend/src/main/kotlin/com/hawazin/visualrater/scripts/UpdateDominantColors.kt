@@ -19,7 +19,6 @@ class UpdateDominantColors(
         for (artist in artistRepository.findAll()) {
             val colors = imageService.getTop3DominantColors(artist.thumbnail!!)
             artist.thumbnailDominantColors = colors?.colors?.toTypedArray()
-            artist.dominantColor = null
             artist.updatedAt = OffsetDateTime.now()
             artistRepository.save(artist)
             println("Update dominant colors for artist ${artist.name} to ${artist.thumbnailDominantColors} ")
@@ -27,7 +26,6 @@ class UpdateDominantColors(
         for (album in albumRepository.findAll()) {
             val colors = imageService.getTop3DominantColors(album.thumbnail!!)
             album.thumbnailDominantColors = colors?.colors?.toTypedArray()
-            album.dominantColor = null
             album.updatedAt = OffsetDateTime.now()
             albumRepository.save(album)
             println("Update dominant colors for album ${album.name} to ${album.thumbnailDominantColors} ")

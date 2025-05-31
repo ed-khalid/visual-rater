@@ -14,7 +14,6 @@ type UnratedAlbum implements Item {
     name: String!
     year: Int
     thumbnail: String
-    dominantColor: String
     songs:[Song!]!
     score:Float
     genres:Genres!
@@ -50,7 +49,6 @@ type Album {
     year: Int
     thumbnail: String
     thumbnailDominantColors:[String!]
-    dominantColor: String
     songs:[Song!]!
     score:Float
     genres:Genres
@@ -86,7 +84,6 @@ type Artist implements Pageable {
     id: String!
     name:String!
     thumbnail: String
-    dominantColor: String!
     thumbnailDominantColors:[String!]
     albums:[Album!]!
     score: Float!

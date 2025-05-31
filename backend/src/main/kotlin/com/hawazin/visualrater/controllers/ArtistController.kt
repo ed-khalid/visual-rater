@@ -26,7 +26,7 @@ class ArtistController(val musicService: MusicCrudService, val publisherService:
         val maybeArtist = musicService.getArtist(params)
         return if (maybeArtist.isPresent) {
             val artist = maybeArtist.get()
-            return Artist(id= artist.id, vendorId = artist.vendorId, albums = artist.albums, score= artist.score, metadata = artist.metadata, thumbnail =  artist.thumbnail, name=artist.name, dominantColor = artist.dominantColor, createdAt = artist.createdAt , updatedAt = artist.updatedAt, primaryGenre = artist.primaryGenre, secondaryGenres = artist.secondaryGenres)
+            return Artist(id= artist.id, vendorId = artist.vendorId, albums = artist.albums, score= artist.score, metadata = artist.metadata, thumbnail =  artist.thumbnail, name=artist.name, thumbnailDominantColors = artist.thumbnailDominantColors, createdAt = artist.createdAt , updatedAt = artist.updatedAt, primaryGenre = artist.primaryGenre, secondaryGenres = artist.secondaryGenres)
         } else {
             null
         }
@@ -44,9 +44,9 @@ class ArtistController(val musicService: MusicCrudService, val publisherService:
 
     @MutationMapping
     fun CreateArtist(@Argument artist: ArtistInput): Artist {
-        if (artist.thumbnail != null) {
-            artist.dominantColor = imageService.getDominantColor(artist.thumbnail).colorString
+        val dominantColors = artist.thumbnail?.let {
+            imageService.getTop3DominantColors(artist.thumbnail)?.colors
         }
-        return musicService.createArtist(artist)
+        return musicService.createArtist(artist, dominantColors)
     }
 }

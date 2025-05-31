@@ -1,0 +1,5 @@
+
+ALTER TABLE ARTIST
+DROP COLUMN dominant_color;
+ALTER TABLE ALBUM
+    DROP COLUMN dominant_color;

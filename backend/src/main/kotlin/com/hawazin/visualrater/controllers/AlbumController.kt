@@ -27,7 +27,7 @@ class AlbumController(val musicService: MusicCrudService, val spotifyService: Sp
         val artists =  musicService.readArtists(albums.map{ it. artistId })
         return albums.map { it ->
             val artist = artists.find { artist ->  artist.id == it.artistId }
-            AlbumWithArtistName(it.id, it.name, it.thumbnail, it.year, it.dominantColor, it.score, it.artistId, it.songs , artist?.name ?: "" )
+            AlbumWithArtistName(it.id, it.name, it.thumbnail, it.year, it.thumbnailDominantColors?.toList(), it.score, it.artistId, it.songs , artist?.name ?: "" )
         }
     }
     @QueryMapping
@@ -44,32 +44,32 @@ class AlbumController(val musicService: MusicCrudService, val spotifyService: Sp
     fun createAlbumsForExternalArtist(@Argument externalArtist:ExternalSearchArtist) : Artist = runBlocking {
         val dominantColorArtistDeferred = async(Dispatchers.IO) {
             externalArtist.thumbnail?.let { thumbnail ->
-                imageService.getDominantColor(thumbnail)
+                imageService.getTop3DominantColors(thumbnail)
             }
         }
-        val dominantColorArtist = dominantColorArtistDeferred.await()?.colorString
+        val dominantColorsArtist = dominantColorArtistDeferred.await()?.colors
 
         val newArtist = musicService.createArtist(
             ArtistInput(
                 name = externalArtist.name,
                 thumbnail = externalArtist.thumbnail,
                 vendorId =  externalArtist.id,
-                dominantColor = dominantColorArtist
-            )
+            ),
+            dominantColorsArtist
         )
 
         val albumTracks = externalArtist.albums.parMap(Dispatchers.IO) {
             val tracks = spotifyService.getTracksForAlbum(albumId = it.id)
             val dominantColorAlbumDeferred = async {
                 it.thumbnail?.let { thumbnail ->
-                    imageService.getDominantColor(thumbnail)
+                    imageService.getTop3DominantColors(thumbnail)
                 }
             }
-            val dominantColorAlbum = dominantColorAlbumDeferred.await()?.colorString
+            val dominantColorsAlbum = dominantColorAlbumDeferred.await()?.colors
             NewExternalAlbumInput(
                 name = it.name,
                 thumbnail = it.thumbnail,
-                dominantColor = dominantColorAlbum,
+                dominantColors = dominantColorsAlbum,
                 year = it.year,
                 songs = tracks.map {
                     NewSongInput(
@@ -107,9 +107,9 @@ class AlbumController(val musicService: MusicCrudService, val spotifyService: Sp
 data class AlbumWithArtistName(
     val id:UUID,
     val name:String,
-    val thumbnail:String?,
+    val thumbnail: String?,
     val year:Int,
-    val dominantColor:String?,
+    val thumbnailDominantColors:List<String>?,
     val score:Double?,
     val artistId:UUID,
     val songs:List<Song>?,

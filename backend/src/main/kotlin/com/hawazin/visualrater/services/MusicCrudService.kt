@@ -131,11 +131,11 @@ class MusicCrudService(private val genreRepo: GenreRepository, private val songR
 
 
     @Transactional
-    fun createArtist(artistInput: ArtistInput): Artist
+    fun createArtist(artistInput: ArtistInput, dominantColors: List<String>?): Artist
     {
         val maybeArtist = artistRepo.findByName(artistInput.name)
         if (!maybeArtist.isPresent) {
-            val artist:Artist = artistInput.let { Artist(id = null, vendorId= it.vendorId, name= it.name,thumbnail = it.thumbnail, score  = 0.0, metadata = ArtistMetadata(id = null, tier = 0, songs = ArtistSongMetadata(), totalAlbums = 0, totalSongs = 0 , ), dominantColor =  artistInput.dominantColor, createdAt = OffsetDateTime.now(), updatedAt = null, primaryGenre = unratedGenre, secondaryGenres = mutableListOf()   )   }
+            val artist:Artist = artistInput.let { Artist(id = null, vendorId= it.vendorId, name= it.name,thumbnail = it.thumbnail, score  = 0.0, metadata = ArtistMetadata(id = null, tier = 0, songs = ArtistSongMetadata(), totalAlbums = 0, totalSongs = 0 , ), thumbnailDominantColors =  dominantColors?.toTypedArray() , createdAt = OffsetDateTime.now(), updatedAt = null, primaryGenre = unratedGenre, secondaryGenres = mutableListOf()   )   }
             return artistRepo.save(artist)
         } else
        return maybeArtist.get()
@@ -149,7 +149,7 @@ class MusicCrudService(private val genreRepo: GenreRepository, private val songR
             throw IllegalStateException("cannot create an album for a nonexistent artist ${albumInput.artistId}")
         }
         val artist = maybeArtist.get()
-        val album = albumInput.let  { Album(id = UUID.randomUUID(),name = it.name, vendorId=it.vendorId,  year= it.year, artistId = artist.id!!, thumbnail = it.thumbnail, score = 0.0, dominantColor = it.dominantColor, songs = null, createdAt = OffsetDateTime.now(), updatedAt = null, primaryGenre = unratedGenre, secondaryGenres = mutableListOf()  ) }
+        val album = albumInput.let  { Album(id = UUID.randomUUID(),name = it.name, vendorId=it.vendorId,  year= it.year, artistId = artist.id!!, thumbnail = it.thumbnail, score = 0.0, thumbnailDominantColors = it.dominantColors?.toTypedArray(), songs = null, createdAt = OffsetDateTime.now(), updatedAt = null, primaryGenre = unratedGenre, secondaryGenres = mutableListOf()  ) }
         albumRepo.save(album)
         val songs = albumInput.songs.map { Song( id =  UUID.randomUUID(), name = it.name, albumId = album.id, artistId = artist.id!!, score = it.score, number= it.number, discNumber = it.discNumber, createdAt = OffsetDateTime.now(), updatedAt = null, primaryGenre = unratedGenre, secondaryGenres = mutableListOf()  ) }
         songRepo.saveAll(songs)
