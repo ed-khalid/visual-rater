@@ -1,6 +1,8 @@
 package com.hawazin.visualrater.models.db
 
+import io.hypersistence.utils.hibernate.type.array.StringArrayType
 import jakarta.persistence.*
+import org.hibernate.annotations.Type
 import java.time.OffsetDateTime
 import java.util.*
 
@@ -13,6 +15,9 @@ data class Album(
     var thumbnail:String?,
     var year:Int,
     var dominantColor:String?,
+    @Type(StringArrayType::class)
+    @Column(name="thumbnail_dominant_colors", columnDefinition = "text[]")
+    var thumbnailDominantColors: Array<String>? = null,
     var score:Double?,
     @Column(name="artistId", insertable =  false, updatable = false)
     val artistId: UUID,

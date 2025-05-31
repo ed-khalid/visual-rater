@@ -1,7 +1,9 @@
 package com.hawazin.visualrater.models.db
 
+import io.hypersistence.utils.hibernate.type.array.StringArrayType
 import jakarta.persistence.*
 import org.hibernate.annotations.GenericGenerator
+import org.hibernate.annotations.Type
 import java.time.OffsetDateTime
 import java.util.*
 
@@ -14,6 +16,9 @@ data class Artist(
     var name:String,
     var thumbnail:String?,
     var dominantColor:String?,
+    @Type(StringArrayType::class)
+    @Column(name="thumbnail_dominant_colors", columnDefinition = "text[]")
+    var thumbnailDominantColors: Array<String>? = null,
     @OneToMany(mappedBy = "artist", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
     var albums:MutableList<Album>? = null,
     @OneToOne(cascade=[CascadeType.REMOVE, CascadeType.PERSIST])

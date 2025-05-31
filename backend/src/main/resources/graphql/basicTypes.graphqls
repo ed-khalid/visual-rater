@@ -49,6 +49,7 @@ type Album {
     name: String!
     year: Int
     thumbnail: String
+    thumbnailDominantColors:[String!]
     dominantColor: String
     songs:[Song!]!
     score:Float
@@ -86,6 +87,7 @@ type Artist implements Pageable {
     name:String!
     thumbnail: String
     dominantColor: String!
+    thumbnailDominantColors:[String!]
     albums:[Album!]!
     score: Float!
     metadata:ArtistMetadata!

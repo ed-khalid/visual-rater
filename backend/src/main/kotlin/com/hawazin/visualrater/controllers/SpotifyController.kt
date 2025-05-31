@@ -1,8 +1,6 @@
 package com.hawazin.visualrater.controllers
 
 import com.hawazin.visualrater.models.graphql.ExternalSearchArtist
-import com.hawazin.visualrater.models.graphql.ExternalSearchTracks
-import com.hawazin.visualrater.models.graphql.ExternalSearchTracksResponse
 import com.hawazin.visualrater.services.SpotifyApi
 import org.springframework.graphql.data.method.annotation.Argument
 import org.springframework.graphql.data.method.annotation.QueryMapping

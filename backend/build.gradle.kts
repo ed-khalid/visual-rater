@@ -37,6 +37,8 @@ dependencies {
     implementation("io.arrow-kt:arrow-fx-coroutines:2.1.1")
     // jackson
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
+    // hibernate types
+    implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.9.10")
     // db
     runtimeOnly("org.postgresql:postgresql")
     compileOnly("org.projectlombok:lombok")
