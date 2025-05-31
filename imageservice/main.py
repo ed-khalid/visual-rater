@@ -1,4 +1,4 @@
-from colors import get_color_for_image
+from colors import get_color_for_image, get_top_n_colors_for_image
 from app_types import ImageSimilarityRequest, ImageSimilarityResponse
 import uvicorn
 from similarity import compute_similarity
@@ -17,6 +17,14 @@ def read_root():
 def compare_images(imageUrls:List[ImageSimilarityRequest]):   
     result = compute_similarity(imageUrls) 
     return result
+
+@app.get('/top_n_colors')
+def get_n_colors(imageUrl:str, n_colors:int):
+    try:
+      top_n_colors = get_top_n_colors_for_image(imageUrl, n_colors)
+      return JSONResponse(content={"colors": top_n_colors})
+    except Exception as e:
+      return JSONResponse(status_code=400, content={"error": str(e)})
 
 @app.get('/colors')
 def get_colors(imageUrl:str):
