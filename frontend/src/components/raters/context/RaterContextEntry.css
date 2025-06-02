@@ -1,0 +1,14 @@
+
+div.rater-context-entry div.flex {
+    align-items:center;
+}
+
+div.rater-context-entry div.thumbnail img {
+    width: 40px;
+    height: 40px;
+    cursor:pointer;
+}
+div.rater-context-entry div.thumbnail.smaller img {
+    width: 30px;
+    height: 30px;
+}

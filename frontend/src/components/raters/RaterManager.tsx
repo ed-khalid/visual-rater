@@ -9,6 +9,7 @@ import { FatSong } from "../../models/CoreModels"
 import { RaterStyle } from "../../models/RaterModels"
 import { DraggableItem } from "../../models/DragModels"
 import { LinearRater } from "./linear/LinearRater"
+import { RaterContext } from "./context/RaterContext"
 
 // type RaterProps = {
 //     rowRefs: RefObject<HTMLDivElement>[] 
@@ -107,6 +108,7 @@ export const RaterManager = ({items, raterStyle, totalRows}:Props) => {
             }
           </DragOverlay>
         <div id="rater-wrapper">
+            <RaterContext />
             {(raterStyle !== RaterStyle.LINEAR) && (unratedItems.length > 0) && <UnratedRaterPanel items={unratedItems} />}
             <div id="rater-content">
                 {(raterStyle=== RaterStyle.GRID) && <GridRater rowRefs={[]} items={ratedItems}  />}

@@ -1,0 +1,14 @@
+
+div#rater-context { 
+    position: absolute;
+    top:0;
+    right: 15px;
+    flex-direction: column;
+    background-color: var(--color-general-header); 
+    z-index: 15;
+    font-size: 12px;
+    user-select: none;
+}
+div#rater-context div.albums {
+    display: flex;
+}
