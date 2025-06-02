@@ -3,7 +3,7 @@ import { LinearRaterCircleModel, LinearRaterGroup } from "../../../models/RaterM
 import { LinearRaterContext } from "../../../providers/LinearRaterProvider";
 import { motion } from 'motion/react'
 import { LinearRaterCircle } from "./LinearRaterCircle";
-import { LinearRaterConfig } from "../../../models/LinearRaterModel";
+import { LinearRaterConfig } from "../../../models/LinearRaterConfig";
 
 interface Props {
     item: LinearRaterGroup

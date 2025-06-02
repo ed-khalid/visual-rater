@@ -4,7 +4,7 @@ import { select } from "d3-selection"
 import { drag } from "d3-drag"
 import { LinearRaterContext } from "../../../providers/LinearRaterProvider"
 import { motion } from 'motion/react'
-import { LinearRaterConfig } from "../../../models/LinearRaterModel"
+import { LinearRaterConfig } from "../../../models/LinearRaterConfig"
 
 interface Props {
     item:LinearRaterCircleModel 

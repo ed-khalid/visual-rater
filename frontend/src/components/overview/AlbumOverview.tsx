@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { Album, GetAlbumsSongsDocument, Song, useGetAlbumsSongsQuery, useUpdateAlbumMutation, useUpdateSongMutation } from "../../generated/graphql"
 import './AlbumOverview.css'
-import { mapArtistScoreToUI, mapSongScoreToUI } from "../../functions/scoreUI"
+import { mapAlbumScoreToUI, mapArtistScoreToUI, mapSongScoreToUI } from "../../functions/scoreUI"
 import { useMusicDispatch } from "../../hooks/MusicStateHooks"
 import { VisualRaterToggleButton } from "../common/VisRaterToggleButton"
 import { Editable } from "../common/Editable"
@@ -51,7 +51,7 @@ export const AlbumOverview = ({album, artist, onClose, onLinkClick }:Props) => {
 
 
 
-    const scoreCategory = mapArtistScoreToUI(album.score)
+    const scoreCategory = mapAlbumScoreToUI(album.score)
 
 
     return <div className="album-overview">

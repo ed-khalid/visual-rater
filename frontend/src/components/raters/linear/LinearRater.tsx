@@ -2,18 +2,18 @@ import { useEffect, useRef, useState } from "react";
 import { scaleLinear } from "d3-scale";
 import { FatSong } from "../../../models/CoreModels";
 import { SONG_SCORE_DICTIONARY, UNRATED_COLOR } from "../../../models/ScoreModels";
-import { isMultiple, isSingle, LinearRaterCircleModel } from "../../../models/RaterModels";
 import { LinearRaterContext } from "../../../providers/LinearRaterProvider";
 import { mapSongScoreToUI } from "../../../functions/scoreUI";
 import { select, selectAll } from "d3";
 import './LinearRater.css'
 import { Song } from "../../../generated/graphql";
-import { LinearRaterConfig } from "../../../models/LinearRaterModel";
+import { LinearRaterConfig } from "../../../models/LinearRaterConfig";
 import { LinearRaterItem } from "./LinearRaterItem";
 import { LinearRaterGroupItem } from "./LinearRaterGroupItem";
 import { UnratedLinearRaterItem } from "./UnratedLinearRaterItem";
 import { LinearRaterModelMaker } from "./LinearRaterModelMaker";
 import { SongTooltip } from "./SongTooltip";
+import { isMultiple, isSingle, LinearRaterCircleModel } from "../../../models/LinearRaterModels";
 
 const CATEGORIES = SONG_SCORE_DICTIONARY.values().filter(it => it.category !== 'UNRATED').map((it) => ({ label: it.category, color: it.color, stop: it.threshold.high  }) ).toArray().reverse()
 
@@ -75,7 +75,7 @@ export const LinearRater = ({items, onScoreUpdate}: Props) => {
   .clamp(true)
 
   const modelMaker = new LinearRaterModelMaker(items, yToScore)   
-  const { groups, largestGroupItemCount, unratedGroup } = modelMaker.groupByScore().groupByProximity(LinearRaterConfig.groupProximityThreshold).groupByProximity(LinearRaterConfig.groupProximityThreshold).getFinalValues()
+  const { groups, largestGroupItemCount, unratedGroup } = modelMaker.groupByScore().groupByProximity(LinearRaterConfig.groupProximityThreshold).groupByProximity(30).getFinalValues()
   console.log('largestGroupItemCount', largestGroupItemCount)
 
   const onDragEnd = (item:LinearRaterCircleModel, newScore:number) => {

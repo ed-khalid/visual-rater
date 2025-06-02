@@ -10,6 +10,13 @@ interface Props {
 export const SongTooltip = ({fatSong, position}: Props) => {
      const { song, album, artist } = fatSong
 
+    const dominantColors = fatSong.album.thumbnailDominantColors  
+    var background = "white"
+    if (dominantColors) {
+      background = `linear-gradient(to bottom, rgb(${dominantColors[0]}) 0%, rgb(${dominantColors[1]}) 75%, rgb(${dominantColors[2]}) 100%)`  
+    }
+
+
     const offset = 12
 
     return (
@@ -24,35 +31,36 @@ export const SongTooltip = ({fatSong, position}: Props) => {
                style={{
                 top: position.y + offset,  
                 left: position.x + offset,
+                background
                }}
             >
                  <div className="thumbnail">
                     <img src={album.thumbnail || ''} />
                  </div>
-                 <div className="title">
+                 <div style={{background: 'white'}} className="title">
                     {song.name}
                  </div>
-                 <div className="number">
+                 <div style={{background: 'white'}} className="number">
                     #{song.number}
                  </div>
-                 <div className="on italic">
+                 <div style={{background: 'white'}}className="on italic">
                       on
                  </div>
-                 <div className="by italic">
+                 <div style={{background: 'white'}}className="by italic">
                       by
                  </div>
-                 <div className="score-label italic">
+                 <div style={{background: 'white'}}className="score-label italic">
                       score
                  </div>
-                 <div className="empty">
+                 <div style={{background: 'white'}}className="empty">
                  </div>
-                 <div className="artist-name">
+                 <div style={{background: 'white'}}className="artist-name">
                     {artist.name}
                  </div>
-                 <div className="album-name">
+                 <div style={{background: 'white'}}className="album-name">
                     {album.name}
                  </div>
-                 <div className="score">
+                 <div style={{background: 'white'}}className="score">
                     {song.score}
                  </div>
             </motion.div>

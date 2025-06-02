@@ -9,7 +9,7 @@ export interface RatedItem extends Item {
 } 
 export interface MusicUIItem extends RatedItem {
     thumbnail?:string
-    overlay:string
+    overlay?:Array<string>
 } 
 export interface AlbumUIItem extends MusicUIItem {
     artistName:string
@@ -33,9 +33,11 @@ export interface ContextArtist {
 
 export type FatSong = {
     artist: {name: string, id:string} 
-    album: { thumbnail?: Maybe<string>, dominantColor?:Maybe<string>, name:string}
+    album: { thumbnail?: Maybe<string>, thumbnailDominantColors?:Maybe<Array<string>>, name:string}
     song: Song
 } 
+
+export type ArtistOrAlbum = 'artist'|'album' 
 
 
 export const SCORE_START = 0  
