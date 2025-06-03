@@ -5,8 +5,8 @@ query GetAlbums($ids:[String!]!) {
         name
         year
         score
-        dominantColor
         thumbnail
+        thumbnailDominantColors
         genres {
             primary {
                 id 

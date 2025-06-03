@@ -5,8 +5,8 @@ fragment AlbumFields on Album {
         name
         year
         score
-        dominantColor
         thumbnail
+        thumbnailDominantColors
         genres {
                 ...GenreFields
         }

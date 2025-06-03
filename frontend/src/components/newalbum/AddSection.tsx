@@ -32,7 +32,7 @@ export const AddSection = ({musicDispatch}:Props) => {
         id: $albumsForExternalArtist.data.createAlbumsForExternalArtist.id,
         name: $albumsForExternalArtist.data.createAlbumsForExternalArtist.name,
         thumbnail: $albumsForExternalArtist.data.createAlbumsForExternalArtist.thumbnail,
-        dominantColor: $albumsForExternalArtist.data.createAlbumsForExternalArtist.dominantColor,
+        thumbnailDominantColors: $albumsForExternalArtist.data.createAlbumsForExternalArtist.thumbnailDominantColors,
         metadata: $albumsForExternalArtist.data.createAlbumsForExternalArtist.metadata,
         score: $albumsForExternalArtist.data.createAlbumsForExternalArtist.score,
         albums: []

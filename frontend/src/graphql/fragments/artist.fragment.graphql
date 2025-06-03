@@ -3,7 +3,7 @@ fragment ArtistFields on Artist {
       id
       name 
       thumbnail
-      dominantColor
+      thumbnailDominantColors
       score
       genres {
         ...GenreFields

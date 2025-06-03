@@ -7,7 +7,7 @@ query GetArtistsPage {
       id 
       name
       thumbnail
-      dominantColor
+      thumbnailDominantColors
       score
       albums {
         id
