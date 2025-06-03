@@ -1,5 +1,5 @@
-import { useMusicStateAndDispatch, useMusicStateOperator } from "../../../hooks/MusicStateHooks"
-import { Panel } from "../../common/Panel"
+import { useMusicStateAndDispatch, useMusicStateOperator } from "../../src/hooks/MusicStateHooks"
+import { Panel } from "../../src/components/common/Panel"
 import './RaterContextPanel.css'
 import '../../common/Panel.css'
 
