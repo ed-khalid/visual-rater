@@ -1,6 +1,6 @@
 import { useDraggable } from "@dnd-kit/core"
-import { FatSong } from "../../../models/RaterModels"
 import { CSSProperties } from "react"
+import { FatSong } from "../../../models/CoreModels"
 
 interface Props {
     item: FatSong

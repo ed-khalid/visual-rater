@@ -10,23 +10,13 @@ interface Props {
     rowRefs: RefObject<HTMLDivElement>[] 
 }
 
-export type BlockRaterSongItem = SongUIItem & { rowIndex: number  }    
-
 export const BlockRater = ({items, rowRefs}:Props) => {
-
-    const uniqueAlbums = items.reduce<Record<string, boolean>>((acc,it) => {
-        if (acc[it.album.id]) return acc 
-        acc[it.album.id] = true
-        return acc
-     }, {})
-     const albumIds = Object.keys(uniqueAlbums)
-
 
     const [updateSong]  = useUpdateSongMutation();
 
     const groupByScore = (fatSongs:FatSong[]) => {
-        const songItems:BlockRaterSongItem[] = fatSongs.map(it =>  
-                ({ ...mapSongToUIItem(it.song, it.album, it.artist), rowIndex: albumIds.indexOf(it.album.id) })
+        const songItems = fatSongs.map(it =>  
+                ({ ...mapSongToUIItem(it.song, it.album, it.artist)})
             )  
         const retv:Record<number, SongUIItem[]|undefined> = {}  
         for (const song of songItems) {

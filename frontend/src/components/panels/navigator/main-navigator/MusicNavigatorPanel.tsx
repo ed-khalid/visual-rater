@@ -1,5 +1,5 @@
 import { Artist } from "../../../../generated/graphql"
-import { FilterMode } from "../../../../music/MusicFilters"
+import { FilterMode } from "../../../../music/MusicFilterModels"
 import { useMusicDispatch, useMusicStateOperator } from "../../../../hooks/MusicStateHooks"
 import { MusicNavigatorArtistRow } from "./artist/MusicNavigatorArtistRow"
 import { useState } from "react"

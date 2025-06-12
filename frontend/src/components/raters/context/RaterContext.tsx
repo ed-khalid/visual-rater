@@ -3,7 +3,7 @@ import { useMusicStateAndDispatch } from "../../../hooks/MusicStateHooks"
 import './RaterContext.css'
 import { RaterContextEntry } from "./RaterContextEntry"
 import { RaterContextEntryModel } from "../../../models/RaterModels"
-import { FilterMode } from "../../../music/MusicFilters"
+import { FilterMode } from "../../../music/MusicFilterModels"
 
 interface Props {
 
@@ -22,15 +22,15 @@ export const RaterContext = ({}:Props) => {
     }  
     const handleOnToggle = (entry:RaterContextEntryModel) => {
         if (entry.type === 'album') {
-        dispatch({ type: 'RATER_FILTER_CHANGE', filters: { albumIds: [entry.id] }, mode: FilterMode.REDUCTIVE  })
+        dispatch({ type: 'RATER_FILTER_ALBUM_CHANGE', mode: FilterMode.REDUCTIVE, artistId: entry.parentId!, albumId: entry.id! })
         }
         if (entry.type === 'artist') {
-        dispatch({ type: 'RATER_FILTER_CHANGE', filters: { artistIds: [entry.id] }, mode: FilterMode.REDUCTIVE  })
+        dispatch({ type: 'RATER_FILTER_ARTIST_CHANGE', artistId: entry.id, mode: FilterMode.REDUCTIVE  })
         }
     }  
     useEffect(() => {
-    const artistIds = state.raterFilters.artistIds
-    const albumIds = state.raterFilters.albumIds
+    const artistIds = state.raterFilters.map(it => it.artistId) 
+    const albumIds = state.raterFilters.flatMap(it => it.albums.map(it => it.albumId))
     const artistEntries  = artistIds.map(id => {
         const artist = state.data.artists.find(it => it.id === id)  
         if (!artist) throw "RaterContext: Artist NOT FOUND in data"

@@ -48,6 +48,7 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "start": "vite",
+    "typecheck":"tsc --noEmit",
     "build": "vite build",
     "serve": "vite preview",
     "test": "vitest",

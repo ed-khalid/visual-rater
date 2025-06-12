@@ -20,7 +20,8 @@ export const MusicReducerProvider = ({children}:Props) => {
         songs:[] 
       } , 
       navigationFilters: [],
-      raterFilters: { hideAll: true,  artistIds: [], albumIds: [], songIds: []   } })
+      raterFilters:[], 
+    })
 
   return <MusicStateContext.Provider value={musicState}>
     <MusicDispatchContext.Provider value={musicDispatch}>

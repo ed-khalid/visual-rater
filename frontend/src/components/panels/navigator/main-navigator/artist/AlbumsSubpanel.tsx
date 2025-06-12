@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import { Album, Artist, useGetAlbumsQuery } from "../../../../../generated/graphql"
 import { SongsSubpanel } from "../album/SongsSubpanel"
-import { FilterMode } from "../../../../../music/MusicFilters"
+import { FilterMode } from "../../../../../music/MusicFilterModels"
 import { useMusicDispatch, useMusicStateOperator } from "../../../../../hooks/MusicStateHooks"
 import { MusicNavigatorAlbumRow } from "../album/MusicNavigatorAlbumRow"
 import { AnimatePresence, motion } from 'motion/react'

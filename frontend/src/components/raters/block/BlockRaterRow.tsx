@@ -2,10 +2,10 @@
 import { useDroppable } from '@dnd-kit/core';
 import { BlockRaterItem } from './BlockRaterItem';
 import { mapSongScoreToUI } from '../../../functions/scoreUI';
-import { BlockRaterSongItem } from './BlockRater';
+import { SongUIItem } from '../../../models/CoreModels';
 interface Props {
     index:number 
-    items: BlockRaterSongItem[]|undefined
+    items: SongUIItem[]|undefined
 }
 
 

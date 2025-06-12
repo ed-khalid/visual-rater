@@ -7,7 +7,7 @@ import { useDraggable } from "@dnd-kit/core"
 import { VisualRaterButton } from "../../../../common/VisRaterButton"
 import { AlbumsSubpanel } from "./AlbumsSubpanel"
 import { FiChevronDown, FiChevronUp, FiEye, FiEyeOff } from "react-icons/fi"
-import { FilterMode } from "../../../../../music/MusicFilters"
+import { FilterMode } from "../../../../../music/MusicFilterModels"
 import { motion } from "motion/react"
 
 interface Props {

@@ -2,7 +2,7 @@ import { useDroppable } from "@dnd-kit/core"
 import { SongScoreUIBase } from "../../../models/ScoreModels"
 import { useEffect, useState } from "react"
 import { SimpleRaterCategoryDetailRow } from "./SimpleRaterCategoryDetailRow"
-import { FatSong } from "../../../models/RaterModels"
+import { FatSong } from "../../../models/CoreModels"
 
 interface Props {
     category: SongScoreUIBase

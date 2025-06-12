@@ -3,7 +3,7 @@ import { MusicNavigatorPanel } from "../components/panels/navigator/main-navigat
 import { Album, Artist, Song, useGetAlbumsSongsLazyQuery, useGetArtistFullLazyQuery, useGetArtistsPageQuery, useOnAlbumUpdateSubscription, useOnArtistUpdateSubscription } from "../generated/graphql"
 import { useMusicDispatch, useMusicState, useMusicStateOperator } from "../hooks/MusicStateHooks"
 import { RaterEntityRequest, RaterStyle } from "../models/RaterModels"
-import { FilterMode } from "../music/MusicFilters"
+import { FilterMode } from "../music/MusicFilterModels"
 import { MusicNavigatorContext } from "../providers/MusicNavigationProvider"
 import { RaterManager } from "../components/raters/RaterManager"
 import { AnimatePresence, motion } from "motion/react"
@@ -44,10 +44,10 @@ export const HomePage = ({raterStyle}:Props) => {
       const songs = $artistFull.data.artist?.albums?.reduce<Array<Song>>((acc,curr) => {
         return [...acc, ...curr!.songs]
       }, [])
-      const albumIds = $artistFull.data.artist?.albums.map(it => it.id) 
       const artistId = $artistFull.data.artist?.id 
+      const albumIds = $artistFull.data.artist?.albums.map(it => it.id) 
       musicDispatch({ type: 'NAVIGATION_FILTER_ARTIST_CHANGE', artistId, mode: FilterMode.ADDITIVE })
-      musicDispatch({ type: 'RATER_FILTER_CHANGE', filters: { albumIds }, mode: FilterMode.ADDITIVE })
+      musicDispatch({ type: 'RATER_FILTER_ARTIST_CHANGE', artistId, albumIds, mode: FilterMode.ADDITIVE })
       musicDispatch({ type: 'DATA_CHANGE', data: { artists: [$artistFull.data.artist] as Artist[], albums: $artistFull.data.artist?.albums as Album[], songs     }})
     }
   }, [$artistFull.loading, $artistFull.data, musicDispatch])
@@ -61,23 +61,27 @@ export const HomePage = ({raterStyle}:Props) => {
       const albumId = songs?.at(0)!.album.id
       const artistId = songs?.at(0)!.artist.id 
       if (albumId && artistId) {
-        musicDispatch({ type: 'RATER_FILTER_CHANGE', filters: { artistIds: [artistId] } , mode: FilterMode.ADDITIVE })
+        musicDispatch({ type: 'RATER_FILTER_ALBUM_CHANGE', artistId , albumId, mode: FilterMode.ADDITIVE })
       }
     }
 
   }, [$songsForAlbum.loading, $songsForAlbum.data, musicDispatch])
 
   const dispatchToRater = (addition:RaterEntityRequest, mode:FilterMode) => {
+      // artist
       if (!addition.albumId) {
         if (mode !== FilterMode.REDUCTIVE) {
         $loadArtistFull({ variables: { artistId: addition.artistId } })
         }
-        musicDispatch({ type: 'RATER_FILTER_CHANGE', filters: { artistIds: [addition.artistId] }, mode })
+        const albumIds = musicState.data.artists.find(it => it.id === addition.artistId)?.albums.map(it => it.id) 
+
+        musicDispatch({ type: 'RATER_FILTER_ARTIST_CHANGE', artistId: addition.artistId , albumIds: albumIds!, mode })
       } else {
+        // album
         if (mode !== FilterMode.REDUCTIVE) {
           $loadSongsForAlbum({ variables: { albumIds: [addition.albumId] } })
         }
-        musicDispatch({ type: 'RATER_FILTER_CHANGE', filters: { albumIds: [addition.albumId] }, mode })
+        musicDispatch({ type: 'RATER_FILTER_ALBUM_CHANGE', albumId: addition.albumId, artistId: addition.artistId, mode })
       }
   } 
 
