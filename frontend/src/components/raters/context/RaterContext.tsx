@@ -25,7 +25,8 @@ export const RaterContext = ({}:Props) => {
         dispatch({ type: 'RATER_FILTER_ALBUM_CHANGE', mode: FilterMode.REDUCTIVE, artistId: entry.parentId!, albumId: entry.id! })
         }
         if (entry.type === 'artist') {
-        dispatch({ type: 'RATER_FILTER_ARTIST_CHANGE', artistId: entry.id, mode: FilterMode.REDUCTIVE  })
+            // unsure if albumids should be empty array, added just to fix type error
+        dispatch({ type: 'RATER_FILTER_ARTIST_CHANGE', artistId: entry.id, albumIds: [], mode: FilterMode.REDUCTIVE  })
         }
     }  
     useEffect(() => {

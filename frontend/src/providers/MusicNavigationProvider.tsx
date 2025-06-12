@@ -1,7 +1,7 @@
 import { createContext } from "react"
 import { RaterEntityRequest } from "../models/RaterModels"
 import { OverviewLink } from "../models/OverviewModels"
-import { FilterMode } from "../music/MusicFilters"
+import { FilterMode } from "../music/MusicFilterModels"
 
 export const MusicNavigatorContext = createContext<MusicNavigationContext>({ openOverview: () => {}, dispatchToRater: () => {} })  
 

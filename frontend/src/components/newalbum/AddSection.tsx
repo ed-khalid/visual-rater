@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react"
 import { Artist, ExternalAlbumSearchResult, ExternalArtistSearchResult, useCreateAlbumForExternalArtistMutation } from "../../generated/graphql"
 import { AddPanel } from "./AddPanel"
-import { FilterMode } from "../../music/MusicFilters"
 import { useMusicDispatch } from "../../hooks/MusicStateHooks"
+import { FilterMode } from "../../music/MusicFilterModels"
 
 
 interface Props {

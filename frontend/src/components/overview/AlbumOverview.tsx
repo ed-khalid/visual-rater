@@ -36,7 +36,7 @@ export const AlbumOverview = ({album, artist, onClose, onLinkClick }:Props) => {
         if (data?.albums?.at(0)?.songs) {
             musicDispatch({ type: 'DATA_CHANGE', data: { songs: data.albums[0].songs as Song[] }})
             setTracks([...data.albums[0].songs])
-            setFatSongs(data.albums[0].songs.map((it) => mapSongToFatSong(it, { name: album.name }, artist )))
+            setFatSongs(data.albums[0].songs.map((it) => mapSongToFatSong(it, {id: album.id, name: album.name }, artist )))
         }
     }, [data])
 

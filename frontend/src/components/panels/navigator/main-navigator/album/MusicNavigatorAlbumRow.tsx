@@ -19,7 +19,7 @@ export const MusicNavigatorAlbumRow = ({album, isExpanded, onAlbumExpand, dispat
 
     }
 
-    return <div ref={setNodeRef} className="nav-panel-item album smaller">
+    return <div className="nav-panel-item album smaller">
         <div className="nav-item-controls smaller">
             <VisualRaterButton onClick={() => dispatchAlbumToRater(album,true)}>
                 {'+'}  
@@ -27,9 +27,9 @@ export const MusicNavigatorAlbumRow = ({album, isExpanded, onAlbumExpand, dispat
             <VisualRaterButton onClick={() => openAlbumOverview(album)}>
                 O
             </VisualRaterButton>  
-            <VisualRaterButton animate={{rotate: isExpanded ? 90 : 0}} onClick={() => onAlbumSelect(album)}>{'>'}</VisualRaterButton>   
+            <VisualRaterButton animate={{rotate: isExpanded ? 90 : 0}} onClick={() => onAlbumExpand(album)}>{'>'}</VisualRaterButton>   
         </div> 
-        <img {...attributes} {...listeners} ref={setNodeRef} className="nav-panel-item-thumbnail smaller" src={album.thumbnail!!} /> 
+        <img className="nav-panel-item-thumbnail smaller" src={album.thumbnail!!} /> 
         <div className="nav-panel-item-info">
             <div className="nav-panel-item-info-name smaller">
             {album.name}

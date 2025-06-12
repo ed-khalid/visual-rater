@@ -20,7 +20,7 @@ export class MusicStateOperator {
 
   public getFatSongs() : FatSong[] {
     const albumIds = this.raterFilters.flatMap(it => it.albums.map(it => it.albumId))
-    const songs = this.data.songs.filter(it => albumIds.includes(it.albumId))
+    const songs = this.data.songs.filter(it => albumIds.includes(it.album.id))
     return songs.map(song => (
       {
         artist: this.getArtistById(song.artist.id)!!,
