@@ -34,7 +34,7 @@ class MusicCrudService(private val genreRepo: GenreRepository, private val songR
     @Transactional
     fun readArtists() : Page<Artist> = artistRepo.findAll(PageRequest.of(0,50))
     @Transactional
-    fun readSongsByPage(pageNumber: Int) : Page<Song> = songRepo.findAllByOrderByScoreDesc(PageRequest.of(pageNumber,100))
+    fun readSongsByPage(pageNumber: Int) : Page<Song> = songRepo.findByScoreNotNullOrderByScoreDesc(PageRequest.of(pageNumber,100))
     @Transactional
     fun readAlbums(ids:List<UUID>): Iterable<Album> = albumRepo.findAllById(ids)
     @Transactional

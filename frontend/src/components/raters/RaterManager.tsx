@@ -9,6 +9,7 @@ import { RaterStyle } from "../../models/RaterModels"
 import { DraggableItem } from "../../models/DragModels"
 import { LinearRater } from "./linear/LinearRater"
 import { RaterContext } from "./context/RaterContext"
+import { PlaylistRater } from "./playlist/PlaylistRater"
 
 // type RaterProps = {
 //     rowRefs: RefObject<HTMLDivElement>[] 
@@ -71,7 +72,7 @@ export const RaterManager = ({items, raterStyle, totalRows}:Props) => {
     // const max = visibleRows.size ? Math.max(...visibleRows) : totalRows - 1
     // console.log('visibleRows', visibleRows)
 
-  const onLinearRaterScoreUpdate = (updatedSong:Song) => {
+  const onScoreUpdate = (updatedSong:Song) => {
     updateSong({ variables: { song: { id: updatedSong.id, score: updatedSong.score  } }})
   } 
 
@@ -112,7 +113,8 @@ export const RaterManager = ({items, raterStyle, totalRows}:Props) => {
             <div id="rater-content">
                 {(raterStyle=== RaterStyle.GRID) && <GridRater rowRefs={[]} items={ratedItems}  />}
                 {(raterStyle=== RaterStyle.LIST) && <BlockRater items={ratedItems}  rowRefs={[]} />}
-                {(raterStyle=== RaterStyle.LINEAR) && <LinearRater items={items} onScoreUpdate={onLinearRaterScoreUpdate}  rowRefs={[]} />}
+                {(raterStyle=== RaterStyle.LINEAR) && <LinearRater items={items} onScoreUpdate={onScoreUpdate}  rowRefs={[]} />}
+                {(raterStyle=== RaterStyle.PLAYLIST) && <PlaylistRater items={items} onScoreUpdate={onScoreUpdate} />}
             </div>
             {/* {(raterStyle=== RaterStyle.CARTESIAN) && <CartesianRater />} */}
         </div> 

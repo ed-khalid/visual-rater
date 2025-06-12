@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { MusicNavigatorPanel } from "../components/panels/navigator/main-navigator/MusicNavigatorPanel"
-import { Album, Artist, Song, useGetAlbumsSongsLazyQuery, useGetArtistFullLazyQuery, useGetArtistsPageQuery, useOnAlbumUpdateSubscription, useOnArtistUpdateSubscription } from "../generated/graphql"
+import { Album, Artist, Song, useGetAlbumsSongsLazyQuery, useGetArtistFullLazyQuery, useGetArtistsPageQuery, useGetSongsPageQuery, useOnAlbumUpdateSubscription, useOnArtistUpdateSubscription } from "../generated/graphql"
 import { useMusicDispatch, useMusicState, useMusicStateOperator } from "../hooks/MusicStateHooks"
 import { RaterEntityRequest, RaterStyle } from "../models/RaterModels"
 import { FilterMode } from "../music/MusicFilterModels"
@@ -26,8 +26,10 @@ export const HomePage = ({raterStyle}:Props) => {
   const musicState = useMusicState()
   const musicStateOperator = useMusicStateOperator()
   const $artistsPage  =  useGetArtistsPageQuery()
+  const $songsPage = useGetSongsPageQuery({ variables: { pageNumber: 0 } }) 
   const [showNavPanel, setShowNavPanel] = useState<boolean>(true)
   const [overviewItem, setOverviewItem] =useState<OverviewItem|undefined>(undefined)
+  const [playlistItems, setPlaylistItems] = useState<Song[]>([])
 
   const [$loadArtistFull, $artistFull] = useGetArtistFullLazyQuery()
   const [$loadSongsForAlbum, $songsForAlbum] = useGetAlbumsSongsLazyQuery()
@@ -38,6 +40,14 @@ export const HomePage = ({raterStyle}:Props) => {
       musicDispatch({ type: 'DATA_CHANGE', data: { artists: $artistsPage.data.artists.content as Artist[]   }})
   }
   }, [$artistsPage.loading, $artistsPage.data, musicDispatch])
+
+  useEffect(() => {
+    if (!$songsPage.loading && $songsPage.data) {
+      musicDispatch({ type: 'DATA_CHANGE', data: { songs: $songsPage.data.songs.content as Song[] }})
+      setPlaylistItems($songsPage.data.songs.content as Song[])
+    }
+
+  }, [$songsPage.loading, $songsPage.data, musicDispatch])
 
   useEffect(() => {
     if (!$artistFull.loading && $artistFull.data) {
@@ -127,7 +137,7 @@ export const HomePage = ({raterStyle}:Props) => {
                   <OverviewManager item={overviewItem} onClose={handleModalClose} onLinkClick={handleOverviewLinkClick} />
                   </Modal>}
               </AnimatePresence>
-              <RaterManager items={items} raterStyle={raterStyle}   
+              <RaterManager items={(raterStyle === RaterStyle.PLAYLIST ? playlistItems : items)} raterStyle={raterStyle}   
                 totalRows={showNavPanel ? 20 : 15 }
               />
             </motion.div>
