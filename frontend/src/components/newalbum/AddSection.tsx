@@ -1,29 +1,27 @@
-import { Dispatch, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { Artist, ExternalAlbumSearchResult, ExternalArtistSearchResult, useCreateAlbumForExternalArtistMutation } from "../../generated/graphql"
 import { AddPanel } from "./AddPanel"
-import { SpotifySearchPanel } from "./SpotifySearchPanel"
-import { MusicAction } from "../../music/MusicAction"
 import { FilterMode } from "../../music/MusicFilters"
+import { useMusicDispatch } from "../../hooks/MusicStateHooks"
 
 
 interface Props {
-  musicDispatch: Dispatch<MusicAction>
+  
 }
 
 
 
-export const AddSection = ({musicDispatch}:Props) => {
+export const AddSection = ({}:Props) => {
+
+  const musicDispatch = useMusicDispatch()
 
   const [searchAlbums, setSearchAlbums] = useState<ExternalAlbumSearchResult[]|undefined>()
   const [searchArtist,setSearchArtist] = useState<ExternalArtistSearchResult|undefined>()
   const [$createAlbumsForExternalArtist, $albumsForExternalArtist ] = useCreateAlbumForExternalArtistMutation() 
-  const [spotifySearchTerm, setSpotifySearchTerm] = useState<string|undefined>()
-  const [reset, setReset] = useState<boolean>(false)
 
   const onFinishAlbumSelections =  (artist:ExternalArtistSearchResult, albums:ExternalAlbumSearchResult[]) => {
     setSearchArtist(artist)
     setSearchAlbums(albums)
-    setSpotifySearchTerm(undefined)
   }
 
   useEffect(() => {
@@ -49,18 +47,7 @@ export const AddSection = ({musicDispatch}:Props) => {
     }
   }, [searchAlbums, searchArtist, $createAlbumsForExternalArtist])
 
-  const onSpotifySearch = (term:string) => {
-    setSpotifySearchTerm(term)
-  } 
 
-  const onCancel = () => {
-    setSpotifySearchTerm(undefined)
-    setReset(true)
-  }
 
-    return <div className="sidebar-section" id="add-section">
-    <AddPanel onSpotifySearch={onSpotifySearch} reset={reset} />
-    {spotifySearchTerm && <SpotifySearchPanel term={spotifySearchTerm} onFinishAlbumSelections={onFinishAlbumSelections} onCancel={onCancel} />}
-    </div>
-
+    return <AddPanel onFinishAlbumSelections={onFinishAlbumSelections}  />
 }

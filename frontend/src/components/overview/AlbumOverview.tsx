@@ -10,6 +10,7 @@ import { OverviewLink } from "../../models/OverviewModels"
 import { LinearRater } from "../raters/linear/LinearRater"
 import { mapSongToFatSong } from "../../functions/mapper"
 import { FatSong } from "../../models/CoreModels"
+import { LinearRaterSingleMode } from "../raters/linear/single-mode/LinearRaterSingleMode"
 
 interface Props {
     artist: { id: string, name: string} 
@@ -88,7 +89,7 @@ export const AlbumOverview = ({album, artist, onClose, onLinkClick }:Props) => {
             <div className="album-year">{album.year}</div>
             <div className="rater">
                 <div className="title">Ratings</div>
-                <LinearRater items={fatSongs} rowRefs={[]} onScoreUpdate={onSongScoreUpdate}  />
+                <LinearRaterSingleMode items={fatSongs} rowRefs={[]} onScoreUpdate={onSongScoreUpdate}  />
             </div>
             <div className="album-tracks">
             <div className="title">Songs</div> 

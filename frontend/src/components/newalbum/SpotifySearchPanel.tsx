@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { ExternalAlbumSearchResult, ExternalArtistSearchResult, useSearchExternalArtistQuery } from '../../generated/graphql'
-import { Panel } from '../common/Panel'
 import './SpotifySearchPanel.css'
 
 interface Props {
@@ -10,7 +9,9 @@ interface Props {
 
 }
 
-export const SpotifySearchPanel = ({term, onFinishAlbumSelections, onCancel}: Props) => {
+export const SpotifySearchResults = ({term, onFinishAlbumSelections, onCancel}: Props) => {
+
+    if (!term || !term.length) return <></>
 
    const {data ,error,loading} = useSearchExternalArtistQuery({ variables: { name: term  }}) 
    const [selectedAlbums, setSelectedAlbums] = useState<ExternalAlbumSearchResult[]>([])
@@ -33,13 +34,11 @@ export const SpotifySearchPanel = ({term, onFinishAlbumSelections, onCancel}: Pr
         }
    } 
 
-    return <Panel title="Spotify Search" id="spotify-search" isCloseable={true} onClose={onCancel}>
-        
-        <div>
+    return <div id="spotify-search-results"> 
                         {loading && <p>Loading...</p> }
                         {error && <p>Error!</p> }
                         {data?.searchExternalArtist && 
-                                <div id="search-results-artist" className="flex column">
+                                <div id="search-results-artist">
                                     <div id="search-action">
                                         <button onClick={()=> submit(data?.searchExternalArtist)}>ADD</button>
                                     </div>
@@ -70,6 +69,5 @@ export const SpotifySearchPanel = ({term, onFinishAlbumSelections, onCancel}: Pr
 
         </div>
 
-    </Panel>
 
 }

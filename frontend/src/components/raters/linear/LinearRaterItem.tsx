@@ -1,9 +1,9 @@
-import { LinearRaterItemModel } from "../../../models/RaterModels"
 import { LinearRaterCircle } from "./LinearRaterCircle"
 import { LinearRaterContext } from "../../../providers/LinearRaterProvider"
 import { motion } from 'motion/react'
 import { useContext } from "react"
 import { LinearRaterConfig } from "../../../models/LinearRaterConfig"
+import { LinearRaterItemModel } from "../../../models/LinearRaterModels"
 
 interface Props {
     item:LinearRaterItemModel

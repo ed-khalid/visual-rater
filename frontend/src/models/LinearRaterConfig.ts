@@ -40,6 +40,7 @@ const ConnectingLineConfig = {
     end: (itemsLength:number) => LinearRaterMainRectConfig.x + firstCircleDistance + ( distanceBetweenCircles * (itemsLength -1)),       
     strokeWidth: 1,
     stroke: "#999",
+    singleModeStroke: "#999",
     category: {
       x: LinearRaterMainRectConfig.x + LinearRaterMainRectConfig.width,
       y: (position:number) => position - categoryOffset,

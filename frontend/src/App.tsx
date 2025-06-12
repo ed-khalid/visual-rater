@@ -10,6 +10,8 @@ import { NotFoundPage } from './pages/NotFoundPage';
 import { PlusIconSvg } from './components/svg/PlusIconSvg';
 import { SpotifyIconSvg } from './components/svg/SpotifyIconSvg';
 import { RaterStyle } from './models/RaterModels';
+import { AddPanel } from './components/newalbum/AddPanel';
+import { AddSection } from './components/newalbum/AddSection';
 
 
 interface Props {}
@@ -17,6 +19,7 @@ interface Props {}
 export const App = () => {
   const [newAlbumName, setNewAlbumName] =useState<string|undefined>() 
   const [raterStyle, setRaterStyle] = useState<RaterStyle>(RaterStyle.LINEAR)  
+  const [showAddNewAlbumPanel, setShowAddNewAlbumPanel] = useState<boolean>(false)
 
   const onCreateAlbum = (artistName:string, albumName:string) => {
     setNewAlbumName(albumName)
@@ -27,10 +30,10 @@ export const App = () => {
       <div id='header'>
         <div id="add-panel-buttons">
             <div  className="add-panel-option">
-                <PlusIconSvg onClick={() => {}} />
+                <PlusIconSvg onClick={() => { setShowAddNewAlbumPanel(true) }} />
             </div>
             <div className="add-panel-option">
-                <SpotifyIconSvg onClick={() => {}} />
+                <SpotifyIconSvg onClick={() => { setShowAddNewAlbumPanel((prev) => !prev)}} />
             </div>
         </div>
         <div id="title">VisRater</div>
@@ -44,6 +47,7 @@ export const App = () => {
         <Route path="/" element={<HomePage raterStyle={raterStyle}/>} />
         <Route path="*" element={<NotFoundPage/>} /> 
       </Routes>
+      { showAddNewAlbumPanel && <AddSection />}
     </div>
   );
 }

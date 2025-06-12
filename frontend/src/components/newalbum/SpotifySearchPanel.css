@@ -19,8 +19,13 @@ div#search-result-albums {
     display: flex;
     flex-direction: column;
     overflow-y: scroll;
-    height: 500px;
+    height: 77vh;
 }
+div.search-result-album-thumbnail img {
+    width: 80px;
+    height:80px;
+
+} 
 div.search-result-album {
     display: flex;
     flex-direction: row;

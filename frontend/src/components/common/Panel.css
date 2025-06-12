@@ -57,6 +57,21 @@ div#rater-context-panel {
     height:90px;
     z-index: 1;
 }
+
+/* add new album panel */
+div#add-panel {
+    position: absolute;
+    top: 90px;
+    width: 26vw;
+    height: 90vh;
+    background-color: var(--color-background); 
+    border: 1px solid var(--color-general-border);
+    z-index: 15;
+}
+div#add-panel input.search-input {
+  width: 100%;
+  font-size: 1.6rem;
+}
  
 
 

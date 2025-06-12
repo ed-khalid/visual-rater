@@ -39,10 +39,10 @@ export class LinearRaterModelMaker  {
     }
 
     private makeUnratedItems(): LinearRaterSingleItemModel {
+      this.unratedItems.sort((a,b) => a.song.number - b.song.number)
       const circleModels = this.unratedItems.map<LinearRaterCircleModel>((fatSong) => (
           ({ id: fatSong.song.id, name: this.determineSongNameLabel(fatSong.song)}) ) 
       ) 
-      circleModels.sort((a,b) => a.name.localeCompare(b.name))
       return {
         id: 'linear-rater-unrated-items',
         type: 'single',
@@ -66,6 +66,11 @@ export class LinearRaterModelMaker  {
       return circleModels
     }
 
+
+    public makeSingleModeItems() {
+        this.finalItems = this.ratedItems.map<LinearRaterSingleItemModel>((entry, i) => ({ type: 'single', id: 'linear-rater-group-' + i, position: this.yToScore.invert(entry.song.score!), score: entry.song.score! , items: this.mapFatSongsToLinearRaterCircleModel([entry]) }))
+        return this
+    }   
 
 
     public groupByScore() {

@@ -1,25 +1,23 @@
-import { useEffect, useRef, useState } from "react";
 import { scaleLinear } from "d3-scale";
-import { FatSong } from "../../../models/CoreModels";
-import { SONG_SCORE_DICTIONARY, UNRATED_COLOR } from "../../../models/ScoreModels";
-import { LinearRaterContext } from "../../../providers/LinearRaterProvider";
-import { mapSongScoreToUI } from "../../../functions/scoreUI";
+import { FatSong } from "../../../../models/CoreModels";
+import { SONG_SCORE_DICTIONARY, UNRATED_COLOR } from "../../../../models/ScoreModels";
+import { LinearRaterContext } from "../../../../providers/LinearRaterProvider";
+import { mapSongScoreToUI } from "../../../../functions/scoreUI";
 import { select, selectAll } from "d3";
-import './LinearRater.css'
-import { Song } from "../../../generated/graphql";
-import { LinearRaterConfig } from "../../../models/LinearRaterConfig";
-import { LinearRaterItem } from "./LinearRaterItem";
-import { LinearRaterGroupItem } from "./LinearRaterGroupItem";
-import { UnratedLinearRaterItem } from "./UnratedLinearRaterItem";
-import { LinearRaterModelMaker } from "./LinearRaterModelMaker";
-import { SongTooltip } from "./SongTooltip";
-import { isMultiple, isSingle, LinearRaterCircleModel } from "../../../models/LinearRaterModels";
+import '../LinearRater.css'
+import { Song } from "../../../../generated/graphql";
+import { LinearRaterConfig } from "../../../../models/LinearRaterConfig";
+import { UnratedLinearRaterItem } from "../UnratedLinearRaterItem";
+import { LinearRaterModelMaker } from "../LinearRaterModelMaker";
+import { SongTooltip } from "../SongTooltip";
+import { isSingle, LinearRaterCircleModel } from "../../../../models/LinearRaterModels";
+import { useEffect, useRef, useState } from "react";
+import { LinearRaterSingleModeItem } from "./LinearRaterSingleModeItem";
 
 const CATEGORIES = SONG_SCORE_DICTIONARY.values().filter(it => it.category !== 'UNRATED').map((it) => ({ label: it.category, color: it.color, stop: it.threshold.high  }) ).toArray().reverse()
 
 
 interface Props {
-    isSingleMode?: boolean
     items: FatSong[]
     rowRefs: any[]
     onScoreUpdate: (updatedSong:Song) => void
@@ -30,7 +28,7 @@ type HoveredSong = {
     position: {x:number,y:number}
 }
 
-export const LinearRater = ({items, onScoreUpdate, isSingleMode}: Props) => {
+export const LinearRaterSingleMode = ({items, onScoreUpdate}: Props) => {
 
   const containerRef = useRef<HTMLDivElement|null>(null)   
   const svgRef = useRef<SVGSVGElement|null>(null)   
@@ -76,8 +74,7 @@ export const LinearRater = ({items, onScoreUpdate, isSingleMode}: Props) => {
   .clamp(true)
 
   const modelMaker = new LinearRaterModelMaker(items, yToScore)   
-  const { groups, largestGroupItemCount, unratedGroup } = modelMaker.groupByScore().groupByProximity(LinearRaterConfig.groupProximityThreshold).groupByProximity(30).getFinalValues()
-  console.log('largestGroupItemCount', largestGroupItemCount)
+  const { unratedGroup, groups, largestGroupItemCount } = modelMaker.makeSingleModeItems().getFinalValues()
 
   const onDragEnd = (item:LinearRaterCircleModel, newScore:number) => {
     selectAll("g.linear-rater-group").classed('dimmed', false)
@@ -119,8 +116,7 @@ export const LinearRater = ({items, onScoreUpdate, isSingleMode}: Props) => {
             
             <rect x={config.x} y={config.y} width={config.width} height={raterHeight} fill="url(#rater-gradient)"  /> 
               {groups.map((group, i) => 
-                 isSingle(group)? <LinearRaterItem key={`liner-item-group-${i}`} item={group} largestGroupItemCount={largestGroupItemCount}  /> : 
-                 isMultiple(group) ? <LinearRaterGroupItem key={`linear-item-group-${i}`} item={group} largestGroupItemCount={largestGroupItemCount}/> : null  
+                (isSingle(group)) ? <LinearRaterSingleModeItem key={`liner-item-group-${i}`} item={group} i={i}  /> : <></> 
               )}
             {/* unrated items  */}
             <rect x={config.x} y={raterHeight} width={config.width} height={unratedConfig.height} fill={UNRATED_COLOR}  /> 
