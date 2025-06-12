@@ -1,6 +1,6 @@
 import { scaleLinear, ScaleLinear } from "d3";
 import { createContext } from "react";
-import { LinearRaterCircleModel } from "../models/RaterModels";
+import { LinearRaterCircleModel } from "../models/LinearRaterModels";
 
 
 export const LinearRaterContext = createContext<LinearRaterContext>({ yToScore: scaleLinear(), raterHeight: 0, onDragEnd: () => {}, onDragStart: () => {}, getScoreCategoryDetails: () => ({ color: '', category: ''}), onCircleHover: () => {} })   

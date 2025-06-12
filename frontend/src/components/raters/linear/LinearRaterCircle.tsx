@@ -1,10 +1,10 @@
 import { useContext, useEffect, useRef } from "react"
-import { LinearRaterCircleModel } from "../../../models/RaterModels"
 import { select } from "d3-selection"
 import { drag } from "d3-drag"
 import { LinearRaterContext } from "../../../providers/LinearRaterProvider"
 import { motion } from 'motion/react'
 import { LinearRaterConfig } from "../../../models/LinearRaterConfig"
+import { LinearRaterCircleModel } from "../../../models/LinearRaterModels"
 
 interface Props {
     item:LinearRaterCircleModel 

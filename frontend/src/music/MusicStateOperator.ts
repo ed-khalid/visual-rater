@@ -1,9 +1,7 @@
 import { Artist, Album, Song } from "../generated/graphql"
-import { MusicFilter } from "./ArtistNavigationFilter"
-import { ContextArtist } from "../models/CoreModels"
-import { FatSong } from "../models/RaterModels"
+import { ContextArtist, FatSong } from "../models/CoreModels"
 import { MusicData } from "./MusicData"
-import { MusicFilters } from "./MusicFilters"
+import { MusicFilter, MusicFilters } from "./MusicFilters"
 import { MusicState } from "./MusicState"
 
 
@@ -32,7 +30,7 @@ export class MusicStateOperator {
   }
 
   public getSongsForAlbum({id}:{id:string}): Song[] {
-    return this.data.songs.filter(it => it.albumId === id)
+    return this.data.songs.filter(it => it.album.id === id)
   }
 
   public getContextArtists(): ContextArtist[] {
@@ -63,8 +61,8 @@ export class MusicStateOperator {
     const songFilteredSongs = this.raterFilters.filterSongs(albumFilteredSongs)
     return songFilteredSongs.map(song => (
       {
-        artist: this.getArtistById(song.artistId)!!,
-        album: this.getAlbumById(song.albumId)!!, 
+        artist: this.getArtistById(song.artist.id)!!,
+        album: this.getAlbumById(song.album.id)!!, 
         song: song
       } 
     ))

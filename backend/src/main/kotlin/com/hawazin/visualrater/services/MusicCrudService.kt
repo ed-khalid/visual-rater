@@ -34,6 +34,8 @@ class MusicCrudService(private val genreRepo: GenreRepository, private val songR
     @Transactional
     fun readArtists() : Page<Artist> = artistRepo.findAll(PageRequest.of(0,50))
     @Transactional
+    fun readSongsByPage(pageNumber: Int) : Page<Song> = songRepo.findAllByOrderByScoreDesc(PageRequest.of(pageNumber,100))
+    @Transactional
     fun readAlbums(ids:List<UUID>): Iterable<Album> = albumRepo.findAllById(ids)
     @Transactional
     fun readArtistByName(name:String) = artistRepo.findByName(name)
@@ -69,13 +71,11 @@ class MusicCrudService(private val genreRepo: GenreRepository, private val songR
     @Transactional
     fun notifyOnSongUpdate(song:Song)
     {
-        val artist = artistRepo.findById(song.artistId)
-        val album = albumRepo.findById(song.albumId)
-        if (artist.isPresent) {
-            artistPublisherService.notify(artist.get())
+        song.artist?.let {
+            artistPublisherService.notify(it)
         }
-        if (album.isPresent) {
-            albumPublisherService.notify(album.get())
+        song.album?.let {
+            albumPublisherService.notify(it)
         }
     }
 
@@ -150,8 +150,8 @@ class MusicCrudService(private val genreRepo: GenreRepository, private val songR
         }
         val artist = maybeArtist.get()
         val album = albumInput.let  { Album(id = UUID.randomUUID(),name = it.name, vendorId=it.vendorId,  year= it.year, artistId = artist.id!!, thumbnail = it.thumbnail, score = 0.0, thumbnailDominantColors = it.dominantColors?.toTypedArray(), songs = null, createdAt = OffsetDateTime.now(), updatedAt = null, primaryGenre = unratedGenre, secondaryGenres = mutableListOf()  ) }
-        albumRepo.save(album)
-        val songs = albumInput.songs.map { Song( id =  UUID.randomUUID(), name = it.name, albumId = album.id, artistId = artist.id!!, score = it.score, number= it.number, discNumber = it.discNumber, createdAt = OffsetDateTime.now(), updatedAt = null, primaryGenre = unratedGenre, secondaryGenres = mutableListOf()  ) }
+        val newAlbum = albumRepo.save(album)
+        val songs = albumInput.songs.map { Song( id =  UUID.randomUUID(), name = it.name, album = newAlbum, artist = artist, score = it.score, number= it.number, discNumber = it.discNumber, createdAt = OffsetDateTime.now(), updatedAt = null, primaryGenre = unratedGenre, secondaryGenres = mutableListOf()  ) }
         songRepo.saveAll(songs)
         album.songs = songs
         return album

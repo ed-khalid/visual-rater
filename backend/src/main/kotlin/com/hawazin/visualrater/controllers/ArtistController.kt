@@ -18,7 +18,7 @@ class ArtistController(val musicService: MusicCrudService, val publisherService:
     @QueryMapping
     fun artists() : ArtistPage {
         val artists = musicService.readArtists()
-        return ArtistPage(total= artists.totalPages, pageNumber = artists.pageable.pageNumber, content = artists.content)
+        return ArtistPage(totalPages= artists.totalPages, pageNumber = artists.pageable.pageNumber, content = artists.content)
     }
 
     @QueryMapping

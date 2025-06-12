@@ -33,7 +33,7 @@ export interface ContextArtist {
 
 export type FatSong = {
     artist: {name: string, id:string} 
-    album: { thumbnail?: Maybe<string>, thumbnailDominantColors?:Maybe<Array<string>>, name:string}
+    album: { id:string, thumbnail?: Maybe<string>, thumbnailDominantColors?:Maybe<Array<string>>, name:string}
     song: Song
 } 
 

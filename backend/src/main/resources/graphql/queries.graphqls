@@ -1,5 +1,6 @@
 
 type Query {
+    songs(pageNumber: Int!): SongPage!
     searchExternalArtist(name:String!): ExternalArtistSearchResult!
     artists: ArtistPage!
     albums(ids:[String!]!): [Album!]

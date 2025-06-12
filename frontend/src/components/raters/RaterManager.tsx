@@ -90,7 +90,7 @@ export const RaterManager = ({items, raterStyle, totalRows}:Props) => {
         const songId = event.active.data.current.id  
         const dataItem:FatSong|undefined = items.find(it => it.song.id === songId) 
         if (dataItem) {
-            const albumId = dataItem.song.albumId 
+            const albumId = dataItem.song.album.id 
             const score = event.over.data.current.score  
             updateSong({ variables: {song:  { id: songId , score} }, refetchQueries: [{ query: GetAlbumsSongsDocument, variables: { albumIds: [albumId] }  }]})
         }

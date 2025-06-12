@@ -1,0 +1,11 @@
+
+query GetSongsPage($pageNumber: Int!) {
+  songs(pageNumber: $pageNumber) {
+    totalPages 
+    pageNumber
+    content
+    {
+        ...SongFields
+    }
+  }
+}

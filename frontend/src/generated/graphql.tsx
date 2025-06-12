@@ -30,6 +30,14 @@ export type Album = {
   year?: Maybe<Scalars['Int']['output']>;
 };
 
+export type AlbumBrief = {
+  __typename?: 'AlbumBrief';
+  id: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  thumbnail: Scalars['String']['output'];
+  thumbnailDominantColors?: Maybe<Array<Scalars['String']['output']>>;
+};
+
 export type Artist = Pageable & {
   __typename?: 'Artist';
   albums: Array<Album>;
@@ -40,6 +48,13 @@ export type Artist = Pageable & {
   score: Scalars['Float']['output'];
   thumbnail?: Maybe<Scalars['String']['output']>;
   thumbnailDominantColors?: Maybe<Array<Scalars['String']['output']>>;
+};
+
+export type ArtistBrief = {
+  __typename?: 'ArtistBrief';
+  id: Scalars['String']['output'];
+  name: Scalars['String']['output'];
+  thumbnail: Scalars['String']['output'];
 };
 
 export type ArtistInput = {
@@ -60,7 +75,7 @@ export type ArtistPage = Page & {
   __typename?: 'ArtistPage';
   content: Array<Artist>;
   pageNumber: Scalars['Int']['output'];
-  total: Scalars['Int']['output'];
+  totalPages: Scalars['Int']['output'];
 };
 
 export type ArtistSearchParams = {
@@ -223,7 +238,7 @@ export type NewSongInput = {
 export type Page = {
   content: Array<Pageable>;
   pageNumber: Scalars['Int']['output'];
-  total: Scalars['Int']['output'];
+  totalPages: Scalars['Int']['output'];
 };
 
 export type Pageable = {
@@ -239,6 +254,7 @@ export type Query = {
   compareToOtherSongsBySameArtist: Array<ComparisonSong>;
   genres: Array<Genre>;
   searchExternalArtist: ExternalArtistSearchResult;
+  songs: SongPage;
   unratedAlbums: Array<UnratedAlbum>;
 };
 
@@ -270,11 +286,15 @@ export type QuerySearchExternalArtistArgs = {
   name: Scalars['String']['input'];
 };
 
-export type Song = Item & {
+
+export type QuerySongsArgs = {
+  pageNumber: Scalars['Int']['input'];
+};
+
+export type Song = Pageable & {
   __typename?: 'Song';
-  albumId: Scalars['String']['output'];
-  artistId: Scalars['String']['output'];
-  discNumber: Scalars['Int']['output'];
+  album: AlbumBrief;
+  artist: ArtistBrief;
   genres: Genres;
   id: Scalars['String']['output'];
   name: Scalars['String']['output'];
@@ -288,6 +308,13 @@ export type SongInput = {
   name?: InputMaybe<Scalars['String']['input']>;
   number?: InputMaybe<Scalars['Int']['input']>;
   score?: InputMaybe<Scalars['Float']['input']>;
+};
+
+export type SongPage = Page & {
+  __typename?: 'SongPage';
+  content: Array<Song>;
+  pageNumber: Scalars['Int']['output'];
+  totalPages: Scalars['Int']['output'];
 };
 
 export type Subscription = {
@@ -320,15 +347,15 @@ export type UpdateArtistInput = {
   thumbnail?: InputMaybe<Scalars['String']['input']>;
 };
 
-export type AlbumFieldsFragment = { __typename?: 'Album', id: string, artistId: string, name: string, year?: number | null, score?: number | null, thumbnail?: string | null, thumbnailDominantColors?: Array<string> | null, genres?: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } | null, songs: Array<{ __typename?: 'Song', id: string, albumId: string, artistId: string, name: string, number: number, discNumber: number, score?: number | null, shortname?: string | null, genres: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } }> };
+export type AlbumFieldsFragment = { __typename?: 'Album', id: string, artistId: string, name: string, year?: number | null, score?: number | null, thumbnail?: string | null, thumbnailDominantColors?: Array<string> | null, genres?: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } | null, songs: Array<{ __typename?: 'Song', id: string, name: string, number: number, score?: number | null, shortname?: string | null, album: { __typename?: 'AlbumBrief', id: string, name: string, thumbnail: string, thumbnailDominantColors?: Array<string> | null }, artist: { __typename?: 'ArtistBrief', id: string, name: string, thumbnail: string }, genres: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } }> };
 
-export type ArtistFieldsFragment = { __typename?: 'Artist', id: string, name: string, thumbnail?: string | null, thumbnailDominantColors?: Array<string> | null, score: number, genres?: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } | null, albums: Array<{ __typename?: 'Album', id: string, artistId: string, name: string, year?: number | null, score?: number | null, thumbnail?: string | null, thumbnailDominantColors?: Array<string> | null, genres?: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } | null, songs: Array<{ __typename?: 'Song', id: string, albumId: string, artistId: string, name: string, number: number, discNumber: number, score?: number | null, shortname?: string | null, genres: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } }> }>, metadata: { __typename?: 'ArtistMetadata', id: string, totalSongs: number, totalAlbums: number, songs: { __typename?: 'ArtistSongMetadata', classic: number, great: number, verygood: number, good: number, pleasant: number, decent: number, interesting: number, ok: number, meh: number, average: number, boring: number, poor: number, bad: number, offensive: number } } };
+export type ArtistFieldsFragment = { __typename?: 'Artist', id: string, name: string, thumbnail?: string | null, thumbnailDominantColors?: Array<string> | null, score: number, genres?: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } | null, albums: Array<{ __typename?: 'Album', id: string, artistId: string, name: string, year?: number | null, score?: number | null, thumbnail?: string | null, thumbnailDominantColors?: Array<string> | null, genres?: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } | null, songs: Array<{ __typename?: 'Song', id: string, name: string, number: number, score?: number | null, shortname?: string | null, album: { __typename?: 'AlbumBrief', id: string, name: string, thumbnail: string, thumbnailDominantColors?: Array<string> | null }, artist: { __typename?: 'ArtistBrief', id: string, name: string, thumbnail: string }, genres: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } }> }>, metadata: { __typename?: 'ArtistMetadata', id: string, totalSongs: number, totalAlbums: number, songs: { __typename?: 'ArtistSongMetadata', classic: number, great: number, verygood: number, good: number, pleasant: number, decent: number, interesting: number, ok: number, meh: number, average: number, boring: number, poor: number, bad: number, offensive: number } } };
 
 export type ArtistMetadataFieldsFragment = { __typename?: 'ArtistMetadata', id: string, totalSongs: number, totalAlbums: number, songs: { __typename?: 'ArtistSongMetadata', classic: number, great: number, verygood: number, good: number, pleasant: number, decent: number, interesting: number, ok: number, meh: number, average: number, boring: number, poor: number, bad: number, offensive: number } };
 
 export type GenreFieldsFragment = { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> };
 
-export type SongFieldsFragment = { __typename?: 'Song', id: string, albumId: string, artistId: string, name: string, number: number, discNumber: number, score?: number | null, shortname?: string | null, genres: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } };
+export type SongFieldsFragment = { __typename?: 'Song', id: string, name: string, number: number, score?: number | null, shortname?: string | null, album: { __typename?: 'AlbumBrief', id: string, name: string, thumbnail: string, thumbnailDominantColors?: Array<string> | null }, artist: { __typename?: 'ArtistBrief', id: string, name: string, thumbnail: string }, genres: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } };
 
 export type ArtistSongMetadataFieldsFragment = { __typename?: 'ArtistSongMetadata', classic: number, great: number, verygood: number, good: number, pleasant: number, decent: number, interesting: number, ok: number, meh: number, average: number, boring: number, poor: number, bad: number, offensive: number };
 
@@ -337,7 +364,7 @@ export type CreateAlbumForExternalArtistMutationVariables = Exact<{
 }>;
 
 
-export type CreateAlbumForExternalArtistMutation = { __typename?: 'Mutation', createAlbumsForExternalArtist: { __typename?: 'Artist', id: string, name: string, thumbnail?: string | null, thumbnailDominantColors?: Array<string> | null, score: number, genres?: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } | null, albums: Array<{ __typename?: 'Album', id: string, artistId: string, name: string, year?: number | null, score?: number | null, thumbnail?: string | null, thumbnailDominantColors?: Array<string> | null, genres?: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } | null, songs: Array<{ __typename?: 'Song', id: string, albumId: string, artistId: string, name: string, number: number, discNumber: number, score?: number | null, shortname?: string | null, genres: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } }> }>, metadata: { __typename?: 'ArtistMetadata', id: string, totalSongs: number, totalAlbums: number, songs: { __typename?: 'ArtistSongMetadata', classic: number, great: number, verygood: number, good: number, pleasant: number, decent: number, interesting: number, ok: number, meh: number, average: number, boring: number, poor: number, bad: number, offensive: number } } } };
+export type CreateAlbumForExternalArtistMutation = { __typename?: 'Mutation', createAlbumsForExternalArtist: { __typename?: 'Artist', id: string, name: string, thumbnail?: string | null, thumbnailDominantColors?: Array<string> | null, score: number, genres?: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } | null, albums: Array<{ __typename?: 'Album', id: string, artistId: string, name: string, year?: number | null, score?: number | null, thumbnail?: string | null, thumbnailDominantColors?: Array<string> | null, genres?: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } | null, songs: Array<{ __typename?: 'Song', id: string, name: string, number: number, score?: number | null, shortname?: string | null, album: { __typename?: 'AlbumBrief', id: string, name: string, thumbnail: string, thumbnailDominantColors?: Array<string> | null }, artist: { __typename?: 'ArtistBrief', id: string, name: string, thumbnail: string }, genres: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } }> }>, metadata: { __typename?: 'ArtistMetadata', id: string, totalSongs: number, totalAlbums: number, songs: { __typename?: 'ArtistSongMetadata', classic: number, great: number, verygood: number, good: number, pleasant: number, decent: number, interesting: number, ok: number, meh: number, average: number, boring: number, poor: number, bad: number, offensive: number } } } };
 
 export type DeleteAlbumMutationVariables = Exact<{
   albumId: Scalars['String']['input'];
@@ -358,21 +385,21 @@ export type UpdateAlbumMutationVariables = Exact<{
 }>;
 
 
-export type UpdateAlbumMutation = { __typename?: 'Mutation', updateAlbum: { __typename?: 'Album', id: string, artistId: string, name: string, year?: number | null, score?: number | null, thumbnail?: string | null, thumbnailDominantColors?: Array<string> | null, genres?: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } | null, songs: Array<{ __typename?: 'Song', id: string, albumId: string, artistId: string, name: string, number: number, discNumber: number, score?: number | null, shortname?: string | null, genres: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } }> } };
+export type UpdateAlbumMutation = { __typename?: 'Mutation', updateAlbum: { __typename?: 'Album', id: string, artistId: string, name: string, year?: number | null, score?: number | null, thumbnail?: string | null, thumbnailDominantColors?: Array<string> | null, genres?: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } | null, songs: Array<{ __typename?: 'Song', id: string, name: string, number: number, score?: number | null, shortname?: string | null, album: { __typename?: 'AlbumBrief', id: string, name: string, thumbnail: string, thumbnailDominantColors?: Array<string> | null }, artist: { __typename?: 'ArtistBrief', id: string, name: string, thumbnail: string }, genres: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } }> } };
 
 export type UpdateArtistMutationVariables = Exact<{
   artist: UpdateArtistInput;
 }>;
 
 
-export type UpdateArtistMutation = { __typename?: 'Mutation', updateArtist: { __typename?: 'Artist', id: string, name: string, thumbnail?: string | null, thumbnailDominantColors?: Array<string> | null, score: number, genres?: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } | null, albums: Array<{ __typename?: 'Album', id: string, artistId: string, name: string, year?: number | null, score?: number | null, thumbnail?: string | null, thumbnailDominantColors?: Array<string> | null, genres?: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } | null, songs: Array<{ __typename?: 'Song', id: string, albumId: string, artistId: string, name: string, number: number, discNumber: number, score?: number | null, shortname?: string | null, genres: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } }> }>, metadata: { __typename?: 'ArtistMetadata', id: string, totalSongs: number, totalAlbums: number, songs: { __typename?: 'ArtistSongMetadata', classic: number, great: number, verygood: number, good: number, pleasant: number, decent: number, interesting: number, ok: number, meh: number, average: number, boring: number, poor: number, bad: number, offensive: number } } } };
+export type UpdateArtistMutation = { __typename?: 'Mutation', updateArtist: { __typename?: 'Artist', id: string, name: string, thumbnail?: string | null, thumbnailDominantColors?: Array<string> | null, score: number, genres?: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } | null, albums: Array<{ __typename?: 'Album', id: string, artistId: string, name: string, year?: number | null, score?: number | null, thumbnail?: string | null, thumbnailDominantColors?: Array<string> | null, genres?: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } | null, songs: Array<{ __typename?: 'Song', id: string, name: string, number: number, score?: number | null, shortname?: string | null, album: { __typename?: 'AlbumBrief', id: string, name: string, thumbnail: string, thumbnailDominantColors?: Array<string> | null }, artist: { __typename?: 'ArtistBrief', id: string, name: string, thumbnail: string }, genres: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } }> }>, metadata: { __typename?: 'ArtistMetadata', id: string, totalSongs: number, totalAlbums: number, songs: { __typename?: 'ArtistSongMetadata', classic: number, great: number, verygood: number, good: number, pleasant: number, decent: number, interesting: number, ok: number, meh: number, average: number, boring: number, poor: number, bad: number, offensive: number } } } };
 
 export type UpdateSongMutationVariables = Exact<{
   song: SongInput;
 }>;
 
 
-export type UpdateSongMutation = { __typename?: 'Mutation', UpdateSong: { __typename?: 'Song', id: string, albumId: string, artistId: string, name: string, number: number, discNumber: number, score?: number | null, shortname?: string | null, genres: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } } };
+export type UpdateSongMutation = { __typename?: 'Mutation', UpdateSong: { __typename?: 'Song', id: string, name: string, number: number, score?: number | null, shortname?: string | null, album: { __typename?: 'AlbumBrief', id: string, name: string, thumbnail: string, thumbnailDominantColors?: Array<string> | null }, artist: { __typename?: 'ArtistBrief', id: string, name: string, thumbnail: string }, genres: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } } };
 
 export type GetAlbumsQueryVariables = Exact<{
   ids: Array<Scalars['String']['input']> | Scalars['String']['input'];
@@ -386,14 +413,14 @@ export type GetAlbumsSongsQueryVariables = Exact<{
 }>;
 
 
-export type GetAlbumsSongsQuery = { __typename?: 'Query', albums?: Array<{ __typename?: 'Album', id: string, songs: Array<{ __typename?: 'Song', id: string, albumId: string, artistId: string, name: string, number: number, discNumber: number, score?: number | null, shortname?: string | null, genres: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } }> }> | null };
+export type GetAlbumsSongsQuery = { __typename?: 'Query', albums?: Array<{ __typename?: 'Album', id: string, songs: Array<{ __typename?: 'Song', id: string, name: string, number: number, score?: number | null, shortname?: string | null, album: { __typename?: 'AlbumBrief', id: string, name: string, thumbnail: string, thumbnailDominantColors?: Array<string> | null }, artist: { __typename?: 'ArtistBrief', id: string, name: string, thumbnail: string }, genres: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } }> }> | null };
 
 export type GetArtistAlbumsQueryVariables = Exact<{
   artistId: Scalars['String']['input'];
 }>;
 
 
-export type GetArtistAlbumsQuery = { __typename?: 'Query', artist: { __typename?: 'Artist', id: string, albums: Array<{ __typename?: 'Album', id: string, artistId: string, name: string, year?: number | null, score?: number | null, thumbnail?: string | null, thumbnailDominantColors?: Array<string> | null, genres?: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } | null, songs: Array<{ __typename?: 'Song', id: string, albumId: string, artistId: string, name: string, number: number, discNumber: number, score?: number | null, shortname?: string | null, genres: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } }> }> } };
+export type GetArtistAlbumsQuery = { __typename?: 'Query', artist: { __typename?: 'Artist', id: string, albums: Array<{ __typename?: 'Album', id: string, artistId: string, name: string, year?: number | null, score?: number | null, thumbnail?: string | null, thumbnailDominantColors?: Array<string> | null, genres?: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } | null, songs: Array<{ __typename?: 'Song', id: string, name: string, number: number, score?: number | null, shortname?: string | null, album: { __typename?: 'AlbumBrief', id: string, name: string, thumbnail: string, thumbnailDominantColors?: Array<string> | null }, artist: { __typename?: 'ArtistBrief', id: string, name: string, thumbnail: string }, genres: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } }> }> } };
 
 export type GetArtistFullQueryVariables = Exact<{
   artistName?: InputMaybe<Scalars['String']['input']>;
@@ -401,17 +428,24 @@ export type GetArtistFullQueryVariables = Exact<{
 }>;
 
 
-export type GetArtistFullQuery = { __typename?: 'Query', artist: { __typename?: 'Artist', id: string, name: string, thumbnail?: string | null, thumbnailDominantColors?: Array<string> | null, score: number, genres?: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } | null, albums: Array<{ __typename?: 'Album', id: string, artistId: string, name: string, year?: number | null, score?: number | null, thumbnail?: string | null, thumbnailDominantColors?: Array<string> | null, genres?: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } | null, songs: Array<{ __typename?: 'Song', id: string, albumId: string, artistId: string, name: string, number: number, discNumber: number, score?: number | null, shortname?: string | null, genres: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } }> }>, metadata: { __typename?: 'ArtistMetadata', id: string, totalSongs: number, totalAlbums: number, songs: { __typename?: 'ArtistSongMetadata', classic: number, great: number, verygood: number, good: number, pleasant: number, decent: number, interesting: number, ok: number, meh: number, average: number, boring: number, poor: number, bad: number, offensive: number } } } };
+export type GetArtistFullQuery = { __typename?: 'Query', artist: { __typename?: 'Artist', id: string, name: string, thumbnail?: string | null, thumbnailDominantColors?: Array<string> | null, score: number, genres?: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } | null, albums: Array<{ __typename?: 'Album', id: string, artistId: string, name: string, year?: number | null, score?: number | null, thumbnail?: string | null, thumbnailDominantColors?: Array<string> | null, genres?: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } | null, songs: Array<{ __typename?: 'Song', id: string, name: string, number: number, score?: number | null, shortname?: string | null, album: { __typename?: 'AlbumBrief', id: string, name: string, thumbnail: string, thumbnailDominantColors?: Array<string> | null }, artist: { __typename?: 'ArtistBrief', id: string, name: string, thumbnail: string }, genres: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } }> }>, metadata: { __typename?: 'ArtistMetadata', id: string, totalSongs: number, totalAlbums: number, songs: { __typename?: 'ArtistSongMetadata', classic: number, great: number, verygood: number, good: number, pleasant: number, decent: number, interesting: number, ok: number, meh: number, average: number, boring: number, poor: number, bad: number, offensive: number } } } };
 
 export type GetArtistsPageQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetArtistsPageQuery = { __typename?: 'Query', artists: { __typename?: 'ArtistPage', total: number, pageNumber: number, content: Array<{ __typename?: 'Artist', id: string, name: string, thumbnail?: string | null, thumbnailDominantColors?: Array<string> | null, score: number, albums: Array<{ __typename?: 'Album', id: string }>, metadata: { __typename?: 'ArtistMetadata', id: string, totalSongs: number, totalAlbums: number, songs: { __typename?: 'ArtistSongMetadata', classic: number, great: number, verygood: number, good: number, pleasant: number, decent: number, interesting: number, ok: number, meh: number, average: number, boring: number, poor: number, bad: number, offensive: number } } }> } };
+export type GetArtistsPageQuery = { __typename?: 'Query', artists: { __typename?: 'ArtistPage', totalPages: number, pageNumber: number, content: Array<{ __typename?: 'Artist', id: string, name: string, thumbnail?: string | null, thumbnailDominantColors?: Array<string> | null, score: number, albums: Array<{ __typename?: 'Album', id: string }>, metadata: { __typename?: 'ArtistMetadata', id: string, totalSongs: number, totalAlbums: number, songs: { __typename?: 'ArtistSongMetadata', classic: number, great: number, verygood: number, good: number, pleasant: number, decent: number, interesting: number, ok: number, meh: number, average: number, boring: number, poor: number, bad: number, offensive: number } } }> } };
+
+export type GetSongsPageQueryVariables = Exact<{
+  pageNumber: Scalars['Int']['input'];
+}>;
+
+
+export type GetSongsPageQuery = { __typename?: 'Query', songs: { __typename?: 'SongPage', totalPages: number, pageNumber: number, content: Array<{ __typename?: 'Song', id: string, name: string, number: number, score?: number | null, shortname?: string | null, album: { __typename?: 'AlbumBrief', id: string, name: string, thumbnail: string, thumbnailDominantColors?: Array<string> | null }, artist: { __typename?: 'ArtistBrief', id: string, name: string, thumbnail: string }, genres: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } }> } };
 
 export type GetUnratedAlbumsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type GetUnratedAlbumsQuery = { __typename?: 'Query', unratedAlbums: Array<{ __typename?: 'UnratedAlbum', id: string, name: string, year?: number | null, score?: number | null, thumbnail?: string | null, artist: { __typename?: 'Artist', id: string, name: string }, songs: Array<{ __typename?: 'Song', id: string, albumId: string, artistId: string, name: string, number: number, discNumber: number, score?: number | null, shortname?: string | null, genres: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } }> }> };
+export type GetUnratedAlbumsQuery = { __typename?: 'Query', unratedAlbums: Array<{ __typename?: 'UnratedAlbum', id: string, name: string, year?: number | null, score?: number | null, thumbnail?: string | null, artist: { __typename?: 'Artist', id: string, name: string }, songs: Array<{ __typename?: 'Song', id: string, name: string, number: number, score?: number | null, shortname?: string | null, album: { __typename?: 'AlbumBrief', id: string, name: string, thumbnail: string, thumbnailDominantColors?: Array<string> | null }, artist: { __typename?: 'ArtistBrief', id: string, name: string, thumbnail: string }, genres: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } }> }> };
 
 export type SearchExternalArtistQueryVariables = Exact<{
   name: Scalars['String']['input'];
@@ -445,11 +479,19 @@ export const GenreFieldsFragmentDoc = gql`
 export const SongFieldsFragmentDoc = gql`
     fragment SongFields on Song {
   id
-  albumId
-  artistId
+  album {
+    id
+    name
+    thumbnail
+    thumbnailDominantColors
+  }
+  artist {
+    id
+    name
+    thumbnail
+  }
   name
   number
-  discNumber
   score
   shortname
   genres {
@@ -903,7 +945,7 @@ export type GetArtistFullQueryResult = Apollo.QueryResult<GetArtistFullQuery, Ge
 export const GetArtistsPageDocument = gql`
     query GetArtistsPage {
   artists {
-    total
+    totalPages
     pageNumber
     content {
       id
@@ -953,6 +995,50 @@ export type GetArtistsPageQueryHookResult = ReturnType<typeof useGetArtistsPageQ
 export type GetArtistsPageLazyQueryHookResult = ReturnType<typeof useGetArtistsPageLazyQuery>;
 export type GetArtistsPageSuspenseQueryHookResult = ReturnType<typeof useGetArtistsPageSuspenseQuery>;
 export type GetArtistsPageQueryResult = Apollo.QueryResult<GetArtistsPageQuery, GetArtistsPageQueryVariables>;
+export const GetSongsPageDocument = gql`
+    query GetSongsPage($pageNumber: Int!) {
+  songs(pageNumber: $pageNumber) {
+    totalPages
+    pageNumber
+    content {
+      ...SongFields
+    }
+  }
+}
+    ${SongFieldsFragmentDoc}`;
+
+/**
+ * __useGetSongsPageQuery__
+ *
+ * To run a query within a React component, call `useGetSongsPageQuery` and pass it any options that fit your needs.
+ * When your component renders, `useGetSongsPageQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useGetSongsPageQuery({
+ *   variables: {
+ *      pageNumber: // value for 'pageNumber'
+ *   },
+ * });
+ */
+export function useGetSongsPageQuery(baseOptions: Apollo.QueryHookOptions<GetSongsPageQuery, GetSongsPageQueryVariables> & ({ variables: GetSongsPageQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<GetSongsPageQuery, GetSongsPageQueryVariables>(GetSongsPageDocument, options);
+      }
+export function useGetSongsPageLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetSongsPageQuery, GetSongsPageQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<GetSongsPageQuery, GetSongsPageQueryVariables>(GetSongsPageDocument, options);
+        }
+export function useGetSongsPageSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetSongsPageQuery, GetSongsPageQueryVariables>) {
+          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
+          return Apollo.useSuspenseQuery<GetSongsPageQuery, GetSongsPageQueryVariables>(GetSongsPageDocument, options);
+        }
+export type GetSongsPageQueryHookResult = ReturnType<typeof useGetSongsPageQuery>;
+export type GetSongsPageLazyQueryHookResult = ReturnType<typeof useGetSongsPageLazyQuery>;
+export type GetSongsPageSuspenseQueryHookResult = ReturnType<typeof useGetSongsPageSuspenseQuery>;
+export type GetSongsPageQueryResult = Apollo.QueryResult<GetSongsPageQuery, GetSongsPageQueryVariables>;
 export const GetUnratedAlbumsDocument = gql`
     query GetUnratedAlbums {
   unratedAlbums {

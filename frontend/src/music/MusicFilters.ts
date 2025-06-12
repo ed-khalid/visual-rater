@@ -23,8 +23,8 @@ export class MusicFilters {
   public filterAlbums = (albums: Album[]) => albums.filter(it => this.filterById(it.id, this.albumIds))
   public filterAlbumsByArtist = (albums: Album[]) => albums.filter(it => this.filterById(it.artistId, this.artistIds))
   public filterSongs = (songs: Song[]) => songs.filter(it => this.filterById(it.id, this.songIds))
-  public filterSongsByAlbum = (songs: Song[]) => songs.filter(it => this.filterById(it.albumId, this.albumIds))
-  public filterSongsByArtist = (songs: Song[]) => songs.filter(it => this.filterById(it.artistId,this.artistIds))
+  public filterSongsByAlbum = (songs: Song[]) => songs.filter(it => this.filterById(it.album.id, this.albumIds))
+  public filterSongsByArtist = (songs: Song[]) => songs.filter(it => this.filterById(it.artist.id,this.artistIds))
   public hideAllSongs = () => this.hideAll 
 
 }

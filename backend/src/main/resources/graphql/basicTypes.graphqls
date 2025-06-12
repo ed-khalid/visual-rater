@@ -20,14 +20,25 @@ type UnratedAlbum implements Item {
     artist:Artist!
 }
 
-type Song implements Item {
+type AlbumBrief {
     id:String!
-    albumId:String!
-    artistId:String!
+    name: String!
+    thumbnail: String!
+    thumbnailDominantColors:[String!]
+}
+type ArtistBrief {
+    id:String!
+    name: String!
+    thumbnail: String!
+}
+
+type Song implements Pageable {
+    id:String!
+    album: AlbumBrief!
+    artist:ArtistBrief!
     score:Float
     name: String!
     number:Int!
-    discNumber:Int!
     genres:Genres!
     shortname: String
 }
@@ -55,7 +66,7 @@ type Album {
 }
 
 interface Page {
-    total: Int!
+    totalPages: Int!
     pageNumber: Int!
     content:[Pageable!]!
 }
@@ -65,9 +76,14 @@ interface Pageable {
 }
 
 type ArtistPage implements Page {
-    total:Int!
+    totalPages:Int!
     pageNumber:Int!
     content:[Artist!]!
+}
+type SongPage implements Page {
+    totalPages:Int!
+    pageNumber:Int!
+    content:[Song!]!
 }
 
 type ComparisonSong {

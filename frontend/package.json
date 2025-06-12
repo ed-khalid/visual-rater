@@ -46,6 +46,7 @@
     "vitest-browser-react": "^0.2.0"
   },
   "scripts": {
+    "typecheck": "tsc --noEmit",
     "start": "vite",
     "build": "vite build",
     "serve": "vite preview",

@@ -1,5 +1,5 @@
 import { mapSongToUIItem } from "../../functions/mapper"
-import { FatSong } from "../../models/RaterModels"
+import { FatSong } from "../../models/CoreModels"
 import { GridRaterItemUI } from "./grid/GridRaterItemUI"
 import './UnratedRaterPanel.css'
 

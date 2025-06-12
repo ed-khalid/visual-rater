@@ -1,6 +1,6 @@
 query GetArtistsPage {
   artists {
-    total 
+    totalPages 
     pageNumber
     content
     {

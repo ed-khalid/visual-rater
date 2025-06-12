@@ -1,11 +1,19 @@
 
 fragment SongFields on Song {
     id
-    albumId
-    artistId
+    album {
+        id 
+        name 
+        thumbnail
+        thumbnailDominantColors
+    }
+    artist {
+        id 
+        name
+        thumbnail
+    }
     name
     number
-    discNumber
     score
     shortname
     genres {

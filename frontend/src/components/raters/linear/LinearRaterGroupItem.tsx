@@ -1,9 +1,9 @@
 import { useContext } from "react";
-import { LinearRaterCircleModel, LinearRaterGroup } from "../../../models/RaterModels";
 import { LinearRaterContext } from "../../../providers/LinearRaterProvider";
 import { motion } from 'motion/react'
 import { LinearRaterCircle } from "./LinearRaterCircle";
 import { LinearRaterConfig } from "../../../models/LinearRaterConfig";
+import { LinearRaterCircleModel, LinearRaterGroup } from "../../../models/LinearRaterModels";
 
 interface Props {
     item: LinearRaterGroup

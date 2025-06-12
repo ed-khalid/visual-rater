@@ -1,8 +1,8 @@
-import { LinearRaterItemModel } from "../../../models/RaterModels"
 import { motion } from "motion/react"
 import { LinearRaterCircle } from "./LinearRaterCircle"
 import { UNRATED_COLOR } from "../../../models/ScoreModels"
 import { LinearRaterConfig } from "../../../models/LinearRaterConfig"
+import { LinearRaterItemModel } from "../../../models/LinearRaterModels"
 
 interface Props {
     item: LinearRaterItemModel  

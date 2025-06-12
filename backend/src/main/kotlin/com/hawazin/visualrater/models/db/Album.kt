@@ -25,7 +25,7 @@ data class Album(
     var updatedAt: OffsetDateTime?,
     @OneToMany(cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
     @OrderBy("number ASC")
-    @JoinColumn(name = "albumId")
+    @JoinColumn(name = "album_id")
     var songs:List<Song>?,
 
     @ManyToOne(fetch = FetchType.LAZY)

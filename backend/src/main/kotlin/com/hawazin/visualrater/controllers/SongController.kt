@@ -1,12 +1,12 @@
 package com.hawazin.visualrater.controllers
 
+import com.hawazin.visualrater.models.api.SongPage
 import com.hawazin.visualrater.models.db.Song
 import com.hawazin.visualrater.models.graphql.SongInput
 import com.hawazin.visualrater.services.MusicCrudService
 import org.springframework.graphql.data.method.annotation.Argument
 import org.springframework.graphql.data.method.annotation.MutationMapping
 import org.springframework.graphql.data.method.annotation.QueryMapping
-import org.springframework.graphql.data.method.annotation.SchemaMapping
 import org.springframework.stereotype.Controller
 import java.util.*
 
@@ -14,19 +14,10 @@ import java.util.*
 @Controller
 class SongController(private val musicCrudService: MusicCrudService) {
 
-
     @QueryMapping
-    fun songs(@Argument albumIds:List<String>): Iterable<Iterable<Song>>? {
-        return musicCrudService.readSongsForAlbums(albumIds.map{ UUID.fromString(it) })
-    }
-
-    @SchemaMapping
-    fun artistId(song:Song): String {
-        return song.artistId.toString()
-    }
-    @SchemaMapping
-    fun albumId(song:Song): String {
-        return song.albumId.toString()
+    fun songs(@Argument pageNumber: Int = 0): SongPage {
+        val songs = musicCrudService.readSongsByPage(pageNumber)
+        return SongPage(totalPages = songs.totalPages, pageNumber = songs.pageable.pageNumber, content = songs.content)
     }
 
     @MutationMapping

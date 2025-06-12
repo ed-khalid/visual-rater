@@ -10,12 +10,15 @@ data class Song(
     var name:String? = null,
     var number:Int,
     var discNumber:Int,
-    val albumId: UUID,
-    @JoinColumn(name = "artist_id")
-    val artistId: UUID,
     var score:Double?,
     var createdAt: OffsetDateTime?,
     var updatedAt: OffsetDateTime?,
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "album_id", insertable = false, updatable = false)
+    var album: Album? = null,
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "artist_id", insertable = false, updatable = false)
+    var artist: Artist? = null,
     @ManyToOne
     @JoinColumn(name ="primary_genre_id", nullable = false)
     var primaryGenre: Genre,

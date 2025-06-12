@@ -58,8 +58,8 @@ export const HomePage = ({raterStyle}:Props) => {
         return [...acc, ...curr!.songs]
       }, [])
       musicDispatch({ type: 'DATA_CHANGE', data: { songs }})
-      const albumId = songs?.at(0)!.albumId
-      const artistId = songs?.at(0)!.artistId 
+      const albumId = songs?.at(0)!.album.id
+      const artistId = songs?.at(0)!.artist.id 
       if (albumId && artistId) {
         musicDispatch({ type: 'RATER_FILTER_CHANGE', filters: { artistIds: [artistId] } , mode: FilterMode.ADDITIVE })
       }

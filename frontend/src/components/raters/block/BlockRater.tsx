@@ -1,9 +1,8 @@
 import { mapSongToUIItem } from "../../../functions/mapper";
 import { GetAlbumsSongsDocument, useUpdateSongMutation } from "../../../generated/graphql";
-import { SongUIItem } from "../../../models/CoreModels";
+import { FatSong, SongUIItem } from "../../../models/CoreModels";
 import './BlockRater.css'
 import { BlockRaterRow } from "./BlockRaterRow";
-import { FatSong } from "../../../models/RaterModels";
 import { RefObject } from "react";
 
 interface Props {

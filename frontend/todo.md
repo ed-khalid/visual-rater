@@ -1,5 +1,8 @@
+# RATER: new "Spotify Influenced" Playlist Rater
+# SPOTIFY: investigate adding play icon to spotify-enabled tracks 
 # RATER (GENERAL) : add context panel
 # NAVPANEL: rework UI to be cleaner 
+# DB: drop "discNumber" from songs/update FE to reflect this 
 # RATER (LINEAR): comparison songs   
 # RATER (LINEAR): group by category first
 # ALBUM-OVERVIEW: delete songs
