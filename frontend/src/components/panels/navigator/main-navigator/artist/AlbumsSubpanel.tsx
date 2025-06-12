@@ -35,7 +35,7 @@ export const AlbumsSubpanel = ({artist, dispatchAlbumToRater}: Props) => {
 
      }, [data])
 
-    const onAlbumSelect = (album:Album) => {
+    const onAlbumExpand = (album:Album) => {
         expandedAlbumIds.some(id => id === album.id) ? 
             musicDispatch({type: 'NAVIGATION_FILTER_ALBUM_CHANGE', artistId: artist.id, albumId: album.id, mode: FilterMode.REDUCTIVE}) :
             musicDispatch({type: 'NAVIGATION_FILTER_ALBUM_CHANGE', artistId: artist.id, albumId: album.id, mode: FilterMode.ADDITIVE })
@@ -62,7 +62,7 @@ export const AlbumsSubpanel = ({artist, dispatchAlbumToRater}: Props) => {
 
         {  sortedAlbums.map((album:any) => 
         <div key={`artist-album-${album.id}`}>
-            <MusicNavigatorAlbumRow isExpanded={expandedAlbumIds.includes(album.id)} album={album} onAlbumSelect={onAlbumSelect} dispatchAlbumToRater={dispatchAlbumToRater} />
+            <MusicNavigatorAlbumRow isExpanded={expandedAlbumIds.includes(album.id)} album={album} onAlbumExpand={onAlbumExpand} dispatchAlbumToRater={dispatchAlbumToRater} />
             {expandedAlbumIds.some(id=> id === album.id) && <SongsSubpanel key={"artist-"+artist.id+"-album-"+album.id} album={album} /> } 
         </div>
         )}

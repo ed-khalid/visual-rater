@@ -49,6 +49,14 @@ export const mapArtistSongMetadataToSongScoreUI =(metadata?:ArtistSongMetadata) 
     return retv
 } 
 
+export const map100ScoreTo10Score = (score:Maybe<number>) => {
+    if (score) {
+      return score/10;
+    } else {
+        return 0 
+    }
+}  
+
 
 
   

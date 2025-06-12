@@ -1,53 +1,32 @@
-import { useDraggable } from "@dnd-kit/core"
 import { Album } from "../../../../../generated/graphql"
 import { useMusicState } from "../../../../../hooks/MusicStateHooks"
 import { NavScoreInfo } from "../../NavScoreInfo"
 import { VisualRaterButton } from "../../../../common/VisRaterButton"
+import { useContext } from "react"
+import { MusicNavigatorContext } from "../../../../../providers/MusicNavigationProvider"
 
 interface Props {
     album: Album
     isExpanded:boolean
-    onAlbumSelect: any
+    onAlbumExpand: any
     dispatchAlbumToRater: any
 }
 
-export const MusicNavigatorAlbumRow = ({album, isExpanded, onAlbumSelect, dispatchAlbumToRater}: Props) => {
+export const MusicNavigatorAlbumRow = ({album, isExpanded, onAlbumExpand, dispatchAlbumToRater}: Props) => {
 
-    const { attributes, listeners, setNodeRef} = useDraggable({
-        id: 'draggable-album-' + album.id,
-        data: {
-            item: {
-                type: 'album',
-                id: album.id 
-            }
-        }
-    }) 
+    const { openOverview } = useContext(MusicNavigatorContext)
 
-    const openAlbumOverview = (album:Album) => {
-
-    }
-
-    const musicState = useMusicState()
-
-     const isOnRater = (album:Album) => { 
-        const raterFilters = musicState.raterFilters 
-        return (raterFilters.albumIds) ? raterFilters.albumIds.some(it => it === album.id) : false  
-     }
-        return <div ref={setNodeRef} className="nav-panel-item album smaller">
-            <div className="nav-item-controls smaller">
-                <VisualRaterButton onClick={() => dispatchAlbumToRater(album, isOnRater(album))}>
-                    {isOnRater(album) ? '-' : '+'}  
-                    </VisualRaterButton> 
-                <VisualRaterButton onClick={() => openAlbumOverview(album)}>
-                    O
-                </VisualRaterButton>  
-                <VisualRaterButton animate={{rotate: isExpanded ? 90 : 0}} onClick={() => onAlbumSelect(album)}>{'>'}</VisualRaterButton>   
-            </div> 
-            <img {...attributes} {...listeners} ref={setNodeRef} className="nav-panel-item-thumbnail smaller" src={album.thumbnail!!} /> 
-            <div className="nav-panel-item-info">
-                <div className="nav-panel-item-info-name smaller">
-                {album.name}
-                </div>
+    return <div className="nav-panel-item album smaller">
+        <div className="nav-item-controls smaller">
+            <VisualRaterButton onClick={() => dispatchAlbumToRater(album,true)}>
+                {'+'}  
+                </VisualRaterButton> 
+            <VisualRaterButton animate={{rotate: isExpanded ? 90 : 0}} onClick={() => onAlbumExpand(album)}>{'>'}</VisualRaterButton>   
+        </div> 
+        <img className="nav-panel-item-thumbnail smaller" src={album.thumbnail!!} /> 
+        <div className="nav-panel-item-info">
+            <div onClick={() => openOverview({ id: album.id, type: 'album' }) } className="nav-panel-item-info-name smaller">
+            {album.name}
             </div>
             <div className="nav-panel-item-year">
                 {album.year}

@@ -37,7 +37,7 @@ div.title {
 }
 div.album-tracks {
     grid-area: alb-tracks;
-    max-height: 775px;
+    max-height: 750px;
     border-right: 1px solid var(--color-general-border);
 }
 div.album-tracks div.list {

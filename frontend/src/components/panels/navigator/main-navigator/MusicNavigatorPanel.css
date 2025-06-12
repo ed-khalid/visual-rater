@@ -94,6 +94,9 @@ div.accordion-toggle button {
     cursor: pointer;
     font-size: 14px;
 }
+.nav-panel-item-info-name.smaller:hover {
+    text-decoration: underline;
+}
 
 .nav-item-controls {
     display: flex;
