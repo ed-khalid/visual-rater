@@ -1,5 +1,4 @@
 import { scaleLinear } from "d3-scale";
-import { FatSong } from "../../../../models/CoreModels";
 import { SONG_SCORE_DICTIONARY, UNRATED_COLOR } from "../../../../models/ScoreModels";
 import { LinearRaterContext } from "../../../../providers/LinearRaterProvider";
 import { mapSongScoreToUI } from "../../../../functions/scoreUI";
@@ -18,13 +17,13 @@ const CATEGORIES = SONG_SCORE_DICTIONARY.values().filter(it => it.category !== '
 
 
 interface Props {
-    items: FatSong[]
+    items: Song[]
     rowRefs: any[]
     onScoreUpdate: (updatedSong:Song) => void
 }
 
 type HoveredSong = {
-    song:FatSong
+    song:Song
     position: {x:number,y:number}
 }
 
@@ -48,7 +47,7 @@ export const LinearRaterSingleMode = ({items, onScoreUpdate}: Props) => {
               window.clearTimeout(timeoutRef.current)
               timeoutRef.current = undefined
           }
-          const song  = items.find(it => it.song.id === circleModel?.id)
+          const song  = items.find(it => it.id === circleModel?.id)
           if (!song) throw "LinearRater: song not found "
           setHovered({ song, position })
       }
@@ -79,7 +78,7 @@ export const LinearRaterSingleMode = ({items, onScoreUpdate}: Props) => {
   const onDragEnd = (item:LinearRaterCircleModel, newScore:number) => {
     selectAll("g.linear-rater-group").classed('dimmed', false)
     select(`g#linear-rater-item-${item.id}`).classed('selected', false)
-    const song = items.map(it => it.song).find(it => it.id === item.id)  
+    const song = items.find(it => it.id === item.id)  
     if (!song) throw `LinearRater: song ${item.id} not found in items!`
     onScoreUpdate({ ...song, score: newScore  })
   } 
@@ -100,7 +99,7 @@ export const LinearRaterSingleMode = ({items, onScoreUpdate}: Props) => {
     <LinearRaterContext.Provider value={{ getScoreCategoryDetails, yToScore, raterHeight , onDragStart, onDragEnd, onCircleHover }}>
 
     <div ref={containerRef} style={{ width: "100%", height: "100%", position: 'relative' }}>
-      {hovered && <SongTooltip fatSong={hovered.song} position={hovered.position}  /> }
+      {hovered && <SongTooltip song={hovered.song} position={hovered.position}  /> }
         {height > 0 && <svg ref={svgRef} width={width} height={height}>
             <defs>
             <linearGradient id="rater-gradient" x1="0" y1="1" x2="0" y2="0">

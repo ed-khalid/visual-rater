@@ -1,10 +1,10 @@
 import { mapSongToUIItem } from "../../functions/mapper"
-import { FatSong } from "../../models/CoreModels"
+import { Song } from "../../generated/graphql"
 import { GridRaterItemUI } from "./grid/GridRaterItemUI"
 import './UnratedRaterPanel.css'
 
 interface Props {
-    items:FatSong[]
+    items:Song[]
 }
 
 export const UnratedRaterPanel = ({items}:Props) => {
@@ -13,6 +13,6 @@ export const UnratedRaterPanel = ({items}:Props) => {
         <div className="title">
             UNRATED
         </div>
-        {items.map((unratedItem) => <GridRaterItemUI isUnrated={true} key={"unrated-item-"+unratedItem.song.id} item={mapSongToUIItem(unratedItem.song, unratedItem.album, unratedItem.artist)} />)}
+        {items.map((unratedItem) => <GridRaterItemUI isUnrated={true} key={"unrated-item-"+unratedItem.id} item={mapSongToUIItem(unratedItem, unratedItem.album, unratedItem.artist)} />)}
     </div>
 }

@@ -1,4 +1,4 @@
-import { FatSong } from "../models/CoreModels"
+import { Song } from "../generated/graphql";
 import { MusicData } from "./MusicData"
 import { NavigationFilter, RaterFilter } from "./MusicFilterModels"
 import { MusicState } from "./MusicState"
@@ -18,16 +18,10 @@ export class MusicStateOperator {
   public getArtistById = (id:String) => this.data.artists.find(it => it.id === id)  
   public getAlbumById = (id:String) => this.data.albums.find(it => it.id === id)  
 
-  public getFatSongs() : FatSong[] {
+  public getSongs() : Song[] {
     const albumIds = this.raterFilters.flatMap(it => it.albums.map(it => it.albumId))
     const songs = this.data.songs.filter(it => albumIds.includes(it.album.id))
-    return songs.map(song => (
-      {
-        artist: this.getArtistById(song.artist.id)!!,
-        album: this.getAlbumById(song.album.id)!!, 
-        song: song
-      } 
-    ))
+    return songs
   } 
 
 

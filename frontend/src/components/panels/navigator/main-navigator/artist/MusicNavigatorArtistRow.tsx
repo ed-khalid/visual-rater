@@ -37,7 +37,7 @@ export const MusicNavigatorArtistRow = ({artist, onArtistSelect, isExpanded}:Pro
     openOverview({ id: artist.id, type: 'artist'})
   }
   const isOnRater = (artist:Artist) => {
-    const raterArtists = musicStateOperator.getFatSongs()
+    const raterArtists = musicStateOperator.getSongs()
     return raterArtists.some(it => it.artist.id === artist.id)
   }
 

@@ -1,11 +1,12 @@
 import { RefObject } from "react"
-import { FatSong, SongUIItem } from "../../../models/CoreModels"
+import { SongUIItem } from "../../../models/CoreModels"
 import './GridRater.css'
 import { mapSongToUIItem } from "../../../functions/mapper"
 import { GridRaterBlock } from "./GridRaterBlock"
+import { Song } from "../../../generated/graphql"
 
 interface Props {
-    items: FatSong[] 
+    items: Song[] 
     rowRefs: RefObject<HTMLDivElement>[] 
 }
 
@@ -14,8 +15,8 @@ export const GridRater = ({items, rowRefs}:Props) => {
     const itemsPerRow = 5 
 
 
-    const groupByScore = (items:FatSong[]) => {
-        const songs = items.map(it => mapSongToUIItem(it.song, it.album, it.artist))
+    const groupByScore = (items:Song[]) => {
+        const songs = items.map(it => mapSongToUIItem(it, it.album, it.artist))
         const retv:Record<number, SongUIItem[]|undefined> = {}  
         for (const song of songs) {
             const score = song.score
@@ -26,7 +27,7 @@ export const GridRater = ({items, rowRefs}:Props) => {
         }
         return retv
     }    
-    const ratedItems = items.filter(it => !!(it.song.score)) 
+    const ratedItems = items.filter(it => !!(it.score)) 
     const itemsByScore = groupByScore(ratedItems) 
 
 

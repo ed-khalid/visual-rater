@@ -99,7 +99,7 @@ export const HomePage = ({raterStyle}:Props) => {
     }
   }
 
-  const items = musicStateOperator.getFatSongs()
+  const items = musicStateOperator.getSongs()
 
   const handleModalClose = () => {
     setOverviewItem(undefined)

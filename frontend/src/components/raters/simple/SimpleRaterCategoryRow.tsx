@@ -2,11 +2,11 @@ import { useDroppable } from "@dnd-kit/core"
 import { SongScoreUIBase } from "../../../models/ScoreModels"
 import { useEffect, useState } from "react"
 import { SimpleRaterCategoryDetailRow } from "./SimpleRaterCategoryDetailRow"
-import { FatSong } from "../../../models/CoreModels"
+import { Song } from "../../../generated/graphql"
 
 interface Props {
     category: SongScoreUIBase
-    items: FatSong[] 
+    items: Song[] 
 }
 
 export const SimpleRaterCategoryRow = ({category, items}: Props) => {
@@ -72,7 +72,7 @@ export const SimpleRaterCategoryRow = ({category, items}: Props) => {
             {isExpanded && 
             <div className="category-expanded-row">
             {categoryExpandedValues().map(score => 
-                <SimpleRaterCategoryDetailRow  score={score}  items={items.filter( it => it.song.score === score )} /> 
+                <SimpleRaterCategoryDetailRow  score={score}  items={items.filter( it => it.score === score )} /> 
             )}
             </div>
             }

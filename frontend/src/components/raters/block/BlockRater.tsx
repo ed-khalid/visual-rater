@@ -1,12 +1,12 @@
 import { mapSongToUIItem } from "../../../functions/mapper";
-import { GetAlbumsSongsDocument, useUpdateSongMutation } from "../../../generated/graphql";
-import { FatSong, SongUIItem } from "../../../models/CoreModels";
+import { GetAlbumsSongsDocument, Song, useUpdateSongMutation } from "../../../generated/graphql";
+import { SongUIItem } from "../../../models/CoreModels";
 import './BlockRater.css'
 import { BlockRaterRow } from "./BlockRaterRow";
 import { RefObject } from "react";
 
 interface Props {
-    items: FatSong[]
+    items: Song[]
     rowRefs: RefObject<HTMLDivElement>[] 
 }
 
@@ -14,9 +14,9 @@ export const BlockRater = ({items, rowRefs}:Props) => {
 
     const [updateSong]  = useUpdateSongMutation();
 
-    const groupByScore = (fatSongs:FatSong[]) => {
-        const songItems = fatSongs.map(it =>  
-                ({ ...mapSongToUIItem(it.song, it.album, it.artist)})
+    const groupByScore = (songs:Song[]) => {
+        const songItems = songs.map(it =>  
+                ({ ...mapSongToUIItem(it, it.album, it.artist)})
             )  
         const retv:Record<number, SongUIItem[]|undefined> = {}  
         for (const song of songItems) {

@@ -1,8 +1,7 @@
 import { useDroppable } from "@dnd-kit/core"
-import { FatSong } from "../../../models/RaterModels"
 
 interface Props {
-    items: FatSong[]
+    items: Song[]
     score: number
 }
 

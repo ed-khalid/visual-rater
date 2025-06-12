@@ -1,11 +1,11 @@
 import { useDroppable } from "@dnd-kit/core"
 import { SimpleRaterItem } from "./SimpleRaterItem"
 import { Maybe } from "graphql/jsutils/Maybe"
-import { FatSong } from "../../../models/CoreModels"
+import { Song } from "../../../generated/graphql"
 
 interface Props {
     score: Maybe<number>
-    items: FatSong[]
+    items: Song[]
 }
 
 

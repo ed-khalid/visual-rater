@@ -5,7 +5,6 @@ import { BlockRater } from "./block/BlockRater"
 import { UnratedRaterPanel } from "./UnratedRaterPanel"
 import { GetAlbumsSongsDocument, Song, useUpdateSongMutation } from "../../generated/graphql"
 import { DndContext, DragOverlay, DragStartEvent } from "@dnd-kit/core"
-import { FatSong } from "../../models/CoreModels"
 import { RaterStyle } from "../../models/RaterModels"
 import { DraggableItem } from "../../models/DragModels"
 import { LinearRater } from "./linear/LinearRater"
@@ -16,15 +15,15 @@ import { RaterContext } from "./context/RaterContext"
 // } 
 
 interface Props {
-    items:FatSong[]
+    items:Song[]
     raterStyle:RaterStyle
     totalRows: number
 }
 
 export const RaterManager = ({items, raterStyle, totalRows}:Props) => {
 
-    const ratedItems = items.filter(it => it.song.score)
-    const unratedItems= items.filter(it => !(it.song.score))
+    const ratedItems = items.filter(it => it.score)
+    const unratedItems= items.filter(it => !(it.score))
     const [updateSong]  = useUpdateSongMutation();
     const [draggedItem, setDraggedItem] = useState<DraggableItem|undefined>(undefined)
 
@@ -80,18 +79,18 @@ export const RaterManager = ({items, raterStyle, totalRows}:Props) => {
   const handleDragStart = (event:DragStartEvent) => {
     const id = event.active.data.current?.id
     if (id) {
-        const dataItem:FatSong|undefined = items.find(it => it.song.id === id) 
+        const dataItem:Song|undefined = items.find(it => it.id === id) 
         if (dataItem) {
-          setDraggedItem({ type:'song', id: dataItem.song.id, name: dataItem.song.number + '. ' + dataItem.song.name, thumbnail: dataItem.album.thumbnail!  })
+          setDraggedItem({ type:'song', id: dataItem.id, name: dataItem.number + '. ' + dataItem.name, thumbnail: dataItem.album.thumbnail!  })
         }
     }
   } 
 
     const handleDragEnd =(event:any) => {
         const songId = event.active.data.current.id  
-        const dataItem:FatSong|undefined = items.find(it => it.song.id === songId) 
+        const dataItem:Song|undefined = items.find(it => it.id === songId) 
         if (dataItem) {
-            const albumId = dataItem.song.album.id 
+            const albumId = dataItem.album.id 
             const score = event.over.data.current.score  
             updateSong({ variables: {song:  { id: songId , score} }, refetchQueries: [{ query: GetAlbumsSongsDocument, variables: { albumIds: [albumId] }  }]})
         }

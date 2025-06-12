@@ -31,11 +31,6 @@ export interface ContextArtist {
     albums: {id: string, name: string, thumbnail?:Maybe<string>}[]
 }
 
-export type FatSong = {
-    artist: {name: string, id:string} 
-    album: { id:string, thumbnail?: Maybe<string>, thumbnailDominantColors?:Maybe<Array<string>>, name:string}
-    song: Song
-} 
 
 export type ArtistOrAlbum = 'artist'|'album' 
 

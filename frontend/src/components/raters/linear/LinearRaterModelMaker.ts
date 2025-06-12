@@ -1,20 +1,19 @@
 import { ScaleLinear } from "d3";
 import { Song } from "../../../generated/graphql";
-import { FatSong } from "../../../models/CoreModels";
 import { isMultiple, isSingle, LinearRaterBaseModel, LinearRaterCircleModel, LinearRaterGroup, LinearRaterItemModel as LinearRaterSingleItemModel } from "../../../models/LinearRaterModels";
 
 const stopwords = ['i','me','my','myself','we','our','ours','ourselves','you','your','yours','yourself','yourselves','he','him','his','himself','she','her','hers','herself','it','its','itself','they','them','their','theirs','themselves','what','which','who','whom','this','that','these','those','am','is','are','was','were','be','been','being','have','has','had','having','do','does','did','doing','a','an','the','and','but','if','or','because','as','until','while','of','at','by','for','with','about','against','between','into','through','during','before','after','above','below','to','from','up','down','in','out','on','off','over','under','again','further','then','once','here','there','when','where','why','how','all','any','both','each','few','more','most','other','some','such','no','nor','not','only','own','same','so','than','too','very','s','t','can','will','just','don','should','now']
 const punctuationRegex = (/[.,!?;:'"()\[\]{}\-]/)
 export class LinearRaterModelMaker  {
 
-    private ratedItems:FatSong[]  
-    private unratedItems:FatSong[]  
+    private ratedItems:Song[]  
+    private unratedItems:Song[]  
     private yToScore:ScaleLinear<number,number, never>
     private finalItems:LinearRaterBaseModel[] 
 
-    constructor(items: FatSong[], scale:ScaleLinear<number,number,never>) {
-        this.ratedItems = items.filter(it => it.song.score !== null);
-        this.unratedItems = items.filter(it => it.song.score === null)
+    constructor(items: Song[], scale:ScaleLinear<number,number,never>) {
+        this.ratedItems = items.filter(it => it.score !== null);
+        this.unratedItems = items.filter(it => it.score === null)
         this.yToScore = scale
         this.finalItems = []
     }
@@ -39,9 +38,9 @@ export class LinearRaterModelMaker  {
     }
 
     private makeUnratedItems(): LinearRaterSingleItemModel {
-      this.unratedItems.sort((a,b) => a.song.number - b.song.number)
-      const circleModels = this.unratedItems.map<LinearRaterCircleModel>((fatSong) => (
-          ({ id: fatSong.song.id, name: this.determineSongNameLabel(fatSong.song)}) ) 
+      this.unratedItems.sort((a,b) => a.number - b.number)
+      const circleModels = this.unratedItems.map<LinearRaterCircleModel>((song) => (
+          ({ id: song.id, name: this.determineSongNameLabel(song)}) ) 
       ) 
       return {
         id: 'linear-rater-unrated-items',
@@ -52,39 +51,39 @@ export class LinearRaterModelMaker  {
       }
     } 
 
-    private mapFatSongsToLinearRaterCircleModel(fatSongs:FatSong[]): LinearRaterCircleModel[] {
-      const sortedSongs = fatSongs.sort((a,b) => {
-        if (a.song.score !== b.song.score) {
-          return b.song.score! - a.song.score!
+    private mapSongToLinearRaterCircleModel(songs:Song[]): LinearRaterCircleModel[] {
+      const sortedSongs = songs.sort((a,b) => {
+        if (a.score !== b.score) {
+          return b.score! - a.score!
         }
-        return a.song.name.localeCompare(b.song.name)
+        return a.name.localeCompare(b.name)
       }) 
-      const circleModels = sortedSongs.map((fatSong) => ({
-        id: fatSong.song.id,
-        name: this.determineSongNameLabel(fatSong.song)  
+      const circleModels = sortedSongs.map((song) => ({
+        id: song.id,
+        name: this.determineSongNameLabel(song)  
       }))
       return circleModels
     }
 
 
     public makeSingleModeItems() {
-        this.finalItems = this.ratedItems.map<LinearRaterSingleItemModel>((entry, i) => ({ type: 'single', id: 'linear-rater-group-' + i, position: this.yToScore.invert(entry.song.score!), score: entry.song.score! , items: this.mapFatSongsToLinearRaterCircleModel([entry]) }))
+        this.finalItems = this.ratedItems.map<LinearRaterSingleItemModel>((entry, i) => ({ type: 'single', id: 'linear-rater-group-' + i, position: this.yToScore.invert(entry.score!), score: entry.score! , items: this.mapSongToLinearRaterCircleModel([entry]) }))
         return this
     }   
 
 
     public groupByScore() {
-        const scoreMap = new Map<number, FatSong[]>() 
-        this.ratedItems.forEach((fatSong) => {
-        const score = fatSong.song.score 
+        const scoreMap = new Map<number, Song[]>() 
+        this.ratedItems.forEach((song) => {
+        const score = song.score 
         const songsWithScore = scoreMap.get(score!)    
         if (songsWithScore) {
-            scoreMap.set(fatSong.song.score!, [...songsWithScore, fatSong ] )
+            scoreMap.set(song.score!, [...songsWithScore, song ] )
         } else {
-            scoreMap.set(fatSong.song.score!, [fatSong] )
+            scoreMap.set(song.score!, [song] )
         }
         })
-        this.finalItems = scoreMap.entries().map<LinearRaterSingleItemModel>((entry, i) => ({ type: 'single', id: 'linear-rater-group-' + i, position: this.yToScore.invert(entry[0]), score: entry[0],  items: this.mapFatSongsToLinearRaterCircleModel(entry[1]) })).toArray()
+        this.finalItems = scoreMap.entries().map<LinearRaterSingleItemModel>((entry, i) => ({ type: 'single', id: 'linear-rater-group-' + i, position: this.yToScore.invert(entry[0]), score: entry[0],  items: this.mapSongToLinearRaterCircleModel(entry[1]) })).toArray()
         return this
     }
   public getLargestItemCount() {

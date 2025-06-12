@@ -27,7 +27,7 @@ test('it should show nothing if nothing is selected', () => {
     }  
     const operator:MusicStateOperator = new MusicStateOperator(state)
 
-    const songs = operator.getFatSongs()  
+    const songs = operator.getSongs()  
     expect(songs.length).toBe(0)
 })
 test('it should show everything if everything is selected', () => {
@@ -45,7 +45,7 @@ test('it should show everything if everything is selected', () => {
         raterFilters
     }  
     const operator:MusicStateOperator = new MusicStateOperator(state)
-    const songs = operator.getFatSongs()  
+    const songs = operator.getSongs()  
     expect(songs.length).toBe(expected)
 })
 
@@ -59,7 +59,7 @@ test('it should show nothing if an artistid is filtered without any albums', () 
         raterFilters
     }  
     const operator:MusicStateOperator = new MusicStateOperator(state)
-    const songs = operator.getFatSongs()  
+    const songs = operator.getSongs()  
     expect(songs.length).toBe(0)
 })
 
@@ -76,6 +76,6 @@ test('it should show everything if an artistid/albumid are filtered without song
     }  
     const allSongs = data.songs  
     const operator:MusicStateOperator = new MusicStateOperator(state)
-    const songs = operator.getFatSongs()  
+    const songs = operator.getSongs()  
     expect(songs.length).toBe(allSongs.length)
 })

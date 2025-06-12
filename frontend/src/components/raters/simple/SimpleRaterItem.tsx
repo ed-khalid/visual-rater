@@ -1,9 +1,9 @@
 import { useDraggable } from "@dnd-kit/core"
 import { CSSProperties } from "react"
-import { FatSong } from "../../../models/CoreModels"
+import { Song } from "../../../generated/graphql"
 
 interface Props {
-    item: FatSong
+    item: Song
 }
 
 
@@ -11,9 +11,9 @@ interface Props {
 export const SimpleRaterItem = ({item}: Props) => {
 
     const { attributes, listeners, setNodeRef, transform } = useDraggable({
-        id: 'draggable-unrated-song-' + item.song.id,
+        id: 'draggable-unrated-song-' + item.id,
         data: {
-            item: item.song
+            item: item
         }
     })
     const style: CSSProperties|undefined = transform ? {
@@ -30,7 +30,7 @@ export const SimpleRaterItem = ({item}: Props) => {
                 <img src={item.album.thumbnail || ''}  />
             </div>
                 <div className="score-detail-box-item-name">
-                    {item.song.name}
+                    {item.name}
                 </div>
             </div>
 } 

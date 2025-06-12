@@ -7,8 +7,6 @@ import { VisualRaterToggleButton } from "../common/VisRaterToggleButton"
 import { Editable } from "../common/Editable"
 import { VisualRaterButton } from "../common/VisRaterButton"
 import { OverviewLink } from "../../models/OverviewModels"
-import { mapSongToFatSong } from "../../functions/mapper"
-import { FatSong } from "../../models/CoreModels"
 import { LinearRaterSingleMode } from "../raters/linear/single-mode/LinearRaterSingleMode"
 
 interface Props {
@@ -22,7 +20,6 @@ export const AlbumOverview = ({album, artist, onClose, onLinkClick }:Props) => {
     const musicDispatch = useMusicDispatch()
     const { data, loading, error} = useGetAlbumsSongsQuery({ variables: { albumIds: [album.id]}})
     const [tracks,setTracks] = useState<Song[]>([]) 
-    const [fatSongs, setFatSongs] = useState<FatSong[]>([])
 
     const [updateSongMutation, ] = useUpdateSongMutation()
 
@@ -36,7 +33,6 @@ export const AlbumOverview = ({album, artist, onClose, onLinkClick }:Props) => {
         if (data?.albums?.at(0)?.songs) {
             musicDispatch({ type: 'DATA_CHANGE', data: { songs: data.albums[0].songs as Song[] }})
             setTracks([...data.albums[0].songs])
-            setFatSongs(data.albums[0].songs.map((it) => mapSongToFatSong(it, {id: album.id, name: album.name }, artist )))
         }
     }, [data])
 
@@ -88,7 +84,7 @@ export const AlbumOverview = ({album, artist, onClose, onLinkClick }:Props) => {
             <div className="album-year">{album.year}</div>
             <div className="rater">
                 <div className="title">Ratings</div>
-                <LinearRaterSingleMode items={fatSongs} rowRefs={[]} onScoreUpdate={onSongScoreUpdate}  />
+                <LinearRaterSingleMode items={tracks} rowRefs={[]} onScoreUpdate={onSongScoreUpdate}  />
             </div>
             <div className="album-tracks">
             <div className="title">Songs</div> 
