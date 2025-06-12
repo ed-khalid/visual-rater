@@ -33,5 +33,6 @@ export const MusicNavigatorAlbumRow = ({album, isExpanded, onAlbumExpand, dispat
             </div> 
             <NavScoreInfo item={album} type={'album'}/>
         </div>
+        </div>
 
 }
