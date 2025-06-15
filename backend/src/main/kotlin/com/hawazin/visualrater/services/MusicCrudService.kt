@@ -97,18 +97,8 @@ class MusicCrudService(private val genreRepo: GenreRepository, private val songR
         val spec = albumFilterSpec(params)
         return albumRepo.findAll(spec, PageRequest.of(params.pageNumber, 100, Sort.by(Sort.Direction.DESC, "score")) )
     }
-
     fun readArtists() : Page<Artist> = artistRepo.findAll(PageRequest.of(0,50, Sort.by(Sort.Direction.DESC, "score")))
 
-
-    @Transactional
-    fun readAlbums(ids:List<UUID>): Iterable<Album> = albumRepo.findAllById(ids)
-    @Transactional
-    fun readArtistByName(name:String) = artistRepo.findByName(name)
-    @Transactional
-    fun readArtists(artistIds:List<UUID>) : Iterable<Artist> =  artistIds.map {  artistRepo.findById(it) }.filter { (it.isPresent) }.map { it.get() }
-    @Transactional
-    fun readSongsForAlbums(albumIds:List<UUID>) : Iterable<Iterable<Song>> = albumIds.map{ songRepo.findByAlbumId(it) }
     @Transactional
     fun deleteSongById(id:UUID) : Boolean
     {

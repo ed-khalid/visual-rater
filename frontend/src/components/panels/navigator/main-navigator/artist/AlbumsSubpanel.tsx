@@ -62,7 +62,7 @@ export const AlbumsSubpanel = ({artist, dispatchAlbumToRater}: Props) => {
 
         {  sortedAlbums.map((album:any) => 
         <div key={`artist-album-${album.id}`}>
-            <MusicNavigatorAlbumRow isExpanded={expandedAlbumIds.includes(album.id)} album={album} onAlbumExpand={onAlbumExpand} dispatchAlbumToRater={dispatchAlbumToRater} />
+            <MusicNavigatorAlbumRow isExpanded={expandedAlbumIds.includes(album.id)} album={album} onAlbumExpand={onAlbumExpand} />
             {expandedAlbumIds.some(id=> id === album.id) && <SongsSubpanel key={"artist-"+artist.id+"-album-"+album.id} album={album} /> } 
         </div>
         )}

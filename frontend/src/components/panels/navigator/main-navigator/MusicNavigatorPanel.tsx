@@ -1,21 +1,45 @@
-import { Artist } from "../../../../generated/graphql"
-import { FilterMode } from "../../../../music/MusicFilterModels"
-import { useMusicDispatch, useMusicStateOperator } from "../../../../hooks/MusicStateHooks"
+import { Album, Artist, useGetAlbumsLazyQuery, useGetArtistsPageLazyQuery } from "../../../../generated/graphql"
 import { MusicNavigatorArtistRow } from "./artist/MusicNavigatorArtistRow"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import './MusicNavigatorPanel.css'
 import { motion } from 'motion/react'
+import { MusicNavigatorAlbumRow } from "./album/MusicNavigatorAlbumRow"
 
 interface Props {
-    artists: Artist[]
     onCollapse: ()  => void
 }
 
 type NavigatorContent = 'artists' | 'albums' 
 
-export const MusicNavigatorPanel = ({artists, onCollapse}: Props) => {
+export const MusicNavigatorPanel = ({onCollapse}: Props) => {
 
   const [mode, setMode] = useState<NavigatorContent>('artists')
+  const [$artistsPage, $artistsPageResult]  =  useGetArtistsPageLazyQuery()
+  const [$albumsPage, $albumsPageResult] = useGetAlbumsLazyQuery({variables: { params: { pageNumber: 0  }}}) 
+  const [artists, setArtists] = useState<Artist[]>([])
+  const [albums, setAlbums] = useState<Album[]>([])
+
+  useEffect(() => {
+    if (mode === 'artists') {
+      $artistsPage()
+    } else {
+      $albumsPage()
+    }
+  }, [mode])
+
+  useEffect(() => {
+    if ($artistsPageResult.data?.artists) {
+      setArtists($artistsPageResult.data.artists.content as Artist[])
+    }
+  }, [$artistsPageResult.data])
+
+  useEffect(() => {
+    if ($albumsPageResult.data?.albums) {
+      setAlbums($albumsPageResult.data.albums.content as Album[])
+    }
+  }, [$albumsPageResult.data])
+
+
 
   const [primaryTitle, setPrimaryTitle] = useState<string>('artists')
   const [secondaryTitleOne, setSecondaryTitleOne] = useState<string>('albums')
@@ -50,12 +74,12 @@ export const MusicNavigatorPanel = ({artists, onCollapse}: Props) => {
   } 
 
 
-  const onArtistSelect = (artist:Artist) => {
+  const onExpand = ({id}: { id: string}) => {
     setExpandedIds(prev => {
-      if (prev.includes(artist.id)) {
-        return prev.filter(id => id !== artist.id)
+      if (prev.includes(id)) {
+        return prev.filter(expandedId => expandedId !== id)
       } else {
-        return [...prev, artist.id]
+        return [...prev, id]
       }
     })
   }
@@ -64,12 +88,10 @@ export const MusicNavigatorPanel = ({artists, onCollapse}: Props) => {
     onCollapse()
   } 
 
-  const handleTitleSwitch = (isFirst:boolean) => {
-    if (isFirst) {
+  const handleTitleSwitch = () => {
       setPrimaryTitle(secondaryTitleOne)
       setSecondaryTitleOne(primaryTitle)
-    } 
-
+      setMode(prev => prev === 'artists' ? 'albums' : 'artists')
   } 
   const arcAnimation = {
     up: {
@@ -89,18 +111,25 @@ export const MusicNavigatorPanel = ({artists, onCollapse}: Props) => {
         <div  className="panel-header">
                   <motion.div custom="down" variants={arcVariant} initial="initial" animate="animate" exit="exit" className="panel-title">{primaryTitle}</motion.div> 
                   <div className="alternate-titles">
-                    <motion.div custom="up" variants={arcVariant} initial="initial" animate="animate" exit="exit" onClick={() => handleTitleSwitch(true)} className="alternate-title">{secondaryTitleOne}</motion.div>
+                    <motion.div custom="up" variants={arcVariant} initial="initial" animate="animate" exit="exit" onClick={() => handleTitleSwitch()} className="alternate-title">{secondaryTitleOne}</motion.div>
                   </div>
                   <div className="panel-control-icons">
                     <button onClick={() => handleCollapseClick()} className="collapse-button">{'<'}</button>
                   </div>
         </div>
         <div className="panel-content">
+        { mode === 'artists' && 
         <ul id="artists-list">
                 {artists.map(artist => 
-                <MusicNavigatorArtistRow key={'music-nav-artist-' + artist.id} artist={artist} isExpanded={expandedIds.includes(artist.id)} onArtistSelect={onArtistSelect} />
+                <MusicNavigatorArtistRow key={'music-nav-artist-' + artist.id} artist={artist} isExpanded={expandedIds.includes(artist.id)} onArtistSelect={onExpand} />
               )}
-        </ul>
+        </ul>}
+        { mode === 'albums' && 
+        <ul id="albums-list">
+                {albums.map(album => 
+                <MusicNavigatorAlbumRow key={'music-nav-album-' + album.id} album={album} isExpanded={expandedIds.includes(album.id)} onAlbumExpand={onExpand} />
+              )}
+        </ul>}
         </div>
   </>
 
