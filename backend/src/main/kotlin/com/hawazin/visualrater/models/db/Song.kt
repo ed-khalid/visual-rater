@@ -14,10 +14,10 @@ data class Song(
     var createdAt: OffsetDateTime?,
     var updatedAt: OffsetDateTime?,
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "album_id", insertable = false, updatable = false)
+    @JoinColumn(name = "album_id", updatable = false)
     var album: Album? = null,
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "artist_id", insertable = false, updatable = false)
+    @JoinColumn(name = "artist_id", updatable = false)
     var artist: Artist? = null,
     @ManyToOne
     @JoinColumn(name ="primary_genre_id", nullable = false)

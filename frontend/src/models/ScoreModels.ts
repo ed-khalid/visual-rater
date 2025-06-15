@@ -53,31 +53,31 @@ export const SONG_SCORE_DICTIONARY = new Map<SongScoreCategory, SongScoreUIBase>
 SONG_SCORE_DICTIONARY.set('CLASSIC', 
     { category: 'CLASSIC', color: CLASSIC_COLOR, threshold: { low: 95, high: 100} })
 SONG_SCORE_DICTIONARY.set('GREAT', 
-    { category: 'GREAT', color: GREAT_COLOR, threshold: { low:90, high:94 }}) 
+    { category: 'GREAT', color: GREAT_COLOR, threshold: { low:90, high:94.99 }}) 
 SONG_SCORE_DICTIONARY.set('VERY GOOD', 
-    { category: 'VERY GOOD', color: VERY_GOOD_COLOR, threshold: { low:85, high: 89}})
+    { category: 'VERY GOOD', color: VERY_GOOD_COLOR, threshold: { low:85, high: 89.99}})
 SONG_SCORE_DICTIONARY.set('GOOD', 
-    { category: 'GOOD', color: GOOD_COLOR, threshold: { low: 80, high: 84}})
+    { category: 'GOOD', color: GOOD_COLOR, threshold: { low: 80, high: 84.99}})
 SONG_SCORE_DICTIONARY.set('PLEASANT', 
-    { category: 'PLEASANT', color:PLEASANT_COLOR, threshold: {low: 75, high: 79} })
+    { category: 'PLEASANT', color:PLEASANT_COLOR, threshold: {low: 75, high: 79.99} })
 SONG_SCORE_DICTIONARY.set('DECENT', 
-    { category: 'DECENT', color: DECENT_COLOR, threshold: {low: 70, high: 74} })
+    { category: 'DECENT', color: DECENT_COLOR, threshold: {low: 70, high: 74.99} })
 SONG_SCORE_DICTIONARY.set('INTERESTING', 
-    { category: 'INTERESTING', color:INTERESTING_COLOR, threshold:{low: 65, high: 69}})
+    { category: 'INTERESTING', color:INTERESTING_COLOR, threshold:{low: 65, high: 69.99}})
 SONG_SCORE_DICTIONARY.set('OK', 
-    { category: 'OK', color: OK_COLOR, threshold: {low:60,high:64} })
+    { category: 'OK', color: OK_COLOR, threshold: {low:60,high:64.99} })
 SONG_SCORE_DICTIONARY.set('MEH', 
-    { category: 'MEH', color: MEH_COLOR, threshold: {low:55,high:59} })
+    { category: 'MEH', color: MEH_COLOR, threshold: {low:55,high:59.99} })
 SONG_SCORE_DICTIONARY.set('AVERAGE', 
-    { category: 'AVERAGE', color: AVERAGE_COLOR, threshold: {low:50,high:54}})
+    { category: 'AVERAGE', color: AVERAGE_COLOR, threshold: {low:50,high:54.99}})
 SONG_SCORE_DICTIONARY.set('BORING', 
-    { category: 'BORING', color: BORING_COLOR, threshold: {low:40,high:49} })
+    { category: 'BORING', color: BORING_COLOR, threshold: {low:40,high:49.99} })
 SONG_SCORE_DICTIONARY.set('POOR', 
-    { category: 'POOR', color: POOR_COLOR, threshold: {low:30,high:39} })
+    { category: 'POOR', color: POOR_COLOR, threshold: {low:30,high:39.99} })
 SONG_SCORE_DICTIONARY.set('BAD', 
-    { category: 'BAD', color: BAD_COLOR, threshold: {low:10,high:29} })
+    { category: 'BAD', color: BAD_COLOR, threshold: {low:10,high:29.99} })
 SONG_SCORE_DICTIONARY.set('OFFENSIVE', 
-    { category: 'OFFENSIVE', color: OFFENSIVE_COLOR, threshold: {low:-1,high:9} })
+    { category: 'OFFENSIVE', color: OFFENSIVE_COLOR, threshold: {low:-1,high:9.99} })
 SONG_SCORE_DICTIONARY.set('UNRATED', 
     { category: 'UNRATED', color: UNRATED_COLOR, threshold: {low:-Infinity,high:-Infinity} })
 

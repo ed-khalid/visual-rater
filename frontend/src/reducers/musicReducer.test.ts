@@ -10,10 +10,12 @@ import { Album, Artist, Song } from "../generated/graphql";
 const data = setupTestData()
 const navigationFilters:NavigationFilter[] = []
 const raterFilters:RaterFilter[] = []
+const playlistFilters= { pageNumber: 0, artistIds: undefined, score: undefined, albumIds: undefined } 
 const state:MusicState = {
     data,
     navigationFilters,
-    raterFilters
+    raterFilters,
+    playlistFilters
 }  
 
 /* DATA_CHANGE tests */
@@ -194,7 +196,8 @@ test("exclusive add an artist id", () => {
     const state:MusicState = {
         data,
         navigationFilters,
-        raterFilters
+        raterFilters,
+        playlistFilters
     }  
     const artist = data.artists[0]  
     const albums = artist.albums.map(it => it.id) 
@@ -213,7 +216,8 @@ test("double exclusive add an artist id", () => {
     const state:MusicState = {
         data,
         navigationFilters,
-        raterFilters
+        raterFilters,
+        playlistFilters
     }  
     const artist = data.artists[0]  
     const albums = artist.albums.map(it => it.id) 
@@ -233,7 +237,8 @@ test("rater filter - remove an artist id", () => {
     const state:MusicState = {
         data,
         navigationFilters,
-        raterFilters
+        raterFilters,
+        playlistFilters
     }  
     const artist = data.artists[0]  
     const albums = artist.albums.map(it => it.id) 
@@ -255,7 +260,8 @@ test("rater filter - remove a nonexistent artist id", () => {
     const state:MusicState = {
         data,
         navigationFilters,
-        raterFilters
+        raterFilters,
+        playlistFilters
     }  
     const artist = data.artists[0]  
     const albums = artist.albums.map(it => it.id) 

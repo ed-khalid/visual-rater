@@ -1,6 +1,7 @@
 package com.hawazin.visualrater.controllers
 
 import arrow.fx.coroutines.parMap
+import com.hawazin.visualrater.models.api.AlbumPage
 import com.hawazin.visualrater.models.db.Album
 import com.hawazin.visualrater.models.db.Artist
 import com.hawazin.visualrater.models.db.Song
@@ -21,15 +22,12 @@ import java.util.*
 class AlbumController(val musicService: MusicCrudService, val spotifyService: SpotifyApi, val imageService:ImageService, val publisherService: AlbumPublisher) {
 
     @QueryMapping
-    fun albums(@Argument ids:List<String>) : Iterable<AlbumWithArtistName>  {
-        val uuids = ids.map { UUID.fromString(it)}
-        val albums =  musicService.readAlbums(uuids)
-        val artists =  musicService.readArtists(albums.map{ it. artistId })
-        return albums.map { it ->
-            val artist = artists.find { artist ->  artist.id == it.artistId }
-            AlbumWithArtistName(it.id, it.name, it.thumbnail, it.year, it.thumbnailDominantColors?.toList(), it.score, it.artistId, it.songs , artist?.name ?: "" )
-        }
+    fun albums(@Argument params: AlbumQueryParams): AlbumPage {
+        val albums = musicService.readAlbums(params)
+        return AlbumPage(totalPages = albums.totalPages, pageNumber = albums.pageable.pageNumber, content = albums.content)
     }
+
+
     @QueryMapping
     fun unratedAlbums(): Iterable<Album> = musicService.getUnratedAlbums()
 

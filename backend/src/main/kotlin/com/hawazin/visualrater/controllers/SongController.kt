@@ -3,6 +3,7 @@ package com.hawazin.visualrater.controllers
 import com.hawazin.visualrater.models.api.SongPage
 import com.hawazin.visualrater.models.db.Song
 import com.hawazin.visualrater.models.graphql.SongInput
+import com.hawazin.visualrater.models.graphql.SongQueryParams
 import com.hawazin.visualrater.services.MusicCrudService
 import org.springframework.graphql.data.method.annotation.Argument
 import org.springframework.graphql.data.method.annotation.MutationMapping
@@ -15,8 +16,8 @@ import java.util.*
 class SongController(private val musicCrudService: MusicCrudService) {
 
     @QueryMapping
-    fun songs(@Argument pageNumber: Int = 0): SongPage {
-        val songs = musicCrudService.readSongsByPage(pageNumber)
+    fun songs(@Argument params:SongQueryParams): SongPage {
+        val songs = musicCrudService.readSongs(params)
         return SongPage(totalPages = songs.totalPages, pageNumber = songs.pageable.pageNumber, content = songs.content)
     }
 

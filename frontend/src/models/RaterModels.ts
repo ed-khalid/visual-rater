@@ -6,7 +6,7 @@ export type RaterEntityRequest = {
 }   
 
 export enum RaterStyle {
-  GRID, LIST, LINEAR, PLAYLIST
+  GRID, LINEAR, PLAYLIST
 }
 
 export type RaterContextEntryModel = {

@@ -1,5 +1,5 @@
 import { Album, Artist, Song } from "../generated/graphql"
-import { RaterFilter, NavigationFilter } from "./MusicFilterModels"
+import { RaterFilter, NavigationFilter, PlaylistFilters } from "./MusicFilterModels"
 
 export type MusicEntity = Artist | Album | Song 
 
@@ -15,4 +15,5 @@ export type MusicState = {
   }
   navigationFilters:NavigationFilter[],
   raterFilters: RaterFilter[]
+  playlistFilters: PlaylistFilters,
 }

@@ -15,6 +15,7 @@ import { AlbumRaterFilter, NavigationFilter, RaterFilter } from './MusicFilterMo
  * 
  ***/
 const data = setupData() 
+const playlistFilters = { pageNumber: 0, artistIds: null, albumIds: null, score: null } 
 
 test('it should show nothing if nothing is selected', () => {
     
@@ -23,7 +24,8 @@ test('it should show nothing if nothing is selected', () => {
     const state:MusicState = {
         data,
         navigationFilters,
-        raterFilters
+        raterFilters,
+        playlistFilters
     }  
     const operator:MusicStateOperator = new MusicStateOperator(state)
 
@@ -42,7 +44,8 @@ test('it should show everything if everything is selected', () => {
     const state:MusicState = {
         data,
         navigationFilters,
-        raterFilters
+        raterFilters,
+        playlistFilters
     }  
     const operator:MusicStateOperator = new MusicStateOperator(state)
     const songs = operator.getSongs()  
@@ -56,7 +59,8 @@ test('it should show nothing if an artistid is filtered without any albums', () 
     const state:MusicState = {
         data,
         navigationFilters,
-        raterFilters
+        raterFilters,
+        playlistFilters
     }  
     const operator:MusicStateOperator = new MusicStateOperator(state)
     const songs = operator.getSongs()  
@@ -72,7 +76,8 @@ test('it should show everything if an artistid/albumid are filtered without song
     const state:MusicState = {
         data,
         navigationFilters,
-        raterFilters
+        raterFilters,
+        playlistFilters
     }  
     const allSongs = data.songs  
     const operator:MusicStateOperator = new MusicStateOperator(state)

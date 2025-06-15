@@ -11,17 +11,16 @@ interface Props {
     onCollapse: ()  => void
 }
 
+type NavigatorContent = 'artists' | 'albums' 
+
 export const MusicNavigatorPanel = ({artists, onCollapse}: Props) => {
 
+  const [mode, setMode] = useState<NavigatorContent>('artists')
 
   const [primaryTitle, setPrimaryTitle] = useState<string>('artists')
   const [secondaryTitleOne, setSecondaryTitleOne] = useState<string>('albums')
-  const [secondaryTitleTwo, setSecondaryTitleTwo] = useState<string>('songs')
-  const musicDispatch = useMusicDispatch()
-  const musicStateOperator = useMusicStateOperator() 
+  const [expandedIds, setExpandedIds] = useState<string[]>([]) 
 
-  const sortedArtists = [...artists].sort((a,b) => b.score - a.score)  
-  const expandedArtistIds = musicStateOperator.navigationFilters.map(it => it.artistId)   
 
   const arcVariant = {
     initial: (direction:'up'|'down') => ({
@@ -52,10 +51,15 @@ export const MusicNavigatorPanel = ({artists, onCollapse}: Props) => {
 
 
   const onArtistSelect = (artist:Artist) => {
-    (expandedArtistIds.includes(artist.id)) ?  
-      musicDispatch({type: 'NAVIGATION_FILTER_ARTIST_CHANGE', artistId: artist.id, mode: FilterMode.REDUCTIVE }) :
-      musicDispatch({type: 'NAVIGATION_FILTER_ARTIST_CHANGE', artistId: artist.id, mode: FilterMode.ADDITIVE }) 
+    setExpandedIds(prev => {
+      if (prev.includes(artist.id)) {
+        return prev.filter(id => id !== artist.id)
+      } else {
+        return [...prev, artist.id]
+      }
+    })
   }
+
   const handleCollapseClick = () => {
     onCollapse()
   } 
@@ -64,10 +68,7 @@ export const MusicNavigatorPanel = ({artists, onCollapse}: Props) => {
     if (isFirst) {
       setPrimaryTitle(secondaryTitleOne)
       setSecondaryTitleOne(primaryTitle)
-    } else {
-      setPrimaryTitle(secondaryTitleTwo)
-      setSecondaryTitleTwo(primaryTitle)
-    }
+    } 
 
   } 
   const arcAnimation = {
@@ -89,7 +90,6 @@ export const MusicNavigatorPanel = ({artists, onCollapse}: Props) => {
                   <motion.div custom="down" variants={arcVariant} initial="initial" animate="animate" exit="exit" className="panel-title">{primaryTitle}</motion.div> 
                   <div className="alternate-titles">
                     <motion.div custom="up" variants={arcVariant} initial="initial" animate="animate" exit="exit" onClick={() => handleTitleSwitch(true)} className="alternate-title">{secondaryTitleOne}</motion.div>
-                    <motion.div custom="up" variants={arcVariant} initial="initial" animate="animate" exit="exit" onClick={() => handleTitleSwitch(false)} className="alternate-title">{secondaryTitleTwo}</motion.div>
                   </div>
                   <div className="panel-control-icons">
                     <button onClick={() => handleCollapseClick()} className="collapse-button">{'<'}</button>
@@ -97,8 +97,8 @@ export const MusicNavigatorPanel = ({artists, onCollapse}: Props) => {
         </div>
         <div className="panel-content">
         <ul id="artists-list">
-                {sortedArtists.map(artist => 
-                <MusicNavigatorArtistRow key={'music-nav-artist-' + artist.id} artist={artist} isExpanded={expandedArtistIds.includes(artist.id)} onArtistSelect={onArtistSelect} />
+                {artists.map(artist => 
+                <MusicNavigatorArtistRow key={'music-nav-artist-' + artist.id} artist={artist} isExpanded={expandedIds.includes(artist.id)} onArtistSelect={onArtistSelect} />
               )}
         </ul>
         </div>

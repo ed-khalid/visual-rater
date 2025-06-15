@@ -1,12 +1,12 @@
 import { useContext } from "react"
 import { Artist } from "../../../../../generated/graphql"
-import { useMusicStateOperator } from "../../../../../hooks/MusicStateHooks"
+import { useMusicState, useMusicStateOperator } from "../../../../../hooks/MusicStateHooks"
 import { NavScoreInfo } from "../../NavScoreInfo"
 import { MusicNavigatorContext } from "../../../../../providers/MusicNavigationProvider"
 import { useDraggable } from "@dnd-kit/core"
 import { VisualRaterButton } from "../../../../common/VisRaterButton"
 import { AlbumsSubpanel } from "./AlbumsSubpanel"
-import { FiChevronDown, FiChevronUp, FiEye, FiEyeOff } from "react-icons/fi"
+import { FiChevronDown, FiChevronUp, FiEye } from "react-icons/fi"
 import { FilterMode } from "../../../../../music/MusicFilterModels"
 import { motion } from "motion/react"
 
@@ -30,15 +30,15 @@ export const MusicNavigatorArtistRow = ({artist, onArtistSelect, isExpanded}:Pro
         }
     }) 
 
-  const musicStateOperator = useMusicStateOperator()  
+  const musicState = useMusicState() 
+  
 
   const onOverviewClick = (artist:Artist, e:React.MouseEvent) => {
     e.stopPropagation()
     openOverview({ id: artist.id, type: 'artist'})
   }
   const isOnRater = (artist:Artist) => {
-    const raterArtists = musicStateOperator.getSongs()
-    return raterArtists.some(it => it.artist.id === artist.id)
+    return musicState.playlistFilters.artistIds?.some(it => it === artist.id) || false
   }
 
                 return <li  key={'artists-panel-item-' + artist.id}>

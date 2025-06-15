@@ -21,6 +21,7 @@ export const MusicReducerProvider = ({children}:Props) => {
       } , 
       navigationFilters: [],
       raterFilters:[], 
+      playlistFilters: { pageNumber: 0, artistIds: null, albumIds: null, score: null },
     })
 
   return <MusicStateContext.Provider value={musicState}>

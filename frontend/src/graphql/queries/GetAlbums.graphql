@@ -1,7 +1,14 @@
-query GetAlbums($ids:[String!]!) {
-    albums(ids:$ids) {
+query GetAlbums($params:AlbumQueryParams!) {
+    albums(params:$params) {
+        totalPages 
+        pageNumber 
+        content { 
+
         id
-        artistId
+        artist {
+            id 
+            name
+        }
         name
         year
         score
@@ -18,4 +25,5 @@ query GetAlbums($ids:[String!]!) {
             }
         }
     }
+       }
 }

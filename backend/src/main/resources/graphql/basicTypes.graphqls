@@ -53,9 +53,9 @@ type Genres {
     secondary:[Genre!]!
 }
 
-type Album {
+type Album implements Pageable {
     id: String!
-    artistId:String!
+    artist:Artist!
     name: String!
     year: Int
     thumbnail: String
@@ -79,6 +79,11 @@ type ArtistPage implements Page {
     totalPages:Int!
     pageNumber:Int!
     content:[Artist!]!
+}
+type AlbumPage implements Page {
+    totalPages:Int!
+    pageNumber:Int!
+    content:[Album!]!
 }
 type SongPage implements Page {
     totalPages:Int!

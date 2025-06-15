@@ -18,8 +18,6 @@ data class Album(
     @Column(name="thumbnail_dominant_colors", columnDefinition = "text[]")
     var thumbnailDominantColors: Array<String>? = null,
     var score:Double?,
-    @Column(name="artistId", insertable =  false, updatable = false)
-    val artistId: UUID,
     val vendorId:String?,
     var createdAt: OffsetDateTime?,
     var updatedAt: OffsetDateTime?,

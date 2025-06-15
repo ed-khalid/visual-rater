@@ -1,7 +1,10 @@
 
 fragment AlbumFields on Album {
         id
-        artistId
+        artist {
+                id 
+                name
+        }
         name
         year
         score

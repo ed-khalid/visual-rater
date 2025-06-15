@@ -1,8 +1,15 @@
-import { Album, Song } from "../generated/graphql"
+import { Album, Maybe, Song } from "../generated/graphql"
 
 export type NavigationFilter = {
     artistId: string
     albumIds: string[]
+}
+
+export type PlaylistFilters = {
+  pageNumber: number
+  artistIds: Maybe<string[]> 
+  score: Maybe<number>
+  albumIds: Maybe<string[]> 
 }
 export class RaterFilter {
   artistId: string

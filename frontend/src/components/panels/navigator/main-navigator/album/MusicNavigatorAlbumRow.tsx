@@ -3,6 +3,7 @@ import { NavScoreInfo } from "../../NavScoreInfo"
 import { VisualRaterButton } from "../../../../common/VisRaterButton"
 import { useContext } from "react"
 import { MusicNavigatorContext } from "../../../../../providers/MusicNavigationProvider"
+import { useMusicState } from "../../../../../hooks/MusicStateHooks"
 
 interface Props {
     album: Album
@@ -13,16 +14,21 @@ interface Props {
 
 export const MusicNavigatorAlbumRow = ({album, isExpanded, onAlbumExpand, dispatchAlbumToRater}: Props) => {
 
+    const musicState = useMusicState()
+
     const { openOverview } = useContext(MusicNavigatorContext)
 
     const openAlbumOverview = (album:Album) => {
 
     }
 
+    const isOnRater = (album:Album) => musicState.playlistFilters.albumIds?.some(it => it === album.id) || false
+    
+
     return <div className="nav-panel-item album smaller">
         <div className="nav-item-controls smaller">
-            <VisualRaterButton onClick={() => dispatchAlbumToRater(album,true)}>
-                {'+'}  
+            <VisualRaterButton onClick={() => dispatchAlbumToRater(album,!isOnRater(album))}>
+                {isOnRater(album) ? '-' : '+'}  
                 </VisualRaterButton> 
             <VisualRaterButton onClick={() => openAlbumOverview(album)}>
                 O

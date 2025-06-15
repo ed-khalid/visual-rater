@@ -38,7 +38,6 @@ export const App = () => {
         <div id="title">VisRater</div>
         <div className="rater-style">
         <RaterIconGridSvg onClick={() => setRaterStyle(RaterStyle.GRID)  }/>
-        <RaterIconListSvg onClick={() => setRaterStyle(RaterStyle.LIST) }/>
         <RaterIconCartesianSvg onClick={() => setRaterStyle(RaterStyle.LINEAR) }/>
         </div>
       </div>

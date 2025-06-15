@@ -23,13 +23,13 @@ export const AlbumsSubpanel = ({artist, dispatchAlbumToRater}: Props) => {
     const expandedAlbumIds:string[]  = store.navigationFilters.find(it => it.artistId === artist.id)?.albumIds || []
 
     const { data, loading, error } = useGetAlbumsQuery({ variables: {
-        ids: artist.albums.map((it:any) => it.id)
+        params: { artistIds: [artist.id]}
      }}) 
 
      useEffect(() => {
         if (data?.albums) {
-            musicDispatch({ type: 'DATA_CHANGE', data: { albums: data.albums as Album[] }})
-            const sorted = [...(data?.albums!)].sort((a,b) => a.year! - b.year! )
+            musicDispatch({ type: 'DATA_CHANGE', data: { albums: data.albums.content as Album[] }})
+            const sorted = [...(data?.albums.content!)].sort((a,b) => a.year! - b.year! )
             setSortedAlbums(sorted as Album[])
         }
 

@@ -3,9 +3,13 @@ package com.hawazin.visualrater.services
 import com.hawazin.visualrater.models.db.*
 import com.hawazin.visualrater.models.graphql.*
 import graphql.GraphqlErrorException
+import jakarta.persistence.criteria.JoinType
+import jakarta.persistence.criteria.Predicate
 import jakarta.transaction.Transactional
 import org.springframework.data.domain.Page
 import org.springframework.data.domain.PageRequest
+import org.springframework.data.domain.Sort
+import org.springframework.data.jpa.domain.Specification
 import org.springframework.stereotype.Service
 import java.time.OffsetDateTime
 import java.util.*
@@ -20,6 +24,60 @@ class MusicCrudService(private val genreRepo: GenreRepository, private val songR
 
     fun getUnratedAlbums(): List<Album> = albumRepo.findUnratedAlbums()
 
+    fun albumFilterSpec(params:AlbumQueryParams): Specification<Album> = Specification { root, query, cb ->
+        val predicates = mutableListOf<Predicate>()
+
+        predicates += cb.isNotNull(root.get<Double>("score"))
+
+        params.artistIds?.takeIf { it.isNotEmpty() }?.let {
+            predicates += root.join<Album, Artist>("artist").get<UUID>("id").`in`(it)
+        }
+        params.albumIds?.takeIf { it.isNotEmpty() }?.let {
+            predicates += root.get<UUID>("id").`in`(it)
+        }
+        params.score?.let {
+            predicates += cb.lessThanOrEqualTo(root.get("score"), it)
+        }
+        params.genres?.takeIf { it.isNotEmpty() }?.let {
+            val primaryGenreJoin = root.join<Album,Genre>("primaryGenre")
+            predicates += primaryGenreJoin.`in`(it)
+            val secondaryGenresJoin = root.join<Album,Genre>("secondaryGenres", JoinType.LEFT)
+            predicates += secondaryGenresJoin.`in`(it)
+        }
+        params.year?.let {
+            predicates += cb.lessThanOrEqualTo(root.get("year"), it)
+        }
+        query?.distinct(true)
+        cb.and(*predicates.toTypedArray())
+    }
+
+    fun songFilterSpec(params:SongQueryParams): Specification<Song> = Specification { root, query, cb ->
+        val predicates = mutableListOf<Predicate>()
+
+        predicates += cb.isNotNull(root.get<Double>("score"))
+
+        params.artistIds?.takeIf { it.isNotEmpty() }?.let {
+            predicates += root.join<Song, Artist>("artist").get<UUID>("id").`in`(it)
+        }
+        params.albumIds?.takeIf { it.isNotEmpty() }?.let {
+            predicates += root.join<Song, Album>("album").get<UUID>("id").`in`(it)
+        }
+        params.score?.let {
+            predicates += cb.lessThanOrEqualTo(root.get("score"), it)
+        }
+        params.genres?.takeIf { it.isNotEmpty() }?.let {
+            val primaryGenreJoin = root.join<Song,Genre>("primaryGenre")
+            predicates += primaryGenreJoin.`in`(it)
+            val secondaryGenresJoin = root.join<Song,Genre>("secondaryGenres", JoinType.LEFT)
+            predicates += secondaryGenresJoin.`in`(it)
+        }
+        params.year?.let {
+            val albumJoin = root.join<Song, Album>("album")
+            predicates += cb.equal(cb.function("year", Int::class.java, albumJoin.get<Int>("year")), it)
+        }
+        query?.distinct(true)
+        cb.and(*predicates.toTypedArray())
+    }
 
     fun getArtist(params:ArtistSearchParams): Optional<Artist> =
         if (params.id !== null) {
@@ -31,10 +89,18 @@ class MusicCrudService(private val genreRepo: GenreRepository, private val songR
         }
 
 
-    @Transactional
-    fun readArtists() : Page<Artist> = artistRepo.findAll(PageRequest.of(0,50))
-    @Transactional
-    fun readSongsByPage(pageNumber: Int) : Page<Song> = songRepo.findByScoreNotNullOrderByScoreDesc(PageRequest.of(pageNumber,100))
+    fun readSongs(params:SongQueryParams): Page<Song> {
+        val spec = songFilterSpec(params)
+        return songRepo.findAll(spec, PageRequest.of(params.pageNumber, 100, Sort.by(Sort.Direction.DESC, "score")) )
+    }
+    fun readAlbums(params:AlbumQueryParams): Page<Album> {
+        val spec = albumFilterSpec(params)
+        return albumRepo.findAll(spec, PageRequest.of(params.pageNumber, 100, Sort.by(Sort.Direction.DESC, "score")) )
+    }
+
+    fun readArtists() : Page<Artist> = artistRepo.findAll(PageRequest.of(0,50, Sort.by(Sort.Direction.DESC, "score")))
+
+
     @Transactional
     fun readAlbums(ids:List<UUID>): Iterable<Album> = albumRepo.findAllById(ids)
     @Transactional
@@ -149,7 +215,7 @@ class MusicCrudService(private val genreRepo: GenreRepository, private val songR
             throw IllegalStateException("cannot create an album for a nonexistent artist ${albumInput.artistId}")
         }
         val artist = maybeArtist.get()
-        val album = albumInput.let  { Album(id = UUID.randomUUID(),name = it.name, vendorId=it.vendorId,  year= it.year, artistId = artist.id!!, thumbnail = it.thumbnail, score = 0.0, thumbnailDominantColors = it.dominantColors?.toTypedArray(), songs = null, createdAt = OffsetDateTime.now(), updatedAt = null, primaryGenre = unratedGenre, secondaryGenres = mutableListOf()  ) }
+        val album = albumInput.let  { Album(id = UUID.randomUUID(),name = it.name, vendorId=it.vendorId, artist = artist, year= it.year, thumbnail = it.thumbnail, score = 0.0, thumbnailDominantColors = it.dominantColors?.toTypedArray(), songs = null, createdAt = OffsetDateTime.now(), updatedAt = null, primaryGenre = unratedGenre, secondaryGenres = mutableListOf()  ) }
         val newAlbum = albumRepo.save(album)
         val songs = albumInput.songs.map { Song( id =  UUID.randomUUID(), name = it.name, album = newAlbum, artist = artist, score = it.score, number= it.number, discNumber = it.discNumber, createdAt = OffsetDateTime.now(), updatedAt = null, primaryGenre = unratedGenre, secondaryGenres = mutableListOf()  ) }
         songRepo.saveAll(songs)

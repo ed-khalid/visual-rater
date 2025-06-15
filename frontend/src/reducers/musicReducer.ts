@@ -27,6 +27,11 @@ export const musicReducer: React.Reducer<MusicState, MusicAction> =  (state: Mus
             }
             return state
         }
+        case 'PLAYLIST_FILTER_CHANGE': {
+            const filters = action.filters
+            const newState:MusicState = { ...state, playlistFilters: filters }
+            return newState
+        }
         case 'NAVIGATION_FILTER_ARTIST_CHANGE': {
             const artistId = action.artistId
             const mode = action.mode

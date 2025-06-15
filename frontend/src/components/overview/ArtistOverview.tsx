@@ -33,13 +33,13 @@ export const ArtistOverview = ({artist, onClose, onLinkClick: onAlbumTitleClick}
 
     const [sortedAlbums ,setSortedAlbums] = useState<Album[]>([]) 
     const { data, loading, error } = useGetAlbumsQuery({ variables: {
-        ids: artist.albums.map((it:any) => it.id)
+        params: { artistIds : [artist.id]  } 
      }}) 
 
      useEffect(() => {
         if (data?.albums) {
-            musicDispatch({ type: 'DATA_CHANGE', data: { albums: data.albums as Album[] }})
-            const sorted = [...(data?.albums!)].sort((a,b) => a.year! - b.year! )
+            musicDispatch({ type: 'DATA_CHANGE', data: { albums: data.albums.content as Album[] }})
+            const sorted = [...(data?.albums.content!)].sort((a,b) => a.year! - b.year! )
             setSortedAlbums(sorted as Album[])
         }
 
@@ -93,7 +93,7 @@ export const ArtistOverview = ({artist, onClose, onLinkClick: onAlbumTitleClick}
                   {sortedAlbums.map((album:Album) => 
                      <li onClick={() => {}} key={"artist-" + artist.id + "-album-" + album.id + "-row"} className="album-row">
                         <div className="album-thumbnail"><img src={album.thumbnail || ''}/></div>
-                        <div className="album-name" onClick={() => onAlbumTitleClick({ id: album.id, parentId: album.artistId, type: 'album' })}>
+                        <div className="album-name" onClick={() => onAlbumTitleClick({ id: album.id, parentId: album.artist.id, type: 'album' })}>
                             {
                                 isEditMode? 
                         <Editable onUpdate={(name:string) => onAlbumNameUpdate(album.id, name) } fontSize="16px" fontWeight={100} initialValue={album.name} />
