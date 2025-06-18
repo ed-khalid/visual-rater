@@ -2,39 +2,31 @@ package com.hawazin.visualrater.controllers
 
 import com.hawazin.visualrater.models.api.ArtistPage
 import com.hawazin.visualrater.models.db.Artist
-import com.hawazin.visualrater.models.graphql.ArtistInput
-import com.hawazin.visualrater.models.graphql.ArtistSearchParams
+import com.hawazin.visualrater.models.graphql.ArtistQueryParams
 import com.hawazin.visualrater.models.graphql.UpdateArtistInput
 import com.hawazin.visualrater.services.*
 import org.reactivestreams.Publisher
 import org.springframework.graphql.data.method.annotation.*
 import org.springframework.stereotype.Controller
-import java.time.OffsetDateTime
+import java.util.*
 
 @Controller
-class ArtistController(val musicService: MusicCrudService, val publisherService: ArtistPublisher, val imageService: ImageService) {
+class ArtistController(val musicService: MusicCrudService, val publisherService: ArtistPublisher) {
 
 
     @QueryMapping
-    fun artists() : ArtistPage {
-        val artists = musicService.readArtists()
+    fun artists(@Argument params: ArtistQueryParams) : ArtistPage {
+        val artists = musicService.readArtists(params)
         return ArtistPage(totalPages= artists.totalPages, pageNumber = artists.pageable.pageNumber, content = artists.content)
     }
-
     @QueryMapping
-    fun artist(@Argument params: ArtistSearchParams) : Artist? {
-        val maybeArtist = musicService.getArtist(params)
-        return if (maybeArtist.isPresent) {
-            val artist = maybeArtist.get()
-            return Artist(id= artist.id, vendorId = artist.vendorId, albums = artist.albums, score= artist.score, metadata = artist.metadata, thumbnail =  artist.thumbnail, name=artist.name, thumbnailDominantColors = artist.thumbnailDominantColors, createdAt = artist.createdAt , updatedAt = artist.updatedAt, primaryGenre = artist.primaryGenre, secondaryGenres = artist.secondaryGenres)
+    fun artist(@Argument id: String): Artist? {
+        val artist = musicService.readArtistById(UUID.fromString(id))
+        return if (artist.isPresent) {
+            artist.get()
         } else {
             null
         }
-    }
-
-    @SubscriptionMapping
-    fun artistUpdated() : Publisher<Artist>  {
-        return publisherService
     }
 
     @MutationMapping
@@ -43,10 +35,13 @@ class ArtistController(val musicService: MusicCrudService, val publisherService:
     }
 
     @MutationMapping
-    fun CreateArtist(@Argument artist: ArtistInput): Artist {
-        val dominantColors = artist.thumbnail?.let {
-            imageService.getTop3DominantColors(artist.thumbnail)?.colors
-        }
-        return musicService.createArtist(artist, dominantColors)
+    fun deleteArtist(@Argument id: String) : Boolean {
+        return musicService.deleteArtistById(UUID.fromString(id))
     }
+
+    @SubscriptionMapping
+    fun artistUpdated() : Publisher<Artist>  {
+        return publisherService
+    }
+
 }

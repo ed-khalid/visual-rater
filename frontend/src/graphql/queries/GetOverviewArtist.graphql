@@ -1,9 +1,5 @@
-query GetArtistsPage($params:ArtistQueryParams!) {
-  artists(params:$params) {
-    totalPages 
-    pageNumber
-    content
-    {
+query GetOverviewArtist($id:String!) {
+  artist( id: $id) {
       id 
       name
       thumbnail
@@ -11,8 +7,12 @@ query GetArtistsPage($params:ArtistQueryParams!) {
       score
       albums {
         id
+        name
+        year
+        score
+        thumbnail
+        thumbnailDominantColors
       }
       metadata { ...ArtistMetadataFields }
-    }
   }
 }

@@ -1,8 +1,8 @@
 type Mutation {
     createAlbumsForExternalArtist(externalArtist:ExternalArtistInput!): Artist!
-    UpdateSong(song:SongInput!) : Song!
-    DeleteSong(songId:String!) : Boolean!
-    DeleteAlbum(albumId:String!): Boolean!
+    updateSong(song:SongInput!) : Song!
+    deleteSong(songId:String!) : Boolean!
+    deleteAlbum(albumId:String!): Boolean!
     updateAlbum(album: UpdateAlbumInput!): Album!
     updateArtist(artist: UpdateArtistInput!): Artist!
 }

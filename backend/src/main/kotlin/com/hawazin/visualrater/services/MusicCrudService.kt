@@ -22,7 +22,26 @@ class MusicCrudService(private val genreRepo: GenreRepository, private val songR
 
     fun getAllGenres(): Page<Genre> = genreRepo.findAll(PageRequest.of(0, 50))
 
-    fun getUnratedAlbums(): List<Album> = albumRepo.findUnratedAlbums()
+    fun artistFilterSpec(params:ArtistQueryParams): Specification<Artist> = Specification { root, query, cb ->
+        val predicates = mutableListOf<Predicate>()
+
+        predicates += cb.isNotNull(root.get<Double>("score"))
+
+        params.score?.let {
+            predicates += cb.lessThanOrEqualTo(root.get("score"), it)
+        }
+        params.genres?.takeIf { it.isNotEmpty() }?.let {
+            val primaryGenreJoin = root.join<Album,Genre>("primaryGenre")
+            predicates += primaryGenreJoin.`in`(it)
+            val secondaryGenresJoin = root.join<Album,Genre>("secondaryGenres", JoinType.LEFT)
+            predicates += secondaryGenresJoin.`in`(it)
+        }
+        params.name?.let {
+            predicates += cb.equal(root.get<String>("name"), it)
+        }
+        query?.distinct(true)
+        cb.and(*predicates.toTypedArray())
+    }
 
     fun albumFilterSpec(params:AlbumQueryParams): Specification<Album> = Specification { root, query, cb ->
         val predicates = mutableListOf<Predicate>()
@@ -31,9 +50,6 @@ class MusicCrudService(private val genreRepo: GenreRepository, private val songR
 
         params.artistIds?.takeIf { it.isNotEmpty() }?.let {
             predicates += root.join<Album, Artist>("artist").get<UUID>("id").`in`(it)
-        }
-        params.albumIds?.takeIf { it.isNotEmpty() }?.let {
-            predicates += root.get<UUID>("id").`in`(it)
         }
         params.score?.let {
             predicates += cb.lessThanOrEqualTo(root.get("score"), it)
@@ -79,25 +95,37 @@ class MusicCrudService(private val genreRepo: GenreRepository, private val songR
         cb.and(*predicates.toTypedArray())
     }
 
-    fun getArtist(params:ArtistSearchParams): Optional<Artist> =
-        if (params.id !== null) {
-            artistRepo.findById(params.id)
-        } else if (!params.name.isNullOrBlank()) {
-            artistRepo.findByName(params.name)
-        } else {
-            throw Error("getArtist: all params are null")
-        }
-
-
+    fun readAlbums(params:AlbumQueryParams): Page<Album> {
+        val spec = albumFilterSpec(params)
+        return albumRepo.findAll(spec, PageRequest.of(params.pageNumber, 50, Sort.by(Sort.Direction.DESC, "score")) )
+    }
     fun readSongs(params:SongQueryParams): Page<Song> {
         val spec = songFilterSpec(params)
         return songRepo.findAll(spec, PageRequest.of(params.pageNumber, 100, Sort.by(Sort.Direction.DESC, "score")) )
     }
-    fun readAlbums(params:AlbumQueryParams): Page<Album> {
-        val spec = albumFilterSpec(params)
-        return albumRepo.findAll(spec, PageRequest.of(params.pageNumber, 100, Sort.by(Sort.Direction.DESC, "score")) )
+    fun readArtists(params:ArtistQueryParams) : Page<Artist> {
+        val spec = artistFilterSpec(params)
+        return artistRepo.findAll(spec, PageRequest.of(0, 50, Sort.by(Sort.Direction.DESC, "score")))
     }
-    fun readArtists() : Page<Artist> = artistRepo.findAll(PageRequest.of(0,50, Sort.by(Sort.Direction.DESC, "score")))
+
+    fun readArtistById(id:UUID) = artistRepo.findById(id)
+    fun readAlbumById(id:UUID) = albumRepo.findById(id)
+
+    @Transactional
+    fun deleteArtistById(id:UUID): Boolean {
+        try {
+            artistRepo.deleteById(id)
+        }
+        catch(e:Exception) {
+            if (e.message != null) {
+                throw GraphqlErrorException.Builder().message(e.message!!).build()
+            }
+            else {
+                throw GraphqlErrorException.Builder().message(e.toString()).build()
+            }
+        }
+        return true
+    }
 
     @Transactional
     fun deleteSongById(id:UUID) : Boolean

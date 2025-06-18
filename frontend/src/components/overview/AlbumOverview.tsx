@@ -1,8 +1,7 @@
 import { useEffect, useState } from "react"
-import { Album, GetAlbumsSongsDocument, Song, useGetAlbumsSongsQuery, useUpdateAlbumMutation, useUpdateSongMutation } from "../../generated/graphql"
+import { Album, Artist, GetAlbumsSongsDocument, Song, useGetSongsPageQuery, useUpdateAlbumMutation, useUpdateSongMutation } from "../../generated/graphql"
 import './AlbumOverview.css'
 import { mapAlbumScoreToUI, mapSongScoreToUI } from "../../functions/scoreUI"
-import { useMusicDispatch } from "../../hooks/MusicStateHooks"
 import { VisualRaterToggleButton } from "../common/VisRaterToggleButton"
 import { Editable } from "../common/Editable"
 import { VisualRaterButton } from "../common/VisRaterButton"
@@ -10,15 +9,13 @@ import { OverviewLink } from "../../models/OverviewModels"
 import { LinearRaterSingleMode } from "../raters/linear/single-mode/LinearRaterSingleMode"
 
 interface Props {
-    artist: { id: string, name: string} 
-    album: Album
+    album: Omit<Album, "artist"> & { "artist": Omit<Artist, "score"|"albums"|"metadata"> }
     onClose: () => void
     onLinkClick: (link:OverviewLink) => void
 }
-export const AlbumOverview = ({album, artist, onClose, onLinkClick }:Props) => {
+export const AlbumOverview = ({album, onClose, onLinkClick }:Props) => {
     const [isEditMode, setEditMode] = useState<boolean>(false)
-    const musicDispatch = useMusicDispatch()
-    const { data, loading, error} = useGetAlbumsSongsQuery({ variables: { albumIds: [album.id]}})
+    const { data, loading, error} = useGetSongsPageQuery({ variables: { input: {  albumIds: [album.id]}}})
     const [tracks,setTracks] = useState<Song[]>([]) 
 
     const [updateSongMutation, ] = useUpdateSongMutation()
@@ -30,14 +27,13 @@ export const AlbumOverview = ({album, artist, onClose, onLinkClick }:Props) => {
     }
     
     useEffect(() => {
-        if (data?.albums?.at(0)?.songs) {
-            musicDispatch({ type: 'DATA_CHANGE', data: { songs: data.albums[0].songs as Song[] }})
-            setTracks([...data.albums[0].songs])
+        if (data?.songs?.content) {
+            setTracks([...data.songs.content])
         }
     }, [data])
 
     const onArtistNameClick = () => {
-        onLinkClick({ id: artist.id, type: 'artist' })
+        onLinkClick({ id: album.artist.id, type: 'artist' })
     }
 
     const onSongScoreUpdate = (song:Song) => {
@@ -59,7 +55,7 @@ export const AlbumOverview = ({album, artist, onClose, onLinkClick }:Props) => {
                     </VisualRaterToggleButton>
                 </div>
                 <div className="title">
-                    <div onClick={() => onArtistNameClick()} className="artist-name">{artist.name}</div> 
+                    <div onClick={() => onArtistNameClick()} className="artist-name">{album.artist.name}</div> 
                     <div className="separator">{' - '}</div>
                     {isEditMode ? <Editable onUpdate={(newValue:string) => onAlbumNameUpdate(newValue) } fontSize={'26px'} fontWeight={600}  initialValue={album.name} />: <>{album.name}</>}
                 </div>
@@ -107,4 +103,8 @@ export const AlbumOverview = ({album, artist, onClose, onLinkClick }:Props) => {
             </div>
     </div>
 
+}
+
+function useGetSongsQuery(arg0: { variables: { albumIds: string[] } }): { data: any; loading: any; error: any } {
+    throw new Error("Function not implemented.")
 }

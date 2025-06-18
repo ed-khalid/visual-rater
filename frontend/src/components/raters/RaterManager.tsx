@@ -2,27 +2,30 @@ import { useState } from "react"
 import './RaterManager.css'
 import { GridRater } from "./grid/GridRater"
 import { UnratedRaterPanel } from "./UnratedRaterPanel"
-import { GetAlbumsSongsDocument, Song, useUpdateSongMutation } from "../../generated/graphql"
+import { GetAlbumsSongsDocument, Song, useGetSongsPageQuery, useUpdateSongMutation } from "../../generated/graphql"
 import { DndContext, DragOverlay, DragStartEvent } from "@dnd-kit/core"
 import { RaterStyle } from "../../models/RaterModels"
 import { DraggableItem } from "../../models/DragModels"
 import { LinearRater } from "./linear/LinearRater"
 import { PlaylistRater } from "./playlist/PlaylistRater"
+import { useMusicState } from "../../hooks/MusicStateHooks"
 
 // type RaterProps = {
 //     rowRefs: RefObject<HTMLDivElement>[] 
 // } 
 
 interface Props {
-    items:Song[]
     raterStyle:RaterStyle
     totalRows: number
 }
 
-export const RaterManager = ({items, raterStyle, totalRows}:Props) => {
+export const RaterManager = ({raterStyle, totalRows}:Props) => {
 
-    const ratedItems = items.filter(it => it.score)
-    const unratedItems= items.filter(it => !(it.score))
+    const musicState = useMusicState() 
+    const filters = musicState.playlistFilters
+
+    const { data, loading, error } = useGetSongsPageQuery({ variables: { input:  filters}})  
+
     const [updateSong]  = useUpdateSongMutation();
     const [draggedItem, setDraggedItem] = useState<DraggableItem|undefined>(undefined)
 
@@ -78,7 +81,7 @@ export const RaterManager = ({items, raterStyle, totalRows}:Props) => {
   const handleDragStart = (event:DragStartEvent) => {
     const id = event.active.data.current?.id
     if (id) {
-        const dataItem:Song|undefined = items.find(it => it.id === id) 
+        const dataItem:Song|undefined = data?.songs?.content.find(it => it.id === id) 
         if (dataItem) {
           setDraggedItem({ type:'song', id: dataItem.id, name: dataItem.number + '. ' + dataItem.name, thumbnail: dataItem.album.thumbnail!  })
         }
@@ -87,7 +90,7 @@ export const RaterManager = ({items, raterStyle, totalRows}:Props) => {
 
     const handleDragEnd =(event:any) => {
         const songId = event.active.data.current.id  
-        const dataItem:Song|undefined = items.find(it => it.id === songId) 
+        const dataItem:Song|undefined = data?.songs?.content.find(it => it.id === songId) 
         if (dataItem) {
             const albumId = dataItem.album.id 
             const score = event.over.data.current.score  
@@ -106,13 +109,15 @@ export const RaterManager = ({items, raterStyle, totalRows}:Props) => {
             }
           </DragOverlay>
         <div id="rater-wrapper">
-            {(raterStyle !== RaterStyle.LINEAR) && (unratedItems.length > 0) && <UnratedRaterPanel items={unratedItems} />}
+            {/* {(raterStyle !== RaterStyle.LINEAR) && (unratedItems.length > 0) && <UnratedRaterPanel items={unratedItems} />} */}
             <div id="rater-content">
-                {(raterStyle=== RaterStyle.GRID) && <GridRater rowRefs={[]} items={ratedItems}  />}
-                {(raterStyle=== RaterStyle.LINEAR) && <LinearRater items={items} onScoreUpdate={onScoreUpdate}  rowRefs={[]} />}
-                {(raterStyle=== RaterStyle.PLAYLIST) && <PlaylistRater unratedItems={[]} onScoreUpdate={onScoreUpdate} />}
+              {data?.songs.content && 
+                (raterStyle=== RaterStyle.GRID) ?  <GridRater rowRefs={[]} items={data?.songs.content}  /> :
+                (raterStyle=== RaterStyle.LINEAR) ? <LinearRater items={items} onScoreUpdate={onScoreUpdate}  rowRefs={[]} /> :
+                (raterStyle=== RaterStyle.PLAYLIST) ? <PlaylistRater unratedItems={[]} onScoreUpdate={onScoreUpdate} /> :
+                <></>
+              }
             </div>
-            {/* {(raterStyle=== RaterStyle.CARTESIAN) && <CartesianRater />} */}
         </div> 
     </DndContext>
     

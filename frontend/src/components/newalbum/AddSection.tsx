@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react"
-import { Artist, ExternalAlbumSearchResult, ExternalArtistSearchResult, useCreateAlbumForExternalArtistMutation } from "../../generated/graphql"
+import { ExternalAlbumSearchResult, ExternalArtistSearchResult, GetArtistsPageDocument, useCreateAlbumForExternalArtistMutation } from "../../generated/graphql"
 import { AddPanel } from "./AddPanel"
-import { useMusicDispatch } from "../../hooks/MusicStateHooks"
-import { FilterMode } from "../../music/MusicFilterModels"
 
 
 interface Props {
@@ -12,8 +10,6 @@ interface Props {
 
 
 export const AddSection = ({}:Props) => {
-
-  const musicDispatch = useMusicDispatch()
 
   const [searchAlbums, setSearchAlbums] = useState<ExternalAlbumSearchResult[]|undefined>()
   const [searchArtist,setSearchArtist] = useState<ExternalArtistSearchResult|undefined>()
@@ -25,25 +21,8 @@ export const AddSection = ({}:Props) => {
   }
 
   useEffect(() => {
-    if ($albumsForExternalArtist.data && !$albumsForExternalArtist.loading) {
-      const artistWithoutAlbums:Artist = {
-        id: $albumsForExternalArtist.data.createAlbumsForExternalArtist.id,
-        name: $albumsForExternalArtist.data.createAlbumsForExternalArtist.name,
-        thumbnail: $albumsForExternalArtist.data.createAlbumsForExternalArtist.thumbnail,
-        thumbnailDominantColors: $albumsForExternalArtist.data.createAlbumsForExternalArtist.thumbnailDominantColors,
-        metadata: $albumsForExternalArtist.data.createAlbumsForExternalArtist.metadata,
-        score: $albumsForExternalArtist.data.createAlbumsForExternalArtist.score,
-        albums: []
-      }  
-      musicDispatch({ type: 'DATA_CHANGE', data: { artists: [artistWithoutAlbums], albums: $albumsForExternalArtist.data.createAlbumsForExternalArtist.albums   } })
-      musicDispatch({ type: 'NAVIGATION_FILTER_ARTIST_CHANGE', artistId: artistWithoutAlbums.id , mode: FilterMode.EXCLUSIVE })
-    }
-
-  }, [$albumsForExternalArtist])
-
-  useEffect(() => {
     if (searchArtist && searchAlbums) {
-       $createAlbumsForExternalArtist({ variables: { externalArtist: { id: searchArtist.id, name: searchArtist.name, thumbnail: searchArtist.thumbnail, albums: searchAlbums }, }})
+       $createAlbumsForExternalArtist({ variables: { externalArtist: { id: searchArtist.id, name: searchArtist.name, thumbnail: searchArtist.thumbnail, albums: searchAlbums }, }, refetchQueries: [{ query: GetArtistsPageDocument, variables: { params: { pageNumber: 0} } } ]   })
     }
   }, [searchAlbums, searchArtist, $createAlbumsForExternalArtist])
 

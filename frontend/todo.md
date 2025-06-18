@@ -1,10 +1,10 @@
-# RATER: new "Spotify Influenced" Playlist Rater
 # SPOTIFY: investigate adding play icon to spotify-enabled tracks 
-# RATER (GENERAL) : add context panel
+# GET RID OF MUSICSTATE/FILTERS and replace with just playlist filters/server side rendering
+# ALBUM-OVERVIEW: edit names
+# Add Albums From Non Spotify Sources
 # NAVPANEL: rework UI to be cleaner 
+# PLAYLIST: rework UI to be cleaner
 # DB: drop "discNumber" from songs/update FE to reflect this 
-# RATER (LINEAR): comparison songs   
-# RATER (LINEAR): group by category first
 # ALBUM-OVERVIEW: delete songs
 # ALBUM-OVERVIEW: improve linking 
 # ALBUM-OVERVIEW: trajectory-chart 
@@ -20,8 +20,6 @@
 # BUG OVERVIEW: Title Pencil Slightly Down
 # BUG OVERVIEW: Trajectory Chart Can't See Axis
 # BUG OVERVIEW: Metadata Height needs to be FIXED so that total artists/songs always hug border 
-# NAVPANEL: album view 
-# NAVPANEL: song view
 # AUTH: employ multi tenant model with RBS
 # AUTH : roll out using auth0
 # DEPLOYMENT: deploy Kotlin Service (POSTGRES?), connect to ImageService  
@@ -29,3 +27,4 @@
 # DEPLOYMENT: deploy frontend, have ti talk to backend
 # FRAMER MOTION
 # GENRE: compare by 
+# RATER (LINEAR): comparison songs   

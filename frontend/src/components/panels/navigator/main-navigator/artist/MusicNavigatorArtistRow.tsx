@@ -1,6 +1,6 @@
-import { useContext } from "react"
+import { useContext, useState } from "react"
 import { Artist } from "../../../../../generated/graphql"
-import { useMusicState, useMusicStateOperator } from "../../../../../hooks/MusicStateHooks"
+import { useMusicState } from "../../../../../hooks/MusicStateHooks"
 import { NavScoreInfo } from "../../NavScoreInfo"
 import { MusicNavigatorContext } from "../../../../../providers/MusicNavigationProvider"
 import { useDraggable } from "@dnd-kit/core"
@@ -12,13 +12,13 @@ import { motion } from "motion/react"
 
 interface Props {
     artist:Artist
-    onArtistSelect:any
-    isExpanded:boolean
 }
 
-export const MusicNavigatorArtistRow = ({artist, onArtistSelect, isExpanded}:Props) => {
+export const MusicNavigatorArtistRow = ({artist}:Props) => {
 
     const { openOverview, dispatchToRater } = useContext(MusicNavigatorContext) 
+
+    const [isExpanded, setIsExpanded] = useState<boolean>(false)
 
     const { attributes, listeners, setNodeRef }= useDraggable({
         id : 'draggable-artist' + artist.id,  
@@ -62,7 +62,7 @@ export const MusicNavigatorArtistRow = ({artist, onArtistSelect, isExpanded}:Pro
                           </span> 
                         </div>
                         <div className="accordion-toggle">
-                            <button onClick={(_) => onArtistSelect(artist)} >
+                            <button onClick={(_) => setIsExpanded(prev => !prev)} >
                               <motion.span animate={{rotate: isExpanded ? 100: 0 }} transition={{duration: 0.25}}>
                                   {isExpanded ? <FiChevronUp size={16}/> : <FiChevronDown size={16} />}
                               </motion.span>

@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react"
-import { Album, Song, useGetAlbumsSongsQuery } from "../../../../../generated/graphql"
+import { Album, Song, useGetSongsPageQuery } from "../../../../../generated/graphql"
 import { SortButton, SortDirection } from "../../../../common/SortButton"
-import { useMusicDispatch } from "../../../../../hooks/MusicStateHooks"
 import './SongsSubpanel.css' 
 import { NavScoreInfo } from "../../NavScoreInfo"
 
@@ -11,9 +10,8 @@ interface Props {
 
 export const SongsSubpanel = ({album}: Props) => {
 
-    const musicDispatch = useMusicDispatch()
 
-    const { data, loading, error} = useGetAlbumsSongsQuery({ variables: { albumIds: [album.id]}})
+    const { data, loading, error} = useGetSongsPageQuery({ variables:  { input : { albumIds: [album.id]}}})
     const [trackSortDirection, setTrackSortDirection] = useState<SortDirection>("ascending")
     const [scoreSortDirection, setScoreSortDirection] = useState<SortDirection>("ascending")
 
@@ -36,9 +34,8 @@ export const SongsSubpanel = ({album}: Props) => {
         sort(false)
     }  
     useEffect(() => {
-        if (data?.albums?.at(0)?.songs) {
-            musicDispatch({ type: 'DATA_CHANGE', data: { songs: data.albums[0].songs as Song[] }})
-            setSortedTracks([...data.albums[0].songs])
+        if (data?.songs.content) {
+            setSortedTracks([...data.songs.content])
         }
     }, [data])
 

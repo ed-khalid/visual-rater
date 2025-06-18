@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { MusicNavigatorPanel } from "../components/panels/navigator/main-navigator/MusicNavigatorPanel"
-import { Artist, useGetArtistsPageQuery, useOnAlbumUpdateSubscription, useOnArtistUpdateSubscription } from "../generated/graphql"
-import { useMusicDispatch, useMusicState, useMusicStateOperator } from "../hooks/MusicStateHooks"
+import { useOnAlbumUpdateSubscription, useOnArtistUpdateSubscription } from "../generated/graphql"
 import { RaterEntityRequest, RaterStyle } from "../models/RaterModels"
 import { FilterMode } from "../music/MusicFilterModels"
 import { MusicNavigatorContext } from "../providers/MusicNavigationProvider"
@@ -9,7 +8,8 @@ import { RaterManager } from "../components/raters/RaterManager"
 import { AnimatePresence, motion } from "motion/react"
 import { Modal } from "../components/common/Modal"
 import { OverviewManager } from "../components/overview/OverviewManager"
-import { OverviewItem, OverviewLink } from "../models/OverviewModels"
+import { OverviewLink } from "../models/OverviewModels"
+import { useMusicDispatch, useMusicState } from "../hooks/MusicStateHooks"
 
 
 interface Props {
@@ -24,9 +24,8 @@ export const HomePage = ({raterStyle}:Props) => {
 
   const musicDispatch = useMusicDispatch()
   const musicState = useMusicState()
-  const musicStateOperator = useMusicStateOperator()
   const [showNavPanel, setShowNavPanel] = useState<boolean>(true)
-  const [overviewItem, setOverviewItem] =useState<OverviewItem|undefined>(undefined)
+  const [overviewLink, setOverviewLink] =useState<OverviewLink|undefined>(undefined)
 
   const dispatchToRater = (addition:RaterEntityRequest, mode:FilterMode) => {
       const playlistFilters = musicState.playlistFilters
@@ -47,23 +46,12 @@ export const HomePage = ({raterStyle}:Props) => {
   } 
 
   const handleOverviewLinkClick = (link:OverviewLink) => {
-    if (link.type === 'artist') {
-      const artist = musicState.data.artists.find(it => it.id === link.id)
-      if (!artist) throw `artist with id ${link.id} not found in data!`
-      setOverviewItem({ entity:  artist})
-    } else {
-      const album = musicState.data.albums.find(it => it.id === link.id)
-      if (!album) throw `album with id ${link.id} not found in data!`
-      const artist = musicState.data.artists.find(it => it.id == album.artist.id) 
-      if (!artist) throw `artist with id ${album.artist.id} not found in data!`
-      setOverviewItem({entity: album, parentEntity: artist})
-    }
+    setOverviewLink(link)
   }
 
-  const items = musicStateOperator.getSongs()
 
   const handleModalClose = () => {
-    setOverviewItem(undefined)
+    setOverviewLink(undefined)
   } 
 
   const handleOnMusicNavCollapse = () => {
@@ -84,11 +72,11 @@ export const HomePage = ({raterStyle}:Props) => {
                   NAVPANEL
               </motion.button> }
               <AnimatePresence initial={false} onExitComplete={() => null}>
-                {overviewItem && <Modal handleClose={() => handleModalClose()} >
-                  <OverviewManager item={overviewItem} onClose={handleModalClose} onLinkClick={handleOverviewLinkClick} />
+                {overviewLink && <Modal handleClose={() => handleModalClose()} >
+                  <OverviewManager link={overviewLink} onClose={handleModalClose} onLinkClick={handleOverviewLinkClick} />
                   </Modal>}
               </AnimatePresence>
-              <RaterManager items={items} raterStyle={raterStyle}   
+              <RaterManager raterStyle={raterStyle}   
                 totalRows={showNavPanel ? 20 : 15 }
               />
             </motion.div>

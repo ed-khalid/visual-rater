@@ -1,4 +1,4 @@
-import { Album, Artist, useGetAlbumsLazyQuery, useGetArtistsPageLazyQuery } from "../../../../generated/graphql"
+import { Album, Artist, useGetAlbumsPageLazyQuery, useGetArtistsPageLazyQuery } from "../../../../generated/graphql"
 import { MusicNavigatorArtistRow } from "./artist/MusicNavigatorArtistRow"
 import { useEffect, useState } from "react"
 import './MusicNavigatorPanel.css'
@@ -14,8 +14,8 @@ type NavigatorContent = 'artists' | 'albums'
 export const MusicNavigatorPanel = ({onCollapse}: Props) => {
 
   const [mode, setMode] = useState<NavigatorContent>('artists')
-  const [$artistsPage, $artistsPageResult]  =  useGetArtistsPageLazyQuery()
-  const [$albumsPage, $albumsPageResult] = useGetAlbumsLazyQuery({variables: { params: { pageNumber: 0  }}}) 
+  const [$artistsPage, $artistsPageResult]  =  useGetArtistsPageLazyQuery({ variables: {params: {pageNumber: 0}}})
+  const [$albumsPage, $albumsPageResult] = useGetAlbumsPageLazyQuery({variables: { params: { pageNumber: 0  }}}) 
   const [artists, setArtists] = useState<Artist[]>([])
   const [albums, setAlbums] = useState<Album[]>([])
 
@@ -121,13 +121,13 @@ export const MusicNavigatorPanel = ({onCollapse}: Props) => {
         { mode === 'artists' && 
         <ul id="artists-list">
                 {artists.map(artist => 
-                <MusicNavigatorArtistRow key={'music-nav-artist-' + artist.id} artist={artist} isExpanded={expandedIds.includes(artist.id)} onArtistSelect={onExpand} />
+                <MusicNavigatorArtistRow key={'music-nav-artist-' + artist.id} artist={artist} />
               )}
         </ul>}
         { mode === 'albums' && 
         <ul id="albums-list">
                 {albums.map(album => 
-                <MusicNavigatorAlbumRow key={'music-nav-album-' + album.id} album={album} isExpanded={expandedIds.includes(album.id)} onAlbumExpand={onExpand} />
+                <MusicNavigatorAlbumRow key={'music-nav-album-' + album.id} album={album} />
               )}
         </ul>}
         </div>

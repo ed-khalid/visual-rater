@@ -1,6 +1,5 @@
 import { useContext } from "react"
 import { MusicDispatchContext, MusicStateContext } from "../providers/MusicReducerProvider"
-import { MusicStateOperator } from "../music/MusicStateOperator"
 
 
 export const useMusicState = () => {
@@ -22,7 +21,3 @@ export const useMusicStateAndDispatch = () => {
     const dispatch = useMusicDispatch()
     return { state, dispatch }
 } 
-export const useMusicStateOperator =  () => {
-    const state = useMusicState()
-    return new MusicStateOperator(state)
-}

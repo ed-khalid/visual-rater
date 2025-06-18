@@ -22,14 +22,14 @@ class SongController(private val musicCrudService: MusicCrudService) {
     }
 
     @MutationMapping
-    fun UpdateSong(@Argument song: SongInput) : Song {
+    fun updateSong(@Argument song: SongInput) : Song {
         val newSong  = musicCrudService.updateSong(song)
         musicCrudService.notifyOnSongUpdate(newSong)
         return newSong
     }
 
     @MutationMapping
-    fun DeleteSong(@Argument songId:String) : Boolean {
+    fun deleteSong(@Argument songId:String) : Boolean {
         return musicCrudService.deleteSongById(UUID.fromString(songId))
     }
 

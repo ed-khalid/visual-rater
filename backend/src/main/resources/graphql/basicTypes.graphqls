@@ -1,23 +1,11 @@
 interface Item {
-id:String!
-name:String!
-score:Float
+    id:String!
+    name:String!
+    score:Float
 }
 
 enum ItemType {
-MUSIC
-}
-
-type UnratedAlbum implements Item {
-    id: String!
-    artistId:String!
-    name: String!
-    year: Int
-    thumbnail: String
-    songs:[Song!]!
-    score:Float
-    genres:Genres!
-    artist:Artist!
+    MUSIC
 }
 
 type AlbumBrief {
@@ -26,6 +14,7 @@ type AlbumBrief {
     thumbnail: String!
     thumbnailDominantColors:[String!]
 }
+
 type ArtistBrief {
     id:String!
     name: String!

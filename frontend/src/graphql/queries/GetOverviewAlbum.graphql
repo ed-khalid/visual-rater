@@ -1,9 +1,5 @@
-query GetAlbumsPage($params:AlbumQueryParams!) {
-    albums(params:$params) {
-        totalPages 
-        pageNumber 
-        content { 
-
+query GetOverviewAlbum($id:String!) {
+    album( id: $id ) {
         id
         artist {
             id 
@@ -14,6 +10,9 @@ query GetAlbumsPage($params:AlbumQueryParams!) {
         score
         thumbnail
         thumbnailDominantColors
+        songs {
+            ...SongFields
+        }
         genres {
             primary {
                 id 
@@ -25,5 +24,4 @@ query GetAlbumsPage($params:AlbumQueryParams!) {
             }
         }
     }
-       }
 }

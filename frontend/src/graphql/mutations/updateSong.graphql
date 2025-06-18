@@ -1,5 +1,5 @@
 mutation UpdateSong($song:SongInput!){
-  UpdateSong(song:$song) {
+  updateSong(song:$song) {
     ...SongFields
   }
 }

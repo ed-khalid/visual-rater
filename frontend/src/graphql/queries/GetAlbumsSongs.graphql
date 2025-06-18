@@ -1,12 +1,7 @@
-query GetAlbumsSongs($params:AlbumQueryParams!) {
-    albums(params:$params) {
-      totalPages 
-      pageNumber 
+query GetAlbumsSongs($id:String!) {
+    songs(params: { albumIds: [$id] }) {
       content {
-        id
-        songs {
           ...SongFields
-        }
       }
     }
 }

@@ -10,7 +10,7 @@ import { Album, Artist, Song } from "../generated/graphql";
 const data = setupTestData()
 const navigationFilters:NavigationFilter[] = []
 const raterFilters:RaterFilter[] = []
-const playlistFilters= { pageNumber: 0, artistIds: undefined, score: undefined, albumIds: undefined } 
+const playlistFilters= { pageNumber: 0, artistIds: null, score: null, albumIds: null } 
 const state:MusicState = {
     data,
     navigationFilters,
@@ -97,7 +97,7 @@ test("it should exclusive filter a navigation artist", () => {
 /* NAVIGATION_FILTER_ALBUM_CHANGE tests */
 test("it should add a navigation album and create a navigation artist filter if there isn't one", () => {
     const albumId = data.albums[0].id 
-    const artistId = data.albums[0].artistId
+    const artistId = data.albums[0].artist.id
     const newState =  musicReducer(state, { type: 'NAVIGATION_FILTER_ALBUM_CHANGE', artistId, albumId , mode: FilterMode.ADDITIVE })
     const added = newState.navigationFilters.find(it => it.artistId === artistId)
     expect(added?.artistId).toBe(artistId)
@@ -158,11 +158,11 @@ test("it should remove a navigation album", () => {
 test("it should exclusive filter a navigation album", () => {
     let newState = state 
     data.albums.forEach((album) => {
-      newState = musicReducer(newState, { type: 'NAVIGATION_FILTER_ALBUM_CHANGE', albumId: album.id, artistId: album.artistId, mode: FilterMode.ADDITIVE })
+      newState = musicReducer(newState, { type: 'NAVIGATION_FILTER_ALBUM_CHANGE', albumId: album.id, artistId: album.artist.id, mode: FilterMode.ADDITIVE })
     })
     const randomAlbumIndex = Math.floor(Math.random() * data.albums.length)   
     const randomAlbum = data.albums[randomAlbumIndex] 
-    newState = musicReducer(newState, { type: 'NAVIGATION_FILTER_ALBUM_CHANGE', artistId: randomAlbum.artistId, albumId: randomAlbum.id,  mode: FilterMode.EXCLUSIVE })
+    newState = musicReducer(newState, { type: 'NAVIGATION_FILTER_ALBUM_CHANGE', artistId: randomAlbum.artist.id, albumId: randomAlbum.id,  mode: FilterMode.EXCLUSIVE })
     expect(newState.navigationFilters.length).toBe(1)
     expect(newState.navigationFilters[0].albumIds.length).toBe(1)
     expect(newState.navigationFilters[0].albumIds[0]).toBe(randomAlbum.id)
@@ -170,7 +170,7 @@ test("it should exclusive filter a navigation album", () => {
 /* RATER FILTER TESTS */
 test("adding an artistId to raterfilter should add all of their albumids", () =>  {
     const artist = data.artists[0]  
-    const albumIds = data.albums.filter(it => it.artistId === artist.id).map(it => it.id) 
+    const albumIds = data.albums.filter(it => it.artist.id === artist.id).map(it => it.id) 
     const state2 = musicReducer(state, { type: 'RATER_FILTER_ARTIST_CHANGE',  artistId: artist.id, albumIds, mode: FilterMode.ADDITIVE} )
     expect(state2.raterFilters.length).toBe(1)
     expect(state2.raterFilters[0].artistId).toBe(artist.id)
@@ -181,7 +181,7 @@ test("adding an artistId to raterfilter should add all of their albumids", () =>
 })
 test("adding an already existing artistId to raterfilter should cause no change", () => {
     const artist = data.artists[0]  
-    const albumIds = data.albums.filter(it => it.artistId === artist.id).map(it => it.id) 
+    const albumIds = data.albums.filter(it => it.artist.id === artist.id).map(it => it.id) 
     const state2 = musicReducer(state, { type: 'RATER_FILTER_ARTIST_CHANGE', albumIds,  artistId: artist.id, mode: FilterMode.ADDITIVE} )
     const state3 = musicReducer(state2, { type: 'RATER_FILTER_ARTIST_CHANGE', albumIds,  artistId: artist.id, mode: FilterMode.ADDITIVE} )
     expect(state3.raterFilters.length).toBe(1)
@@ -283,35 +283,35 @@ test("rater filter - remove a nonexistent artist id", () => {
 })
 test("rater fitler - adding an album id, artist doesn't exist", () => {
     const album = data.albums[0] 
-    const state2 = musicReducer(state, { type: 'RATER_FILTER_ALBUM_CHANGE',  albumId: album.id, artistId: album.artistId, mode: FilterMode.ADDITIVE} )
+    const state2 = musicReducer(state, { type: 'RATER_FILTER_ALBUM_CHANGE',  albumId: album.id, artistId: album.artist.id, mode: FilterMode.ADDITIVE} )
     expect(state2.raterFilters.length).toBe(1)
-    expect(state2.raterFilters[0].artistId).toBe(album.artistId)
+    expect(state2.raterFilters[0].artistId).toBe(album.artist.id)
     expect(state2.raterFilters[0].albums.length).toBe(1)
     expect(state2.raterFilters[0].albums[0].albumId).toBe(album.id)
 })
 test("rater filter - removing an  album", () => {
     const album = data.albums[0] 
-    const artist = data.artists.find(it => it.id === album.artistId) 
-    const albums = data.albums.filter(it => it.artistId == artist!.id) 
+    const artist = data.artists.find(it => it.id === album.artist.id) 
+    const albums = data.albums.filter(it => it.artist.id == artist!.id) 
     let newState:MusicState = state   
     albums.forEach((album) => {
-        newState = musicReducer(newState, { type: 'RATER_FILTER_ALBUM_CHANGE', albumId: album.id, artistId: album.artistId, mode: FilterMode.ADDITIVE}  )
+        newState = musicReducer(newState, { type: 'RATER_FILTER_ALBUM_CHANGE', albumId: album.id, artistId: album.artist.id, mode: FilterMode.ADDITIVE}  )
     })
-    newState = musicReducer(newState, { type: 'RATER_FILTER_ALBUM_CHANGE', albumId: album.id, artistId: album.artistId, mode: FilterMode.REDUCTIVE}  )
+    newState = musicReducer(newState, { type: 'RATER_FILTER_ALBUM_CHANGE', albumId: album.id, artistId: album.artist.id, mode: FilterMode.REDUCTIVE}  )
     expect(newState.raterFilters.length).toBe(1)
     expect(newState.raterFilters[0].albums.length).toBe(albums.length-1)
 
 })
 test("rater filter - removing the last album of an artist should also remove the artist filter altogether", () => {
     const album = data.albums[0] 
-    const artist = data.artists.find(it => it.id === album.artistId) 
-    const albums = data.albums.filter(it => it.artistId == artist!.id) 
+    const artist = data.artists.find(it => it.id === album.artist.id) 
+    const albums = data.albums.filter(it => it.artist.id == artist!.id) 
     let newState:MusicState = state   
     albums.forEach((album) => {
-        newState = musicReducer(newState, { type: 'RATER_FILTER_ALBUM_CHANGE', albumId: album.id, artistId: album.artistId, mode: FilterMode.ADDITIVE}  )
+        newState = musicReducer(newState, { type: 'RATER_FILTER_ALBUM_CHANGE', albumId: album.id, artistId: album.artist.id, mode: FilterMode.ADDITIVE}  )
     })
     albums.forEach((album) => {
-        newState = musicReducer(newState, { type: 'RATER_FILTER_ALBUM_CHANGE', albumId: album.id, artistId: album.artistId, mode: FilterMode.REDUCTIVE}  )
+        newState = musicReducer(newState, { type: 'RATER_FILTER_ALBUM_CHANGE', albumId: album.id, artistId: album.artist.id, mode: FilterMode.REDUCTIVE}  )
     })
     expect(newState.raterFilters.length).toBe(0)
 })

@@ -14,13 +14,7 @@ interface Props {
 
 export const MusicReducerProvider = ({children}:Props) => {
   const [musicState, musicDispatch] = useReducer(musicReducer, 
-    { data: 
-      { artists: [], 
-        albums:[], 
-        songs:[] 
-      } , 
-      navigationFilters: [],
-      raterFilters:[], 
+    { 
       playlistFilters: { pageNumber: 0, artistIds: null, albumIds: null, score: null },
     })
 

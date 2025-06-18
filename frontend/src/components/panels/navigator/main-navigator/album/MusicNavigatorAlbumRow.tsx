@@ -1,31 +1,33 @@
 import { Album } from "../../../../../generated/graphql"
 import { NavScoreInfo } from "../../NavScoreInfo"
 import { VisualRaterButton } from "../../../../common/VisRaterButton"
-import { useContext } from "react"
+import { useContext, useState } from "react"
 import { MusicNavigatorContext } from "../../../../../providers/MusicNavigationProvider"
 import { useMusicState } from "../../../../../hooks/MusicStateHooks"
 import { FilterMode } from "../../../../../music/MusicFilterModels"
+import { SongsSubpanel } from "./SongsSubpanel"
 
 interface Props {
     album: Album
-    isExpanded:boolean
-    onAlbumExpand: any
 }
 
-export const MusicNavigatorAlbumRow = ({album, isExpanded, onAlbumExpand }: Props) => {
+export const MusicNavigatorAlbumRow = ({album}: Props) => {
 
     const musicState = useMusicState()
+
+    const [isExpanded, setIsExpanded] = useState<boolean>(false)
 
     const { openOverview, dispatchToRater } = useContext(MusicNavigatorContext)
 
     const openAlbumOverview = (album:Album) => {
-
+        openOverview({ id: album.id, type: 'album', parentId: album.artist.id })
     }
 
     const isOnRater = (album:Album) => musicState.playlistFilters.albumIds?.some(it => it === album.id) || false
     
 
-    return <div className="nav-panel-item album smaller">
+    return <div>
+    <div className="nav-panel-item album smaller">
         <div className="nav-item-controls smaller">
             <VisualRaterButton onClick={() => dispatchToRater( { artistId: album.artist.id, albumId: album.id }, isOnRater(album)? FilterMode.REDUCTIVE : FilterMode.ADDITIVE )}>
                 {isOnRater(album) ? '-' : '+'}  
@@ -33,7 +35,7 @@ export const MusicNavigatorAlbumRow = ({album, isExpanded, onAlbumExpand }: Prop
             <VisualRaterButton onClick={() => openAlbumOverview(album)}>
                 O
             </VisualRaterButton>  
-            <VisualRaterButton animate={{rotate: isExpanded ? 90 : 0}} onClick={() => onAlbumExpand(album)}>{'>'}</VisualRaterButton>   
+            <VisualRaterButton animate={{rotate: isExpanded ? 90 : 0}} onClick={() => setIsExpanded(prev => !prev)}>{'>'}</VisualRaterButton>   
         </div> 
         <img className="nav-panel-item-thumbnail smaller" src={album.thumbnail!!} /> 
         <div className="nav-panel-item-info">
@@ -45,6 +47,8 @@ export const MusicNavigatorAlbumRow = ({album, isExpanded, onAlbumExpand }: Prop
             {album.year}
         </div> 
         <NavScoreInfo item={album} type={'album'}/>
+    </div>
+     {isExpanded && <SongsSubpanel key={"album-subpanel-"+album.id} album={album} />} 
     </div>
 
 }

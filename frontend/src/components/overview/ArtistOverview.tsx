@@ -1,9 +1,8 @@
 
-import { Album, Artist, useGetAlbumsQuery, useUpdateAlbumMutation, useUpdateArtistMutation } from "../../generated/graphql"
+import { Album, Artist, useGetAlbumsPageQuery, useUpdateAlbumMutation, useUpdateArtistMutation } from "../../generated/graphql"
 import { mapArtistScoreToUI} from "../../functions/scoreUI"
 import './ArtistOverview.css'
 import { useEffect, useState } from "react"
-import { useMusicDispatch } from "../../hooks/MusicStateHooks"
 import { ArtistMetadataWidget } from "../widgets/artist-metadata/ArtistMetadataWidget"
 import { CareerTrajectoryWidget } from "../widgets/career-trajectory/CareerTrajectoryWidget"
 import { Editable } from "../common/Editable"
@@ -12,14 +11,13 @@ import { VisualRaterToggleButton } from "../common/VisRaterToggleButton"
 import { OverviewLink } from "../../models/OverviewModels"
 
 interface Props {
-    artist:Artist
+    artist:Omit<Artist, "albums"> & { albums: Omit<Album, "artist" | "songs">[]  }
     onClose:any
     onLinkClick:(link:OverviewLink) => void
 }
 export const ArtistOverview = ({artist, onClose, onLinkClick: onAlbumTitleClick}:Props) => {
 
     const [isEditMode, setEditMode] = useState<boolean>(false)
-    const musicDispatch  = useMusicDispatch()
     const [updateArtistMutation, ] = useUpdateArtistMutation()
     const [updateAlbumMutation, ] = useUpdateAlbumMutation()
 
@@ -32,13 +30,12 @@ export const ArtistOverview = ({artist, onClose, onLinkClick: onAlbumTitleClick}
     }
 
     const [sortedAlbums ,setSortedAlbums] = useState<Album[]>([]) 
-    const { data, loading, error } = useGetAlbumsQuery({ variables: {
+    const { data, loading, error } = useGetAlbumsPageQuery({ variables: {
         params: { artistIds : [artist.id]  } 
      }}) 
 
      useEffect(() => {
         if (data?.albums) {
-            musicDispatch({ type: 'DATA_CHANGE', data: { albums: data.albums.content as Album[] }})
             const sorted = [...(data?.albums.content!)].sort((a,b) => a.year! - b.year! )
             setSortedAlbums(sorted as Album[])
         }

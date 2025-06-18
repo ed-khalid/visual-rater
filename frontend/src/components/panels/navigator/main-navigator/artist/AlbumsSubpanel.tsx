@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react"
-import { Album, Artist, useGetAlbumsQuery } from "../../../../../generated/graphql"
-import { SongsSubpanel } from "../album/SongsSubpanel"
+import { Album, Artist, useGetAlbumsPageQuery } from "../../../../../generated/graphql"
 import { FilterMode } from "../../../../../music/MusicFilterModels"
-import { useMusicDispatch, useMusicStateOperator } from "../../../../../hooks/MusicStateHooks"
 import { MusicNavigatorAlbumRow } from "../album/MusicNavigatorAlbumRow"
 import { AnimatePresence, motion } from 'motion/react'
 
@@ -13,34 +11,21 @@ interface Props {
 }
 
 
-export const AlbumsSubpanel = ({artist, dispatchAlbumToRater}: Props) => {
-
-    const musicDispatch = useMusicDispatch()
-    const store = useMusicStateOperator()
-
+export const AlbumsSubpanel = ({artist}: Props) => {
 
     const [sortedAlbums ,setSortedAlbums] = useState<Album[]>([]) 
-    const expandedAlbumIds:string[]  = store.navigationFilters.find(it => it.artistId === artist.id)?.albumIds || []
 
-    const { data, loading, error } = useGetAlbumsQuery({ variables: {
+    const { data, loading, error } = useGetAlbumsPageQuery({ variables: {
         params: { artistIds: [artist.id]}
      }}) 
 
      useEffect(() => {
         if (data?.albums) {
-            musicDispatch({ type: 'DATA_CHANGE', data: { albums: data.albums.content as Album[] }})
             const sorted = [...(data?.albums.content!)].sort((a,b) => a.year! - b.year! )
             setSortedAlbums(sorted as Album[])
         }
 
      }, [data])
-
-    const onAlbumExpand = (album:Album) => {
-        expandedAlbumIds.some(id => id === album.id) ? 
-            musicDispatch({type: 'NAVIGATION_FILTER_ALBUM_CHANGE', artistId: artist.id, albumId: album.id, mode: FilterMode.REDUCTIVE}) :
-            musicDispatch({type: 'NAVIGATION_FILTER_ALBUM_CHANGE', artistId: artist.id, albumId: album.id, mode: FilterMode.ADDITIVE })
-    }
-
 
     return <AnimatePresence initial={false}>
 
@@ -62,8 +47,7 @@ export const AlbumsSubpanel = ({artist, dispatchAlbumToRater}: Props) => {
 
         {  sortedAlbums.map((album:any) => 
         <div key={`artist-album-${album.id}`}>
-            <MusicNavigatorAlbumRow isExpanded={expandedAlbumIds.includes(album.id)} album={album} onAlbumExpand={onAlbumExpand} />
-            {expandedAlbumIds.some(id=> id === album.id) && <SongsSubpanel key={"artist-"+artist.id+"-album-"+album.id} album={album} /> } 
+            <MusicNavigatorAlbumRow album={album} />
         </div>
         )}
     </motion.div>

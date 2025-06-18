@@ -26,17 +26,16 @@ class AlbumController(val musicService: MusicCrudService, val spotifyService: Sp
         val albums = musicService.readAlbums(params)
         return AlbumPage(totalPages = albums.totalPages, pageNumber = albums.pageable.pageNumber, content = albums.content)
     }
-
-
     @QueryMapping
-    fun unratedAlbums(): Iterable<Album> = musicService.getUnratedAlbums()
-
-
-
-    @SubscriptionMapping
-    fun albumUpdated() : Publisher<Album> {
-        return publisherService
+    fun album(@Argument id: String): Album? {
+        val album = musicService.readAlbumById(UUID.fromString(id))
+        return if (album.isPresent) {
+            album.get()
+        } else {
+            null
+        }
     }
+
 
     @MutationMapping
     fun createAlbumsForExternalArtist(@Argument externalArtist:ExternalSearchArtist) : Artist = runBlocking {
@@ -94,22 +93,14 @@ class AlbumController(val musicService: MusicCrudService, val spotifyService: Sp
         return newAlbum
     }
 
-
     @MutationMapping
     fun deleteAlbum(@Argument albumId:String) : Boolean {
         return musicService.deleteAlbumById(UUID.fromString(albumId))
     }
 
-}
+    @SubscriptionMapping
+    fun albumUpdated() : Publisher<Album> {
+        return publisherService
+    }
 
-data class AlbumWithArtistName(
-    val id:UUID,
-    val name:String,
-    val thumbnail: String?,
-    val year:Int,
-    val thumbnailDominantColors:List<String>?,
-    val score:Double?,
-    val artistId:UUID,
-    val songs:List<Song>?,
-    val artistName:String
-)
+}
