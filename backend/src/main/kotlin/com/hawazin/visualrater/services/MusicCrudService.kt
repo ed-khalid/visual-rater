@@ -205,7 +205,6 @@ class MusicCrudService(private val genreRepo: GenreRepository, private val songR
         if (song.score != null && song.score!! < 0) {
             song.score = null
         }
-        song.shortname = songInput.shortname ?: song.shortname
         song.name = songInput.name ?: song.name
         song.number = songInput.number ?: song.number
         song.updatedAt = OffsetDateTime.now()

@@ -29,7 +29,6 @@ type Song implements Pageable {
     name: String!
     number:Int!
     genres:Genres!
-    shortname: String
 }
 
 type Genre {
