@@ -1,12 +1,10 @@
 import { useState } from "react"
 import './RaterManager.css'
 import { GridRater } from "./grid/GridRater"
-import { UnratedRaterPanel } from "./UnratedRaterPanel"
 import { GetAlbumsSongsDocument, Song, useGetSongsPageQuery, useUpdateSongMutation } from "../../generated/graphql"
 import { DndContext, DragOverlay, DragStartEvent } from "@dnd-kit/core"
 import { RaterStyle } from "../../models/RaterModels"
 import { DraggableItem } from "../../models/DragModels"
-import { LinearRater } from "./linear/LinearRater"
 import { PlaylistRater } from "./playlist/PlaylistRater"
 import { useMusicState } from "../../hooks/MusicStateHooks"
 
@@ -109,11 +107,9 @@ export const RaterManager = ({raterStyle, totalRows}:Props) => {
             }
           </DragOverlay>
         <div id="rater-wrapper">
-            {/* {(raterStyle !== RaterStyle.LINEAR) && (unratedItems.length > 0) && <UnratedRaterPanel items={unratedItems} />} */}
             <div id="rater-content">
               {data?.songs.content && 
                 (raterStyle=== RaterStyle.GRID) ?  <GridRater rowRefs={[]} items={data?.songs.content}  /> :
-                (raterStyle=== RaterStyle.LINEAR) ? <LinearRater items={items} onScoreUpdate={onScoreUpdate}  rowRefs={[]} /> :
                 (raterStyle=== RaterStyle.PLAYLIST) ? <PlaylistRater unratedItems={[]} onScoreUpdate={onScoreUpdate} /> :
                 <></>
               }

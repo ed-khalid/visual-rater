@@ -1,8 +1,8 @@
 
-import { Album, Artist, useGetAlbumsPageQuery, useUpdateAlbumMutation, useUpdateArtistMutation } from "../../generated/graphql"
+import { Album, Artist, useUpdateAlbumMutation, useUpdateArtistMutation } from "../../generated/graphql"
 import { mapArtistScoreToUI} from "../../functions/scoreUI"
 import './ArtistOverview.css'
-import { useEffect, useState } from "react"
+import { useState } from "react"
 import { ArtistMetadataWidget } from "../widgets/artist-metadata/ArtistMetadataWidget"
 import { CareerTrajectoryWidget } from "../widgets/career-trajectory/CareerTrajectoryWidget"
 import { Editable } from "../common/Editable"
@@ -29,20 +29,7 @@ export const ArtistOverview = ({artist, onClose, onLinkClick: onAlbumTitleClick}
         updateAlbumMutation({variables: { album: { id, name } }})
     }
 
-    const [sortedAlbums ,setSortedAlbums] = useState<Album[]>([]) 
-    const { data, loading, error } = useGetAlbumsPageQuery({ variables: {
-        params: { artistIds : [artist.id]  } 
-     }}) 
-
-     useEffect(() => {
-        if (data?.albums) {
-            const sorted = [...(data?.albums.content!)].sort((a,b) => a.year! - b.year! )
-            setSortedAlbums(sorted as Album[])
-        }
-
-     }, [data])
-
-     const careerTrajectoryItems = sortedAlbums.map((album) => ({ value: album.score||0, thumbnail: album.thumbnail||'', label: album.name }))
+     const careerTrajectoryItems = artist.albums.map((album) => ({ value: album.score||0, thumbnail: album.thumbnail||'', label: album.name }))
 
     return <div className="artist-overview">
                 <div className="header">
@@ -87,10 +74,10 @@ export const ArtistOverview = ({artist, onClose, onLinkClick: onAlbumTitleClick}
                   <div className="header"><div className="title">Albums</div></div> 
                   <div className="list"> 
                   <ol>
-                  {sortedAlbums.map((album:Album) => 
+                  {artist.albums.map( album => 
                      <li onClick={() => {}} key={"artist-" + artist.id + "-album-" + album.id + "-row"} className="album-row">
                         <div className="album-thumbnail"><img src={album.thumbnail || ''}/></div>
-                        <div className="album-name" onClick={() => onAlbumTitleClick({ id: album.id, parentId: album.artist.id, type: 'album' })}>
+                        <div className="album-name" onClick={() => onAlbumTitleClick({ id: album.id, parentId: artist.id, type: 'album' })}>
                             {
                                 isEditMode? 
                         <Editable onUpdate={(name:string) => onAlbumNameUpdate(album.id, name) } fontSize="16px" fontWeight={100} initialValue={album.name} />

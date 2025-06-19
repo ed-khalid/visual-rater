@@ -2,23 +2,23 @@ import { motion } from "motion/react"
 import { LinearRaterCircle } from "./LinearRaterCircle"
 import { UNRATED_COLOR } from "../../../models/ScoreModels"
 import { LinearRaterConfig } from "../../../models/LinearRaterConfig"
-import { LinearRaterItemModel } from "../../../models/LinearRaterModels"
+import { LinearRaterCircleModel } from "../../../models/LinearRaterModels"
 
 interface Props {
-    item: LinearRaterItemModel  
+    items: LinearRaterCircleModel[]  
     y: number 
 }
 
-export const UnratedLinearRaterItem = ({y, item}:Props) => {
+export const UnratedLinearRaterItems = ({y, items}:Props) => {
 
     const connectingLineConfig = LinearRaterConfig.connectingLine 
-    const lineEnd = LinearRaterConfig.connectingLine.end(item.items.length) 
+    const lineEnd = LinearRaterConfig.connectingLine.end(items.length) 
     const lineStart = LinearRaterConfig.connectingLine.start 
     const animationDuration = connectingLineConfig.animation.duration 
 
     return <g
               className="linear-rater-group" 
-              id={`linear-rater-item-group-${item.id}`}
+              id={`linear-rater-item-unrated-group`}
            >
         {/* Connecting Line */}
         <motion.line
@@ -34,7 +34,7 @@ export const UnratedLinearRaterItem = ({y, item}:Props) => {
           strokeWidth={connectingLineConfig.strokeWidth}
         />
 
-        {item.items.map( (circleModel, i) => 
+        {items.map( (circleModel, i) => 
             (<LinearRaterCircle key={`unrated-linear-circle-${circleModel.id}`} color={UNRATED_COLOR} item={circleModel} i={i} position={y} />
             )
         )}

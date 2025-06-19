@@ -15,7 +15,7 @@ interface Props {
 
 export const LinearRaterCircle = ({item, i, color, position }: Props) => {
 
-    const { raterHeight, yToScore, getScoreCategoryDetails, onDragEnd, onDragStart, onCircleHover } = useContext(LinearRaterContext) 
+    const { raterHeight, yToScore, getScoreCategoryDetails, onDragEnd, onDragStart } = useContext(LinearRaterContext) 
     const mainlineX = LinearRaterConfig.rater.x 
     const circleConfig = LinearRaterConfig.circle 
     const connectingLineConfig = LinearRaterConfig.connectingLine
@@ -82,8 +82,6 @@ export const LinearRaterCircle = ({item, i, color, position }: Props) => {
                 <motion.circle 
                 initial={{opacity: 0, cx: mainlineX  }}
                 animate={{opacity: 1, cx: circleConfig.circle.x(i)}}
-                onMouseEnter={(e:React.MouseEvent) => onCircleHover(item, { x: e.clientX, y: e.clientY } ) }
-                onMouseLeave={(e:React.MouseEvent) => onCircleHover(undefined) }
                 transition={{ ease: 'easeInOut'}}
                 cx={circleConfig.circle.x(i)}
                 cy={position}

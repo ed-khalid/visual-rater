@@ -57,10 +57,6 @@ export const map100ScoreTo10Score = (score:Maybe<number>) => {
     }
 }  
 
-
-
-  
-
 export const mapArtistScoreToUI = (score?:Maybe<number>) : ArtistScoreUI => {
     for (let [,v] of ARTIST_SCORE_MAP) {
       let _score = score || -Infinity  
@@ -98,7 +94,8 @@ export const mapSongScoreToUI  = (score?:Maybe<number>) : SongScoreUI  => {
         throw Error("Invalid Score") 
     }
     for (let [,v] of SONG_SCORE_DICTIONARY) {
-        if (v.threshold.low <= score && v.threshold.high >= score) return { ...v, score } 
+        if (v.threshold.low <= score && v.threshold.high >= score) return { ...v, score: Math.floor(score) } 
+
     } 
     throw Error('Score could not be found in dictionary')
 }  

@@ -1,12 +1,12 @@
-import { useEffect, useState } from "react"
-import { Album, Artist, GetAlbumsSongsDocument, Song, useGetSongsPageQuery, useUpdateAlbumMutation, useUpdateSongMutation } from "../../generated/graphql"
+import { useState } from "react"
+import { Album, Artist, GetAlbumsSongsDocument, Song, useUpdateAlbumMutation, useUpdateSongMutation } from "../../generated/graphql"
 import './AlbumOverview.css'
 import { mapAlbumScoreToUI, mapSongScoreToUI } from "../../functions/scoreUI"
 import { VisualRaterToggleButton } from "../common/VisRaterToggleButton"
 import { Editable } from "../common/Editable"
 import { VisualRaterButton } from "../common/VisRaterButton"
 import { OverviewLink } from "../../models/OverviewModels"
-import { LinearRaterSingleMode } from "../raters/linear/single-mode/LinearRaterSingleMode"
+import { LinearRater } from "../raters/linear/LinearRater"
 
 interface Props {
     album: Omit<Album, "artist"> & { "artist": Omit<Artist, "score"|"albums"|"metadata"> }
@@ -15,8 +15,6 @@ interface Props {
 }
 export const AlbumOverview = ({album, onClose, onLinkClick }:Props) => {
     const [isEditMode, setEditMode] = useState<boolean>(false)
-    const { data, loading, error} = useGetSongsPageQuery({ variables: { input: {  albumIds: [album.id]}}})
-    const [tracks,setTracks] = useState<Song[]>([]) 
 
     const [updateSongMutation, ] = useUpdateSongMutation()
 
@@ -26,11 +24,6 @@ export const AlbumOverview = ({album, onClose, onLinkClick }:Props) => {
         updateAlbumMutation({variables: { album: { id: album.id, name} }})
     }
     
-    useEffect(() => {
-        if (data?.songs?.content) {
-            setTracks([...data.songs.content])
-        }
-    }, [data])
 
     const onArtistNameClick = () => {
         onLinkClick({ id: album.artist.id, type: 'artist' })
@@ -80,18 +73,18 @@ export const AlbumOverview = ({album, onClose, onLinkClick }:Props) => {
             <div className="album-year">{album.year}</div>
             <div className="rater">
                 <div className="title">Ratings</div>
-                <LinearRaterSingleMode items={tracks} rowRefs={[]} onScoreUpdate={onSongScoreUpdate}  />
+                <LinearRater items={album.songs} onScoreUpdate={onSongScoreUpdate}  />
             </div>
             <div className="album-tracks">
             <div className="title">Songs</div> 
             <div className="list">
                 <ul>
-                {tracks.map((track:Song) => <li key={"track-"+track.id} className="track-row">
+                {album.songs.map((track:Song) => <li key={"track-"+track.id} className="track-row">
                     <div className="track-number">{track.number}</div>
                     <div className="track-name">{track.name}</div>
                     <div className="track-score" style={{backgroundColor: mapSongScoreToUI(track.score).color }}>
                         <div className="track-score-value">
-                            {track.score || 'U' }
+                            {mapSongScoreToUI(track.score).score || 'U' }
                         </div>
                         <div className="track-score-category">
                             {mapSongScoreToUI(track.score).category}
@@ -105,6 +98,3 @@ export const AlbumOverview = ({album, onClose, onLinkClick }:Props) => {
 
 }
 
-function useGetSongsQuery(arg0: { variables: { albumIds: string[] } }): { data: any; loading: any; error: any } {
-    throw new Error("Function not implemented.")
-}

@@ -16,13 +16,8 @@ import { AddSection } from './components/newalbum/AddSection';
 interface Props {}
 
 export const App = () => {
-  const [newAlbumName, setNewAlbumName] =useState<string|undefined>() 
   const [raterStyle, setRaterStyle] = useState<RaterStyle>(RaterStyle.PLAYLIST)  
   const [showAddNewAlbumPanel, setShowAddNewAlbumPanel] = useState<boolean>(false)
-
-  const onCreateAlbum = (artistName:string, albumName:string) => {
-    setNewAlbumName(albumName)
-  }
 
   return (
     <div className="App" >
@@ -38,7 +33,7 @@ export const App = () => {
         <div id="title">VisRater</div>
         <div className="rater-style">
         <RaterIconGridSvg onClick={() => setRaterStyle(RaterStyle.GRID)  }/>
-        <RaterIconCartesianSvg onClick={() => setRaterStyle(RaterStyle.LINEAR) }/>
+        <RaterIconCartesianSvg onClick={() => setRaterStyle(RaterStyle.PLAYLIST) }/>
         </div>
       </div>
       <Routes>

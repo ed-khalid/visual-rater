@@ -19,6 +19,7 @@ data class Artist(
     @Column(name="thumbnail_dominant_colors", columnDefinition = "text[]")
     var thumbnailDominantColors: Array<String>? = null,
     @OneToMany(mappedBy = "artist", cascade = [CascadeType.REMOVE], fetch = FetchType.LAZY)
+    @OrderBy("year ASC")
     var albums:MutableList<Album>? = null,
     @OneToOne(cascade=[CascadeType.REMOVE, CascadeType.PERSIST])
     var metadata: ArtistMetadata,

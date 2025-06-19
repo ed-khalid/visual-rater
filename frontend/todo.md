@@ -1,5 +1,8 @@
+# GRID: have its own (pageable) query 
 # SPOTIFY: investigate adding play icon to spotify-enabled tracks 
-# GET RID OF MUSICSTATE/FILTERS and replace with just playlist filters/server side rendering
+# Playlist Rater: work on drag/drop and how it updates songs   
+# Playlist Rater: add unrated
+# Grid Rater: revisit all 
 # ALBUM-OVERVIEW: edit names
 # Add Albums From Non Spotify Sources
 # NAVPANEL: rework UI to be cleaner 
@@ -25,6 +28,7 @@
 # DEPLOYMENT: deploy Kotlin Service (POSTGRES?), connect to ImageService  
 # DEPLOYMENT: rework pipeline following monorepo
 # DEPLOYMENT: deploy frontend, have ti talk to backend
+# CSS : layout overview panels when size is too small (one column) 
 # FRAMER MOTION
 # GENRE: compare by 
 # RATER (LINEAR): comparison songs   

@@ -32,15 +32,14 @@ export const MusicNavigatorAlbumRow = ({album}: Props) => {
             <VisualRaterButton onClick={() => dispatchToRater( { artistId: album.artist.id, albumId: album.id }, isOnRater(album)? FilterMode.REDUCTIVE : FilterMode.ADDITIVE )}>
                 {isOnRater(album) ? '-' : '+'}  
                 </VisualRaterButton> 
-            <VisualRaterButton onClick={() => openAlbumOverview(album)}>
-                O
-            </VisualRaterButton>  
             <VisualRaterButton animate={{rotate: isExpanded ? 90 : 0}} onClick={() => setIsExpanded(prev => !prev)}>{'>'}</VisualRaterButton>   
         </div> 
         <img className="nav-panel-item-thumbnail smaller" src={album.thumbnail!!} /> 
         <div className="nav-panel-item-info">
             <div className="nav-panel-item-info-name smaller">
-            {album.name}
+                <span onClick={() => openAlbumOverview(album)}>
+                    {album.name}
+                </span>
             </div>
         </div>
         <div className="nav-panel-item-year">
