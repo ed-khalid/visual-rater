@@ -68,11 +68,11 @@ class AlbumController(val musicService: MusicCrudService, val spotifyService: Sp
                 thumbnail = it.thumbnail,
                 dominantColors = dominantColorsAlbum,
                 year = it.year,
-                songs = tracks.map {
+                songs = tracks.map { spotifyTrack ->
                     NewSongInput(
-                        name = it.name,
-                        number = it.trackNumber,
-                        discNumber = it.discNumber,
+                        id = spotifyTrack.id,
+                        name = spotifyTrack.name,
+                        number = spotifyTrack.trackNumber,
                         score = null
                     )
                 },

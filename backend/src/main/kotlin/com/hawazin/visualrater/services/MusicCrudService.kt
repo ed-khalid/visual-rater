@@ -234,7 +234,7 @@ class MusicCrudService(private val genreRepo: GenreRepository, private val songR
         val artist = maybeArtist.get()
         val album = albumInput.let  { Album(id = UUID.randomUUID(),name = it.name, vendorId=it.vendorId, artist = artist, year= it.year, thumbnail = it.thumbnail, score = 0.0, thumbnailDominantColors = it.dominantColors?.toTypedArray(), songs = null, createdAt = OffsetDateTime.now(), updatedAt = null, primaryGenre = unratedGenre, secondaryGenres = mutableListOf()  ) }
         val newAlbum = albumRepo.save(album)
-        val songs = albumInput.songs.map { Song( id =  UUID.randomUUID(), name = it.name, album = newAlbum, artist = artist, score = it.score, number= it.number, discNumber = it.discNumber, createdAt = OffsetDateTime.now(), updatedAt = null, primaryGenre = unratedGenre, secondaryGenres = mutableListOf()  ) }
+        val songs = albumInput.songs.map { Song( id =  UUID.randomUUID(), name = it.name, album = newAlbum, artist = artist, score = it.score, number= it.number, createdAt = OffsetDateTime.now(), updatedAt = null, primaryGenre = unratedGenre, secondaryGenres = mutableListOf(), vendorId = it.id  ) }
         songRepo.saveAll(songs)
         album.songs = songs
         return album

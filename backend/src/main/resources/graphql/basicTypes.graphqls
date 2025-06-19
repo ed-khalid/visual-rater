@@ -25,6 +25,7 @@ type Song implements Pageable {
     id:String!
     album: AlbumBrief!
     artist:ArtistBrief!
+    vendorId: String
     score:Float
     name: String!
     number:Int!

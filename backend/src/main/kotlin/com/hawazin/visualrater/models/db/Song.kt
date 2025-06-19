@@ -9,7 +9,6 @@ data class Song(
     @Id var id: UUID,
     var name:String? = null,
     var number:Int,
-    var discNumber:Int,
     var score:Double?,
     var createdAt: OffsetDateTime?,
     var updatedAt: OffsetDateTime?,
@@ -22,6 +21,7 @@ data class Song(
     @ManyToOne
     @JoinColumn(name ="primary_genre_id", nullable = false)
     var primaryGenre: Genre,
+    var vendorId: String?,
     @ManyToMany
     @JoinTable(
         name = "song_secondary_genre",
