@@ -49,7 +49,6 @@ fun Arb.Companion.externalSearchTrack(): Arb<ExternalSearchTracks> = arbitrary {
     ExternalSearchTracks(
         id = Arb.string(15).next(),
         name = Arb.string(20).next(),
-        discNumber =  1,
         trackNumber = Arb.int(1..10).next()
     )
 }

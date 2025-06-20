@@ -63,5 +63,4 @@ type ExternalTrackSearchResult {
     id:String!
     name:String!
     trackNumber:Int!
-    discNumber:Int!
 }

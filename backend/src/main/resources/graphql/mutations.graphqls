@@ -52,7 +52,6 @@ input NewSongInput {
     score:Float
     name: String!
     number:Int
-    discNumber:Int
 }
 input ArtistInput {
     name:String!
