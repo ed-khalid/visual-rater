@@ -17,9 +17,6 @@ export class LinearRaterModelMaker  {
     }
 
     private determineSongNameLabel (song:Song)  {
-        if (song.shortname) {
-        return song.shortname
-        } else {
           const res = []
           const words = song.name.toLowerCase().split(' ') 
           for (var i = 0; i < words.length; i++) {
@@ -33,7 +30,6 @@ export class LinearRaterModelMaker  {
           } else {
             return song.name.toLowerCase().split(' ')[0]
           }
-        } 
     }
 
     private makeUnratedItems(): LinearRaterCircleModel[] {

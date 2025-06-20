@@ -1,5 +1,5 @@
 # GRID: have its own (pageable) query 
-# SPOTIFY: investigate adding play icon to spotify-enabled tracks 
+# SPOTIFY: investigate adding play icon to spotify-enabled tracks (use Web SDK) 
 # Playlist Rater: work on drag/drop and how it updates songs   
 # Playlist Rater: add unrated
 # Grid Rater: revisit all 
