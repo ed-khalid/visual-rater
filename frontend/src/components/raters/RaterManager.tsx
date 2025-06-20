@@ -1,10 +1,7 @@
-import { useState } from "react"
 import './RaterManager.css'
 import { GridRater } from "./grid/GridRater"
-import { GetAlbumsSongsDocument, Song, useGetSongsPageQuery, useUpdateSongMutation } from "../../generated/graphql"
-import { DndContext, DragOverlay, DragStartEvent } from "@dnd-kit/core"
+import { Song, useUpdateSongMutation } from "../../generated/graphql"
 import { RaterStyle } from "../../models/RaterModels"
-import { DraggableItem } from "../../models/DragModels"
 import { PlaylistRater } from "./playlist/PlaylistRater"
 import { useMusicState } from "../../hooks/MusicStateHooks"
 
@@ -20,12 +17,10 @@ interface Props {
 export const RaterManager = ({raterStyle, totalRows}:Props) => {
 
     const musicState = useMusicState() 
-    const filters = musicState.playlistFilters
 
-    const { data, loading, error } = useGetSongsPageQuery({ variables: { input:  filters}})  
+    // const { data, loading, error } = useGetSongsPageQuery({ variables: { input:  filters}})  
 
     const [updateSong]  = useUpdateSongMutation();
-    const [draggedItem, setDraggedItem] = useState<DraggableItem|undefined>(undefined)
 
     // const wrapperRef = useRef<HTMLDivElement|null>(null)
     // const [visibleRows, setVisibleRows] = useState<Set<number>>(new Set()) 
@@ -76,45 +71,14 @@ export const RaterManager = ({raterStyle, totalRows}:Props) => {
   } 
 
 
-  const handleDragStart = (event:DragStartEvent) => {
-    const id = event.active.data.current?.id
-    if (id) {
-        const dataItem:Song|undefined = data?.songs?.content.find(it => it.id === id) 
-        if (dataItem) {
-          setDraggedItem({ type:'song', id: dataItem.id, name: dataItem.number + '. ' + dataItem.name, thumbnail: dataItem.album.thumbnail!  })
-        }
-    }
-  } 
-
-    const handleDragEnd =(event:any) => {
-        const songId = event.active.data.current.id  
-        const dataItem:Song|undefined = data?.songs?.content.find(it => it.id === songId) 
-        if (dataItem) {
-            const albumId = dataItem.album.id 
-            const score = event.over.data.current.score  
-            updateSong({ variables: {song:  { id: songId , score} }, refetchQueries: [{ query: GetAlbumsSongsDocument, variables: { albumIds: [albumId] }  }]})
-        }
-    }
 
 
-    return <DndContext onDragEnd={handleDragEnd} onDragStart={handleDragStart}>
-          <DragOverlay>
-            { draggedItem && 
-              <div className="dragged-item">
-                  <img className="dragged-item-thumbnail" src={draggedItem.thumbnail!} />
-                  <div className="dragged-item-text">{draggedItem.name}</div>
-              </div>
-            }
-          </DragOverlay>
-        <div id="rater-wrapper">
+    return <div id="rater-wrapper">
             <div id="rater-content">
-              {data?.songs.content && 
-                (raterStyle=== RaterStyle.GRID) ?  <GridRater rowRefs={[]} items={data?.songs.content}  /> :
-                (raterStyle=== RaterStyle.PLAYLIST) ? <PlaylistRater unratedItems={[]} onScoreUpdate={onScoreUpdate} /> :
-                <></>
-              }
+                {(raterStyle=== RaterStyle.GRID) ?  <GridRater onScoreUpdate={onScoreUpdate}  /> :
+                (raterStyle=== RaterStyle.PLAYLIST) ? <PlaylistRater onScoreUpdate={onScoreUpdate} /> :
+                <></>}
             </div>
         </div> 
-    </DndContext>
     
 } 

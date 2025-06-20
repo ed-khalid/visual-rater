@@ -6,8 +6,19 @@ export const musicReducer: React.Reducer<MusicState, MusicAction> =  (state: Mus
 
     switch (action.type) {
         case 'PLAYLIST_FILTER_CHANGE': {
-            const filters = action.filters
-            const newState:MusicState = { ...state, playlistFilters: filters }
+            const params = action.filters
+            let playlistFilters = state.playlistFilters 
+            let songFilters = state.songFilters 
+            if (params.pageNumber !== undefined && params.pageNumber !== null) {
+                playlistFilters = {...playlistFilters, pageNumber: params.pageNumber } 
+            }
+            if (params.artistIds !== undefined) {
+                songFilters = { ...songFilters, artistIds: params.artistIds}
+            }
+            if (params.albumIds !== undefined) {
+                songFilters = { ...songFilters, albumIds: params.albumIds}
+            }
+            const newState:MusicState = { ...state, playlistFilters , songFilters   }
             return newState
         }
     }

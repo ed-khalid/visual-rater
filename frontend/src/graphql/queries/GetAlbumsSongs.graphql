@@ -1,7 +1,0 @@
-query GetAlbumsSongs($id:String!) {
-    songs(params: { albumIds: [$id] }) {
-      content {
-          ...SongFields
-      }
-    }
-}

@@ -38,7 +38,7 @@ export const MusicNavigatorArtistRow = ({artist}:Props) => {
     openOverview({ id: artist.id, type: 'artist'})
   }
   const isOnRater = (artist:Artist) => {
-    return musicState.playlistFilters.artistIds?.some(it => it === artist.id) || false
+    return musicState.songFilters.artistIds?.some(it => it === artist.id) || false
   }
 
                 return <li  key={'artists-panel-item-' + artist.id}>

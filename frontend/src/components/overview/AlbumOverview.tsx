@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Album, Artist, GetAlbumsSongsDocument, Song, useUpdateAlbumMutation, useUpdateSongMutation } from "../../generated/graphql"
+import { Album, Artist, Song, useUpdateAlbumMutation, useUpdateSongMutation } from "../../generated/graphql"
 import './AlbumOverview.css'
 import { mapAlbumScoreToUI, mapSongScoreToUI } from "../../functions/scoreUI"
 import { VisualRaterToggleButton } from "../common/VisRaterToggleButton"
@@ -30,7 +30,9 @@ export const AlbumOverview = ({album, onClose, onLinkClick }:Props) => {
     }
 
     const onSongScoreUpdate = (song:Song) => {
-        updateSongMutation({ variables: {song:  { id: song.id , score: song.score} }, refetchQueries: [{ query: GetAlbumsSongsDocument, variables: { albumIds: [album.id] }  }]})
+        updateSongMutation({ variables: {song:  { id: song.id , score: song.score} }, 
+            // refetchQueries: [{ query: GetAlbumsSongsDocument, variables: { albumIds: [album.id] }  }]
+        })
     }
 
 

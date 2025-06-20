@@ -4,23 +4,23 @@ import { useEffect, useState } from "react"
 import './MusicNavigatorPanel.css'
 import { motion } from 'motion/react'
 import { MusicNavigatorAlbumRow } from "./album/MusicNavigatorAlbumRow"
+import { ArtistOrAlbum } from "../../../overview/OverviewManager"
 
 interface Props {
     onCollapse: ()  => void
 }
 
-type NavigatorContent = 'artists' | 'albums' 
 
 export const MusicNavigatorPanel = ({onCollapse}: Props) => {
 
-  const [mode, setMode] = useState<NavigatorContent>('artists')
+  const [mode, setMode] = useState<ArtistOrAlbum>('artist')
   const [$artistsPage, $artistsPageResult]  =  useGetArtistsPageLazyQuery({ variables: {params: {pageNumber: 0}}})
   const [$albumsPage, $albumsPageResult] = useGetAlbumsPageLazyQuery({variables: { params: { pageNumber: 0  }}}) 
   const [artists, setArtists] = useState<Artist[]>([])
   const [albums, setAlbums] = useState<Album[]>([])
 
   useEffect(() => {
-    if (mode === 'artists') {
+    if (mode === 'artist') {
       $artistsPage()
     } else {
       $albumsPage()
@@ -91,7 +91,7 @@ export const MusicNavigatorPanel = ({onCollapse}: Props) => {
   const handleTitleSwitch = () => {
       setPrimaryTitle(secondaryTitleOne)
       setSecondaryTitleOne(primaryTitle)
-      setMode(prev => prev === 'artists' ? 'albums' : 'artists')
+      setMode(prev => prev === 'artist' ? 'album' : 'artist')
   } 
   const arcAnimation = {
     up: {
@@ -118,13 +118,13 @@ export const MusicNavigatorPanel = ({onCollapse}: Props) => {
                   </div>
         </div>
         <div className="panel-content">
-        { mode === 'artists' && 
+        { mode === 'artist' && 
         <ul id="artists-list">
                 {artists.map(artist => 
                 <MusicNavigatorArtistRow key={'music-nav-artist-' + artist.id} artist={artist} />
               )}
         </ul>}
-        { mode === 'albums' && 
+        { mode === 'album' && 
         <ul id="albums-list">
                 {albums.map(album => 
                 <MusicNavigatorAlbumRow key={'music-nav-album-' + album.id} album={album} />

@@ -1,8 +1,0 @@
-
-query GetArtistAlbums($artistId:String!) {
-  albums(params: {artistIds:[$artistId]}) {
-    content { 
-        ...AlbumFields
-    }
-  }
-}

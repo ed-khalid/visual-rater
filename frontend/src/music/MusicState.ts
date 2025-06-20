@@ -1,5 +1,5 @@
 import { Album, Artist, Song } from "../generated/graphql"
-import { PlaylistFilters } from "./MusicFilterModels"
+import { GridFilters, PlaylistFilters, SongFilters } from "./MusicFilterModels"
 
 export type MusicEntity = Artist | Album | Song 
 
@@ -8,5 +8,7 @@ export const isAlbum = (entity:MusicEntity): entity is Album => entity.__typenam
 export const isSong = (entity:MusicEntity): entity is Song => entity.__typename === 'Song'
   
 export type MusicState = {
-  playlistFilters: PlaylistFilters
+  songFilters: SongFilters, 
+  playlistFilters: PlaylistFilters,
+  gridFilters: GridFilters
 }

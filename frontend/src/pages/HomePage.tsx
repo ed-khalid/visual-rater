@@ -28,9 +28,9 @@ export const HomePage = ({raterStyle}:Props) => {
   const [overviewLink, setOverviewLink] =useState<OverviewLink|undefined>(undefined)
 
   const dispatchToRater = (addition:RaterEntityRequest, mode:FilterMode) => {
-      const playlistFilters = musicState.playlistFilters
-      let artistIds:string[]|null = (playlistFilters.artistIds || []).filter(it => it !== addition.artistId)
-      let albumIds:string[]|null = (playlistFilters.albumIds || [])
+      const songFilters = musicState.songFilters
+      let artistIds:string[]|null = (songFilters.artistIds || []).filter(it => it !== addition.artistId)
+      let albumIds:string[]|null = (songFilters.albumIds || [])
       if (mode === FilterMode.ADDITIVE) {
         artistIds.push(addition.artistId)
       }
@@ -42,7 +42,7 @@ export const HomePage = ({raterStyle}:Props) => {
       }
       if (albumIds.length === 0) albumIds = null
       if (artistIds.length === 0) artistIds = null
-      musicDispatch({ type: 'PLAYLIST_FILTER_CHANGE', filters: { ...playlistFilters, artistIds, albumIds }})
+      musicDispatch({ type: 'PLAYLIST_FILTER_CHANGE', filters: { ...songFilters, artistIds, albumIds }})
   } 
 
   const handleOverviewLinkClick = (link:OverviewLink) => {

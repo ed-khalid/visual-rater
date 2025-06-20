@@ -23,7 +23,7 @@ export const MusicNavigatorAlbumRow = ({album}: Props) => {
         openOverview({ id: album.id, type: 'album', parentId: album.artist.id })
     }
 
-    const isOnRater = (album:Album) => musicState.playlistFilters.albumIds?.some(it => it === album.id) || false
+    const isOnRater = (album:Album) => musicState.songFilters.albumIds?.some(it => it === album.id) || false
     
 
     return <div>

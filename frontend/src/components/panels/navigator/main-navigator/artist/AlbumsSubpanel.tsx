@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react"
-import { Album, Artist, useGetAlbumsPageQuery } from "../../../../../generated/graphql"
+import { Album, Artist } from "../../../../../generated/graphql"
 import { FilterMode } from "../../../../../music/MusicFilterModels"
 import { MusicNavigatorAlbumRow } from "../album/MusicNavigatorAlbumRow"
 import { AnimatePresence, motion } from 'motion/react'
+import { useGetAlbumsForArtist } from "../../../../../hooks/DataLoadingHooks"
 
 
 interface Props {
@@ -15,9 +16,8 @@ export const AlbumsSubpanel = ({artist}: Props) => {
 
     const [sortedAlbums ,setSortedAlbums] = useState<Album[]>([]) 
 
-    const { data, loading, error } = useGetAlbumsPageQuery({ variables: {
-        params: { artistIds: [artist.id]}
-     }}) 
+    const { data, loading, error } = useGetAlbumsForArtist(artist.id) 
+      
 
      useEffect(() => {
         if (data?.albums) {

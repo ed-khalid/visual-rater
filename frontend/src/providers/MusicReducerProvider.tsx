@@ -15,8 +15,11 @@ interface Props {
 export const MusicReducerProvider = ({children}:Props) => {
   const [musicState, musicDispatch] = useReducer(musicReducer, 
     { 
-      playlistFilters: { pageNumber: 0, artistIds: null, albumIds: null, score: null },
-    })
+      songFilters: { artistIds: null, albumIds: null },
+      playlistFilters: { pageNumber: 0 },
+      gridFilters: { pageNumber: 0 },
+    }
+  )
 
   return <MusicStateContext.Provider value={musicState}>
     <MusicDispatchContext.Provider value={musicDispatch}>

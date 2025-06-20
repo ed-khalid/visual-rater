@@ -168,7 +168,6 @@ export type ExternalArtistSearchResult = {
 
 export type ExternalTrackSearchResult = {
   __typename?: 'ExternalTrackSearchResult';
-  discNumber: Scalars['Int']['output'];
   id: Scalars['String']['output'];
   name: Scalars['String']['output'];
   trackNumber: Scalars['Int']['output'];
@@ -252,7 +251,6 @@ export type NewAlbumInput = {
 };
 
 export type NewSongInput = {
-  discNumber?: InputMaybe<Scalars['Int']['input']>;
   name: Scalars['String']['input'];
   number?: InputMaybe<Scalars['Int']['input']>;
   score?: InputMaybe<Scalars['Float']['input']>;
@@ -436,20 +434,6 @@ export type GetAlbumsPageQueryVariables = Exact<{
 
 
 export type GetAlbumsPageQuery = { __typename?: 'Query', albums: { __typename?: 'AlbumPage', totalPages: number, pageNumber: number, content: Array<{ __typename?: 'Album', id: string, name: string, year?: number | null, score?: number | null, thumbnail?: string | null, thumbnailDominantColors?: Array<string> | null, artist: { __typename?: 'Artist', id: string, name: string }, genres?: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } | null }> } };
-
-export type GetAlbumsSongsQueryVariables = Exact<{
-  id: Scalars['String']['input'];
-}>;
-
-
-export type GetAlbumsSongsQuery = { __typename?: 'Query', songs: { __typename?: 'SongPage', content: Array<{ __typename?: 'Song', id: string, name: string, number: number, score?: number | null, vendorId?: string | null, album: { __typename?: 'AlbumBrief', id: string, name: string, thumbnail: string, thumbnailDominantColors?: Array<string> | null }, artist: { __typename?: 'ArtistBrief', id: string, name: string, thumbnail: string }, genres: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } }> } };
-
-export type GetArtistAlbumsQueryVariables = Exact<{
-  artistId: Scalars['String']['input'];
-}>;
-
-
-export type GetArtistAlbumsQuery = { __typename?: 'Query', albums: { __typename?: 'AlbumPage', content: Array<{ __typename?: 'Album', id: string, name: string, year?: number | null, score?: number | null, thumbnail?: string | null, thumbnailDominantColors?: Array<string> | null, artist: { __typename?: 'Artist', id: string, name: string }, genres?: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } | null, songs: Array<{ __typename?: 'Song', id: string, name: string, number: number, score?: number | null, vendorId?: string | null, album: { __typename?: 'AlbumBrief', id: string, name: string, thumbnail: string, thumbnailDominantColors?: Array<string> | null }, artist: { __typename?: 'ArtistBrief', id: string, name: string, thumbnail: string }, genres: { __typename?: 'Genres', primary: { __typename?: 'Genre', id: number, name: string }, secondary: Array<{ __typename?: 'Genre', id: number, name: string }> } }> }> } };
 
 export type GetArtistsPageQueryVariables = Exact<{
   params: ArtistQueryParams;
@@ -857,90 +841,6 @@ export type GetAlbumsPageQueryHookResult = ReturnType<typeof useGetAlbumsPageQue
 export type GetAlbumsPageLazyQueryHookResult = ReturnType<typeof useGetAlbumsPageLazyQuery>;
 export type GetAlbumsPageSuspenseQueryHookResult = ReturnType<typeof useGetAlbumsPageSuspenseQuery>;
 export type GetAlbumsPageQueryResult = Apollo.QueryResult<GetAlbumsPageQuery, GetAlbumsPageQueryVariables>;
-export const GetAlbumsSongsDocument = gql`
-    query GetAlbumsSongs($id: String!) {
-  songs(params: {albumIds: [$id]}) {
-    content {
-      ...SongFields
-    }
-  }
-}
-    ${SongFieldsFragmentDoc}`;
-
-/**
- * __useGetAlbumsSongsQuery__
- *
- * To run a query within a React component, call `useGetAlbumsSongsQuery` and pass it any options that fit your needs.
- * When your component renders, `useGetAlbumsSongsQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useGetAlbumsSongsQuery({
- *   variables: {
- *      id: // value for 'id'
- *   },
- * });
- */
-export function useGetAlbumsSongsQuery(baseOptions: Apollo.QueryHookOptions<GetAlbumsSongsQuery, GetAlbumsSongsQueryVariables> & ({ variables: GetAlbumsSongsQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<GetAlbumsSongsQuery, GetAlbumsSongsQueryVariables>(GetAlbumsSongsDocument, options);
-      }
-export function useGetAlbumsSongsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetAlbumsSongsQuery, GetAlbumsSongsQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<GetAlbumsSongsQuery, GetAlbumsSongsQueryVariables>(GetAlbumsSongsDocument, options);
-        }
-export function useGetAlbumsSongsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetAlbumsSongsQuery, GetAlbumsSongsQueryVariables>) {
-          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
-          return Apollo.useSuspenseQuery<GetAlbumsSongsQuery, GetAlbumsSongsQueryVariables>(GetAlbumsSongsDocument, options);
-        }
-export type GetAlbumsSongsQueryHookResult = ReturnType<typeof useGetAlbumsSongsQuery>;
-export type GetAlbumsSongsLazyQueryHookResult = ReturnType<typeof useGetAlbumsSongsLazyQuery>;
-export type GetAlbumsSongsSuspenseQueryHookResult = ReturnType<typeof useGetAlbumsSongsSuspenseQuery>;
-export type GetAlbumsSongsQueryResult = Apollo.QueryResult<GetAlbumsSongsQuery, GetAlbumsSongsQueryVariables>;
-export const GetArtistAlbumsDocument = gql`
-    query GetArtistAlbums($artistId: String!) {
-  albums(params: {artistIds: [$artistId]}) {
-    content {
-      ...AlbumFields
-    }
-  }
-}
-    ${AlbumFieldsFragmentDoc}`;
-
-/**
- * __useGetArtistAlbumsQuery__
- *
- * To run a query within a React component, call `useGetArtistAlbumsQuery` and pass it any options that fit your needs.
- * When your component renders, `useGetArtistAlbumsQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useGetArtistAlbumsQuery({
- *   variables: {
- *      artistId: // value for 'artistId'
- *   },
- * });
- */
-export function useGetArtistAlbumsQuery(baseOptions: Apollo.QueryHookOptions<GetArtistAlbumsQuery, GetArtistAlbumsQueryVariables> & ({ variables: GetArtistAlbumsQueryVariables; skip?: boolean; } | { skip: boolean; }) ) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<GetArtistAlbumsQuery, GetArtistAlbumsQueryVariables>(GetArtistAlbumsDocument, options);
-      }
-export function useGetArtistAlbumsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<GetArtistAlbumsQuery, GetArtistAlbumsQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<GetArtistAlbumsQuery, GetArtistAlbumsQueryVariables>(GetArtistAlbumsDocument, options);
-        }
-export function useGetArtistAlbumsSuspenseQuery(baseOptions?: Apollo.SkipToken | Apollo.SuspenseQueryHookOptions<GetArtistAlbumsQuery, GetArtistAlbumsQueryVariables>) {
-          const options = baseOptions === Apollo.skipToken ? baseOptions : {...defaultOptions, ...baseOptions}
-          return Apollo.useSuspenseQuery<GetArtistAlbumsQuery, GetArtistAlbumsQueryVariables>(GetArtistAlbumsDocument, options);
-        }
-export type GetArtistAlbumsQueryHookResult = ReturnType<typeof useGetArtistAlbumsQuery>;
-export type GetArtistAlbumsLazyQueryHookResult = ReturnType<typeof useGetArtistAlbumsLazyQuery>;
-export type GetArtistAlbumsSuspenseQueryHookResult = ReturnType<typeof useGetArtistAlbumsSuspenseQuery>;
-export type GetArtistAlbumsQueryResult = Apollo.QueryResult<GetArtistAlbumsQuery, GetArtistAlbumsQueryVariables>;
 export const GetArtistsPageDocument = gql`
     query GetArtistsPage($params: ArtistQueryParams!) {
   artists(params: $params) {

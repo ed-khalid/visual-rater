@@ -1,5 +1,4 @@
 # GRID: have its own (pageable) query 
-# SPOTIFY: investigate adding play icon to spotify-enabled tracks (use Web SDK) 
 # Playlist Rater: work on drag/drop and how it updates songs   
 # Playlist Rater: add unrated
 # Grid Rater: revisit all 
@@ -28,6 +27,7 @@
 # DEPLOYMENT: deploy Kotlin Service (POSTGRES?), connect to ImageService  
 # DEPLOYMENT: rework pipeline following monorepo
 # DEPLOYMENT: deploy frontend, have ti talk to backend
+# SPOTIFY: investigate adding play icon to spotify-enabled tracks (use Web SDK) 
 # CSS : layout overview panels when size is too small (one column) 
 # FRAMER MOTION
 # GENRE: compare by 

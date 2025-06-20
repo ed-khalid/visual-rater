@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react"
-import { Album, Song, useGetSongsPageQuery } from "../../../../../generated/graphql"
+import { Album, Song } from "../../../../../generated/graphql"
 import { SortButton, SortDirection } from "../../../../common/SortButton"
 import './SongsSubpanel.css' 
 import { NavScoreInfo } from "../../NavScoreInfo"
+import { useGetSongsForAlbum } from "../../../../../hooks/DataLoadingHooks"
 
 interface Props {
     album: Album
@@ -11,7 +12,7 @@ interface Props {
 export const SongsSubpanel = ({album}: Props) => {
 
 
-    const { data, loading, error} = useGetSongsPageQuery({ variables:  { input : { albumIds: [album.id]}}})
+    const { data, loading, error} = useGetSongsForAlbum(album.id)
     const [trackSortDirection, setTrackSortDirection] = useState<SortDirection>("ascending")
     const [scoreSortDirection, setScoreSortDirection] = useState<SortDirection>("ascending")
 

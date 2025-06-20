@@ -1,13 +1,13 @@
 import { DndContext, closestCenter, useSensor, useSensors, PointerSensor, DragOverlay } from "@dnd-kit/core"
 import { arrayMove, SortableContext, verticalListSortingStrategy }  from '@dnd-kit/sortable'
-import { Song, useGetSongsPageQuery } from "../../../generated/graphql"
+import { Song } from "../../../generated/graphql"
 import './PlaylistRater.css'
 import { PlaylistItem } from "./PlaylistItem"
 import { useEffect, useRef, useState } from "react"
 import { useMusicState } from "../../../hooks/MusicStateHooks"
+import { useGetSongsForPlaylistRater } from "../../../hooks/DataLoadingHooks"
 
 interface Props {
-    unratedItems: Song[]
     onScoreUpdate: (updatedSong: Song) => void 
 }
 
@@ -16,7 +16,9 @@ export const PlaylistRater = ({onScoreUpdate}: Props) => {
 
     const musicState = useMusicState() 
     const [items, setItems] = useState<Song[]>([])
-    const $songsPage = useGetSongsPageQuery({ variables: { input: musicState.playlistFilters }, notifyOnNetworkStatusChange: true }) 
+    const filters = {...musicState.songFilters, ...musicState.playlistFilters} 
+
+    const $songsPage = useGetSongsForPlaylistRater(filters) 
     const observerRef = useRef<HTMLDivElement>(null) 
 
     useEffect(() => {
