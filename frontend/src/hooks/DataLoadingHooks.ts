@@ -5,3 +5,4 @@ export const useGetAlbumsForArtist = (artistId:string) => useGetAlbumsPageQuery(
 export const useGetSongsForAlbum =  (albumId:string) => useGetSongsPageQuery({ variables: { input: { albumIds:  [albumId] } } })   
 
 export const useGetSongsForPlaylistRater = (input:SongQueryParams) => useGetSongsPageQuery({ variables: { input}, notifyOnNetworkStatusChange: true }) 
+export const useGetSongsForGridRater = (input:SongQueryParams) => useGetSongsPageQuery({ variables: { input}, notifyOnNetworkStatusChange: true }) 

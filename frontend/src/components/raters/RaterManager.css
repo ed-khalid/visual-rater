@@ -1,9 +1,5 @@
 
-div#rater-wrapper {
-  height: 100%;
-  width: 100%;
-}
-div#rater-content {
+div#raters {
   height: 100%;
   width: 100%;
   overflow-x:hidden;

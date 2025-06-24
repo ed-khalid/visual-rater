@@ -93,8 +93,9 @@ export const mapSongScoreToUI  = (score?:Maybe<number>) : SongScoreUI  => {
     if (score < SCORE_START || score > SCORE_END ) {
         throw Error("Invalid Score") 
     }
+    const roundedScore = Math.round(score * 100)/100
     for (let [,v] of SONG_SCORE_DICTIONARY) {
-        if (v.threshold.low <= score && v.threshold.high >= score) return { ...v, score: Math.floor(score) } 
+        if (v.threshold.low <= roundedScore && v.threshold.high >= roundedScore) return { ...v, score: Math.floor(score) } 
 
     } 
     throw Error('Score could not be found in dictionary')

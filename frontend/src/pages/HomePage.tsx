@@ -24,7 +24,6 @@ export const HomePage = ({raterStyle}:Props) => {
 
   const musicDispatch = useMusicDispatch()
   const musicState = useMusicState()
-  const [showNavPanel, setShowNavPanel] = useState<boolean>(true)
   const [overviewLink, setOverviewLink] =useState<OverviewLink|undefined>(undefined)
 
   const dispatchToRater = (addition:RaterEntityRequest, mode:FilterMode) => {
@@ -54,31 +53,22 @@ export const HomePage = ({raterStyle}:Props) => {
     setOverviewLink(undefined)
   } 
 
-  const handleOnMusicNavCollapse = () => {
-      setShowNavPanel(false)
-  }
        
         return <div id="layout">
             
-             <motion.div animate={{ width: showNavPanel ? '420px': 0 }} transition={{ duration: 0.3, ease: "easeInOut"}}     id="left-nav" className="panel nav-panel">
+             <div id="left-nav" className="panel nav-panel">
                 <MusicNavigatorContext.Provider value={{openOverview: handleOverviewLinkClick, dispatchToRater }}>
-                    <MusicNavigatorPanel onCollapse={handleOnMusicNavCollapse}></MusicNavigatorPanel>
+                    <MusicNavigatorPanel></MusicNavigatorPanel>
                 </MusicNavigatorContext.Provider>
-            </motion.div>
+            </div>
             
-            <motion.div animate={{width: showNavPanel? `calc(100% - 420px)`: '100%'}} transition={{duration: 0.3, ease: "easeInOut"}} id="main">
-              {!showNavPanel && 
-                <motion.button className="show-left-nav-button" initial={{x:0, opacity:0}} animate={{x:0,opacity:1}} exit={{opacity: 0}} transition={{duration: 0.3}} onClick={() => setShowNavPanel(true) }>
-                  NAVPANEL
-              </motion.button> }
+            <div id="main">
               <AnimatePresence initial={false} onExitComplete={() => null}>
                 {overviewLink && <Modal handleClose={() => handleModalClose()} >
                   <OverviewManager link={overviewLink} onClose={handleModalClose} onLinkClick={handleOverviewLinkClick} />
                   </Modal>}
               </AnimatePresence>
-              <RaterManager raterStyle={raterStyle}   
-                totalRows={showNavPanel ? 20 : 15 }
-              />
-            </motion.div>
+              <RaterManager raterStyle={raterStyle} />
+            </div>
           </div> 
 }

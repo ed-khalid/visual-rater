@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { createRef, RefObject, useEffect, useRef, useState } from "react"
 import { SongUIItem } from "../../../models/CoreModels"
 import './GridRater.css'
 import { mapSongToUIItem } from "../../../functions/mapper"
@@ -15,25 +15,72 @@ export const GridRater = ({onScoreUpdate}:Props) => {
 
     const [draggedItem, setDraggedItem] = useState<DraggableItem|undefined>(undefined)
 
-    const handleDragStart = (event:DragStartEvent) => {
-        const id = event.active.data.current?.id
-        if (id) {
-            const dataItem:Song|undefined = data?.songs?.content.find(it => it.id === id) 
-            if (dataItem) {
-            setDraggedItem({ type:'song', id: dataItem.id, name: dataItem.number + '. ' + dataItem.name, thumbnail: dataItem.album.thumbnail!  })
-            }
+
+    const totalBlocks = 100;
+    const blocksPerRow = 7;
+
+     const wrapperRef = useRef<HTMLDivElement|null>(null)
+     const [visibleRows, setVisibleRows] = useState<Set<number>>(new Set()) 
+
+    const rowRefs = useRef<RefObject<HTMLDivElement|null>[]>(
+        Array.from({length: totalBlocks}, () => createRef<HTMLDivElement>())
+    ) 
+
+    const scrollToRow = (rowIndex:number) => {
+        const el = rowRefs.current[rowIndex]?.current 
+        if (el) {
+            el.scrollIntoView({ behavior: 'smooth', block: 'start'})
         }
+    }
+    const min = visibleRows.size ? Math.min(...visibleRows) : 0 
+    const max = visibleRows.size ? Math.max(...visibleRows) : totalBlocks - 1
+
+    useEffect(() => {
+        if (!wrapperRef.current) {
+            return
+        }
+        const observer = new IntersectionObserver(
+            (entries) => {
+                const newVisibleRows = new Set<number>()
+                entries.forEach((entry) => {
+                    const row = parseInt(entry.target.getAttribute('data-row') || '-1', 10) 
+                    if (entry.isIntersecting) newVisibleRows.add(row)
+                })
+            setVisibleRows(newVisibleRows)
+            },
+            {
+                root: wrapperRef.current,
+                threshold: 0.5
+            }
+        )
+        rowRefs.current.forEach((ref) => {
+            if (ref.current) observer.observe(ref.current)
+        })
+    return () => {
+        observer.disconnect()
+    }
+
+    }, [])
+
+    const handleDragStart = (event:DragStartEvent) => {
+        // const id = event.active.data.current?.id
+        // if (id) {
+        //     const dataItem:Song|undefined = data?.songs?.content.find(it => it.id === id) 
+        //     if (dataItem) {
+        //     setDraggedItem({ type:'song', id: dataItem.id, name: dataItem.number + '. ' + dataItem.name, thumbnail: dataItem.album.thumbnail!  })
+        //     }
+        // }
     } 
 
         const handleDragEnd =(event:any) => {
-            const songId = event.active.data.current.id  
-            const dataItem:Song|undefined = data?.songs?.content.find(it => it.id === songId) 
-            if (dataItem) {
-                const albumId = dataItem.album.id 
-                const score = event.over.data.current.score  
-                onScoreUpdate(dataItem) 
-                // refetchQueries: [{ query: GetAlbumsSongsDocument, variables: { albumIds: [albumId] }  }]
-                }
+            // const songId = event.active.data.current.id  
+            // const dataItem:Song|undefined = data?.songs?.content.find(it => it.id === songId) 
+            // if (dataItem) {
+            //     const albumId = dataItem.album.id 
+            //     const score = event.over.data.current.score  
+            //     onScoreUpdate(dataItem) 
+            //     // refetchQueries: [{ query: GetAlbumsSongsDocument, variables: { albumIds: [albumId] }  }]
+            //     }
         }
 
     const groupByScore = (items:Song[]) => {
@@ -48,7 +95,8 @@ export const GridRater = ({onScoreUpdate}:Props) => {
         }
         return retv
     }    
-    const ratedItems = items.filter(it => !!(it.score)) 
+    // const ratedItems = items.filter(it => !!(it.score)) 
+    const ratedItems:Song[] = [] 
     const itemsByScore = groupByScore(ratedItems) 
 
 
@@ -61,11 +109,11 @@ export const GridRater = ({onScoreUpdate}:Props) => {
               </div>
             }
           </DragOverlay>
-    <div id="grid-rater">
+    <div ref={wrapperRef} id="grid-rater">
             {/* Rows with headers */}
-            {Array.from({ length: totalItems }, (_, i) => {
-                const row = Math.floor(i/itemsPerRow) 
-                const isFirstRow = i % itemsPerRow === 0 
+            {Array.from({ length: totalBlocks }, (_, i) => {
+                const row = Math.floor(i/blocksPerRow) 
+                const isFirstRow = i % blocksPerRow === 0 
                 return <GridRaterBlock rowRef={isFirstRow?rowRefs[row]: undefined} rowIndex={row} isFirstInRow={isFirstRow} key={`cell-${99 - i}`} 
                 number={99-i} 
                 items={itemsByScore[99-i]} 

@@ -7,11 +7,10 @@ import { MusicNavigatorAlbumRow } from "./album/MusicNavigatorAlbumRow"
 import { ArtistOrAlbum } from "../../../overview/OverviewManager"
 
 interface Props {
-    onCollapse: ()  => void
 }
 
 
-export const MusicNavigatorPanel = ({onCollapse}: Props) => {
+export const MusicNavigatorPanel = ({}: Props) => {
 
   const [mode, setMode] = useState<ArtistOrAlbum>('artist')
   const [$artistsPage, $artistsPageResult]  =  useGetArtistsPageLazyQuery({ variables: {params: {pageNumber: 0}}})
@@ -43,7 +42,6 @@ export const MusicNavigatorPanel = ({onCollapse}: Props) => {
 
   const [primaryTitle, setPrimaryTitle] = useState<string>('artists')
   const [secondaryTitleOne, setSecondaryTitleOne] = useState<string>('albums')
-  const [expandedIds, setExpandedIds] = useState<string[]>([]) 
 
 
   const arcVariant = {
@@ -74,20 +72,6 @@ export const MusicNavigatorPanel = ({onCollapse}: Props) => {
   } 
 
 
-  const onExpand = ({id}: { id: string}) => {
-    setExpandedIds(prev => {
-      if (prev.includes(id)) {
-        return prev.filter(expandedId => expandedId !== id)
-      } else {
-        return [...prev, id]
-      }
-    })
-  }
-
-  const handleCollapseClick = () => {
-    onCollapse()
-  } 
-
   const handleTitleSwitch = () => {
       setPrimaryTitle(secondaryTitleOne)
       setSecondaryTitleOne(primaryTitle)
@@ -108,13 +92,10 @@ export const MusicNavigatorPanel = ({onCollapse}: Props) => {
 
 
   return <>
-        <div  className="panel-header">
+        <div className="panel-header">
                   <motion.div custom="down" variants={arcVariant} initial="initial" animate="animate" exit="exit" className="panel-title">{primaryTitle}</motion.div> 
                   <div className="alternate-titles">
                     <motion.div custom="up" variants={arcVariant} initial="initial" animate="animate" exit="exit" onClick={() => handleTitleSwitch()} className="alternate-title">{secondaryTitleOne}</motion.div>
-                  </div>
-                  <div className="panel-control-icons">
-                    <button onClick={() => handleCollapseClick()} className="collapse-button">{'<'}</button>
                   </div>
         </div>
         <div className="panel-content">
