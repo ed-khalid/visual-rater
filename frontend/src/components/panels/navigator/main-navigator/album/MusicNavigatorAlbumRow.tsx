@@ -6,6 +6,7 @@ import { MusicNavigatorContext } from "../../../../../providers/MusicNavigationP
 import { useMusicState } from "../../../../../hooks/MusicStateHooks"
 import { FilterMode } from "../../../../../music/MusicFilterModels"
 import { SongsSubpanel } from "./SongsSubpanel"
+import { FiEye } from "react-icons/fi"
 
 interface Props {
     album: Album
@@ -29,8 +30,8 @@ export const MusicNavigatorAlbumRow = ({album}: Props) => {
     return <div>
     <div className="nav-panel-item album smaller">
         <div className="nav-item-controls smaller">
-            <VisualRaterButton onClick={() => dispatchToRater( { artistId: album.artist.id, albumId: album.id }, isOnRater(album)? FilterMode.REDUCTIVE : FilterMode.ADDITIVE )}>
-                {isOnRater(album) ? '-' : '+'}  
+            <VisualRaterButton additionalClassNames={ isOnRater(album) ? 'toggle pressed': '' } onClick={() => dispatchToRater( { artistId: album.artist.id, albumId: album.id }, isOnRater(album)? FilterMode.REDUCTIVE : FilterMode.ADDITIVE )}>
+                <FiEye/>  
                 </VisualRaterButton> 
             <VisualRaterButton animate={{rotate: isExpanded ? 90 : 0}} onClick={() => setIsExpanded(prev => !prev)}>{'>'}</VisualRaterButton>   
         </div> 

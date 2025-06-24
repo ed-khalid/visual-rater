@@ -1,7 +1,5 @@
-# GRID: have its own (pageable) query 
 # Playlist Rater: work on drag/drop and how it updates songs   
 # Playlist Rater: add unrated
-# Grid Rater: revisit all 
 # ALBUM-OVERVIEW: edit names
 # Add Albums From Non Spotify Sources
 # NAVPANEL: rework UI to be cleaner 
@@ -14,6 +12,8 @@
 # NAVPANEL: scroll to album to which song blongs 
 # NAVPANEL (BUG): when updating a score (on block rater atleast) the raterfilters/navfilters reset to show all artist albums if you had them changed to anything else   
 # UPDATE SCORE: write tests (sometimes it doesn't work) 
+# GRID: have its own (pageable) query 
+# Grid Rater: revisit all 
 # ADD A BLURB column for album/artist/song 
 # SEARCH: auto navigate to album when it's added
 # DB: total album metadata is not updating

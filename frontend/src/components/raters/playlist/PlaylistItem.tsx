@@ -32,14 +32,12 @@ export const PlaylistItem = ({item, onScoreUpdate}: Props) => {
             <div className="playlist-item-image">
                 <img src={item.album.thumbnail || ''} alt='' />
             </div>
-            <div className="playlist-item-details">
-                <div className="playlist-item-name">{item.name}</div>
-                <div className="playlist-item-album">{item.album.name}</div>
-            </div>
+            <div className="playlist-item-name">{item.name}</div>
             <div className="playlist-item-artist-thumbnail">
                 <img src={item.artist.thumbnail || ''} alt='' />
             </div>
             <div className="playlist-item-artist">{item.artist.name}</div>
+            <div className="playlist-item-album">{item.album.name}</div>
         </li>
 
 }
