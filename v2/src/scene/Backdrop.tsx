@@ -1,11 +1,12 @@
 import { Grid } from '@react-three/drei'
 import { theme } from '../theme'
+import { AXIS_BOTTOM } from './world'
 
-/** Faint infinite grid facing the camera. */
-export const Backdrop = () =>
+/** A faint infinite floor grid just below the axis, fading into fog. */
+export const Backdrop = () => <>
+  <fog attach="fog" args={[theme.void, 14, 40]} />
   <Grid
-    rotation={[Math.PI / 2, 0, 0]}
-    position={[0, 0, -10]}
+    position={[0, AXIS_BOTTOM - 0.6, 0]}
     infiniteGrid
     cellSize={0.5}
     cellThickness={0.6}
@@ -13,6 +14,8 @@ export const Backdrop = () =>
     sectionSize={2.5}
     sectionThickness={1}
     sectionColor={theme.gridSection}
-    fadeDistance={60}
-    fadeStrength={1.5}
+    fadeDistance={34}
+    fadeStrength={1.6}
+    followCamera={false}
   />
+</>

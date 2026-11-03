@@ -1,17 +1,20 @@
 import { Hono } from 'hono'
 import type { SuggestionsResponse } from '../src/shared/suggestions'
-import type { createSpotify } from './spotify'
+import { NotFoundError, type createSpotify } from './spotify'
 
 type Deps = { spotify: ReturnType<typeof createSpotify> | null }
 
 /** Shortest query worth sending to a catalogue. */
 const MIN_QUERY = 2
 const MAX_QUERY = 100
+/** Spotify ids are 22 base-62 characters; anything else is rejected before it reaches Spotify. */
+const SPOTIFY_ID = /^[0-9A-Za-z]{22}$/
 
 /**
  * The API. Stateless: it only looks things up in outside catalogues. Boards and items stay in the browser.
  *   GET /api/health
  *   GET /api/suggestions/:typeId?q=…   (only MUSIC has a catalogue so far: Spotify artists and albums)
+ *   GET /api/music/albums/:id           an album with its tracklist
  */
 export const createApp = ({ spotify }: Deps) => {
   const app = new Hono()
@@ -28,6 +31,19 @@ export const createApp = ({ spotify }: Deps) => {
     } catch (e) {
       console.error(e)
       return c.json({ error: 'Spotify search failed' }, 502)
+    }
+  })
+
+  app.get('/api/music/albums/:id', async c => {
+    const id = c.req.param('id')
+    if (!SPOTIFY_ID.test(id)) return c.json({ error: 'Not a Spotify album id' }, 400)
+    if (!spotify) return c.json({ error: 'Spotify is not configured on the server' }, 503)
+    try {
+      return c.json(await spotify.getAlbum(id))
+    } catch (e) {
+      if (e instanceof NotFoundError) return c.json({ error: 'Album not found' }, 404)
+      console.error(e)
+      return c.json({ error: 'Spotify request failed' }, 502)
     }
   })
 

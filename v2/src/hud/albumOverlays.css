@@ -1,0 +1,196 @@
+/* Shared look with the ADD palette: dark glass, thin cyan line */
+.album-card,
+.album-popup {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 20;
+  visibility: hidden; /* until pinned to its album on the first frame */
+  font-family: var(--font);
+  color: var(--text);
+  background: rgb(6, 12, 20);
+  border: 1px solid rgba(92, 225, 255, 0.35);
+  border-radius: 4px;
+  box-shadow: 0 0 24px rgba(92, 225, 255, 0.12), inset 0 0 12px rgba(92, 225, 255, 0.05);
+  will-change: transform;
+}
+
+.album-card {
+  pointer-events: none;
+  padding: 10px 12px;
+  max-width: 260px;
+}
+
+.album-facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 4px 12px;
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+.album-facts dt { color: var(--text-dim); letter-spacing: 0.22em; font-size: 10px; line-height: 16px; }
+.album-facts dd { margin: 0; color: #e6f6ff; line-height: 16px; overflow-wrap: anywhere; }
+.album-facts dd.dim { color: var(--text-dim); letter-spacing: 0.22em; font-size: 10px; }
+
+.album-popup {
+  width: min(320px, calc(100vw - 24px));
+  max-height: min(70vh, 560px);
+  display: flex;
+  flex-direction: column;
+  padding: 14px 6px 8px 14px;
+}
+
+.album-popup-title {
+  padding-right: 34px;
+  margin-bottom: 10px;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  color: #e6f6ff;
+}
+
+.album-popup .album-facts { padding-right: 8px; }
+
+/* 44px touch target, small visible glyph */
+.album-popup-close {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 44px;
+  height: 44px;
+  font: inherit;
+  font-size: 18px;
+  line-height: 1;
+  color: var(--text-dim);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.album-popup-close:hover,
+.album-popup-close:focus-visible { color: #5ce1ff; outline: none; }
+
+.album-popup-divider { height: 1px; margin: 12px 8px 6px 0; background: rgba(92, 225, 255, 0.15); }
+
+.album-tracks {
+  /* takes the leftover height and scrolls, so the buttons below always stay in view */
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0;
+  padding: 0 8px 0 0;
+  list-style: none;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(92, 225, 255, 0.25) transparent;
+}
+
+.album-track {
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  align-items: baseline;
+  gap: 10px;
+  padding: 6px 0;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+}
+
+.album-disc {
+  grid-column: 1 / -1;
+  padding: 8px 0 2px;
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  color: #5ce1ff;
+}
+
+.album-track-no { color: var(--text-dim); font-size: 11px; }
+.album-track-name { color: #e6f6ff; overflow-wrap: anywhere; }
+.album-track-time { color: var(--text-dim); font-size: 11px; font-variant-numeric: tabular-nums; }
+
+.album-popup-hint { padding: 8px 0; font-size: 12px; color: var(--text-dim); letter-spacing: 0.06em; }
+
+/* ── Edit / remove ─────────────────────────────────────────── */
+
+.album-popup-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 10px 8px 2px 0;
+  border-top: 1px solid rgba(92, 225, 255, 0.15);
+  margin-top: 6px;
+}
+
+/* Quiet bordered text buttons, 36px tall (44px hit area via padding on touch screens) */
+.album-action {
+  min-height: 36px;
+  padding: 0 12px;
+  font: inherit;
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  color: var(--text-dim);
+  background: none;
+  border: 1px solid rgba(159, 179, 200, 0.35);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.album-action:hover:not(:disabled),
+.album-action:focus-visible { color: #e6f6ff; border-color: rgba(230, 246, 255, 0.6); outline: none; }
+.album-action:disabled { opacity: 0.4; cursor: default; }
+
+.album-action-primary { color: #5ce1ff; border-color: rgba(92, 225, 255, 0.55); }
+.album-action-primary:hover:not(:disabled) { color: #e6f6ff; border-color: #5ce1ff; }
+
+.album-action-danger { margin-right: auto; }
+.album-action-danger:hover,
+.album-action-danger.confirming { color: #ff8a8a; border-color: rgba(255, 120, 120, 0.6); }
+
+@media (pointer: coarse) { .album-action { min-height: 44px; } }
+
+.album-input {
+  min-width: 0;
+  font: inherit;
+  font-size: 16px; /* below 16px, iOS Safari zooms the page on focus */
+  letter-spacing: 0.04em;
+  color: #e6f6ff;
+  caret-color: #5ce1ff;
+  background: rgba(92, 225, 255, 0.04);
+  border: none;
+  border-bottom: 1px solid rgba(92, 225, 255, 0.35);
+  border-radius: 2px 2px 0 0;
+  padding: 3px 4px;
+  outline: none;
+}
+
+.album-input:focus { border-bottom-color: #5ce1ff; background: rgba(92, 225, 255, 0.08); }
+.album-input-title { width: calc(100% - 40px); margin-bottom: 10px; font-size: 16px; }
+.album-input-year { width: 5.5ch; padding: 1px 4px; font-size: 16px; }
+.album-input-track { width: 100%; padding: 2px 4px; }
+
+@media (pointer: fine) {
+  .album-input { font-size: 13px; }
+  .album-input-title { font-size: 14px; }
+  .album-input-year { font-size: 12px; }
+  .album-input-track { font-size: 12px; }
+}
+
+.album-popup-editing .album-track { align-items: center; padding: 3px 0; }
+
+.album-track-delete {
+  width: 28px;
+  height: 28px;
+  font: inherit;
+  font-size: 15px;
+  line-height: 1;
+  color: var(--text-dim);
+  background: none;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.album-track-delete:hover,
+.album-track-delete:focus-visible { color: #ff8a8a; background: rgba(255, 120, 120, 0.08); outline: none; }
+@media (pointer: coarse) { .album-track-delete { width: 40px; height: 40px; } }
+
+.album-popup-problem { padding: 8px 8px 0 0; font-size: 11px; letter-spacing: 0.04em; color: #ff8a8a; }

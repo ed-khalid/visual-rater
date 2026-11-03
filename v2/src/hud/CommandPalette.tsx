@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import type { Suggestion } from '../shared/suggestions'
 import { isOnActiveBoard, sourceStatusOnActiveBoard, useStore } from '../state/store'
 import './palette.css'
+import { loadAlbumDetails } from './albumDetails'
 import { useSuggestions } from './useSuggestions'
 
 export const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform)
@@ -54,8 +55,11 @@ export const CommandPalette = ({ open, onOpenChange }: Props) => {
   const addTyped = () => { if (addItem(name)) setQuery('') }
   // Albums wait in the staging tray; everything else goes straight onto the axis.
   const addSuggestion = (sg: Suggestion) => {
-    const added = addItem(sg.name, { image: sg.image, source: { provider: sg.provider, kind: sg.kind, id: sg.id } }, { stage: sg.kind === 'album' })
-    if (added) setQuery('')
+    const added = addItem(sg.name, { image: sg.image, artist: sg.artist, year: sg.year, source: { provider: sg.provider, kind: sg.kind, id: sg.id } }, { stage: sg.kind === 'album' })
+    if (!added) return
+    setQuery('')
+    // An album comes with its tracklist: fetch it now, so it's ready when the album is opened.
+    if (sg.kind === 'album') void loadAlbumDetails(added.id)
   }
 
   return <Command.Dialog open={open} onOpenChange={onOpenChange} label="Command palette" className="palette" overlayClassName="palette-overlay" shouldFilter={false} loop value={selected} onValueChange={setSelected}>

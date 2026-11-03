@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import type { Track } from '../shared/suggestions'
 
 /** A kind of thing being ranked: MUSIC, MOVIES, BOOKS, or anything the user names. */
 export type ItemType = {
@@ -19,7 +20,15 @@ export type Item = {
   image?: string
   colors?: string[]
   source?: ItemSource
+  /** Albums: who made it and when. */
+  artist?: string
+  year?: number
+  /** Albums: the tracklist, filled in from the catalogue after the album is added. */
+  tracks?: Track[]
 }
+
+/** Details that can be filled in on an item after it's added. */
+export type ItemDetails = Pick<Item, 'image' | 'artist' | 'year' | 'tracks'>
 
 /** A ranking medium for one item type. `axis` is how placements are laid out; `bands` are optional named regions drawn on it. */
 export type Board = {
@@ -80,7 +89,16 @@ type Actions = {
    * Returns the new item, or null if no board is open, the name is blank, or it's already on the board,
    * placed or staged (same catalogue entry, or for typed items the same name).
    */
-  addItem: (name: string, extra?: { image?: string, source?: ItemSource }, opts?: { stage?: boolean }) => Item | null
+  addItem: (name: string, extra?: Partial<ItemDetails> & { source?: ItemSource }, opts?: { stage?: boolean }) => Item | null
+  /** Fills in details on an existing item (e.g. an album's tracklist once it has loaded). Undefined fields are left alone. */
+  setItemDetails: (itemId: string, details: Partial<ItemDetails>) => void
+  /**
+   * User edits to an item: a new title, year (null clears it) or tracklist. Titles and track names are trimmed;
+   * blank ones are rejected (returns false, nothing changes). Tracks are renumbered 1, 2, 3… within each disc.
+   */
+  editItem: (itemId: string, edit: { name?: string, year?: number | null, tracks?: Track[] }) => boolean
+  /** Takes an item out of the open board's staging tray, and drops the item itself if nothing else uses it. */
+  removeStaged: (itemId: string) => void
 }
 
 const normalise = (name: string) => name.trim().replace(/\s+/g, ' ')
@@ -116,6 +134,12 @@ export const sourceStatusOnActiveBoard = (s: State, source: ItemSource): 'placed
 }
 
 export const isSourceOnActiveBoard = (s: State, source: ItemSource) => sourceStatusOnActiveBoard(s, source) !== false
+
+/** How an item's rating reads in the UI: UNRATED until it has a position on the axis, then 0–100. */
+export const ratingLabel = (s: State, itemId: string) => {
+  const placed = s.placements.find(p => p.boardId === s.activeBoardId && p.itemId === itemId)
+  return placed ? String(Math.round(placed.position * 100)) : 'UNRATED'
+}
 
 export const findType = (s: State, name: string) => {
   const wanted = normalise(name).toUpperCase()
@@ -155,6 +179,52 @@ export const useStore = create<State & Actions>()(persist((set, get) => ({
   },
 
   closeBoard: () => set({ activeBoardId: null }),
+
+  setItemDetails: (itemId, details) => {
+    const s = get()
+    const item = s.items[itemId]
+    if (!item) return
+    const defined = Object.fromEntries(Object.entries(details).filter(([, v]) => v !== undefined))
+    set({ items: { ...s.items, [itemId]: { ...item, ...defined } } })
+  },
+
+  editItem: (itemId, edit) => {
+    const s = get()
+    const item = s.items[itemId]
+    if (!item) return false
+    const next: Item = { ...item }
+    if (edit.name !== undefined) {
+      const name = normalise(edit.name)
+      if (!name) return false
+      next.name = name
+    }
+    if (edit.year !== undefined) {
+      if (edit.year === null) delete next.year
+      else if (!Number.isInteger(edit.year)) return false
+      else next.year = edit.year
+    }
+    if (edit.tracks !== undefined) {
+      const tracks = edit.tracks.map(t => ({ ...t, name: normalise(t.name) }))
+      if (tracks.some(t => !t.name)) return false
+      const perDisc = new Map<number, number>()
+      next.tracks = tracks.map(t => {
+        const number = (perDisc.get(t.disc) ?? 0) + 1
+        perDisc.set(t.disc, number)
+        return { ...t, number }
+      })
+    }
+    set({ items: { ...s.items, [itemId]: next } })
+    return true
+  },
+
+  removeStaged: (itemId) => {
+    const s = get()
+    const staged = s.staged.filter(st => !(st.itemId === itemId && st.boardId === s.activeBoardId))
+    const stillUsed = staged.some(st => st.itemId === itemId) || s.placements.some(p => p.itemId === itemId)
+    const items = { ...s.items }
+    if (!stillUsed) delete items[itemId]
+    set({ staged, items })
+  },
 
   addItem: (rawName, extra = {}, opts = {}) => {
     const name = normalise(rawName)

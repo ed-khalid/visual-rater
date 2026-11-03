@@ -14,6 +14,7 @@
 .hud-tr { top: 24px; right: 28px; }
 .hud-bl { bottom: 24px; left: 28px; }
 .hud-key { top: 48px; left: 28px; }
+.hud-key.hud-reset { left: auto; right: 28px; }
 
 .hud .dim { color: var(--text-dim); }
 

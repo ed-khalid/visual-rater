@@ -1,28 +1,48 @@
-/**
- * Lane order: on the axis first, then alternating right/left, moving outward.
- * Lane n sits at x = n * laneWidth.
- */
-const laneOrder = (i: number) => i === 0 ? 0 : (i % 2 === 1 ? (i + 1) / 2 : -i / 2)
+/** Directions a branch can point, around the trunk. */
+export const BRANCH_DIRECTIONS = 12
+/** Branches of items closer than this in height must point at least this many directions apart (2 of 12 = 60°). */
+export const MIN_DIRECTION_GAP = 2
+/** Branch length for the first ring, and how much longer each further ring is. */
+export const BRANCH_LENGTH = 1.25
+export const RING_GROWTH = 0.8
+
+const GOLDEN_ANGLE = Math.PI * (3 - Math.sqrt(5))
+const STEP = (2 * Math.PI) / BRANCH_DIRECTIONS
+
+export type Branch = { angle: number, length: number, ring: number }
+
+const directionGap = (a: number, b: number) => {
+  const d = Math.abs(a - b) % BRANCH_DIRECTIONS
+  return Math.min(d, BRANCH_DIRECTIONS - d)
+}
 
 /**
- * Assigns each node a horizontal lane so nodes closer than `minGap` vertically never overlap.
- * Nodes are taken bottom to top; each goes in the first lane (axis, then right, left, right…)
- * whose last node is at least `minGap` below it. Returns lanes in the input order.
+ * Gives each item a branch: the direction it grows out of the trunk, and its length.
+ *
+ * Items are taken in the order they were placed, and each one only looks at earlier items, so adding an item
+ * never moves the branches already on the tree. Each item prefers the next direction in a golden-angle spiral
+ * (so the tree fills in evenly all round); if that's too close to an earlier item near the same height
+ * (within `nearY`), it takes the nearest free direction, and if a whole ring is full there, the next ring out.
+ *
+ * @param ys heights, in placement order
  */
-export const assignLanes = (ys: number[], minGap: number): number[] => {
-  const order = ys.map((y, i) => ({ y, i })).sort((a, b) => a.y - b.y || a.i - b.i)
-  const lastYInLane = new Map<number, number>()
-  const lanes = new Array<number>(ys.length)
-  for (const { y, i } of order) {
-    for (let k = 0; ; k++) {
-      const lane = laneOrder(k)
-      const last = lastYInLane.get(lane)
-      if (last === undefined || y - last >= minGap) {
-        lanes[i] = lane
-        lastYInLane.set(lane, y)
-        break
+export const assignBranches = (ys: number[], nearY: number): Branch[] => {
+  const placed: { y: number, direction: number, ring: number }[] = []
+  return ys.map((y, i) => {
+    const neighbours = placed.filter(p => Math.abs(p.y - y) < nearY)
+    const preferred = Math.round((i * GOLDEN_ANGLE) / STEP) % BRANCH_DIRECTIONS
+    for (let ring = 0; ; ring++) {
+      const inRing = neighbours.filter(n => n.ring === ring)
+      // try the preferred direction, then step outwards from it: +1, -1, +2, -2 …
+      for (let k = 0; k < BRANCH_DIRECTIONS; k++) {
+        const offset = k === 0 ? 0 : (k % 2 ? (k + 1) / 2 : -k / 2)
+        const direction = (preferred + offset + BRANCH_DIRECTIONS) % BRANCH_DIRECTIONS
+        if (inRing.every(n => directionGap(n.direction, direction) >= MIN_DIRECTION_GAP)) {
+          placed.push({ y, direction, ring })
+          // outer rings are turned half a step so they don't hide behind inner branches
+          return { angle: direction * STEP + (ring % 2) * STEP / 2, length: BRANCH_LENGTH * (1 + ring * RING_GROWTH), ring }
+        }
       }
     }
-  }
-  return lanes
+  })
 }
