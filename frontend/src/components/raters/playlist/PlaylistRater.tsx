@@ -1,11 +1,12 @@
 import { DndContext, closestCenter, useSensor, useSensors, PointerSensor, DragOverlay } from "@dnd-kit/core"
-import { arrayMove, SortableContext, verticalListSortingStrategy }  from '@dnd-kit/sortable'
+import { SortableContext, verticalListSortingStrategy }  from '@dnd-kit/sortable'
 import { Song } from "../../../generated/graphql"
 import './PlaylistRater.css'
 import { PlaylistItem } from "./PlaylistItem"
 import { useEffect, useRef, useState } from "react"
 import { useMusicState } from "../../../hooks/MusicStateHooks"
 import { useGetSongsForPlaylistRater } from "../../../hooks/DataLoadingHooks"
+import { reorderAndRescore } from "../../../functions/playlistScoring"
 
 interface Props {
     onScoreUpdate: (updatedSong: Song) => void 
@@ -23,7 +24,9 @@ export const PlaylistRater = ({onScoreUpdate}: Props) => {
 
     useEffect(() => {
         if (!$songsPage.loading && $songsPage.data?.songs?.content) {
-          setItems($songsPage.data.songs.content)
+          // Apollo keeps the cached page in its original fetch order, so a saved score would
+          // otherwise snap the song back to where it was. Re-sort (stable) to match the scores.
+          setItems([...$songsPage.data.songs.content].sort((a, b) => (b.score ?? 0) - (a.score ?? 0)))
         }
 
     }, [$songsPage.loading, $songsPage.data?.songs.content])
@@ -37,7 +40,7 @@ export const PlaylistRater = ({onScoreUpdate}: Props) => {
                 $songsPage.fetchMore({
                     variables: { 
                         input: {
-                            ...musicState.playlistFilters,
+                            ...filters,
                             pageNumber: $songsPage.data.songs.pageNumber + 1
                         }
                     }
@@ -80,39 +83,11 @@ export const PlaylistRater = ({onScoreUpdate}: Props) => {
         if (over && active.id !== over.id) {
             const oldIndex = items.findIndex(it => it.id === active.id)
             const newIndex = items.findIndex(it => it.id === over.id)
-            const itemBefore = (newIndex == 0) ? null : items[newIndex-1]    
-            const itemAfter = (newIndex == items.length -1) ? null : items[newIndex]    
-            let newScore = event.active.data.current.score  
-            if (itemBefore && itemAfter) {
-                const diff = itemBefore.score! - itemAfter.score!  
-                if (diff === 0) {
-                    newScore = itemAfter.score! + 0.01
-                    itemBefore.score = itemBefore.score! + 0.02   
-                    onScoreUpdate(itemBefore)
-                    onScoreUpdate({...items[oldIndex], score: newScore})
-                } else if (diff < 1) {
-                    const increment = diff/2 
-                    newScore = itemAfter.score! + increment
-                    onScoreUpdate({...items[oldIndex], score: newScore})
-                } else if (diff < 2)  { 
-                    newScore = itemAfter.score! + 0.1
-                    onScoreUpdate({...items[oldIndex], score: newScore})
-                } else {
-                    newScore = Math.floor((itemBefore.score! + itemAfter.score!) / 2)
-                    onScoreUpdate({...items[oldIndex], score: newScore})
-                }  
-            } else if (itemBefore) {
-                newScore = itemBefore.score! - 0.01 
-                onScoreUpdate({...items[oldIndex], score: newScore})
-            } else if (itemAfter)  {
-                newScore = itemAfter.score! + 0.01 
-                onScoreUpdate({...items[oldIndex], score: newScore})
-            }
-            const songs = arrayMove<Song>(items, oldIndex, newIndex)
-            setItems(songs)
+            const { items: reordered, updates } = reorderAndRescore(items, oldIndex, newIndex)
+            setItems(reordered)
+            updates.forEach(onScoreUpdate)
         }
         setDraggedSong(null)
-
     }
     const handleDragCancel = (event:any) => {
         setDraggedSong(null)
