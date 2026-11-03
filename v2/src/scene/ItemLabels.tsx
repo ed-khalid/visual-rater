@@ -1,5 +1,5 @@
 import { useStore } from '../state/store'
-import { labelElements } from './labels'
+import { labelElements, scaleElements } from './labels'
 import './items.css'
 
 /**
@@ -19,6 +19,19 @@ export const ItemLabels = () => {
   ]
 
   return <div className="item-labels">
+    {activeBoardId && Array.from({ length: 11 }, (_, i) => i * 10).map(value =>
+      <div
+        key={`scale-${value}`}
+        className={`scale-label${value % 50 === 0 ? ' scale-label-major' : ''}`}
+        aria-hidden="true"
+        ref={el => {
+          if (el) scaleElements.set(value, el)
+          return () => { scaleElements.delete(value) }
+        }}
+      >
+        {value}
+      </div>
+    )}
     {labels.map(({ id, kind }) =>
       <div
         key={id}

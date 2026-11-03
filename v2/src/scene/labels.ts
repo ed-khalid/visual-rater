@@ -7,6 +7,9 @@ import { Vector3 } from 'three'
  */
 export const labelElements = new Map<string, HTMLElement>()
 
+/** Score scale labels on the trunk (0, 10, … 100), by value. Registered by ItemLabels, placed by Axis. */
+export const scaleElements = new Map<number, HTMLElement>()
+
 const v = new Vector3()
 
 /** Screen position (CSS px) of a world point. */

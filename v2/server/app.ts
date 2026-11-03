@@ -1,8 +1,14 @@
 import { Hono } from 'hono'
+import type { Persisted } from '../src/shared/model'
 import type { SuggestionsResponse } from '../src/shared/suggestions'
+import type { Changes } from '../src/shared/sync'
+import { changesSchema } from './schema'
 import { NotFoundError, type createSpotify } from './spotify'
 
-type Deps = { spotify: ReturnType<typeof createSpotify> | null }
+/** Where boards and items are saved (Postgres in production, a fake in tests). Null: saving is unavailable. */
+export type Store = { load: () => Promise<Persisted>, apply: (c: Changes) => Promise<void> }
+
+type Deps = { spotify: ReturnType<typeof createSpotify> | null, store?: Store | null }
 
 /** Shortest query worth sending to a catalogue. */
 const MIN_QUERY = 2
@@ -11,15 +17,41 @@ const MAX_QUERY = 100
 const SPOTIFY_ID = /^[0-9A-Za-z]{22}$/
 
 /**
- * The API. Stateless: it only looks things up in outside catalogues. Boards and items stay in the browser.
+ * The API: looks things up in outside catalogues, and saves boards and items to the database.
  *   GET /api/health
  *   GET /api/suggestions/:typeId?q=…   (only MUSIC has a catalogue so far: Spotify artists and albums)
  *   GET /api/music/albums/:id           an album with its tracklist
+ *   GET /api/state                      everything saved (types, boards, items, and what's on each board)
+ *   POST /api/sync                      a batch of upserts and deletes (shared/sync.ts `Changes`), one transaction
  */
-export const createApp = ({ spotify }: Deps) => {
+export const createApp = ({ spotify, store = null }: Deps) => {
   const app = new Hono()
 
-  app.get('/api/health', c => c.json({ ok: true, spotify: spotify !== null }))
+  app.get('/api/health', c => c.json({ ok: true, spotify: spotify !== null, database: store !== null }))
+
+  app.get('/api/state', async c => {
+    if (!store) return c.json({ error: 'The database is not configured on the server' }, 503)
+    try {
+      return c.json(await store.load())
+    } catch (e) {
+      console.error(e)
+      return c.json({ error: 'Could not read from the database' }, 503)
+    }
+  })
+
+  app.post('/api/sync', async c => {
+    if (!store) return c.json({ error: 'The database is not configured on the server' }, 503)
+    const body = await c.req.json().catch(() => undefined)
+    const parsed = changesSchema.safeParse(body)
+    if (!parsed.success) return c.json({ error: 'Invalid changes', issues: parsed.error.issues.slice(0, 10) }, 400)
+    try {
+      await store.apply(parsed.data as Changes)
+      return c.json({ ok: true })
+    } catch (e) {
+      console.error(e)
+      return c.json({ error: 'Could not save to the database' }, 503)
+    }
+  })
 
   app.get('/api/suggestions/:typeId', async c => {
     const q = (c.req.query('q') ?? '').trim().slice(0, MAX_QUERY)

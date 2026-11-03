@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test } from 'vitest'
 import { assignBranches, BRANCH_LENGTH, MAX_BRANCH_LENGTH, MIN_BRANCH_LENGTH, NEAR_POSITION } from './layout'
-import { initialState, migrateState, ratingLabel, sourceStatusOnActiveBoard, useStore } from './store'
+import { formatScore, initialState, migrateState, positionToScore, ratingLabel, scoreToPosition, sourceStatusOnActiveBoard, useStore } from './store'
 
 const s = () => useStore.getState()
 
@@ -326,5 +326,31 @@ describe('auto-align on the board', () => {
     const music = s().placements.filter(p => p.boardId === s().activeBoardId)
     expect(music.every(p => Math.abs(Math.abs(Math.sin(p.angle)) - 1) < 1e-9)).toBe(true) // all on the main plane
     expect(s().placements.filter(p => p.boardId !== s().activeBoardId)).toEqual(books)
+  })
+})
+
+describe('scoring', () => {
+  test('0 at the bottom of the trunk, 100 at the top, linear in between, clamped', () => {
+    expect(positionToScore(0)).toBe(0)
+    expect(positionToScore(1)).toBe(100)
+    expect(positionToScore(0.725)).toBeCloseTo(72.5)
+    expect(positionToScore(1.3)).toBe(100)
+    expect(positionToScore(-0.2)).toBe(0)
+    expect(scoreToPosition(72.5)).toBeCloseTo(0.725)
+    expect(scoreToPosition(positionToScore(0.3141))).toBeCloseTo(0.3141)
+  })
+
+  test('shown as whole numbers', () => {
+    expect(formatScore(72.4)).toBe('72')
+    expect(formatScore(72.5)).toBe('73')
+    expect(formatScore(100)).toBe('100')
+  })
+
+  test('a placed item reads its score; dragging changes it', () => {
+    s().openType('music')
+    const item = s().addItem('Radiohead')!
+    expect(ratingLabel(s(), item.id)).toBe('50')
+    s().movePlacement(item.id, { position: 0.873 })
+    expect(ratingLabel(s(), item.id)).toBe('87')
   })
 })

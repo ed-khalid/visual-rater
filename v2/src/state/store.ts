@@ -1,71 +1,12 @@
 import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
 import type { Track } from '../shared/suggestions'
 import { assignBranches, autoAlign, chooseBranch, clashes, directionNear, MAX_BRANCH_LENGTH, MIN_BRANCH_LENGTH, NEAR_POSITION, preferredDirection, ringLength } from './layout'
 
-/** A kind of thing being ranked: MUSIC, MOVIES, BOOKS, or anything the user names. */
-export type ItemType = {
-  id: string
-  name: string
-  builtIn: boolean
-}
-
-/** Where an item came from, when it was picked from an outside catalogue rather than typed. */
-export type ItemSource = { provider: 'spotify', kind: 'artist' | 'album' | 'track', id: string }
-
-/** Anything that can be ranked. `typeId` says what kind of thing it is. */
-export type Item = {
-  id: string
-  typeId: string
-  name: string
-  image?: string
-  colors?: string[]
-  source?: ItemSource
-  /** Albums: who made it and when. */
-  artist?: string
-  year?: number
-  /** Albums: the tracklist, filled in from the catalogue after the album is added. */
-  tracks?: Track[]
-  /** Tracks: the album item they came from. */
-  albumId?: string
-}
+import type { Board, Item, ItemSource, ItemType, Persisted, Placement } from '../shared/model'
+export type { Board, Item, ItemSource, ItemType, Persisted, Placement, Staged } from '../shared/model'
 
 /** Details that can be filled in on an item after it's added. */
 export type ItemDetails = Pick<Item, 'image' | 'artist' | 'year' | 'tracks'>
-
-/** A ranking medium for one item type. `axis` is how placements are laid out; `bands` are optional named regions drawn on it. */
-export type Board = {
-  id: string
-  typeId: string
-  name: string
-  axis: 'linear'
-  bands: { name: string, from: number, to: number }[]
-}
-
-/**
- * Where an item sits on a board. `position` is continuous, 0 (bottom) to 1 (top):
- * rank is the order of positions, and the gaps between them mean something.
- */
-export type Placement = {
-  boardId: string
-  itemId: string
-  position: number
-  placedAt: number
-  /**
-   * The item's branch on the 3D tree: direction around the trunk (radians), length (world units), and ring (for
-   * spacing). Chosen when the item is placed and stored, so moving one item never moves the others.
-   */
-  angle: number
-  length: number
-  ring: number
-}
-
-/** An item that's been added to a board but not given a position yet: it waits in the staging tray. */
-export type Staged = {
-  boardId: string
-  itemId: string
-  stagedAt: number
-}
 
 /** Where a newly added item lands until it's dragged. */
 export const NEW_ITEM_POSITION = 0.5
@@ -77,14 +18,7 @@ export const BUILT_IN_TYPES: ItemType[] = [
   { id: 'books', name: 'BOOKS', builtIn: true },
 ]
 
-export type State = {
-  types: Record<string, ItemType>
-  items: Record<string, Item>
-  boards: Record<string, Board>
-  placements: Placement[]
-  staged: Staged[]
-  /** Albums whose tracks have been added to the board: they float to the right of the tree. */
-  added: Staged[]
+export type State = Persisted & {
   /** null means no board is open: the type picker is showing. */
   activeBoardId: string | null
 }
@@ -170,10 +104,21 @@ export const sourceStatusOnActiveBoard = (s: State, source: ItemSource): 'placed
 
 export const isSourceOnActiveBoard = (s: State, source: ItemSource) => sourceStatusOnActiveBoard(s, source) !== false
 
-/** How an item's rating reads in the UI: UNRATED until it has a position on the axis, then 0–100. */
+/** The scoring scale: 0 at the bottom of the trunk, 100 at the top. */
+export const SCORE_MIN = 0
+export const SCORE_MAX = 100
+
+/** A placement's score (0–100, continuous) from its position on the trunk (0–1). */
+export const positionToScore = (position: number) => SCORE_MIN + Math.min(1, Math.max(0, position)) * (SCORE_MAX - SCORE_MIN)
+/** The position (0–1) for a score (0–100). */
+export const scoreToPosition = (score: number) => Math.min(1, Math.max(0, (score - SCORE_MIN) / (SCORE_MAX - SCORE_MIN)))
+/** A score as shown in the UI: a whole number. */
+export const formatScore = (score: number) => String(Math.round(score))
+
+/** How an item's rating reads in the UI: UNRATED until it has a position on the trunk, then its 0–100 score. */
 export const ratingLabel = (s: State, itemId: string) => {
   const placed = s.placements.find(p => p.boardId === s.activeBoardId && p.itemId === itemId)
-  return placed ? String(Math.round(placed.position * 100)) : 'UNRATED'
+  return placed ? formatScore(positionToScore(placed.position)) : 'UNRATED'
 }
 
 export const findType = (s: State, name: string) => {
@@ -181,7 +126,7 @@ export const findType = (s: State, name: string) => {
   return Object.values(s.types).find(t => t.name === wanted)
 }
 
-/** Upgrades saved state from an older version. */
+/** Upgrades state saved in localStorage by an older version (used when importing it into the database). */
 export const migrateState = (persisted: unknown, version: number): State => {
   // v1 had no item types and only ever held throwaway prototype data, so it's dropped.
   if (version < 2) return initialState()
@@ -213,7 +158,11 @@ const newPlacement = (placements: Placement[], boardId: string, itemId: string, 
   return { boardId, itemId, position, placedAt, ...branch }
 }
 
-export const useStore = create<State & Actions>()(persist((set, get) => ({
+/**
+ * The app's state. Saved to the database by state/remote.ts, which loads it on startup and sends every change to
+ * the API server; this store itself only holds it in memory.
+ */
+export const useStore = create<State & Actions>()((set, get) => ({
   ...initialState(),
 
   openType: (typeId) => {
@@ -364,9 +313,8 @@ export const useStore = create<State & Actions>()(persist((set, get) => ({
       : { items: { ...s.items, [item.id]: item }, placements: [...s.placements, newPlacement(s.placements, board.id, item.id, NEW_ITEM_POSITION, now)] })
     return item
   },
-}), {
-  name: 'visual-rater-v2',
-  version: 5,
-  migrate: migrateState,
-  partialize: ({ types, items, boards, placements, staged, added, activeBoardId }) => ({ types, items, boards, placements, staged, added, activeBoardId }),
 }))
+
+/** Key and version of the data v2 kept in localStorage before it had a database, for the one-time import. */
+export const LEGACY_STORAGE_KEY = 'visual-rater-v2'
+export const LEGACY_STORAGE_VERSION = 5

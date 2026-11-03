@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useView } from '../scene/view'
 import { useStore } from '../state/store'
-import { AlbumHoverCard, AlbumPopup, ItemTrash, StagedAdd } from './AlbumOverlays'
+import { AlbumPopup, DragScore, ItemHoverCard, ItemTrash, StagedAdd } from './AlbumOverlays'
 import { CommandPalette, shortcutLabel } from './CommandPalette'
 import { TypePicker } from './TypePicker'
 import './hud.css'
@@ -40,7 +40,7 @@ export const Hud = () => {
         </button>
       </>}
     </div>
-    {board && <><AlbumHoverCard /><AlbumPopup /><ItemTrash /><StagedAdd /></>}
+    {board && <><ItemHoverCard /><DragScore /><AlbumPopup /><ItemTrash /><StagedAdd /></>}
     {board && <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />}
   </>
 }

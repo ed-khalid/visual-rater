@@ -47,3 +47,6 @@ export const useView = create<View>()(set => ({
  * read by page overlays (hover card, popup) every frame, so they stay pinned while the view moves.
  */
 export const screenAnchors = new Map<string, { x: number, y: number, r: number, visible: boolean }>()
+
+/** The live score (0–100) of the fruit being dragged, written every frame while dragging; read by the drag readout. */
+export const liveScores = new Map<string, number>()

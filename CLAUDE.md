@@ -17,7 +17,7 @@ This is a monorepo built from three formerly separate repos. Each history was re
 
 v1 request flow: frontend → GraphQL (HTTP for queries and mutations, WebSocket for subscriptions) at `localhost:9000/graphql` → backend → Postgres, Spotify Web API, imageservice.
 
-v2 doesn't use any of that. It's local-first: boards and items live in the browser (localStorage). Its API server only holds the Spotify secret and looks things up; it has no database.
+v2 doesn't use any of that. Its own API server (`v2/server/`) holds the Spotify secret for lookups and saves boards and items to its own Postgres database, `visual_rater_v2`.
 
 ## Running locally
 
@@ -26,7 +26,9 @@ v2 doesn't use any of that. It's local-first: boards and items live in the brows
 3. **backend:** `cd backend && ./gradlew bootRun`. Set `VISUAL_RATER_DATABASE_PW` and `VISUAL_RATER_SPOTIFY_CLIENT_SECRET` in the environment.
 4. **frontend:** `cd frontend && npm install && npm start`. The backend URL is hardcoded in `src/setupApollo.ts`.
 
-v2 runs on its own: `cd v2 && npm install && npm run dev` starts the app (3001) and the API server (3002) together. The API needs `VISUAL_RATER_SPOTIFY_CLIENT_SECRET`, the same variable v1 uses; without it, music suggestions are off. `npm run dev:web` and `npm run dev:api` start them separately.
+v2 runs on its own: `cd v2 && npm install && npm run dev` starts the app (3001) and the API server (3002) together. `npm run dev:web` and `npm run dev:api` start them separately. The API needs:
+- **Postgres database `visual_rater_v2`**, owned by `visual_rater_app` (create it once: `sudo -u postgres createdb -O visual_rater_app visual_rater_v2`). The server connects with `VISUAL_RATER_DATABASE_PW`, the same variable v1 uses, or `V2_DATABASE_URL` to override. Without a database, the app shows CAN'T REACH THE SERVER.
+- `VISUAL_RATER_SPOTIFY_CLIENT_SECRET` (shared with v1); without it, music suggestions are off.
 
 ## Frontend
 
@@ -51,12 +53,13 @@ v2 runs on its own: `cd v2 && npm install && npm run dev` starts the app (3001) 
 
 - **Layout:** `src/scene/` is the 3D workspace (`Stage`, the axis "tree", fruit `Items`, floating `StagingArea`, `CoverSphere` shader). `src/hud/` holds the DOM overlays: corner HUD, type picker, ADD palette, album popup, hover card, trash icon. `src/state/` has the zustand store and pure layout logic. `src/shared/` has types shared with the server.
 - **Data model:** `ItemType` → `Board` (one per type) → `Item`. An item is *staged* (waiting in the tray on the left), *placed* (a `Placement` with a continuous `position` from 0 at the bottom to 1 at the top), or, for an album whose tracks have been put on the tree with its + icon, *added* (floating in the column on the right). Each of those tracks is its own placed item, with `albumId` pointing back to the album. Rank is the order of positions, and the gaps between them mean something.
-- **Scoring is not designed yet.** How a position maps to a displayed rating is an open decision. `ratingLabel` in `src/state/store.ts` (`position × 100`) is a placeholder. Raise the scale as a design question before building on it, and don't carry over v1's.
-- **Persistence:** the store is saved under the localStorage key `visual-rater-v2` with a version number. When the shape changes, bump `version` and extend `migrateState`; keep existing user data unless it's throwaway.
+- **Scoring:** scores run from 0 (bottom of the trunk) to 100 (top), calculated from the stored position with `positionToScore` in `src/state/store.ts`, and shown as whole numbers (`formatScore`). Staged items read UNRATED. The trunk has a 0–100 scale beside its ticks, and the score shows on hover and live while dragging. Anything beyond the linear 0–100 scale (tiers, bands, snapping) is still undecided, so raise it with the user before building it.
+- **Persistence:** Postgres. The schema is numbered SQL in `server/db/NNN.description.sql`, applied automatically at server startup and recorded in `schema_migrations`. Add new ones as the next number; never edit an applied one. Tables: `item_types`, `boards`, `items` (albums keep their tracklist as JSON), and `board_items`, one row per item on a board with `status` staged / added / placed, plus position and branch when placed.
+- **Saving:** the zustand store holds the state in memory and has all the logic. `src/state/remote.ts` loads everything from `GET /api/state` at startup; after each change it diffs against the last saved state (`src/shared/sync.ts`) and sends upserts and deletes to `POST /api/sync`, debounced and retried. The server validates every batch (`server/schema.ts`) and applies it in one transaction (`server/repo.ts`). Only the open board is kept in the browser (localStorage `visual-rater-v2.ui`). Data from before the database existed (localStorage `visual-rater-v2`) is imported once, into an empty database, through `migrateState`, and kept afterwards as `visual-rater-v2.imported-backup`. Entity types shared by the app and the server live in `src/shared/model.ts`.
 - **Layout rules:** each item hangs on its own horizontal branch of the axis. Each placement stores its branch (`angle`, `length`, `ring`); new items get one from `chooseBranch` that keeps them at least 60° from neighbours at a similar height. Fruit can be dragged up or down (changes `position`) and sideways (changes stem length). After any drag that changes a height, `autoAlign` re-lays out the board so as many items as possible sit on the main plane (left and right of the trunk, as seen from the starting view), adjusting stem lengths to stop fruit touching. Stems are capped at `ALIGN_MAX_LENGTH`; past that, an item swings to a plane 30°, then 60°, off the main one. The camera only orbits the vertical axis, so "up" always means "better".
-- **API (`server/`):** `GET /api/suggestions/:typeId?q=` (only `music`: Spotify artists and albums, merged by name match) and `GET /api/music/albums/:id` (album with full tracklist). Validate ids before calling Spotify.
+- **API (`server/`):** `GET /api/suggestions/:typeId?q=` (only `music`: Spotify artists and albums, merged by name match), `GET /api/music/albums/:id` (album with full tracklist), `GET /api/state` and `POST /api/sync` (saving). Validate ids and bodies before calling Spotify or the database.
 - **UI tenet:** minimalist. No forms or panels; everything is a gesture on the scene or goes through the ADD palette. Don't add hint text the user didn't ask for. Keep touch targets around 44px, and inputs at 16px or more so iOS doesn't zoom.
-- **Checks:** `npm run typecheck`, `npm test` (vitest; covers store, layout, server). Check visual changes in a browser on desktop and a phone-sized viewport.
+- **Checks:** `npm run typecheck`, `npm test` (vitest; covers store, layout, sync, server). The repository tests run against a real Postgres when `V2_TEST_DATABASE_URL` is set (e.g. to `visual_rater_v2`); they work inside a throwaway schema and drop it afterwards. To run an API against a throwaway schema, set `V2_DATABASE_SCHEMA`. Never point tests at the real tables: the one-time import only runs into an empty database. Check visual changes in a browser on desktop and a phone-sized viewport.
 - `v2/.npmrc` sets `legacy-peer-deps=true`. npm 11 crashes ("reading edgesOut") resolving vitest's optional peer dependencies; every real peer is an explicit dependency, so this is safe.
 
 ## Data model (v1)

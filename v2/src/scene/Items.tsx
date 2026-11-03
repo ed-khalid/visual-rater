@@ -3,11 +3,11 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Color, Group, MathUtils, Mesh, PerspectiveCamera, Vector3 } from 'three'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { MAX_BRANCH_LENGTH, MIN_BRANCH_LENGTH } from '../state/layout'
-import { Item, Placement, useStore } from '../state/store'
+import { Item, Placement, positionToScore, useStore } from '../state/store'
 import { theme } from '../theme'
 import { CoverSphere } from './CoverSphere'
 import { labelElements, placeSideLabel, toScreen } from './labels'
-import { screenAnchors, useView } from './view'
+import { liveScores, screenAnchors, useView } from './view'
 import { AXIS_HEIGHT, NODE_RADIUS, positionToY } from './world'
 
 /** How much lower than its fruit a branch leaves the trunk. 0: branches are horizontal, level with their fruit. */
@@ -133,6 +133,7 @@ const Fruit = ({ item, placement }: FruitProps) => {
       document.body.style.cursor = 'grabbing'
     }
     d.position = MathUtils.clamp(d.startPosition - (dy * d.unitsPerPx) / AXIS_HEIGHT, 0, 1)
+    liveScores.set(item.id, positionToScore(d.position))
     d.length = MathUtils.clamp(d.startLength + d.outward * dx * d.unitsPerPx, MIN_BRANCH_LENGTH, MAX_BRANCH_LENGTH)
   }
 
@@ -142,6 +143,7 @@ const Fruit = ({ item, placement }: FruitProps) => {
     ;(e.target as Element).releasePointerCapture?.(e.pointerId)
     drag.current = null
     if (controls) controls.enabled = true
+    liveScores.delete(item.id)
     if (d.moved) {
       movePlacement(item.id, { position: d.position, length: d.length })
       // A drag that changed the item's height re-aligns the whole tree; a stem-length-only drag is left as set.

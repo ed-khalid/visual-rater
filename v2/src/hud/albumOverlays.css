@@ -238,3 +238,27 @@
 @keyframes icon-fade-in { from { opacity: 0; } }
 @keyframes trash-armed { 50% { box-shadow: 0 0 18px rgba(255, 110, 110, 0.75); } }
 @keyframes add-busy { 50% { box-shadow: 0 0 18px rgba(92, 225, 255, 0.6); } }
+
+/* A score, wherever it's shown: bright signal colour */
+.album-facts dd.album-score { color: #5ce1ff; letter-spacing: 0.12em; }
+
+/* Live score above a fruit while it's dragged */
+.drag-score {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 22;
+  visibility: hidden;
+  pointer-events: none;
+  padding: 2px 8px;
+  font-family: var(--font);
+  font-size: 15px;
+  letter-spacing: 0.12em;
+  font-variant-numeric: tabular-nums;
+  color: #e6f6ff;
+  background: rgb(6, 12, 20);
+  border: 1px solid rgba(92, 225, 255, 0.55);
+  border-radius: 3px;
+  box-shadow: 0 0 12px rgba(92, 225, 255, 0.3);
+  will-change: transform;
+}

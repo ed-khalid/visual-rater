@@ -1,13 +1,17 @@
-import { useFrame } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
 import { useMemo, useRef } from 'react'
-import { Color, Group, MeshBasicMaterial } from 'three'
+import { Color, Group, MeshBasicMaterial, Vector3 } from 'three'
 import { theme } from '../theme'
+import { scaleElements, toScreen } from './labels'
 import { AXIS_HEIGHT, positionToY } from './world'
 
 const TICKS = 10
+/** Gap between the trunk and its score labels (CSS px): clear of the widest (major) tick rings. */
+const SCALE_OFFSET_PX = 30
 
 /**
- * The ranking medium: a glowing vertical rod with ring-shaped ticks, so it reads the same from every side.
+ * The ranking medium: a glowing vertical rod with ring-shaped ticks, so it reads the same from every side, and
+ * its score scale (0 at the bottom, 100 at the top) labelled beside the ticks.
  * Breathes slowly, and grows out from the centre when a board opens.
  */
 export const Axis = () => {
@@ -18,10 +22,22 @@ export const Axis = () => {
   // Values above 1 push the rod past the bloom threshold, so it glows.
   const hot = useMemo(() => new Color(theme.signal).multiplyScalar(2.2), [])
   const ticks = useMemo(() => Array.from({ length: TICKS + 1 }, (_, i) => i / TICKS), [])
+  const point = useMemo(() => new Vector3(), [])
+  const { camera, size } = useThree()
 
   useFrame(({ clock }) => {
     const t = Math.min(1, (performance.now() - mountedAt.current) / 700)
-    if (group.current) group.current.scale.y = Math.max(0.001, 1 - Math.pow(1 - t, 3))
+    const grow = Math.max(0.001, 1 - Math.pow(1 - t, 3))
+    if (group.current) group.current.scale.y = grow
+    // Score labels (0 … 100) beside each tick, just left of the trunk on screen, whichever way the board is turned.
+    for (const tick of ticks) {
+      const el = scaleElements.get(Math.round(tick * 100))
+      if (!el) continue
+      point.set(0, positionToY(tick) * grow, 0)
+      const p = toScreen(point, camera, size)
+      el.style.transform = `translate(${Math.round(p.x - SCALE_OFFSET_PX)}px, ${Math.round(p.y)}px) translate(-100%, -50%)`
+      el.style.opacity = p.inFront ? String(t) : '0'
+    }
     if (line.current) line.current.color.copy(hot).multiplyScalar(0.85 + 0.15 * Math.sin(clock.elapsedTime * 0.8))
   })
 

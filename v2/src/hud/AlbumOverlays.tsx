@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Track } from '../shared/suggestions'
 import { useShallow } from 'zustand/react/shallow'
-import { screenAnchors, useView } from '../scene/view'
-import { ratingLabel, useStore } from '../state/store'
+import { liveScores, screenAnchors, useView } from '../scene/view'
+import { formatScore, ratingLabel, useStore } from '../state/store'
 import { formatDuration, loadAlbumDetails, useAlbumLoads } from './albumDetails'
 import './albumOverlays.css'
 
@@ -50,21 +50,57 @@ const usePinned = (id: string | null, ref: React.RefObject<HTMLElement | null>, 
   }, [id, ref, align])
 }
 
-/** Hover card for albums: artist, album, year, rating. Hidden while that album's popup is open (it shows the same). */
-export const AlbumHoverCard = () => {
+/**
+ * Hover card for anything on the board, with its score (0–100, or UNRATED while staged). Albums show artist, album
+ * and year; tracks show track, artist and album; anything else just its name. Hidden while that item's popup is
+ * open (the popup shows the same) and while dragging (the drag readout shows the score).
+ */
+export const ItemHoverCard = () => {
   const hoveredId = useView(v => v.hoveredId)
   const openId = useView(v => v.openId)
+  const draggingId = useView(v => v.draggingId)
   const item = useStore(s => hoveredId ? s.items[hoveredId] : undefined)
+  const albumName = useStore(s => item?.albumId ? s.items[item.albumId]?.name : undefined)
   const rating = useStore(s => hoveredId ? ratingLabel(s, hoveredId) : '')
   const ref = useRef<HTMLDivElement>(null)
-  const isAlbum = item?.source?.kind === 'album' || item?.tracks !== undefined
-  const id = item && isAlbum && hoveredId !== openId ? hoveredId : null
+  const id = item && hoveredId !== openId && !draggingId ? hoveredId : null
   usePinned(id, ref, 'centre')
   if (!item || !id) return null
 
+  const isAlbum = item.source?.kind === 'album' || item.tracks !== undefined
+  const isTrack = item.albumId !== undefined || item.source?.kind === 'track'
   return <div ref={ref} className="album-card" role="tooltip">
-    <AlbumFacts artist={item.artist} album={item.name} year={item.year} rating={rating} />
+    {isAlbum
+      ? <AlbumFacts artist={item.artist} album={item.name} year={item.year} rating={rating} />
+      : <dl className="album-facts">
+          <dt>{isTrack ? 'TRACK' : 'NAME'}</dt><dd>{item.name}</dd>
+          {isTrack && <><dt>ARTIST</dt><dd>{item.artist ?? '—'}</dd><dt>ALBUM</dt><dd>{albumName ?? '—'}</dd></>}
+          <dt>SCORE</dt><dd className={rating === 'UNRATED' ? 'dim' : 'album-score'}>{rating}</dd>
+        </dl>}
   </div>
+}
+
+/** Live score above the fruit being dragged, so you can see exactly where it will land. */
+export const DragScore = () => {
+  const draggingId = useView(v => v.draggingId)
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    if (!draggingId) return
+    let frame = 0
+    const tick = () => {
+      const el = ref.current, a = screenAnchors.get(draggingId), score = liveScores.get(draggingId)
+      if (el && a && score !== undefined) {
+        el.textContent = formatScore(score)
+        el.style.transform = `translate(${Math.round(a.x)}px, ${Math.round(a.y - a.r - 10)}px) translate(-50%, -100%)`
+        el.style.visibility = 'visible'
+      }
+      frame = requestAnimationFrame(tick)
+    }
+    tick()
+    return () => cancelAnimationFrame(frame)
+  }, [draggingId])
+  if (!draggingId) return null
+  return <div ref={ref} className="drag-score" aria-live="polite" />
 }
 
 const AlbumFacts = ({ artist, album, year, rating }: { artist?: string, album: string, year?: number, rating: string }) =>
@@ -72,7 +108,7 @@ const AlbumFacts = ({ artist, album, year, rating }: { artist?: string, album: s
     <dt>ARTIST</dt><dd>{artist ?? '—'}</dd>
     <dt>ALBUM</dt><dd>{album}</dd>
     <dt>YEAR</dt><dd>{year ?? '—'}</dd>
-    <dt>RATING</dt><dd className={rating === 'UNRATED' ? 'dim' : ''}>{rating}</dd>
+    <dt>RATING</dt><dd className={rating === 'UNRATED' ? 'dim' : 'album-score'}>{rating}</dd>
   </dl>
 
 type Draft = { name: string, year: string, tracks: Track[] }

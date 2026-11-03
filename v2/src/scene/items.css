@@ -40,3 +40,20 @@
 @media (max-width: 600px) {
   .item-label-below { max-width: 84px; font-size: 9px; letter-spacing: 0.1em; }
 }
+
+/* Score scale beside the trunk: tiny and dim, so it reads as a ruler, not content */
+.scale-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  font-family: var(--font);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  opacity: 0;
+  user-select: none;
+  font-variant-numeric: tabular-nums;
+  will-change: transform;
+}
+
+.scale-label-major { color: var(--text); }
