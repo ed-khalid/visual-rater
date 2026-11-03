@@ -14,6 +14,9 @@ type View = {
   /** An item tapped or clicked on the tree: shows its trash icon on touch screens, which have no hover. */
   selectedId: string | null
   toggleSelected: (id: string) => void
+  /** The fruit being dragged, if any: its action icons hide until it's dropped. */
+  draggingId: string | null
+  setDragging: (id: string | null) => void
   /** True while the open popup is in edit mode: a stray click on empty space shouldn't throw edits away. */
   editing: boolean
   setEditing: (editing: boolean) => void
@@ -31,6 +34,8 @@ export const useView = create<View>()(set => ({
   openId: null,
   toggleOpen: id => set(s => s.editing ? s : ({ openId: s.openId === id ? null : id })),
   close: () => set({ openId: null, editing: false, selectedId: null }),
+  draggingId: null,
+  setDragging: id => set({ draggingId: id }),
   selectedId: null,
   toggleSelected: id => set(s => ({ selectedId: s.selectedId === id ? null : id })),
   editing: false,

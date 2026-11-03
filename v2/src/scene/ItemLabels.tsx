@@ -9,12 +9,13 @@ import './items.css'
 export const ItemLabels = () => {
   const placements = useStore(s => s.placements)
   const staged = useStore(s => s.staged)
+  const added = useStore(s => s.added)
   const items = useStore(s => s.items)
   const activeBoardId = useStore(s => s.activeBoardId)
 
   const labels = [
     ...placements.filter(p => p.boardId === activeBoardId && items[p.itemId]).map(p => ({ id: p.itemId, kind: 'side' })),
-    ...staged.filter(p => p.boardId === activeBoardId && items[p.itemId]).map(p => ({ id: p.itemId, kind: 'below' })),
+    ...[...staged, ...added].filter(p => p.boardId === activeBoardId && items[p.itemId]).map(p => ({ id: p.itemId, kind: 'below' })),
   ]
 
   return <div className="item-labels">

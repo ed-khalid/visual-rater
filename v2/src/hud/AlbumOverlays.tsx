@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { Track } from '../shared/suggestions'
+import { useShallow } from 'zustand/react/shallow'
 import { screenAnchors, useView } from '../scene/view'
 import { ratingLabel, useStore } from '../state/store'
 import { formatDuration, loadAlbumDetails, useAlbumLoads } from './albumDetails'
@@ -190,77 +191,91 @@ export const AlbumPopup = () => {
 
 /** How long the trash icon waits for its confirming second click. */
 const CONFIRM_MS = 3000
-/** Grace period after the pointer leaves the sphere, so it can travel onto the icon. */
+/** Grace period after the pointer leaves the sphere, so it can travel onto an icon. */
 const HIDE_DELAY_MS = 350
-/** Fade-out time; keep in step with `.staged-trash.leaving` in albumOverlays.css (fade-in is 0.6s, CSS only). */
+/** Fade-out time; keep in step with `.sphere-icon.leaving` in albumOverlays.css (fade-in is 0.6s, CSS only). */
 const FADE_OUT_MS = 200
-const TRASH_PX = 26
-/** Clear gap between the sphere's outline and the icon. */
-const TRASH_GAP_PX = 4
+const ICON_PX = 26
+/** Clear gap between the sphere's outline and an icon. */
+const ICON_GAP_PX = 4
 
 /**
- * Trash icon just outside the top-left of an item's sphere, for anything on the board: staged albums and fruit on
- * the tree. Shown while the sphere is hovered, or while it's open/selected (how touch screens, with no hover, get
- * to it); hidden while editing. First click arms it (red), a second click within a few seconds removes the item.
+ * Shared behaviour for the small action icons on a sphere's corners: follow the item that's hovered (or open, or
+ * selected on touch screens), stay while the pointer travels onto the icon, fade out when it's left, hide while
+ * editing, and stay pinned just outside the sphere's top-left or top-right every frame.
  */
-export const ItemTrash = () => {
+const useSphereIcon = (eligibleIds: string[], corner: 'top-left' | 'top-right') => {
   const hoveredId = useView(v => v.hoveredId)
   const openId = useView(v => v.openId)
-  const editing = useView(v => v.editing)
-  const close = useView(v => v.close)
   const selectedId = useView(v => v.selectedId)
-  const onBoardIds = useStore(s => [...s.staged, ...s.placements].filter(x => x.boardId === s.activeBoardId).map(x => x.itemId).join(','))
-  const removeFromBoard = useStore(s => s.removeFromBoard)
+  const editing = useView(v => v.editing)
+  const draggingId = useView(v => v.draggingId)
   const [target, setTarget] = useState<string | null>(null)
   /** Fading out: still on screen, on its way to being removed. */
   const [leaving, setLeaving] = useState(false)
   const [overIcon, setOverIcon] = useState(false)
-  const [armed, setArmed] = useState(false)
   const ref = useRef<HTMLButtonElement>(null)
+  const key = eligibleIds.join(',')
+  const hidden = editing || draggingId !== null
+  const wanted = hidden ? null : [hoveredId, openId, selectedId].find(id => id && eligibleIds.includes(id)) ?? null
 
-  const wanted = editing ? null : [hoveredId, openId, selectedId].find(id => id && onBoardIds.split(',').includes(id)) ?? null
-
-  // Follow the hovered/open sphere; when it goes, wait a moment (the pointer may be on its way to the icon).
-  // Follow the hovered/open sphere. When it goes: wait a moment (the pointer may be on its way to the icon),
-  // fade out, then unmount.
   useEffect(() => {
     if (wanted) {
       setLeaving(false)
-      if (wanted !== target) { setTarget(wanted); setArmed(false) }
+      if (wanted !== target) setTarget(wanted)
       return
     }
     if (!target) { setLeaving(false); return }
-    // Entering edit mode hides it straight away; otherwise give the pointer a moment to reach the icon.
-    const delay = editing ? 0 : HIDE_DELAY_MS
-    if (overIcon && !editing) { setLeaving(false); return }
+    // Editing or dragging hides it straight away; otherwise give the pointer a moment to reach the icon.
+    const delay = hidden ? 0 : HIDE_DELAY_MS
+    if (overIcon && !hidden && key.split(',').includes(target)) { setLeaving(false); return }
     const fade = setTimeout(() => setLeaving(true), delay)
-    const gone = setTimeout(() => { setTarget(null); setArmed(false); setLeaving(false) }, delay + FADE_OUT_MS)
+    const gone = setTimeout(() => { setTarget(null); setLeaving(false); setOverIcon(false) }, delay + FADE_OUT_MS)
     return () => { clearTimeout(fade); clearTimeout(gone) }
-  }, [wanted, overIcon, target, editing])
+  }, [wanted, overIcon, target, hidden, key])
 
-  useEffect(() => {
-    if (!armed) return
-    const timer = setTimeout(() => setArmed(false), CONFIRM_MS)
-    return () => clearTimeout(timer)
-  }, [armed])
-
-  // Pin just outside the sphere's top-left (45° up-left, clear of its outline), every frame.
+  // Pin just outside the sphere's corner (45° up, clear of its outline), every frame.
   useEffect(() => {
     if (!target) return
     let frame = 0
     const tick = () => {
       const el = ref.current, a = screenAnchors.get(target)
       if (el && a) {
-        const edge = (a.r + TRASH_GAP_PX + TRASH_PX / 2) * Math.SQRT1_2
-        el.style.transform = `translate(${Math.round(a.x - edge - TRASH_PX / 2)}px, ${Math.round(a.y - edge - TRASH_PX / 2)}px)`
+        const d = (a.r + ICON_GAP_PX + ICON_PX / 2) * Math.SQRT1_2
+        const x = corner === 'top-left' ? a.x - d : a.x + d
+        el.style.transform = `translate(${Math.round(x - ICON_PX / 2)}px, ${Math.round(a.y - d - ICON_PX / 2)}px)`
         el.style.visibility = a.visible ? 'visible' : 'hidden'
       }
       frame = requestAnimationFrame(tick)
     }
     tick()
     return () => cancelAnimationFrame(frame)
-  }, [target])
+  }, [target, corner])
 
+  const hide = () => { setTarget(null); setLeaving(false); setOverIcon(false) }
+  const pointer = { onPointerEnter: () => setOverIcon(true), onPointerLeave: () => setOverIcon(false) }
+  return { target, leaving, ref, pointer, hide }
+}
+
+/**
+ * Trash icon just outside the top-left of an item's sphere, for anything on the board: staged and added albums,
+ * and fruit on the tree. First click arms it (red), a second click within a few seconds removes the item.
+ */
+export const ItemTrash = () => {
+  const close = useView(v => v.close)
+  const onBoardIds = useStore(useShallow(s => [...s.staged, ...s.added, ...s.placements].filter(x => x.boardId === s.activeBoardId).map(x => x.itemId)))
+  const removeFromBoard = useStore(s => s.removeFromBoard)
+  const icon = useSphereIcon(onBoardIds, 'top-left')
+  const [armed, setArmed] = useState(false)
+
+  useEffect(() => { setArmed(false) }, [icon.target])
+  useEffect(() => {
+    if (!armed) return
+    const timer = setTimeout(() => setArmed(false), CONFIRM_MS)
+    return () => clearTimeout(timer)
+  }, [armed])
+
+  const target = icon.target
   if (!target) return null
   const onClick = () => {
     if (!armed) return setArmed(true)
@@ -268,15 +283,14 @@ export const ItemTrash = () => {
     if (v.openId === target || v.selectedId === target) close()
     if (v.hoveredId === target) v.setHovered(null)
     removeFromBoard(target)
-    setTarget(null); setArmed(false); setOverIcon(false)
+    icon.hide(); setArmed(false)
   }
 
   return <button
-    ref={ref}
-    className={`staged-trash${armed ? ' armed' : ''}${leaving ? ' leaving' : ''}`}
+    ref={icon.ref}
+    className={`sphere-icon sphere-icon-trash${armed ? ' armed' : ''}${icon.leaving ? ' leaving' : ''}`}
     onClick={onClick}
-    onPointerEnter={() => setOverIcon(true)}
-    onPointerLeave={() => setOverIcon(false)}
+    {...icon.pointer}
     aria-label={armed ? 'Click again to remove' : 'Remove'}
     title={armed ? 'Click again to remove' : 'Remove'}
   >
@@ -285,6 +299,52 @@ export const ItemTrash = () => {
       <path d="M6 4V2.5h4V4" />
       <path d="M3.8 4l.7 9.5h7l.7-9.5" />
       <path d="M6.6 6.5v4.5M9.4 6.5v4.5" />
+    </svg>
+  </button>
+}
+
+/**
+ * Plus icon just outside the top-right of a staged album's sphere: one click adds all its tracks to the tree and
+ * sends the album to the column on the right. Loads the tracklist first if it isn't there yet.
+ */
+export const StagedAdd = () => {
+  const stagedIds = useStore(useShallow(s => s.staged.filter(x => x.boardId === s.activeBoardId).map(x => x.itemId)))
+  const addAlbumTracks = useStore(s => s.addAlbumTracks)
+  const icon = useSphereIcon(stagedIds, 'top-right')
+  const [busy, setBusy] = useState(false)
+  const [failed, setFailed] = useState(false)
+
+  useEffect(() => { setFailed(false) }, [icon.target])
+
+  const target = icon.target
+  if (!target) return null
+  const onClick = async () => {
+    if (busy) return
+    const item = useStore.getState().items[target]
+    if (item && !item.tracks) {
+      setBusy(true)
+      await loadAlbumDetails(target)
+      setBusy(false)
+      if (!useStore.getState().items[target]?.tracks) return setFailed(true)
+    }
+    const v = useView.getState()
+    if (v.openId === target) v.close()
+    if (v.hoveredId === target) v.setHovered(null)
+    addAlbumTracks(target)
+    icon.hide()
+  }
+
+  const label = failed ? 'Couldn\'t load the tracklist, try again' : busy ? 'Loading tracklist…' : 'Add tracks to the tree'
+  return <button
+    ref={icon.ref}
+    className={`sphere-icon sphere-icon-add${busy ? ' busy' : ''}${failed ? ' failed' : ''}${icon.leaving ? ' leaving' : ''}`}
+    onClick={onClick}
+    {...icon.pointer}
+    aria-label={label}
+    title={label}
+  >
+    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true">
+      <path d="M8 2.5v11M2.5 8h11" />
     </svg>
   </button>
 }

@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, test } from 'vitest'
+import { assignBranches, BRANCH_LENGTH, MAX_BRANCH_LENGTH, MIN_BRANCH_LENGTH, NEAR_POSITION } from './layout'
 import { initialState, migrateState, ratingLabel, sourceStatusOnActiveBoard, useStore } from './store'
 
 const s = () => useStore.getState()
@@ -97,11 +98,19 @@ describe('addItem', () => {
 describe('persistence migration', () => {
   const migrate = migrateState
 
-  test('v2 data keeps everything and gains an empty tray', () => {
-    const { staged: _, ...v2 } = { ...initialState(), placements: [{ boardId: 'b', itemId: 'i', position: 0.5, placedAt: 1 }] }
+  test('v2 data keeps everything and gains an empty tray and added column', () => {
+    const { staged: _, added: __, ...v2 } = { ...initialState(), placements: [{ boardId: 'b', itemId: 'i', position: 0.5, placedAt: 1 }] }
     const out = migrate(v2, 2)
     expect(out.placements).toHaveLength(1)
     expect(out.staged).toEqual([])
+    expect(out.added).toEqual([])
+  })
+
+  test('v3 data keeps its tray and gains an empty added column', () => {
+    const { added: _, ...v3 } = { ...initialState(), staged: [{ boardId: 'b', itemId: 'i', stagedAt: 1 }] }
+    const out = migrate(v3, 3)
+    expect(out.staged).toHaveLength(1)
+    expect(out.added).toEqual([])
   })
 
   test('v1 data is dropped', () => {
@@ -189,5 +198,133 @@ describe('editing and removing staged albums', () => {
     expect(s().placements.map(p => p.itemId)).toEqual([other.id])
     expect(s().items[placed.id]).toBeUndefined()
     expect(s().items[other.id]).toBeDefined()
+  })
+})
+
+describe('adding an album\'s tracks to the board', () => {
+  const tracks = [1, 2, 3].map(n => ({ id: `t${n}`, name: `Track ${n}`, number: n, disc: 1, durationMs: 1000 }))
+  const stage = () => {
+    s().openType('music')
+    return s().addItem('Kid A', { image: 'kida.jpg', artist: 'Radiohead', year: 2000, tracks, source: { provider: 'spotify', kind: 'album', id: 'kida' } }, { stage: true })!.id
+  }
+
+  test('each track becomes an item on the tree with the album\'s cover, artist and year; the album moves to the added column', () => {
+    const albumId = stage()
+    expect(s().addAlbumTracks(albumId)).toBe(3)
+    const placed = s().placements.map(p => s().items[p.itemId])
+    expect(placed.map(i => i.name)).toEqual(['Track 1', 'Track 2', 'Track 3'])
+    expect(placed[0]).toMatchObject({ image: 'kida.jpg', artist: 'Radiohead', year: 2000, albumId, source: { provider: 'spotify', kind: 'track', id: 't1' } })
+    expect(s().staged).toHaveLength(0)
+    expect(s().added).toEqual([expect.objectContaining({ itemId: albumId })])
+    expect(sourceStatusOnActiveBoard(s(), { provider: 'spotify', kind: 'album', id: 'kida' })).toBe('placed')
+  })
+
+  test('tracks are placed in tracklist order and deleted tracks stay out', () => {
+    const albumId = stage()
+    s().editItem(albumId, { tracks: [tracks[0], tracks[2]] })
+    s().addAlbumTracks(albumId)
+    const ordered = [...s().placements].sort((a, b) => a.placedAt - b.placedAt).map(p => s().items[p.itemId].name)
+    expect(ordered).toEqual(['Track 1', 'Track 3'])
+  })
+
+  test('tracks already on the board are skipped', () => {
+    const albumId = stage()
+    s().addItem('Track 2', { source: { provider: 'spotify', kind: 'track', id: 't2' } })
+    expect(s().addAlbumTracks(albumId)).toBe(2)
+    expect(s().placements).toHaveLength(3)
+  })
+
+  test('only works for an album staged on this board; removing the album later keeps its tracks', () => {
+    const albumId = stage()
+    expect(s().addAlbumTracks('nope')).toBeNull()
+    s().addAlbumTracks(albumId)
+    expect(s().addAlbumTracks(albumId)).toBeNull() // already added
+    s().removeFromBoard(albumId)
+    expect(s().added).toHaveLength(0)
+    expect(s().items[albumId]).toBeUndefined()
+    expect(s().placements).toHaveLength(3)
+  })
+})
+
+describe('moving placed items', () => {
+  const gap = (a: number, b: number) => { const d = Math.abs(a - b) % (2 * Math.PI); return Math.min(d, 2 * Math.PI - d) * 180 / Math.PI }
+  const p = (name: string) => s().placements.find(x => s().items[x.itemId].name === name)!
+
+  test('new placements get a branch; items at the same height point at least 60° apart', () => {
+    s().openType('music')
+    for (const n of ['A', 'B', 'C']) s().addItem(n)
+    const [a, b, c] = ['A', 'B', 'C'].map(p)
+    expect(a.length).toBe(BRANCH_LENGTH)
+    expect(Math.min(gap(a.angle, b.angle), gap(a.angle, c.angle), gap(b.angle, c.angle))).toBeGreaterThanOrEqual(59.9)
+  })
+
+  test('moving one item up or down never moves another', () => {
+    s().openType('music')
+    for (const n of ['A', 'B', 'C', 'D']) s().addItem(n)
+    const before = s().placements.filter(x => s().items[x.itemId].name !== 'B').map(x => ({ ...x }))
+    s().movePlacement(p('B').itemId, { position: 0.9 })
+    expect(p('B').position).toBe(0.9)
+    expect(s().placements.filter(x => s().items[x.itemId].name !== 'B')).toEqual(before)
+  })
+
+  test('dropping onto a clashing spot turns only the moved branch, to the nearest free direction', () => {
+    s().openType('music')
+    s().addItem('A')
+    s().movePlacement(p('A').itemId, { position: 0.2 })
+    s().addItem('B') // at 0.5, far from A
+    const b = p('B'), aBefore = { ...p('A') }
+    // force B to point the same way as A, then drop it at A's height
+    useStore.setState({ placements: s().placements.map(x => x.itemId === b.itemId ? { ...x, angle: aBefore.angle, ring: aBefore.ring } : x) })
+    s().movePlacement(b.itemId, { position: 0.2 })
+    expect(p('A')).toEqual(aBefore)
+    expect(gap(p('B').angle, aBefore.angle)).toBeGreaterThanOrEqual(59.9)
+  })
+
+  test('branch length can be changed, clamped; position is clamped to the trunk', () => {
+    s().openType('music')
+    s().addItem('A')
+    const id = p('A').itemId
+    s().movePlacement(id, { length: 2.5 })
+    expect(p('A').length).toBe(2.5)
+    s().movePlacement(id, { length: 99 }); expect(p('A').length).toBe(MAX_BRANCH_LENGTH)
+    s().movePlacement(id, { length: 0 }); expect(p('A').length).toBe(MIN_BRANCH_LENGTH)
+    s().movePlacement(id, { position: 1.4 }); expect(p('A').position).toBe(1)
+    s().movePlacement(id, { position: -1 }); expect(p('A').position).toBe(0)
+  })
+
+  test('a custom length survives a re-branch caused by a move', () => {
+    s().openType('music')
+    s().addItem('A'); s().addItem('B')
+    const a = p('A'), b = p('B')
+    s().movePlacement(b.itemId, { length: 3 })
+    useStore.setState({ placements: s().placements.map(x => x.itemId === b.itemId ? { ...x, angle: a.angle, ring: a.ring } : x) })
+    s().movePlacement(b.itemId, { position: a.position + 0.01 })
+    expect(p('B').length).toBe(3)
+  })
+})
+
+describe('v4 → v5 migration', () => {
+  test('placements gain the branches they were being drawn with', () => {
+    const old = [0.5, 0.5, 0.52, 0.9].map((position, i) => ({ boardId: 'b', itemId: `i${i}`, position, placedAt: i }))
+    const out = migrateState({ ...initialState(), placements: old }, 4)
+    const expected = assignBranches(old.map(o => o.position), NEAR_POSITION)
+    expect(out.placements.map(p => ({ angle: p.angle, length: p.length, ring: p.ring }))).toEqual(expected)
+    expect(out.placements.map(p => p.itemId)).toEqual(['i0', 'i1', 'i2', 'i3'])
+  })
+})
+
+describe('auto-align on the board', () => {
+  test('aligns only the open board, keeps every height, and keeps other boards as they were', () => {
+    s().openType('books'); s().addItem('Dune')
+    const books = s().placements.map(p => ({ ...p }))
+    s().openType('music')
+    for (const n of ['A', 'B', 'C']) s().addItem(n)
+    s().movePlacement(s().placements.find(p => s().items[p.itemId].name === 'C')!.itemId, { position: 0.8 })
+    const heights = s().placements.map(p => p.position)
+    s().autoAlignBoard()
+    expect(s().placements.map(p => p.position)).toEqual(heights)
+    const music = s().placements.filter(p => p.boardId === s().activeBoardId)
+    expect(music.every(p => Math.abs(Math.abs(Math.sin(p.angle)) - 1) < 1e-9)).toBe(true) // all on the main plane
+    expect(s().placements.filter(p => p.boardId !== s().activeBoardId)).toEqual(books)
   })
 })

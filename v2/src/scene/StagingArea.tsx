@@ -32,14 +32,17 @@ const seeded = (id: string, salt: number) => {
  * its place and spins slowly on its own axis.
  *
  * They float off to the left of where the camera starts, as far out as the screen allows at that point.
+ * Albums whose tracks have been added to the tree float in a matching column to the right.
  * Hover one for its details; click it for its tracklist. While hovered or open it stops spinning and turns its
  * cover towards you, so it's readable.
  */
 export const StagingArea = () => {
   const staged = useStore(s => s.staged)
+  const added = useStore(s => s.added)
   const items = useStore(s => s.items)
   const activeBoardId = useStore(s => s.activeBoardId)
-  const here = staged.filter(st => st.boardId === activeBoardId && items[st.itemId])
+  const left = staged.filter(st => st.boardId === activeBoardId && items[st.itemId])
+  const right = added.filter(st => st.boardId === activeBoardId && items[st.itemId])
   const { camera, size } = useThree()
 
   // Visible half-width at the trunk from the starting viewpoint; float about 70% of the way out to the left.
@@ -49,14 +52,19 @@ export const StagingArea = () => {
     return -Math.min(6, halfWidth * 0.7)
   }, [camera, size.width, size.height])
 
-  const spacing = Math.min(SPACING, (TOP - BOTTOM) / Math.max(1, here.length - 1))
-  const top = Math.min(TOP, (spacing * (here.length - 1)) / 2 + 0.6)
+  // One column each side; the same component draws both, so an album glides across when it moves sides.
+  const column = (list: typeof left, side: -1 | 1) => {
+    const spacing = Math.min(SPACING, (TOP - BOTTOM) / Math.max(1, list.length - 1))
+    const top = Math.min(TOP, (spacing * (list.length - 1)) / 2 + 0.6)
+    return list.map((st, i) => {
+      const id = st.itemId
+      return { id, anchor: new Vector3(side * -x0 + (seeded(id, 1) - 0.5) * 0.7, top - i * spacing, (seeded(id, 2) - 0.5) * 1.4) }
+    })
+  }
 
-  return <>{here.map((st, i) => {
-    const id = st.itemId
-    const anchor = new Vector3(x0 + (seeded(id, 1) - 0.5) * 0.7, top - i * spacing, (seeded(id, 2) - 0.5) * 1.4)
-    return <Floating key={id} id={id} image={items[id].image} anchor={anchor} />
-  })}</>
+  return <>{[...column(left, -1), ...column(right, 1)].map(({ id, anchor }) =>
+    <Floating key={id} id={id} image={items[id].image} anchor={anchor} />
+  )}</>
 }
 
 const Floating = ({ id, image, anchor }: { id: string, image?: string, anchor: Vector3 }) => {

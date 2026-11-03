@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { Track } from '../shared/suggestions'
+import { assignBranches, autoAlign, chooseBranch, clashes, directionNear, MAX_BRANCH_LENGTH, MIN_BRANCH_LENGTH, NEAR_POSITION, preferredDirection, ringLength } from './layout'
 
 /** A kind of thing being ranked: MUSIC, MOVIES, BOOKS, or anything the user names. */
 export type ItemType = {
@@ -10,7 +11,7 @@ export type ItemType = {
 }
 
 /** Where an item came from, when it was picked from an outside catalogue rather than typed. */
-export type ItemSource = { provider: 'spotify', kind: 'artist' | 'album', id: string }
+export type ItemSource = { provider: 'spotify', kind: 'artist' | 'album' | 'track', id: string }
 
 /** Anything that can be ranked. `typeId` says what kind of thing it is. */
 export type Item = {
@@ -25,6 +26,8 @@ export type Item = {
   year?: number
   /** Albums: the tracklist, filled in from the catalogue after the album is added. */
   tracks?: Track[]
+  /** Tracks: the album item they came from. */
+  albumId?: string
 }
 
 /** Details that can be filled in on an item after it's added. */
@@ -48,6 +51,13 @@ export type Placement = {
   itemId: string
   position: number
   placedAt: number
+  /**
+   * The item's branch on the 3D tree: direction around the trunk (radians), length (world units), and ring (for
+   * spacing). Chosen when the item is placed and stored, so moving one item never moves the others.
+   */
+  angle: number
+  length: number
+  ring: number
 }
 
 /** An item that's been added to a board but not given a position yet: it waits in the staging tray. */
@@ -73,6 +83,8 @@ export type State = {
   boards: Record<string, Board>
   placements: Placement[]
   staged: Staged[]
+  /** Albums whose tracks have been added to the board: they float to the right of the tree. */
+  added: Staged[]
   /** null means no board is open: the type picker is showing. */
   activeBoardId: string | null
 }
@@ -98,7 +110,25 @@ type Actions = {
    */
   editItem: (itemId: string, edit: { name?: string, year?: number | null, tracks?: Track[] }) => boolean
   /**
-   * Takes an item off the open board, whether it's staged or placed on the axis, and drops the item itself if
+   * Adds a staged album's tracks to the open board (each becomes its own item on the tree, carrying the album's
+   * cover, artist and year), and moves the album from the tray to the added column. Tracks already on the board
+   * are skipped. Returns how many tracks were added, or null if the album isn't staged here.
+   */
+  addAlbumTracks: (albumId: string) => number | null
+  /**
+   * Moves a placed item on the open board: `position` up or down the trunk (0–1), `length` of its branch. Both are
+   * clamped. If the new height puts its branch too close to another one, only this item's branch turns, to the
+   * nearest free direction; nothing else moves.
+   */
+  movePlacement: (itemId: string, move: { position?: number, length?: number }) => void
+  /**
+   * Re-lays out every item on the open board's tree so as many as possible sit on the main plane (left and right
+   * of the trunk, facing the starting view), lengthening or shortening stems to keep fruit apart, and swinging
+   * items to other planes once a stem would pass the threshold (see layout.autoAlign). Heights never change.
+   */
+  autoAlignBoard: () => void
+  /**
+   * Takes an item off the open board, whether it's staged, an added album, or placed on the axis, and drops the item itself if
    * no other board uses it.
    */
   removeFromBoard: (itemId: string) => void
@@ -112,6 +142,7 @@ export const initialState = (): State => ({
   boards: {},
   placements: [],
   staged: [],
+  added: [],
   activeBoardId: null,
 })
 
@@ -119,6 +150,7 @@ export const initialState = (): State => ({
 const itemsOnActiveBoard = (s: State) => [
   ...s.placements.filter(p => p.boardId === s.activeBoardId),
   ...s.staged.filter(p => p.boardId === s.activeBoardId),
+  ...s.added.filter(p => p.boardId === s.activeBoardId),
 ].map(p => s.items[p.itemId]).filter(Boolean)
 
 const sameSource = (a: ItemSource | undefined, b: ItemSource) =>
@@ -133,7 +165,7 @@ export const isOnActiveBoard = (s: State, name: string) => {
 /** Whether this catalogue entry is on the open board: 'placed', 'staged', or false. */
 export const sourceStatusOnActiveBoard = (s: State, source: ItemSource): 'placed' | 'staged' | false => {
   const match = (p: { boardId: string, itemId: string }) => p.boardId === s.activeBoardId && sameSource(s.items[p.itemId]?.source, source)
-  return s.placements.some(match) ? 'placed' : s.staged.some(match) ? 'staged' : false
+  return s.placements.some(match) || s.added.some(match) ? 'placed' : s.staged.some(match) ? 'staged' : false
 }
 
 export const isSourceOnActiveBoard = (s: State, source: ItemSource) => sourceStatusOnActiveBoard(s, source) !== false
@@ -151,10 +183,34 @@ export const findType = (s: State, name: string) => {
 
 /** Upgrades saved state from an older version. */
 export const migrateState = (persisted: unknown, version: number): State => {
-  // v2 → v3: adds the staging tray; everything else is unchanged.
-  if (version === 2) return { ...(persisted as Omit<State, 'staged'>), staged: [] }
   // v1 had no item types and only ever held throwaway prototype data, so it's dropped.
-  return initialState()
+  if (version < 2) return initialState()
+  let s = persisted as State
+  // v2 → v3 added the staging tray.
+  if (version < 3) s = { ...s, staged: [] }
+  // v3 → v4 added the column of albums whose tracks are on the board.
+  if (version < 4) s = { ...s, added: [] }
+  // v4 → v5 stores each placement's branch; lay out each board exactly as it was being drawn.
+  if (version < 5) s = { ...s, placements: withStoredBranches(s.placements as Omit<Placement, 'angle' | 'length' | 'ring'>[]) }
+  return s
+}
+
+/** Branches for placements saved before branches were stored: per board, in placement order, as drawn then. */
+const withStoredBranches = (placements: Omit<Placement, 'angle' | 'length' | 'ring'>[]): Placement[] => {
+  const out = new Map<Omit<Placement, 'angle' | 'length' | 'ring'>, Placement>()
+  for (const boardId of new Set(placements.map(p => p.boardId))) {
+    const onBoard = placements.filter(p => p.boardId === boardId).sort((a, b) => a.placedAt - b.placedAt)
+    const branches = assignBranches(onBoard.map(p => p.position), NEAR_POSITION)
+    onBoard.forEach((p, i) => out.set(p, { ...p, ...branches[i] }))
+  }
+  return placements.map(p => out.get(p)!)
+}
+
+/** A new placement on a board, with a branch that doesn't clash with the ones already there. */
+const newPlacement = (placements: Placement[], boardId: string, itemId: string, position: number, placedAt: number): Placement => {
+  const onBoard = placements.filter(p => p.boardId === boardId)
+  const branch = chooseBranch(position, onBoard.map(p => ({ y: p.position, angle: p.angle, ring: p.ring })), NEAR_POSITION, preferredDirection(onBoard.length))
+  return { boardId, itemId, position, placedAt, ...branch }
 }
 
 export const useStore = create<State & Actions>()(persist((set, get) => ({
@@ -220,15 +276,78 @@ export const useStore = create<State & Actions>()(persist((set, get) => ({
     return true
   },
 
+  addAlbumTracks: (albumId) => {
+    const s = get()
+    const board = s.activeBoardId ? s.boards[s.activeBoardId] : null
+    const album = s.items[albumId]
+    if (!board || !album || !s.staged.some(st => st.itemId === albumId && st.boardId === board.id)) return null
+    const now = Date.now()
+    const items = { ...s.items }
+    const placements = [...s.placements]
+    let count = 0
+    for (const track of album.tracks ?? []) {
+      const source: ItemSource | undefined = album.source?.provider === 'spotify' ? { provider: 'spotify', kind: 'track', id: track.id } : undefined
+      const already = source
+        ? sourceStatusOnActiveBoard({ ...s, items, placements }, source)
+        : placements.some(p => p.boardId === board.id && items[p.itemId]?.albumId === albumId && items[p.itemId]?.name === track.name)
+      if (already) continue
+      const item: Item = { id: crypto.randomUUID(), typeId: board.typeId, name: track.name, image: album.image, artist: album.artist, year: album.year, albumId, source }
+      items[item.id] = item
+      // placedAt increases by track, so the tree lays them out in tracklist order
+      placements.push(newPlacement(placements, board.id, item.id, NEW_ITEM_POSITION, now + count))
+      count++
+    }
+    set({
+      items,
+      placements,
+      staged: s.staged.filter(st => !(st.itemId === albumId && st.boardId === board.id)),
+      added: [...s.added, { boardId: board.id, itemId: albumId, stagedAt: now }],
+    })
+    return count
+  },
+
+  movePlacement: (itemId, move) => {
+    const s = get()
+    const index = s.placements.findIndex(p => p.itemId === itemId && p.boardId === s.activeBoardId)
+    if (index < 0) return
+    const current = s.placements[index]
+    let next: Placement = { ...current }
+    if (move.position !== undefined) next.position = Math.min(1, Math.max(0, move.position))
+    if (move.position !== undefined) {
+      const others = s.placements.filter((p, i) => i !== index && p.boardId === current.boardId).map(p => ({ y: p.position, angle: p.angle, ring: p.ring }))
+      if (clashes(next.position, next, others, NEAR_POSITION)) {
+        const branch = chooseBranch(next.position, others, NEAR_POSITION, directionNear(current.angle, current.ring))
+        const custom = current.length !== ringLength(current.ring)
+        next = { ...next, angle: branch.angle, ring: branch.ring, length: custom ? current.length : branch.length }
+      }
+    }
+    if (move.length !== undefined) next.length = Math.min(MAX_BRANCH_LENGTH, Math.max(MIN_BRANCH_LENGTH, move.length))
+    const placements = [...s.placements]
+    placements[index] = next
+    set({ placements })
+  },
+
+  autoAlignBoard: () => {
+    const s = get()
+    const indexes = s.placements.flatMap((p, i) => p.boardId === s.activeBoardId ? [i] : [])
+    // Ties at the same height keep placement order, so the layout doesn't reshuffle for no reason.
+    indexes.sort((a, b) => s.placements[a].placedAt - s.placements[b].placedAt)
+    const branches = autoAlign(indexes.map(i => s.placements[i].position))
+    const placements = [...s.placements]
+    indexes.forEach((i, k) => { placements[i] = { ...placements[i], ...branches[k] } })
+    set({ placements })
+  },
+
   removeFromBoard: (itemId) => {
     const s = get()
     const here = (x: { boardId: string, itemId: string }) => x.itemId === itemId && x.boardId === s.activeBoardId
     const staged = s.staged.filter(x => !here(x))
+    const added = s.added.filter(x => !here(x))
     const placements = s.placements.filter(x => !here(x))
-    const stillUsed = staged.some(x => x.itemId === itemId) || placements.some(x => x.itemId === itemId)
+    const stillUsed = [...staged, ...added, ...placements].some(x => x.itemId === itemId)
     const items = { ...s.items }
     if (!stillUsed) delete items[itemId]
-    set({ staged, placements, items })
+    set({ staged, added, placements, items })
   },
 
   addItem: (rawName, extra = {}, opts = {}) => {
@@ -242,12 +361,12 @@ export const useStore = create<State & Actions>()(persist((set, get) => ({
     const now = Date.now()
     set(opts.stage
       ? { items: { ...s.items, [item.id]: item }, staged: [...s.staged, { boardId: board.id, itemId: item.id, stagedAt: now }] }
-      : { items: { ...s.items, [item.id]: item }, placements: [...s.placements, { boardId: board.id, itemId: item.id, position: NEW_ITEM_POSITION, placedAt: now }] })
+      : { items: { ...s.items, [item.id]: item }, placements: [...s.placements, newPlacement(s.placements, board.id, item.id, NEW_ITEM_POSITION, now)] })
     return item
   },
 }), {
   name: 'visual-rater-v2',
-  version: 3,
+  version: 5,
   migrate: migrateState,
-  partialize: ({ types, items, boards, placements, staged, activeBoardId }) => ({ types, items, boards, placements, staged, activeBoardId }),
+  partialize: ({ types, items, boards, placements, staged, added, activeBoardId }) => ({ types, items, boards, placements, staged, added, activeBoardId }),
 }))
