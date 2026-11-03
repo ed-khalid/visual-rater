@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef } from 'react'
 import { Group, MathUtils, PerspectiveCamera, Vector3 } from 'three'
 import { useStore } from '../state/store'
 import { CoverSphere } from './CoverSphere'
+import { useGlow } from './useGlow'
 import { labelElements, placeBelowLabel, toScreen } from './labels'
 import { screenAnchors, useView } from './view'
 import { cameraDistanceFor, NODE_RADIUS } from './world'
@@ -68,6 +69,7 @@ export const StagingArea = () => {
 }
 
 const Floating = ({ id, image, anchor }: { id: string, image?: string, anchor: Vector3 }) => {
+  const glow = useGlow(useStore(s => s.items[id]))
   const group = useRef<Group>(null)
   const pos = useRef(anchor.clone())
   const bornAt = useRef(performance.now())
@@ -128,6 +130,6 @@ const Floating = ({ id, image, anchor }: { id: string, image?: string, anchor: V
   })
 
   return <group ref={group} position={anchor.toArray()} onPointerOver={onOver} onPointerOut={onOut} onClick={onClick}>
-    <CoverSphere image={image} radius={RADIUS} rimStrength={1.6} />
+    <CoverSphere image={image} radius={RADIUS} rimStrength={1.6} glow={glow} />
   </group>
 }

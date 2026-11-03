@@ -6,6 +6,7 @@ import { MAX_BRANCH_LENGTH, MIN_BRANCH_LENGTH } from '../state/layout'
 import { Item, Placement, positionToScore, useStore } from '../state/store'
 import { theme } from '../theme'
 import { CoverSphere } from './CoverSphere'
+import { useGlow } from './useGlow'
 import { labelElements, placeSideLabel, toScreen } from './labels'
 import { liveScores, screenAnchors, useView } from './view'
 import { AXIS_HEIGHT, NODE_RADIUS, positionToY } from './world'
@@ -71,6 +72,7 @@ const Fruit = ({ item, placement }: FruitProps) => {
   const controls = useThree(s => s.controls) as OrbitControlsImpl | null
   const movePlacement = useStore(s => s.movePlacement)
   const autoAlignBoard = useStore(s => s.autoAlignBoard)
+  const coverGlow = useGlow(item)
 
   useEffect(() => () => {
     screenAnchors.delete(item.id)
@@ -225,7 +227,7 @@ const Fruit = ({ item, placement }: FruitProps) => {
       onPointerUp={endDrag}
       onPointerCancel={endDrag}
     >
-      <CoverSphere image={item.image} radius={NODE_RADIUS} />
+      <CoverSphere image={item.image} radius={NODE_RADIUS} glow={coverGlow} />
     </group>
   </group>
 }

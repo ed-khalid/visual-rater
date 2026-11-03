@@ -17,7 +17,7 @@ const state = (): Persisted => ({
   types: { music: { id: 'music', name: 'MUSIC', builtIn: true }, movies: { id: 'movies', name: 'MOVIES', builtIn: true }, books: { id: 'books', name: 'BOOKS', builtIn: true } },
   boards: { [id(1)]: { id: id(1), typeId: 'music', name: 'MUSIC', axis: 'linear', bands: [] } },
   items: {
-    [id(2)]: { id: id(2), typeId: 'music', name: 'Kid A', image: 'https://i.scdn.co/image/x', artist: 'Radiohead', year: 2000,
+    [id(2)]: { id: id(2), typeId: 'music', name: 'Kid A', image: 'https://i.scdn.co/image/x', colors: ['#e05252', '#dfe8f0'], artist: 'Radiohead', year: 2000,
       source: { provider: 'spotify', kind: 'album', id: 'abc' }, tracks: [{ id: 't1', name: 'Idioteque', number: 1, disc: 1, durationMs: 309000 }] },
     [id(3)]: { id: id(3), typeId: 'music', name: 'Idioteque', image: 'https://i.scdn.co/image/x', artist: 'Radiohead', year: 2000, albumId: id(2),
       source: { provider: 'spotify', kind: 'track', id: 't1' } },
@@ -42,7 +42,7 @@ describe.skipIf(!url)('Postgres repository (real database)', () => {
   })
 
   test('migrations apply once, and the built-in types are there', async () => {
-    expect(await migrate(sql)).toEqual(['001.initial.sql'])
+    expect(await migrate(sql)).toEqual(['001.initial.sql', '002.colors-are-raw-dominant.sql'])
     expect(await migrate(sql)).toEqual([])
     expect(Object.keys((await loadState(sql)).types).sort()).toEqual(['books', 'movies', 'music'])
   })

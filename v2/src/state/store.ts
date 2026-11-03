@@ -6,7 +6,7 @@ import type { Board, Item, ItemSource, ItemType, Persisted, Placement } from '..
 export type { Board, Item, ItemSource, ItemType, Persisted, Placement, Staged } from '../shared/model'
 
 /** Details that can be filled in on an item after it's added. */
-export type ItemDetails = Pick<Item, 'image' | 'artist' | 'year' | 'tracks'>
+export type ItemDetails = Pick<Item, 'image' | 'artist' | 'year' | 'tracks' | 'colors'>
 
 /** Where a newly added item lands until it's dragged. */
 export const NEW_ITEM_POSITION = 0.5

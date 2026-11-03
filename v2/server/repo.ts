@@ -62,7 +62,7 @@ export const applyChanges = async (sql: Sql, c: Changes): Promise<void> => {
     }
     for (const i of c.upsert.items) {
       await tx`insert into items (id, type_id, name, image, colors, source_provider, source_kind, source_id, artist, year, album_id, tracks)
-        values (${i.id}, ${i.typeId}, ${i.name}, ${i.image ?? null}, ${i.colors ? tx.array(i.colors) : null},
+        values (${i.id}, ${i.typeId}, ${i.name}, ${i.image ?? null}, ${i.colors ?? null},
                 ${i.source?.provider ?? null}, ${i.source?.kind ?? null}, ${i.source?.id ?? null},
                 ${i.artist ?? null}, ${i.year ?? null}, ${i.albumId ?? null}, ${i.tracks ? tx.json(i.tracks) : null})
         on conflict (id) do update set type_id = excluded.type_id, name = excluded.name, image = excluded.image, colors = excluded.colors,

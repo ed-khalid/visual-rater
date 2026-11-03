@@ -5,16 +5,23 @@ import { theme } from '../theme'
 const loader = new TextureLoader().setCrossOrigin('anonymous')
 const textures = new Map<string, Promise<Texture>>()
 
+/** A cover's texture, loaded once per URL and shared by every sphere (and the glow colour picker) that uses it. */
+export const loadCover = (url: string): Promise<Texture> => {
+  if (!textures.has(url)) {
+    const load = loader.loadAsync(url).then(t => { t.colorSpace = SRGBColorSpace; t.anisotropy = 4; return t })
+    load.catch(() => textures.delete(url))
+    textures.set(url, load)
+  }
+  return textures.get(url)!
+}
+
 /** Loads (once per URL) and returns a cover texture, or null until it's ready or if it fails. */
 const useCoverTexture = (url?: string) => {
   const [texture, setTexture] = useState<Texture | null>(null)
   useEffect(() => {
     if (!url) return setTexture(null)
     let cancelled = false
-    if (!textures.has(url)) {
-      textures.set(url, loader.loadAsync(url).then(t => { t.colorSpace = SRGBColorSpace; t.anisotropy = 4; return t }))
-    }
-    textures.get(url)!.then(t => { if (!cancelled) setTexture(t) }, () => { textures.delete(url) })
+    loadCover(url).then(t => { if (!cancelled) setTexture(t) }, () => {})
     return () => { cancelled = true }
   }, [url])
   return texture
@@ -77,9 +84,15 @@ const fragmentShader = /* glsl */`
   }
 `
 
-type Props = { image?: string, radius: number, rimStrength?: number }
+type Props = {
+  image?: string
+  radius: number
+  rimStrength?: number
+  /** Glow (rim) colour, e.g. the cover's dominant colour; the theme's signal colour when not given. */
+  glow?: string
+}
 
-export const CoverSphere = ({ image, radius, rimStrength = 2.2 }: Props) => {
+export const CoverSphere = ({ image, radius, rimStrength = 2.2, glow }: Props) => {
   const texture = useCoverTexture(image)
   const material = useMemo(() => new ShaderMaterial({
     vertexShader,
@@ -98,6 +111,7 @@ export const CoverSphere = ({ image, radius, rimStrength = 2.2 }: Props) => {
     material.uniforms.hasMap.value = texture ? 1 : 0
   }, [material, texture])
   useEffect(() => { material.uniforms.rimStrength.value = rimStrength }, [material, rimStrength])
+  useEffect(() => { (material.uniforms.rim.value as Color).set(glow ?? theme.signal) }, [material, glow])
   useEffect(() => () => material.dispose(), [material])
 
   return <mesh material={material}>
