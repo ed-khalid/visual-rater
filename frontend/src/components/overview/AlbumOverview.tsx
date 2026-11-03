@@ -1,5 +1,7 @@
 import { useState } from "react"
-import { Album, Artist, Song, useUpdateAlbumMutation, useUpdateSongMutation } from "../../generated/graphql"
+import { Album, Artist, Song, useUpdateAlbumMutation } from "../../generated/graphql"
+import { useSaveSongScore } from "../../hooks/SaveSongScoreHook"
+import { SaveErrorBanner } from "../common/SaveErrorBanner"
 import './AlbumOverview.css'
 import { mapAlbumScoreToUI, mapSongScoreToUI } from "../../functions/scoreUI"
 import { VisualRaterToggleButton } from "../common/VisRaterToggleButton"
@@ -16,7 +18,7 @@ interface Props {
 export const AlbumOverview = ({album, onClose, onLinkClick }:Props) => {
     const [isEditMode, setEditMode] = useState<boolean>(false)
 
-    const [updateSongMutation, ] = useUpdateSongMutation()
+    const { saveScore, error: saveError, dismissError } = useSaveSongScore()
 
     const [updateAlbumMutation, _ ] = useUpdateAlbumMutation() 
 
@@ -29,11 +31,7 @@ export const AlbumOverview = ({album, onClose, onLinkClick }:Props) => {
         onLinkClick({ id: album.artist.id, type: 'artist' })
     }
 
-    const onSongScoreUpdate = (song:Song) => {
-        updateSongMutation({ variables: {song:  { id: song.id , score: song.score} }, 
-            // refetchQueries: [{ query: GetAlbumsSongsDocument, variables: { albumIds: [album.id] }  }]
-        })
-    }
+    const onSongScoreUpdate = (song:Song) => saveScore(song)
 
 
 
@@ -96,6 +94,7 @@ export const AlbumOverview = ({album, onClose, onLinkClick }:Props) => {
                 </ul>
             </div>
             </div>
+    <SaveErrorBanner error={saveError} onDismiss={dismissError} />
     </div>
 
 }

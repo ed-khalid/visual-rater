@@ -1,10 +1,13 @@
 package com.hawazin.visualrater.services
 
+import com.hawazin.visualrater.configurations.InvalidInputException
+import com.hawazin.visualrater.configurations.NotFoundException
 import com.hawazin.visualrater.models.db.Album
 import com.hawazin.visualrater.models.db.Artist
 import com.hawazin.visualrater.models.db.Genre
 import com.hawazin.visualrater.models.db.Song
 import com.hawazin.visualrater.models.graphql.SongInput
+import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.nulls.shouldBeNull
 import io.kotest.matchers.nulls.shouldNotBeNull
@@ -27,6 +30,7 @@ class MusicCrudServiceUpdateSongSpec : StringSpec({
     fun serviceWith(existing: Song): Pair<MusicCrudService, SongRepository> {
         val genreRepo = mockk<GenreRepository> { every { findByName("NOT CHOSEN") } returns Optional.of(unrated) }
         val songRepo = mockk<SongRepository> {
+            every { findById(any()) } returns Optional.empty()
             every { findById(existing.id) } returns Optional.of(existing)
             every { save(any()) } answers { firstArg() }
         }
@@ -71,4 +75,30 @@ class MusicCrudServiceUpdateSongSpec : StringSpec({
         renamed.number shouldBe 1
     }
 
+    "an unknown song id is NOT_FOUND, not an internal error" {
+        val (service, _) = serviceWith(song(50.0))
+        shouldThrow<NotFoundException> {
+            service.updateSong(SongInput(id = UUID.randomUUID(), score = 60.0, name = null, number = null))
+        }
+    }
+
+    "scores above 100 or NaN are rejected and nothing is saved" {
+        listOf(100.01, 250.0, Double.NaN).forEach { bad ->
+            val existing = song(50.0)
+            val (service, songRepo) = serviceWith(existing)
+            shouldThrow<InvalidInputException> {
+                service.updateSong(SongInput(id = existing.id, score = bad, name = null, number = null))
+            }
+            existing.score shouldBe 50.0
+            verify(exactly = 0) { songRepo.save(any()) }
+        }
+    }
+
+    "100 and 0 are allowed" {
+        listOf(100.0, 0.0).forEach { edge ->
+            val existing = song(50.0)
+            val (service, _) = serviceWith(existing)
+            service.updateSong(SongInput(id = existing.id, score = edge, name = null, number = null)).score shouldBe edge
+        }
+    }
 })

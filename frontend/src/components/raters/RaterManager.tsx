@@ -1,6 +1,7 @@
 import './RaterManager.css'
 import { GridRater } from "./grid/GridRater"
-import { Song, useUpdateSongMutation } from "../../generated/graphql"
+import { useSaveSongScore } from "../../hooks/SaveSongScoreHook"
+import { SaveErrorBanner } from "../common/SaveErrorBanner"
 import { RaterStyle } from "../../models/RaterModels"
 import { PlaylistRater } from "./playlist/PlaylistRater"
 
@@ -11,11 +12,7 @@ interface Props {
 
 export const RaterManager = ({raterStyle}:Props) => {
 
-  const [updateSong]  = useUpdateSongMutation();
-
-  const onScoreUpdate = (updatedSong:Song) => {
-    updateSong({ variables: { song: { id: updatedSong.id, score: updatedSong.score  } }})
-  } 
+  const { saveScore: onScoreUpdate, error, dismissError } = useSaveSongScore()
 
     return <div id="raters">
                 {
@@ -23,6 +20,7 @@ export const RaterManager = ({raterStyle}:Props) => {
                 (raterStyle=== RaterStyle.PLAYLIST) ? <PlaylistRater onScoreUpdate={onScoreUpdate} /> :
                 <></>
                 }
+                <SaveErrorBanner error={error} onDismiss={dismissError} />
     </div>
     
 } 

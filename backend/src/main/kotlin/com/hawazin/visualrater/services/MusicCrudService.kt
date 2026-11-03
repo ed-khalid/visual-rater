@@ -1,5 +1,7 @@
 package com.hawazin.visualrater.services
 
+import com.hawazin.visualrater.configurations.InvalidInputException
+import com.hawazin.visualrater.configurations.NotFoundException
 import com.hawazin.visualrater.models.db.*
 import com.hawazin.visualrater.models.graphql.*
 import graphql.GraphqlErrorException
@@ -14,6 +16,9 @@ import org.springframework.stereotype.Service
 import java.time.OffsetDateTime
 import java.util.*
 
+
+/** Scores run 0–100 (see the tier thresholds in db/04.song_score_update.sql). */
+const val MAX_SCORE = 100.0
 
 @Service
 class MusicCrudService(private val genreRepo: GenreRepository, private val songRepo: SongRepository, private val albumRepo: AlbumRepository, private val artistRepo: ArtistRepository, private val artistPublisherService: PublisherService<Artist>, private val albumPublisherService: PublisherService<Album>) {
@@ -199,7 +204,10 @@ class MusicCrudService(private val genreRepo: GenreRepository, private val songR
     @Transactional
     fun updateSong(songInput: SongInput) : Song
     {
-        val song = songRepo.findById(songInput.id).get()
+        songInput.score?.let {
+            if (it.isNaN() || it > MAX_SCORE) throw InvalidInputException("score must be between 0 and $MAX_SCORE (or negative to clear it), got $it")
+        }
+        val song = songRepo.findById(songInput.id).orElseThrow { NotFoundException("song ${songInput.id} not found") }
         song.score = songInput.score ?: song.score
         // if input score is null, ignore update, if it's a negative number, nullify score
         if (song.score != null && song.score!! < 0) {
