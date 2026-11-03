@@ -92,3 +92,53 @@
 .palette-item[data-selected='true'] { background: rgba(92, 225, 255, 0.1); color: #e6f6ff; }
 
 .palette-verb { color: #5ce1ff; letter-spacing: 0.24em; font-size: 11px; line-height: 18px; }
+
+.palette-list { max-height: min(420px, 55vh); overflow-y: auto; }
+
+.palette-suggestion { align-items: center; }
+
+/* Albums get a faint tint so they read apart from artists at a glance; the highlight still wins */
+.palette-suggestion[data-kind='album'] { background: rgba(92, 225, 255, 0.04); }
+.palette-suggestion[data-kind='album'][data-selected='true'] { background: rgba(92, 225, 255, 0.12); }
+.palette-item[data-disabled='true'] { cursor: default; opacity: 0.45; }
+
+.palette-thumb {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  object-fit: cover;
+  border: 1px solid rgba(92, 225, 255, 0.25);
+  border-radius: 2px;
+  background: rgba(92, 225, 255, 0.05);
+}
+
+.palette-name {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.palette-detail {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.palette-item:not(.palette-suggestion) .palette-detail { align-self: center; margin-left: auto; }
+
+.palette-tag {
+  margin-left: auto;
+  font-size: 10px;
+  letter-spacing: 0.24em;
+  color: var(--text-dim);
+}
+
+/* Nothing typed yet: just the input, no empty list strip or divider under it */
+.palette:not(:has([cmdk-item], .palette-hint)) .palette-input { border-bottom-color: transparent; }
+.palette:not(:has([cmdk-item], .palette-hint)) .palette-list { padding: 0; }
