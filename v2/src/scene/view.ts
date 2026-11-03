@@ -11,6 +11,9 @@ type View = {
   openId: string | null
   toggleOpen: (id: string) => void
   close: () => void
+  /** An item tapped or clicked on the tree: shows its trash icon on touch screens, which have no hover. */
+  selectedId: string | null
+  toggleSelected: (id: string) => void
   /** True while the open popup is in edit mode: a stray click on empty space shouldn't throw edits away. */
   editing: boolean
   setEditing: (editing: boolean) => void
@@ -27,7 +30,9 @@ export const useView = create<View>()(set => ({
   setHovered: id => set({ hoveredId: id }),
   openId: null,
   toggleOpen: id => set(s => s.editing ? s : ({ openId: s.openId === id ? null : id })),
-  close: () => set({ openId: null, editing: false }),
+  close: () => set({ openId: null, editing: false, selectedId: null }),
+  selectedId: null,
+  toggleSelected: id => set(s => ({ selectedId: s.selectedId === id ? null : id })),
   editing: false,
   setEditing: editing => set({ editing }),
 }))

@@ -49,14 +49,15 @@ const usePinned = (id: string | null, ref: React.RefObject<HTMLElement | null>, 
   }, [id, ref, align])
 }
 
-/** Hover card: artist, album, year, rating. Hidden while that album's popup is open (the popup shows the same). */
+/** Hover card for albums: artist, album, year, rating. Hidden while that album's popup is open (it shows the same). */
 export const AlbumHoverCard = () => {
   const hoveredId = useView(v => v.hoveredId)
   const openId = useView(v => v.openId)
   const item = useStore(s => hoveredId ? s.items[hoveredId] : undefined)
   const rating = useStore(s => hoveredId ? ratingLabel(s, hoveredId) : '')
   const ref = useRef<HTMLDivElement>(null)
-  const id = item && hoveredId !== openId ? hoveredId : null
+  const isAlbum = item?.source?.kind === 'album' || item?.tracks !== undefined
+  const id = item && isAlbum && hoveredId !== openId ? hoveredId : null
   usePinned(id, ref, 'centre')
   if (!item || !id) return null
 
@@ -73,9 +74,6 @@ const AlbumFacts = ({ artist, album, year, rating }: { artist?: string, album: s
     <dt>RATING</dt><dd className={rating === 'UNRATED' ? 'dim' : ''}>{rating}</dd>
   </dl>
 
-/** How long the REMOVE button waits for its confirming second press. */
-const CONFIRM_MS = 3000
-
 type Draft = { name: string, year: string, tracks: Track[] }
 
 /** Whole years between 1000 and 2999, or blank for "no year". */
@@ -90,7 +88,7 @@ const parseYear = (text: string): number | null | 'invalid' => {
  * space. Loads the tracklist if it isn't there yet (e.g. albums staged before tracklists existed).
  *
  * EDIT turns the title, year and track names into fields and lets tracks be deleted; nothing changes until SAVE
- * (CANCEL or Esc throws the draft away). REMOVE takes the album out of staging after a confirming second press.
+ * (CANCEL or Esc throws the draft away). Removing an album is the trash icon on its sphere (ItemTrash).
  */
 export const AlbumPopup = () => {
   const openId = useView(v => v.openId)
@@ -98,24 +96,16 @@ export const AlbumPopup = () => {
   const setEditing = useView(v => v.setEditing)
   const item = useStore(s => openId ? s.items[openId] : undefined)
   const rating = useStore(s => openId ? ratingLabel(s, openId) : '')
-  const isStaged = useStore(s => !!openId && s.staged.some(st => st.itemId === openId && st.boardId === s.activeBoardId))
   const editItem = useStore(s => s.editItem)
-  const removeStaged = useStore(s => s.removeStaged)
   const status = useAlbumLoads(s => openId ? s.status[openId] : undefined)
   const ref = useRef<HTMLDivElement>(null)
   const [draft, setDraft] = useState<Draft | null>(null)
-  const [confirming, setConfirming] = useState(false)
   usePinned(item ? openId : null, ref, 'top')
 
   // Fresh state for each album opened.
-  useEffect(() => { setDraft(null); setConfirming(false) }, [openId])
+  useEffect(() => { setDraft(null) }, [openId])
   useEffect(() => { setEditing(draft !== null) }, [draft, setEditing])
   useEffect(() => { if (openId) void loadAlbumDetails(openId) }, [openId])
-  useEffect(() => {
-    if (!confirming) return
-    const timer = setTimeout(() => setConfirming(false), CONFIRM_MS)
-    return () => clearTimeout(timer)
-  }, [confirming])
   useEffect(() => {
     if (!openId) return
     // Esc leaves edit mode first, then closes.
@@ -130,7 +120,7 @@ export const AlbumPopup = () => {
   if (!item || !openId) return null
   const tracks = item.tracks ?? []
 
-  const startEdit = () => { setConfirming(false); setDraft({ name: item.name, year: item.year?.toString() ?? '', tracks }) }
+  const startEdit = () => { setDraft({ name: item.name, year: item.year?.toString() ?? '', tracks }) }
   const year = draft ? parseYear(draft.year) : null
   const problem = !draft ? null
     : !draft.name.trim() ? 'The title can\'t be empty.'
@@ -140,11 +130,6 @@ export const AlbumPopup = () => {
   const save = () => {
     if (!draft || problem || year === 'invalid') return
     if (editItem(openId, { name: draft.name, year, tracks: draft.tracks })) setDraft(null)
-  }
-  const remove = () => {
-    if (!confirming) return setConfirming(true)
-    removeStaged(openId)
-    close()
   }
 
   const shown = draft ? draft.tracks : tracks
@@ -198,10 +183,108 @@ export const AlbumPopup = () => {
             <button className="album-action" onClick={() => setDraft(null)}>CANCEL</button>
             <button className="album-action album-action-primary" onClick={save} disabled={!!problem}>SAVE</button>
           </>
-        : <>
-            {isStaged && <button className={`album-action album-action-danger${confirming ? ' confirming' : ''}`} onClick={remove}>{confirming ? 'CONFIRM REMOVE' : 'REMOVE'}</button>}
-            <button className="album-action" onClick={startEdit}>EDIT</button>
-          </>}
+        : <button className="album-action" onClick={startEdit}>EDIT</button>}
     </div>
   </div>
+}
+
+/** How long the trash icon waits for its confirming second click. */
+const CONFIRM_MS = 3000
+/** Grace period after the pointer leaves the sphere, so it can travel onto the icon. */
+const HIDE_DELAY_MS = 350
+/** Fade-out time; keep in step with `.staged-trash.leaving` in albumOverlays.css (fade-in is 0.6s, CSS only). */
+const FADE_OUT_MS = 200
+const TRASH_PX = 26
+/** Clear gap between the sphere's outline and the icon. */
+const TRASH_GAP_PX = 4
+
+/**
+ * Trash icon just outside the top-left of an item's sphere, for anything on the board: staged albums and fruit on
+ * the tree. Shown while the sphere is hovered, or while it's open/selected (how touch screens, with no hover, get
+ * to it); hidden while editing. First click arms it (red), a second click within a few seconds removes the item.
+ */
+export const ItemTrash = () => {
+  const hoveredId = useView(v => v.hoveredId)
+  const openId = useView(v => v.openId)
+  const editing = useView(v => v.editing)
+  const close = useView(v => v.close)
+  const selectedId = useView(v => v.selectedId)
+  const onBoardIds = useStore(s => [...s.staged, ...s.placements].filter(x => x.boardId === s.activeBoardId).map(x => x.itemId).join(','))
+  const removeFromBoard = useStore(s => s.removeFromBoard)
+  const [target, setTarget] = useState<string | null>(null)
+  /** Fading out: still on screen, on its way to being removed. */
+  const [leaving, setLeaving] = useState(false)
+  const [overIcon, setOverIcon] = useState(false)
+  const [armed, setArmed] = useState(false)
+  const ref = useRef<HTMLButtonElement>(null)
+
+  const wanted = editing ? null : [hoveredId, openId, selectedId].find(id => id && onBoardIds.split(',').includes(id)) ?? null
+
+  // Follow the hovered/open sphere; when it goes, wait a moment (the pointer may be on its way to the icon).
+  // Follow the hovered/open sphere. When it goes: wait a moment (the pointer may be on its way to the icon),
+  // fade out, then unmount.
+  useEffect(() => {
+    if (wanted) {
+      setLeaving(false)
+      if (wanted !== target) { setTarget(wanted); setArmed(false) }
+      return
+    }
+    if (!target) { setLeaving(false); return }
+    // Entering edit mode hides it straight away; otherwise give the pointer a moment to reach the icon.
+    const delay = editing ? 0 : HIDE_DELAY_MS
+    if (overIcon && !editing) { setLeaving(false); return }
+    const fade = setTimeout(() => setLeaving(true), delay)
+    const gone = setTimeout(() => { setTarget(null); setArmed(false); setLeaving(false) }, delay + FADE_OUT_MS)
+    return () => { clearTimeout(fade); clearTimeout(gone) }
+  }, [wanted, overIcon, target, editing])
+
+  useEffect(() => {
+    if (!armed) return
+    const timer = setTimeout(() => setArmed(false), CONFIRM_MS)
+    return () => clearTimeout(timer)
+  }, [armed])
+
+  // Pin just outside the sphere's top-left (45° up-left, clear of its outline), every frame.
+  useEffect(() => {
+    if (!target) return
+    let frame = 0
+    const tick = () => {
+      const el = ref.current, a = screenAnchors.get(target)
+      if (el && a) {
+        const edge = (a.r + TRASH_GAP_PX + TRASH_PX / 2) * Math.SQRT1_2
+        el.style.transform = `translate(${Math.round(a.x - edge - TRASH_PX / 2)}px, ${Math.round(a.y - edge - TRASH_PX / 2)}px)`
+        el.style.visibility = a.visible ? 'visible' : 'hidden'
+      }
+      frame = requestAnimationFrame(tick)
+    }
+    tick()
+    return () => cancelAnimationFrame(frame)
+  }, [target])
+
+  if (!target) return null
+  const onClick = () => {
+    if (!armed) return setArmed(true)
+    const v = useView.getState()
+    if (v.openId === target || v.selectedId === target) close()
+    if (v.hoveredId === target) v.setHovered(null)
+    removeFromBoard(target)
+    setTarget(null); setArmed(false); setOverIcon(false)
+  }
+
+  return <button
+    ref={ref}
+    className={`staged-trash${armed ? ' armed' : ''}${leaving ? ' leaving' : ''}`}
+    onClick={onClick}
+    onPointerEnter={() => setOverIcon(true)}
+    onPointerLeave={() => setOverIcon(false)}
+    aria-label={armed ? 'Click again to remove' : 'Remove'}
+    title={armed ? 'Click again to remove' : 'Remove'}
+  >
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+      <path d="M2.5 4h11" />
+      <path d="M6 4V2.5h4V4" />
+      <path d="M3.8 4l.7 9.5h7l.7-9.5" />
+      <path d="M6.6 6.5v4.5M9.4 6.5v4.5" />
+    </svg>
+  </button>
 }

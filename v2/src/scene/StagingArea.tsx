@@ -5,9 +5,10 @@ import { useStore } from '../state/store'
 import { CoverSphere } from './CoverSphere'
 import { labelElements, placeBelowLabel, toScreen } from './labels'
 import { screenAnchors, useView } from './view'
-import { cameraDistanceFor } from './world'
+import { cameraDistanceFor, NODE_RADIUS } from './world'
 
-const RADIUS = 0.42
+/** Same size as fruit on the tree, so an album doesn't change size when it's placed. */
+const RADIUS = NODE_RADIUS
 /** A press that moves further than this (px) is a drag (orbiting), not a click. */
 const CLICK_SLOP_PX = 6
 /** Vertical spacing between floating spheres, and the band of height they float in. */

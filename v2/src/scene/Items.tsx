@@ -1,11 +1,12 @@
-import { useFrame, useThree } from '@react-three/fiber'
-import { useMemo, useRef } from 'react'
-import { Color, Group, MathUtils, Mesh, Vector3 } from 'three'
+import { ThreeEvent, useFrame, useThree } from '@react-three/fiber'
+import { useEffect, useMemo, useRef } from 'react'
+import { Color, Group, MathUtils, Mesh, PerspectiveCamera, Vector3 } from 'three'
 import { assignBranches, Branch } from '../state/layout'
 import { Item, Placement, useStore } from '../state/store'
 import { theme } from '../theme'
 import { CoverSphere } from './CoverSphere'
 import { labelElements, placeSideLabel, toScreen } from './labels'
+import { screenAnchors, useView } from './view'
 import { NODE_RADIUS, positionToY } from './world'
 
 /** Items closer than this in height must branch off in clearly different directions. */
@@ -13,6 +14,8 @@ const NEAR_Y = NODE_RADIUS * 3
 /** A branch leaves the trunk this much lower than its fruit, so it rises out of the tree. */
 const BRANCH_RISE = 0.35
 const LABEL_OFFSET_PX = 12
+/** A press that moves further than this (px) is a drag (orbiting), not a tap. */
+const CLICK_SLOP_PX = 6
 
 /** Every item placed on the active board: a fruit on its own branch of the tree. */
 export const Items = () => {
@@ -53,6 +56,22 @@ const Fruit = ({ item, placement, y, branch }: FruitProps) => {
   const trunk = useMemo(() => new Vector3(), [])
   const { camera, size } = useThree()
 
+  useEffect(() => () => {
+    screenAnchors.delete(item.id)
+    const v = useView.getState()
+    if (v.hoveredId === item.id) { v.setHovered(null); document.body.style.cursor = '' }
+    if (v.selectedId === item.id) v.toggleSelected(item.id)
+  }, [item.id])
+
+  // Hover shows the trash icon; a tap selects the fruit, which is how touch screens (no hover) get to it.
+  const onOver = (e: ThreeEvent<PointerEvent>) => { e.stopPropagation(); useView.getState().setHovered(item.id); document.body.style.cursor = 'pointer' }
+  const onOut = () => { if (useView.getState().hoveredId === item.id) useView.getState().setHovered(null); document.body.style.cursor = '' }
+  const onClick = (e: ThreeEvent<MouseEvent>) => {
+    if (e.delta > CLICK_SLOP_PX) return
+    e.stopPropagation()
+    useView.getState().toggleSelected(item.id)
+  }
+
   useFrame((_, dt) => {
     const g = group.current, f = fruit.current, s = stem.current
     if (!g || !f || !s) return
@@ -79,6 +98,9 @@ const Fruit = ({ item, placement, y, branch }: FruitProps) => {
       world.set(Math.sin(st.angle) * st.length, st.y, Math.cos(st.angle) * st.length)
       trunk.set(0, st.y, 0)
       const p = toScreen(world, camera, size)
+      const dist = camera.position.distanceTo(world)
+      const r = (NODE_RADIUS * pop / (dist * Math.tan((camera as PerspectiveCamera).fov * Math.PI / 360))) * size.height / 2
+      screenAnchors.set(item.id, { x: p.x, y: p.y, r, visible: p.inFront })
       const left = p.x < toScreen(trunk, camera, size).x - 1
       // Fruit behind the trunk (as seen from here) lose their labels, so the far side doesn't clutter the near.
       const behind = camera.position.distanceTo(world) - camera.position.distanceTo(trunk)
@@ -96,7 +118,7 @@ const Fruit = ({ item, placement, y, branch }: FruitProps) => {
       <cylinderGeometry args={[0.007, 0.012, 1, 6]} />
       <meshBasicMaterial color={glow} toneMapped={false} transparent opacity={0.75} />
     </mesh>
-    <group ref={fruit}>
+    <group ref={fruit} onPointerOver={onOver} onPointerOut={onOut} onClick={onClick}>
       <CoverSphere image={item.image} radius={NODE_RADIUS} />
     </group>
   </group>

@@ -166,7 +166,7 @@ describe('editing and removing staged albums', () => {
 
   test('removing takes it out of the tray and drops the item', () => {
     const id = stageAlbum()
-    s().removeStaged(id)
+    s().removeFromBoard(id)
     expect(s().staged).toHaveLength(0)
     expect(s().items[id]).toBeUndefined()
   })
@@ -176,8 +176,18 @@ describe('editing and removing staged albums', () => {
     const musicBoard = s().activeBoardId!
     s().openType('books')
     useStore.setState({ staged: [...s().staged, { boardId: s().activeBoardId!, itemId: id, stagedAt: 1 }] })
-    s().removeStaged(id)
+    s().removeFromBoard(id)
     expect(s().items[id]).toBeDefined()
     expect(s().staged).toEqual([expect.objectContaining({ boardId: musicBoard, itemId: id })])
+  })
+
+  test('removing a placed item takes it off the axis and drops the item', () => {
+    s().openType('music')
+    const placed = s().addItem('Radiohead')!
+    const other = s().addItem('Björk')!
+    s().removeFromBoard(placed.id)
+    expect(s().placements.map(p => p.itemId)).toEqual([other.id])
+    expect(s().items[placed.id]).toBeUndefined()
+    expect(s().items[other.id]).toBeDefined()
   })
 })

@@ -97,8 +97,11 @@ type Actions = {
    * blank ones are rejected (returns false, nothing changes). Tracks are renumbered 1, 2, 3… within each disc.
    */
   editItem: (itemId: string, edit: { name?: string, year?: number | null, tracks?: Track[] }) => boolean
-  /** Takes an item out of the open board's staging tray, and drops the item itself if nothing else uses it. */
-  removeStaged: (itemId: string) => void
+  /**
+   * Takes an item off the open board, whether it's staged or placed on the axis, and drops the item itself if
+   * no other board uses it.
+   */
+  removeFromBoard: (itemId: string) => void
 }
 
 const normalise = (name: string) => name.trim().replace(/\s+/g, ' ')
@@ -217,13 +220,15 @@ export const useStore = create<State & Actions>()(persist((set, get) => ({
     return true
   },
 
-  removeStaged: (itemId) => {
+  removeFromBoard: (itemId) => {
     const s = get()
-    const staged = s.staged.filter(st => !(st.itemId === itemId && st.boardId === s.activeBoardId))
-    const stillUsed = staged.some(st => st.itemId === itemId) || s.placements.some(p => p.itemId === itemId)
+    const here = (x: { boardId: string, itemId: string }) => x.itemId === itemId && x.boardId === s.activeBoardId
+    const staged = s.staged.filter(x => !here(x))
+    const placements = s.placements.filter(x => !here(x))
+    const stillUsed = staged.some(x => x.itemId === itemId) || placements.some(x => x.itemId === itemId)
     const items = { ...s.items }
     if (!stillUsed) delete items[itemId]
-    set({ staged, items })
+    set({ staged, placements, items })
   },
 
   addItem: (rawName, extra = {}, opts = {}) => {
