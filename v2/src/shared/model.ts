@@ -2,8 +2,6 @@
  * The entities v2 saves, shared by the app (src/state/store.ts) and the API server (server/), which stores them in
  * Postgres. Plain data only: no functions.
  */
-import type { Track } from './suggestions'
-
 /** A kind of thing being ranked: MUSIC, MOVIES, BOOKS, or anything the user names. */
 export type ItemType = {
   id: string
@@ -11,8 +9,37 @@ export type ItemType = {
   builtIn: boolean
 }
 
-/** Where an item came from, when it was picked from an outside catalogue rather than typed. */
-export type ItemSource = { provider: 'spotify', kind: 'artist' | 'album' | 'track', id: string }
+/**
+ * An outside catalogue's id for something, used only to match it (and to fetch more about it). The item's own id is
+ * always ours, so things that aren't in any catalogue work the same way.
+ */
+export type VendorRef = { name: 'spotify', id: string }
+
+export type MusicArtist = { kind: 'artist', vendor?: VendorRef }
+export type MusicAlbum = {
+  kind: 'album'
+  vendor?: VendorRef
+  /** The artist item. */
+  artistId?: string
+  year?: number
+  /** Whether the tracklist has been fetched, so an album whose tracks were all deleted isn't fetched again. */
+  tracklistLoaded: boolean
+}
+/** A track. Every track on an album is its own item, whether it's on a board or not. */
+export type MusicTrack = {
+  kind: 'track'
+  vendor?: VendorRef
+  /** The album item; the album's tracklist is its tracks in disc then number order. */
+  albumId?: string
+  /** The artist item. */
+  artistId?: string
+  disc?: number
+  /** Position on its disc, from 1. */
+  number?: number
+  durationMs?: number
+}
+/** What a music item is, and how it links to the others. */
+export type MusicDetails = MusicArtist | MusicAlbum | MusicTrack
 
 /** Anything that can be ranked. `typeId` says what kind of thing it is. */
 export type Item = {
@@ -21,14 +48,8 @@ export type Item = {
   name: string
   image?: string
   colors?: string[]
-  source?: ItemSource
-  /** Albums: who made it and when. */
-  artist?: string
-  year?: number
-  /** Albums: the tracklist, filled in from the catalogue after the album is added. */
-  tracks?: Track[]
-  /** Tracks: the album item they came from. */
-  albumId?: string
+  /** Music items picked from the catalogue, or made from one (an album's tracks and artist). Absent for typed items. */
+  music?: MusicDetails
 }
 
 /** A ranking medium for one item type. `axis` is how placements are laid out; `bands` are optional named regions drawn on it. */

@@ -15,13 +15,17 @@ const board = z.object({
   bands: z.array(z.object({ name: text(64), from: z.number().min(0).max(1), to: z.number().min(0).max(1) })).max(50),
 })
 
-const track = z.object({
-  id: text(64),
-  name: z.string().max(500),
-  number: z.number().int().min(0),
-  disc: z.number().int().min(0),
-  durationMs: z.number().int().min(0),
-})
+const vendor = z.object({ name: z.literal('spotify'), id: text(64) }).optional()
+const count = z.number().int().min(0)
+
+const music = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('artist'), vendor }),
+  z.object({ kind: z.literal('album'), vendor, artistId: uuid.optional(), year: z.number().int().min(0).max(9999).optional(), tracklistLoaded: z.boolean() }),
+  z.object({
+    kind: z.literal('track'), vendor, albumId: uuid.optional(), artistId: uuid.optional(),
+    disc: count.optional(), number: count.optional(), durationMs: count.optional(),
+  }),
+])
 
 const item = z.object({
   id: uuid,
@@ -30,11 +34,7 @@ const item = z.object({
   // http(s) only: a plain url check also accepts javascript:, data:, ftp: and so on
   image: z.url({ protocol: /^https?$/ }).max(2000).optional(),
   colors: z.array(z.string().max(32)).max(16).optional(),
-  source: z.object({ provider: z.literal('spotify'), kind: z.enum(['artist', 'album', 'track']), id: text(64) }).optional(),
-  artist: z.string().max(500).optional(),
-  year: z.number().int().min(0).max(9999).optional(),
-  tracks: z.array(track).max(1000).optional(),
-  albumId: uuid.optional(),
+  music: music.optional(),
 })
 
 const boardItem = z.object({

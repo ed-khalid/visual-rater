@@ -10,8 +10,9 @@ export type Suggestion = {
   image?: string
   /** One short line of context: genres for an artist, artist and year for an album. */
   detail?: string
-  /** Albums only: structured versions of what's in `detail`. */
+  /** Albums only: structured versions of what's in `detail` (the main artist, and their catalogue id). */
   artist?: string
+  artistId?: string
   year?: number
 }
 
@@ -28,7 +29,9 @@ export type Track = {
 export type AlbumDetails = {
   id: string
   name: string
+  /** The main artist, and their catalogue id. */
   artist: string
+  artistId?: string
   year?: number
   image?: string
   tracks: Track[]

@@ -21,8 +21,8 @@ const fakeSpotify = (opts: { rejectFirstSearch?: boolean } = {}) => {
     return json({
       artists: { items: [artist('rh', 'Radiohead', ['art rock', 'alternative rock', 'electronic']), artist('ty', 'Thom Yorke')] },
       albums: { items: [
-        { ...artist('okc', 'OK Computer'), album_type: 'album', artists: [{ name: 'Radiohead' }], release_date: '1997-05-28' },
-        { ...artist('crp', 'Creep'), album_type: 'single', artists: [{ name: 'Radiohead' }], release_date: '1992' },
+        { ...artist('okc', 'OK Computer'), album_type: 'album', artists: [{ id: 'rh', name: 'Radiohead' }], release_date: '1997-05-28' },
+        { ...artist('crp', 'Creep'), album_type: 'single', artists: [{ id: 'rh', name: 'Radiohead' }], release_date: '1992' },
       ] },
     })
   })
@@ -35,9 +35,9 @@ describe('spotify client', () => {
     const results = await createSpotify({ clientId: 'id', clientSecret: 'secret', fetch: f.fetch }).searchMusic('zzz')
     expect(results).toEqual([
       { provider: 'spotify', kind: 'artist', id: 'rh', name: 'Radiohead', image: 'rh-64', detail: 'art rock · alternative rock' },
-      { provider: 'spotify', kind: 'album', id: 'okc', name: 'OK Computer', image: 'okc-64', detail: 'Radiohead · 1997', artist: 'Radiohead', year: 1997 },
+      { provider: 'spotify', kind: 'album', id: 'okc', name: 'OK Computer', image: 'okc-64', detail: 'Radiohead · 1997', artist: 'Radiohead', artistId: 'rh', year: 1997 },
       { provider: 'spotify', kind: 'artist', id: 'ty', name: 'Thom Yorke', image: 'ty-64', detail: undefined },
-      { provider: 'spotify', kind: 'album', id: 'crp', name: 'Creep', image: 'crp-64', detail: 'Radiohead · 1992 · single', artist: 'Radiohead', year: 1992 },
+      { provider: 'spotify', kind: 'album', id: 'crp', name: 'Creep', image: 'crp-64', detail: 'Radiohead · 1992 · single', artist: 'Radiohead', artistId: 'rh', year: 1992 },
     ])
     const url = String(f.calls[1][0])
     expect(url).toContain('type=artist,album')
@@ -89,7 +89,7 @@ describe('getAlbum', () => {
   test('maps the album and follows the tracklist across pages, in disc then track order', async () => {
     const pages: Record<string, unknown> = {
       'https://api.spotify.com/v1/albums/abc': {
-        id: 'abc', name: 'Box', artists: [{ name: 'A' }, { name: 'B' }], release_date: '1999-04-01',
+        id: 'abc', name: 'Box', artists: [{ id: 'a', name: 'A' }, { id: 'b', name: 'B' }], release_date: '1999-04-01',
         images: [{ url: 'big', width: 640, height: 640 }, { url: 'small', width: 64, height: 64 }],
         tracks: { items: [track(1, 1), track(1, 2)], next: 'https://api.spotify.com/v1/albums/abc/tracks?offset=2' },
       },
@@ -99,7 +99,8 @@ describe('getAlbum', () => {
       ? json({ access_token: 't', expires_in: 3600 })
       : json(pages[String(url)])) as unknown as typeof fetch
     const album = await createSpotify({ clientId: 'id', clientSecret: 's', fetch: f }).getAlbum('abc')
-    expect(album).toMatchObject({ id: 'abc', name: 'Box', artist: 'A, B', year: 1999, image: 'small' })
+    // the album's artist is its main (first) one
+    expect(album).toMatchObject({ id: 'abc', name: 'Box', artist: 'A', artistId: 'a', year: 1999, image: 'small' })
     expect(album.tracks.map(t => `${t.disc}.${t.number}`)).toEqual(['1.1', '1.2', '1.3', '2.1'])
     expect(album.tracks[0]).toEqual({ id: 't1-1', name: 'Track 1.1', number: 1, disc: 1, durationMs: 1000 })
   })

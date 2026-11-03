@@ -16,30 +16,29 @@ const setStatus = (itemId: string, status: LoadStatus | null) =>
     return { status: next }
   })
 
+/** Whether this album's tracklist still has to be fetched from the catalogue. */
+export const needsTracklist = (itemId: string) => {
+  const music = useStore.getState().items[itemId]?.music
+  return music?.kind === 'album' && music.vendor?.name === 'spotify' && !music.tracklistLoaded
+}
+
 /**
- * Fetches an album's details (artist, year, tracklist) from the API and stores them on the item.
- * Safe to call repeatedly: does nothing if the tracks are already there or a load is under way.
+ * Fetches an album's details (artist, year, tracklist) from the API and stores them (see store.setAlbumDetails).
+ * Safe to call repeatedly: does nothing if the tracklist is already there or a load is under way.
  */
 export const loadAlbumDetails = (itemId: string): Promise<void> => {
-  const item = useStore.getState().items[itemId]
-  if (!item || item.tracks || item.source?.provider !== 'spotify' || item.source.kind !== 'album') return Promise.resolve()
+  const music = useStore.getState().items[itemId]?.music
+  if (!needsTracklist(itemId) || music?.kind !== 'album' || !music.vendor) return Promise.resolve()
   const existing = inFlight.get(itemId)
   if (existing) return existing
 
   setStatus(itemId, 'loading')
-  const load = fetch(`/api/music/albums/${encodeURIComponent(item.source.id)}`)
+  const load = fetch(`/api/music/albums/${encodeURIComponent(music.vendor.id)}`)
     .then(async res => {
       if (!res.ok) throw new Error(String(res.status))
       const album = await res.json() as AlbumDetails
-      // Only fill in what's still missing: the user may have edited the album (or deleted it) while this loaded.
-      const now = useStore.getState().items[itemId]
-      if (!now) return setStatus(itemId, null)
-      useStore.getState().setItemDetails(itemId, {
-        artist: now.artist ?? (album.artist || undefined),
-        year: now.year ?? album.year,
-        tracks: now.tracks ?? album.tracks,
-        image: now.image ?? album.image,
-      })
+      // Only fills in what's still missing: the user may have edited the album (or deleted it) while this loaded.
+      useStore.getState().setAlbumDetails(itemId, album)
       setStatus(itemId, null)
     })
     .catch(() => setStatus(itemId, 'error'))

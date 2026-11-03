@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import type { Persisted } from '../shared/model'
 import { type Changes, diffState, everything, isEmpty, mergeChanges } from '../shared/sync'
-import { LEGACY_STORAGE_KEY, LEGACY_STORAGE_VERSION, migrateState, type State, useStore } from './store'
+import { LEGACY_STORAGE_KEY, migrateState, type State, useStore } from './store'
 
 /**
  * Keeps the store and the database in step. On startup, loads everything from the API (importing data that only
@@ -47,7 +47,7 @@ export const readLegacy = (storage: Storage = localStorage): { data: Persisted, 
   if (!raw) return null
   try {
     const { state, version } = JSON.parse(raw) as { state: unknown, version: number }
-    const s = version === LEGACY_STORAGE_VERSION ? state as State : migrateState(state, version)
+    const s = migrateState(state, version)
     return { data: persistedOf(s), activeBoardId: s.activeBoardId ?? null }
   } catch {
     return null

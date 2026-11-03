@@ -18,7 +18,7 @@ type SpotifyAlbum = {
   id: string
   name: string
   album_type?: 'album' | 'single' | 'compilation'
-  artists?: { name: string }[]
+  artists?: { id: string, name: string }[]
   release_date?: string
   images?: SpotifyImage[]
 }
@@ -86,7 +86,9 @@ const albumSuggestion = (a: SpotifyAlbum): Suggestion => ({
   image: pickImage(a.images),
   detail: [a.artists?.map(x => x.name).join(', '), a.release_date?.slice(0, 4), a.album_type && a.album_type !== 'album' ? a.album_type : undefined]
     .filter(Boolean).join(' · ') || undefined,
-  artist: a.artists?.map(x => x.name).join(', ') || undefined,
+  // The album's artist item is its first (main) artist; `detail` still lists them all.
+  artist: a.artists?.[0]?.name,
+  artistId: a.artists?.[0]?.id,
   year: yearOf(a.release_date),
 })
 
@@ -154,7 +156,8 @@ export const createSpotify = ({ clientId, clientSecret, fetch: f = fetch, now = 
     return {
       id: album.id,
       name: album.name,
-      artist: album.artists?.map(a => a.name).join(', ') ?? '',
+      artist: album.artists?.[0]?.name ?? '',
+      artistId: album.artists?.[0]?.id,
       year: yearOf(album.release_date),
       image: pickImage(album.images),
       tracks: tracks.slice(0, MAX_TRACKS).sort((a, b) => a.disc - b.disc || a.number - b.number),

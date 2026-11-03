@@ -1,9 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
-import type { Track } from '../shared/suggestions'
 import { useShallow } from 'zustand/react/shallow'
 import { liveScores, screenAnchors, useView } from '../scene/view'
-import { formatScore, ratingLabel, useStore } from '../state/store'
-import { formatDuration, loadAlbumDetails, useAlbumLoads } from './albumDetails'
+import { albumOf, artistOf, formatScore, ratingLabel, tracksOf, useStore } from '../state/store'
+import { formatDuration, loadAlbumDetails, needsTracklist, useAlbumLoads } from './albumDetails'
 import './albumOverlays.css'
 
 const GAP_PX = 14
@@ -60,21 +59,22 @@ export const ItemHoverCard = () => {
   const openId = useView(v => v.openId)
   const draggingId = useView(v => v.draggingId)
   const item = useStore(s => hoveredId ? s.items[hoveredId] : undefined)
-  const albumName = useStore(s => item?.albumId ? s.items[item.albumId]?.name : undefined)
+  const albumName = useStore(s => albumOf(s.items, item)?.name)
+  const artistName = useStore(s => artistOf(s.items, item)?.name)
   const rating = useStore(s => hoveredId ? ratingLabel(s, hoveredId) : '')
   const ref = useRef<HTMLDivElement>(null)
   const id = item && hoveredId !== openId && !draggingId ? hoveredId : null
   usePinned(id, ref, 'centre')
   if (!item || !id) return null
 
-  const isAlbum = item.source?.kind === 'album' || item.tracks !== undefined
-  const isTrack = item.albumId !== undefined || item.source?.kind === 'track'
+  const music = item.music
+  const isTrack = music?.kind === 'track'
   return <div ref={ref} className="album-card" role="tooltip">
-    {isAlbum
-      ? <AlbumFacts artist={item.artist} album={item.name} year={item.year} rating={rating} />
+    {music?.kind === 'album'
+      ? <AlbumFacts artist={artistName} album={item.name} year={music.year} rating={rating} />
       : <dl className="album-facts">
           <dt>{isTrack ? 'TRACK' : 'NAME'}</dt><dd>{item.name}</dd>
-          {isTrack && <><dt>ARTIST</dt><dd>{item.artist ?? '—'}</dd><dt>ALBUM</dt><dd>{albumName ?? '—'}</dd></>}
+          {isTrack && <><dt>ARTIST</dt><dd>{artistName ?? '—'}</dd><dt>ALBUM</dt><dd>{albumName ?? '—'}</dd></>}
           <dt>SCORE</dt><dd className={rating === 'UNRATED' ? 'dim' : 'album-score'}>{rating}</dd>
         </dl>}
   </div>
@@ -111,7 +111,9 @@ const AlbumFacts = ({ artist, album, year, rating }: { artist?: string, album: s
     <dt>RATING</dt><dd className={rating === 'UNRATED' ? 'dim' : 'album-score'}>{rating}</dd>
   </dl>
 
-type Draft = { name: string, year: string, tracks: Track[] }
+/** A track being edited: its item id, name, and what's shown beside it. */
+type DraftTrack = { id: string, name: string, disc: number, number: number, durationMs?: number }
+type Draft = { name: string, year: string, tracks: DraftTrack[] }
 
 /** Whole years between 1000 and 2999, or blank for "no year". */
 const parseYear = (text: string): number | null | 'invalid' => {
@@ -132,6 +134,8 @@ export const AlbumPopup = () => {
   const close = useView(v => v.close)
   const setEditing = useView(v => v.setEditing)
   const item = useStore(s => openId ? s.items[openId] : undefined)
+  const artistName = useStore(s => artistOf(s.items, item)?.name)
+  const trackItems = useStore(useShallow(s => openId ? tracksOf(s.items, openId) : []))
   const rating = useStore(s => openId ? ratingLabel(s, openId) : '')
   const editItem = useStore(s => s.editItem)
   const status = useAlbumLoads(s => openId ? s.status[openId] : undefined)
@@ -155,9 +159,12 @@ export const AlbumPopup = () => {
   }, [openId, close, draft])
 
   if (!item || !openId) return null
-  const tracks = item.tracks ?? []
+  const year0 = item.music?.kind === 'album' ? item.music.year : undefined
+  const tracks: DraftTrack[] = trackItems.flatMap(t => t.music?.kind === 'track'
+    ? [{ id: t.id, name: t.name, disc: t.music.disc ?? 0, number: t.music.number ?? 0, durationMs: t.music.durationMs }]
+    : [])
 
-  const startEdit = () => { setDraft({ name: item.name, year: item.year?.toString() ?? '', tracks }) }
+  const startEdit = () => { setDraft({ name: item.name, year: year0?.toString() ?? '', tracks }) }
   const year = draft ? parseYear(draft.year) : null
   const problem = !draft ? null
     : !draft.name.trim() ? 'The title can\'t be empty.'
@@ -166,7 +173,7 @@ export const AlbumPopup = () => {
     : null
   const save = () => {
     if (!draft || problem || year === 'invalid') return
-    if (editItem(openId, { name: draft.name, year, tracks: draft.tracks })) setDraft(null)
+    if (editItem(openId, { name: draft.name, year, tracks: draft.tracks.map(t => ({ id: t.id, name: t.name })) })) setDraft(null)
   }
 
   const shown = draft ? draft.tracks : tracks
@@ -180,7 +187,7 @@ export const AlbumPopup = () => {
       ? <>
           <input className="album-input album-input-title" value={draft.name} onChange={e => setDraft({ ...draft, name: e.target.value })} aria-label="Title" autoFocus />
           <dl className="album-facts">
-            <dt>ARTIST</dt><dd>{item.artist ?? '—'}</dd>
+            <dt>ARTIST</dt><dd>{artistName ?? '—'}</dd>
             <dt>YEAR</dt>
             <dd><input className="album-input album-input-year" value={draft.year} onChange={e => setDraft({ ...draft, year: e.target.value })} inputMode="numeric" maxLength={4} placeholder="—" aria-label="Year" /></dd>
             <dt>RATING</dt><dd className={rating === 'UNRATED' ? 'dim' : ''}>{rating}</dd>
@@ -188,7 +195,7 @@ export const AlbumPopup = () => {
         </>
       : <>
           <div className="album-popup-title">{item.name}</div>
-          <AlbumFacts artist={item.artist} album={item.name} year={item.year} rating={rating} />
+          <AlbumFacts artist={artistName} album={item.name} year={year0} rating={rating} />
         </>}
     <div className="album-popup-divider" />
     {shown.length > 0
@@ -204,14 +211,14 @@ export const AlbumPopup = () => {
                 : <span className="album-track-name">{t.name}</span>}
               {draft
                 ? <button className="album-track-delete" onClick={() => deleteTrack(t.id)} aria-label={`Delete ${t.name}`}>×</button>
-                : <span className="album-track-time">{formatDuration(t.durationMs)}</span>}
+                : <span className="album-track-time">{t.durationMs !== undefined ? formatDuration(t.durationMs) : ''}</span>}
             </li>
           })}
         </ol>
       : <div className="album-popup-hint">{
           draft ? 'No tracks.'
           : status === 'error' ? 'Tracklist unavailable right now.'
-          : status === 'loading' || (item.source?.kind === 'album' && !item.tracks) ? 'Loading tracklist…'
+          : status === 'loading' || needsTracklist(openId) ? 'Loading tracklist…'
           : 'No tracks.'}</div>}
     {problem && <div className="album-popup-problem" role="alert">{problem}</div>}
     <div className="album-popup-actions">
@@ -356,12 +363,11 @@ export const StagedAdd = () => {
   if (!target) return null
   const onClick = async () => {
     if (busy) return
-    const item = useStore.getState().items[target]
-    if (item && !item.tracks) {
+    if (needsTracklist(target)) {
       setBusy(true)
       await loadAlbumDetails(target)
       setBusy(false)
-      if (!useStore.getState().items[target]?.tracks) return setFailed(true)
+      if (needsTracklist(target)) return setFailed(true)
     }
     const v = useView.getState()
     if (v.openId === target) v.close()

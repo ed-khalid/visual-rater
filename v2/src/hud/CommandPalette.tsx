@@ -1,7 +1,7 @@
 import { Command } from 'cmdk'
 import { useEffect, useState } from 'react'
 import type { Suggestion } from '../shared/suggestions'
-import { isOnActiveBoard, sourceStatusOnActiveBoard, useStore } from '../state/store'
+import { isOnActiveBoard, useStore, vendorStatusOnActiveBoard } from '../state/store'
 import './palette.css'
 import { loadAlbumDetails } from './albumDetails'
 import { useSuggestions } from './useSuggestions'
@@ -29,7 +29,7 @@ export const CommandPalette = ({ open, onOpenChange }: Props) => {
   const items = useStore(s => s.items)
   const activeBoardId = useStore(s => s.activeBoardId)
   const staged = useStore(s => s.staged)
-  const onBoard = (sg: Suggestion) => sourceStatusOnActiveBoard({ ...useStore.getState(), placements, staged, items, activeBoardId }, { provider: sg.provider, kind: sg.kind, id: sg.id })
+  const onBoard = (sg: Suggestion) => vendorStatusOnActiveBoard({ ...useStore.getState(), placements, staged, items, activeBoardId }, sg.kind, { name: sg.provider, id: sg.id })
   const suggestions = useSuggestions(open ? typeId : undefined, query)
   const searchable = typeId === 'music'
 
@@ -55,7 +55,14 @@ export const CommandPalette = ({ open, onOpenChange }: Props) => {
   const addTyped = () => { if (addItem(name)) setQuery('') }
   // Albums wait in the staging tray; everything else goes straight onto the axis.
   const addSuggestion = (sg: Suggestion) => {
-    const added = addItem(sg.name, { image: sg.image, artist: sg.artist, year: sg.year, source: { provider: sg.provider, kind: sg.kind, id: sg.id } }, { stage: sg.kind === 'album' })
+    const vendor = { name: sg.provider, id: sg.id }
+    const added = sg.kind === 'artist'
+      ? addItem(sg.name, { image: sg.image, music: { kind: 'artist', vendor } })
+      : addItem(sg.name, {
+          image: sg.image,
+          music: { kind: 'album', vendor, ...(sg.year !== undefined ? { year: sg.year } : {}), tracklistLoaded: false },
+          ...(sg.artist ? { artist: { name: sg.artist, ...(sg.artistId ? { vendor: { name: sg.provider, id: sg.artistId } } : {}) } } : {}),
+        }, { stage: true })
     if (!added) return
     setQuery('')
     // An album comes with its tracklist: fetch it now, so it's ready when the album is opened.
