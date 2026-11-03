@@ -114,7 +114,7 @@ export const GridRater = ({onScoreUpdate}:Props) => {
             {Array.from({ length: totalBlocks }, (_, i) => {
                 const row = Math.floor(i/blocksPerRow) 
                 const isFirstRow = i % blocksPerRow === 0 
-                return <GridRaterBlock rowRef={isFirstRow?rowRefs[row]: undefined} rowIndex={row} isFirstInRow={isFirstRow} key={`cell-${99 - i}`} 
+                return <GridRaterBlock rowRef={isFirstRow?rowRefs.current[row]: undefined} rowIndex={row} isFirstInRow={isFirstRow} key={`cell-${99 - i}`} 
                 number={99-i} 
                 items={itemsByScore[99-i]} 
                 />

@@ -9,7 +9,7 @@ interface Props {
     items:SongUIItem[]|undefined
     isFirstInRow:boolean
     rowIndex: number
-    rowRef?:RefObject<HTMLDivElement>
+    rowRef?:RefObject<HTMLDivElement|null>
 }
 
 
