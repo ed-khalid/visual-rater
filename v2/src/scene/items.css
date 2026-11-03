@@ -1,0 +1,24 @@
+.item-labels {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.item-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  max-width: 170px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font);
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text);
+  user-select: none;
+  opacity: 0; /* the node fades it in once it has a position */
+  will-change: transform;
+}

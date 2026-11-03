@@ -1,0 +1,94 @@
+.palette-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(3, 5, 10, 0.55);
+  backdrop-filter: blur(2px);
+}
+
+.palette {
+  --palette-bg: rgb(6, 12, 20);
+  --palette-line: rgba(92, 225, 255, 0.35);
+  position: fixed;
+  top: 22vh;
+  /* centred with auto margins, not translateX(-50%), which can land on a half pixel and blur the border */
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: min(560px, 90vw);
+  font-family: var(--font);
+  color: var(--text);
+  background: var(--palette-bg);
+  border: 1px solid var(--palette-line);
+  box-shadow: 0 0 24px rgba(92, 225, 255, 0.12), inset 0 0 12px rgba(92, 225, 255, 0.05);
+  border-radius: 0 4px 4px 4px; /* square top-left corner, where the close tab joins */
+}
+
+.palette-input {
+  width: 100%;
+  padding: 16px 18px;
+  font: inherit;
+  font-size: 16px; /* below 16px, iOS Safari zooms the page when the input is focused */
+  letter-spacing: 0.06em;
+  color: #e6f6ff;
+  caret-color: #5ce1ff;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(92, 225, 255, 0.15);
+  outline: none;
+}
+
+/* A small tab sitting on the palette's top-left edge; its bottom border is drawn exactly over the
+   palette's top border, so the line runs straight under it. The box hugs the glyph. */
+.palette-close {
+  position: absolute;
+  /* Offsets are measured from inside the palette's 1px border: -1px puts the tab's left border on the
+     palette's left border, and 100% puts the tab's bottom border exactly on the palette's top border. */
+  left: -1px;
+  bottom: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 3px 6px 2px;
+  font: inherit;
+  font-size: 15px;
+  line-height: 1;
+  color: var(--text-dim);
+  background: var(--palette-bg);
+  border: 1px solid var(--palette-line);
+  border-radius: 3px 3px 0 0;
+  cursor: pointer;
+}
+
+/* Invisible hit area so it stays easy to tap (~44px) without a bigger visible box.
+   Extends up and sideways only, never down over the input. */
+.palette-close::after {
+  content: '';
+  position: absolute;
+  inset: -23px -12px 0 -12px;
+}
+
+.palette-close:hover,
+.palette-close:focus-visible { color: #5ce1ff; outline: none; }
+
+.palette-input::placeholder { color: var(--text-dim); }
+
+.palette-list { padding: 6px; font-size: 13px; }
+
+.palette-hint {
+  padding: 10px 12px;
+  color: var(--text-dim);
+  letter-spacing: 0.08em;
+}
+
+.palette-item {
+  display: flex;
+  gap: 14px;
+  padding: 10px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  letter-spacing: 0.06em;
+}
+
+.palette-item[data-selected='true'] { background: rgba(92, 225, 255, 0.1); color: #e6f6ff; }
+
+.palette-verb { color: #5ce1ff; letter-spacing: 0.24em; font-size: 11px; line-height: 18px; }

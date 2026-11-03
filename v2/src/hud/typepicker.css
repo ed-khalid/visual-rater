@@ -1,0 +1,55 @@
+.picker {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 36px;
+  padding: 24px;
+  font-family: var(--font);
+  animation: picker-in 0.6s ease-out both;
+}
+
+@keyframes picker-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+.picker-prompt {
+  font-size: 11px;
+  letter-spacing: 0.32em;
+  color: var(--text-dim);
+}
+
+.picker-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Large, quiet words that light up; min 44px tall for touch */
+.picker-type {
+  min-height: 52px;
+  padding: 8px 24px;
+  font: inherit;
+  font-size: clamp(22px, 5vw, 34px);
+  letter-spacing: 0.4em;
+  margin-right: -0.4em; /* letter-spacing adds a trailing gap; cancel it so words stay centred */
+  color: var(--text);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.2s, text-shadow 0.2s;
+}
+
+.picker-type:hover,
+.picker-type:focus-visible {
+  color: #e6f6ff;
+  text-shadow: 0 0 12px rgba(92, 225, 255, 0.9), 0 0 32px rgba(92, 225, 255, 0.45);
+  outline: none;
+}

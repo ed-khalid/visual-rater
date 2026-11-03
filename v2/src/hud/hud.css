@@ -1,0 +1,46 @@
+.hud {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  font-family: var(--font);
+  font-size: 11px;
+  letter-spacing: 0.24em;
+  color: var(--text);
+  user-select: none;
+}
+
+.hud > * { position: absolute; }
+.hud-tl { top: 24px; left: 28px; }
+.hud-tr { top: 24px; right: 28px; }
+.hud-bl { bottom: 24px; left: 28px; }
+.hud-key { top: 48px; left: 28px; }
+
+.hud .dim { color: var(--text-dim); }
+
+.hud-key {
+  pointer-events: auto;
+  padding: 2px 6px 2px 8px;
+  font: inherit;
+  letter-spacing: inherit;
+  color: var(--text-dim);
+  background: none;
+  border: 1px solid var(--text-dim);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.hud-key:hover { color: var(--text); border-color: var(--text); }
+
+/* The title doubles as "home" while a board is open */
+.hud-home {
+  pointer-events: auto;
+  padding: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  color: var(--text);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.hud-home:hover { color: #e6f6ff; }
