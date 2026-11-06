@@ -1,113 +1,123 @@
 import type { Sql, TransactionSql } from 'postgres'
-import type { Board, Item, ItemType, MusicDetails, Persisted, VendorRef } from '../src/shared/model'
-import { type BoardItem, type Changes, fromBoardItems } from '../src/shared/sync'
+import type { Album, Artist, Branch, Persisted, Simple, Track, VendorRef } from '../src/shared/model'
+import type { Changes } from '../src/shared/sync'
 
-type ItemRow = { id: string, type_id: string, name: string, image: string | null, colors: string[] | null }
-type VendorCols = { item_id: string, vendor: string | null, vendor_id: string | null }
-type ArtistRow = VendorCols
-type AlbumRow = VendorCols & { artist_id: string | null, year: number | null, tracklist_loaded: boolean }
-type TrackRow = VendorCols & { album_id: string | null, artist_id: string | null, disc: number | null, number: number | null, duration_ms: number | null }
-
-/** Copies the non-null columns onto `out` under their app names. */
+/** Copies the non-null fields onto `out`. */
 const defined = <T extends object>(out: T, fields: Record<string, unknown>): T => {
   for (const [k, v] of Object.entries(fields)) if (v !== null && v !== undefined) (out as Record<string, unknown>)[k] = v
   return out
 }
 
-const vendorOf = (r: VendorCols): VendorRef | undefined =>
-  r.vendor && r.vendor_id ? { name: r.vendor as VendorRef['name'], id: r.vendor_id } : undefined
+type BaseRow = { id: string, name: string, image: string | null, colors: string[] | null }
+type VendorRow = { vendor: string | null, vendor_id: string | null }
+type TreeRow = { score: number | null, tree_angle: number | null, tree_length: number | null, tree_ring: number | null, tree_since: number | null, hidden: boolean }
+type AlbumRow = BaseRow & VendorRow & { artist_id: string | null, year: number | null, tracklist_loaded: boolean, staged_at: number, added_at: number | null }
+type TrackRow = BaseRow & VendorRow & TreeRow & {
+  album_id: string | null, artist_id: string | null, disc: number | null, number: number | null, duration_ms: number | null, exclude_from_artist_score: boolean,
+}
 
-const itemFromRow = (r: ItemRow, music: MusicDetails | undefined): Item =>
-  defined({ id: r.id, typeId: r.type_id, name: r.name } as Item, { image: r.image, colors: r.colors, music })
+const vendorOf = (r: VendorRow): VendorRef | undefined => r.vendor && r.vendor_id ? { name: r.vendor as VendorRef['name'], id: r.vendor_id } : undefined
+const branchOf = (r: TreeRow): Branch | undefined =>
+  r.tree_angle !== null && r.tree_length !== null && r.tree_ring !== null ? { angle: r.tree_angle, length: r.tree_length, ring: r.tree_ring } : undefined
+const base = (r: BaseRow) => defined({ id: r.id, name: r.name } as { id: string, name: string }, { image: r.image, colors: r.colors })
+const tree = (r: TreeRow) => ({ score: r.score, branch: branchOf(r), since: r.tree_since, hidden: r.hidden || null })
+
+const byId = <T extends { id: string }>(rows: T[]) => Object.fromEntries(rows.map(r => [r.id, r]))
+
+const TREE_COLS = 'score, tree_angle, tree_length, tree_ring, tree_since::double precision as tree_since, hidden'
 
 /** Everything saved, in the shape the app keeps it. */
 export const loadState = async (sql: Sql): Promise<Persisted> => {
-  const [types, boards, items, artists, albums, tracks, rows] = await Promise.all([
-    sql<{ id: string, name: string, built_in: boolean }[]>`select id, name, built_in from item_types`,
-    sql<{ id: string, type_id: string, name: string, axis: 'linear', bands: Board['bands'] }[]>`select id, type_id, name, axis, bands from boards`,
-    sql<ItemRow[]>`select id, type_id, name, image, colors from items`,
-    sql<ArtistRow[]>`select item_id, vendor, vendor_id from music_artists`,
-    sql<AlbumRow[]>`select item_id, vendor, vendor_id, artist_id, year, tracklist_loaded from music_albums`,
-    sql<TrackRow[]>`select item_id, vendor, vendor_id, album_id, artist_id, disc, number, duration_ms from music_tracks`,
-    sql<{ board_id: string, item_id: string, status: BoardItem['status'], since: number, position: number | null, angle: number | null, length: number | null, ring: number | null }[]>`
-      select board_id, item_id, status, since::double precision as since, position, angle, length, ring from board_items`,
+  const [artists, albums, tracks, movies, books] = await Promise.all([
+    sql<(BaseRow & VendorRow)[]>`select id, name, image, colors, vendor, vendor_id from music_artists`,
+    sql<AlbumRow[]>`select id, name, image, colors, vendor, vendor_id, artist_id, year, tracklist_loaded,
+      staged_at::double precision as staged_at, added_at::double precision as added_at from music_albums`,
+    sql.unsafe<TrackRow[]>(`select id, name, image, colors, vendor, vendor_id, album_id, artist_id, disc, number, duration_ms,
+      exclude_from_artist_score, ${TREE_COLS} from music_tracks`),
+    sql.unsafe<(BaseRow & TreeRow)[]>(`select id, name, image, colors, ${TREE_COLS} from movies`),
+    sql.unsafe<(BaseRow & TreeRow)[]>(`select id, name, image, colors, ${TREE_COLS} from books`),
   ])
-  const music = new Map<string, MusicDetails>()
-  for (const r of artists) music.set(r.item_id, defined({ kind: 'artist' } as MusicDetails, { vendor: vendorOf(r) }))
-  for (const r of albums) {
-    music.set(r.item_id, defined({ kind: 'album', tracklistLoaded: r.tracklist_loaded } as MusicDetails, { vendor: vendorOf(r), artistId: r.artist_id, year: r.year }))
-  }
-  for (const r of tracks) {
-    music.set(r.item_id, defined({ kind: 'track' } as MusicDetails, {
-      vendor: vendorOf(r), albumId: r.album_id, artistId: r.artist_id, disc: r.disc, number: r.number, durationMs: r.duration_ms,
-    }))
-  }
-  const boardItems: BoardItem[] = rows.map(r => ({
-    boardId: r.board_id, itemId: r.item_id, status: r.status, since: r.since,
-    ...(r.position !== null ? { position: r.position } : {}),
-    ...(r.angle !== null ? { angle: r.angle } : {}),
-    ...(r.length !== null ? { length: r.length } : {}),
-    ...(r.ring !== null ? { ring: r.ring } : {}),
-  }))
   return {
-    types: Object.fromEntries(types.map((t): [string, ItemType] => [t.id, { id: t.id, name: t.name, builtIn: t.built_in }])),
-    boards: Object.fromEntries(boards.map((b): [string, Board] => [b.id, { id: b.id, typeId: b.type_id, name: b.name, axis: b.axis, bands: b.bands }])),
-    items: Object.fromEntries(items.map(r => [r.id, itemFromRow(r, music.get(r.id))])),
-    ...fromBoardItems(boardItems),
+    artists: byId(artists.map(r => defined(base(r) as Artist, { vendor: vendorOf(r) }))),
+    albums: byId(albums.map(r => defined({ ...base(r), tracklistLoaded: r.tracklist_loaded, stagedAt: r.staged_at } as Album, {
+      vendor: vendorOf(r), artistId: r.artist_id, year: r.year, addedAt: r.added_at,
+    }))),
+    tracks: byId(tracks.map(r => defined(base(r) as Track, {
+      vendor: vendorOf(r), albumId: r.album_id, artistId: r.artist_id, disc: r.disc, number: r.number, durationMs: r.duration_ms,
+      excludeFromArtistScore: r.exclude_from_artist_score || null, ...tree(r),
+    }))),
+    movies: byId(movies.map(r => defined(base(r) as Simple, tree(r)))),
+    books: byId(books.map(r => defined(base(r) as Simple, tree(r)))),
   }
 }
 
-/** Writes an item's music row, in the table for its kind. */
-const upsertMusic = async (tx: TransactionSql, itemId: string, m: MusicDetails) => {
-  const vendor = m.vendor?.name ?? null, vendorId = m.vendor?.id ?? null
-  if (m.kind === 'artist') {
-    await tx`insert into music_artists (item_id, vendor, vendor_id) values (${itemId}, ${vendor}, ${vendorId})
-      on conflict (item_id) do update set vendor = excluded.vendor, vendor_id = excluded.vendor_id`
-  } else if (m.kind === 'album') {
-    await tx`insert into music_albums (item_id, vendor, vendor_id, artist_id, year, tracklist_loaded)
-      values (${itemId}, ${vendor}, ${vendorId}, ${m.artistId ?? null}, ${m.year ?? null}, ${m.tracklistLoaded})
-      on conflict (item_id) do update set vendor = excluded.vendor, vendor_id = excluded.vendor_id, artist_id = excluded.artist_id,
-        year = excluded.year, tracklist_loaded = excluded.tracklist_loaded`
-  } else {
-    await tx`insert into music_tracks (item_id, vendor, vendor_id, album_id, artist_id, disc, number, duration_ms)
-      values (${itemId}, ${vendor}, ${vendorId}, ${m.albumId ?? null}, ${m.artistId ?? null}, ${m.disc ?? null}, ${m.number ?? null}, ${m.durationMs ?? null})
-      on conflict (item_id) do update set vendor = excluded.vendor, vendor_id = excluded.vendor_id, album_id = excluded.album_id,
-        artist_id = excluded.artist_id, disc = excluded.disc, number = excluded.number, duration_ms = excluded.duration_ms`
-  }
+const treeValues = (e: Track | Simple) => ({
+  score: e.score ?? null, tree_angle: e.branch?.angle ?? null, tree_length: e.branch?.length ?? null,
+  tree_ring: e.branch?.ring ?? null, tree_since: e.since ?? null, hidden: e.hidden ?? false,
+})
+
+const upsertSimple = async (tx: TransactionSql, table: 'movies' | 'books', e: Simple) => {
+  const t = treeValues(e)
+  await tx`insert into ${tx(table)} (id, name, image, colors, score, tree_angle, tree_length, tree_ring, tree_since, hidden)
+    values (${e.id}, ${e.name}, ${e.image ?? null}, ${e.colors ?? null}, ${t.score}, ${t.tree_angle}, ${t.tree_length}, ${t.tree_ring}, ${t.tree_since}, ${t.hidden})
+    on conflict (id) do update set name = excluded.name, image = excluded.image, colors = excluded.colors, score = excluded.score,
+      tree_angle = excluded.tree_angle, tree_length = excluded.tree_length, tree_ring = excluded.tree_ring,
+      tree_since = excluded.tree_since, hidden = excluded.hidden`
 }
 
 /**
- * Applies a batch of saves in one transaction: upserts in dependency order (types, boards, items with their music
- * rows, board items), then deletes in reverse order. Links between music rows (track → album, album → artist) and
- * from board items to items are checked at commit, so a batch can create an album, its artist and its tracks, or an
- * item and its board row, together, in any order.
+ * Applies a batch of saves in one transaction: upserts in dependency order (artists, albums, tracks, then movies
+ * and books), then deletes in reverse. Links (track → album, album/track → artist) are checked at commit, so a batch
+ * can create an artist, an album and its tracks together, in any order.
  */
 export const applyChanges = async (sql: Sql, c: Changes): Promise<void> => {
   await sql.begin(async tx => {
-    for (const t of c.upsert.types) {
-      await tx`insert into item_types (id, name, built_in) values (${t.id}, ${t.name}, ${t.builtIn})
-        on conflict (id) do update set name = excluded.name, built_in = excluded.built_in`
+    for (const a of c.upsert.artists) {
+      await tx`insert into music_artists (id, name, image, colors, vendor, vendor_id)
+        values (${a.id}, ${a.name}, ${a.image ?? null}, ${a.colors ?? null}, ${a.vendor?.name ?? null}, ${a.vendor?.id ?? null})
+        on conflict (id) do update set name = excluded.name, image = excluded.image, colors = excluded.colors,
+          vendor = excluded.vendor, vendor_id = excluded.vendor_id`
     }
-    for (const b of c.upsert.boards) {
-      await tx`insert into boards (id, type_id, name, axis, bands) values (${b.id}, ${b.typeId}, ${b.name}, ${b.axis}, ${tx.json(b.bands)})
-        on conflict (id) do update set type_id = excluded.type_id, name = excluded.name, axis = excluded.axis, bands = excluded.bands`
+    for (const a of c.upsert.albums) {
+      await tx`insert into music_albums (id, name, image, colors, vendor, vendor_id, artist_id, year, tracklist_loaded, staged_at, added_at)
+        values (${a.id}, ${a.name}, ${a.image ?? null}, ${a.colors ?? null}, ${a.vendor?.name ?? null}, ${a.vendor?.id ?? null},
+                ${a.artistId ?? null}, ${a.year ?? null}, ${a.tracklistLoaded}, ${a.stagedAt}, ${a.addedAt ?? null})
+        on conflict (id) do update set name = excluded.name, image = excluded.image, colors = excluded.colors, vendor = excluded.vendor,
+          vendor_id = excluded.vendor_id, artist_id = excluded.artist_id, year = excluded.year, tracklist_loaded = excluded.tracklist_loaded,
+          staged_at = excluded.staged_at, added_at = excluded.added_at`
     }
-    for (const i of c.upsert.items) {
-      await tx`insert into items (id, type_id, name, image, colors)
-        values (${i.id}, ${i.typeId}, ${i.name}, ${i.image ?? null}, ${i.colors ?? null})
-        on conflict (id) do update set type_id = excluded.type_id, name = excluded.name, image = excluded.image, colors = excluded.colors`
+    for (const r of c.upsert.tracks) {
+      const t = treeValues(r)
+      await tx`insert into music_tracks (id, name, image, colors, vendor, vendor_id, album_id, artist_id, disc, number, duration_ms,
+                                         exclude_from_artist_score, score, tree_angle, tree_length, tree_ring, tree_since, hidden)
+        values (${r.id}, ${r.name}, ${r.image ?? null}, ${r.colors ?? null}, ${r.vendor?.name ?? null}, ${r.vendor?.id ?? null},
+                ${r.albumId ?? null}, ${r.artistId ?? null}, ${r.disc ?? null}, ${r.number ?? null}, ${r.durationMs ?? null},
+                ${r.excludeFromArtistScore ?? false}, ${t.score}, ${t.tree_angle}, ${t.tree_length}, ${t.tree_ring}, ${t.tree_since}, ${t.hidden})
+        on conflict (id) do update set name = excluded.name, image = excluded.image, colors = excluded.colors, vendor = excluded.vendor,
+          vendor_id = excluded.vendor_id, album_id = excluded.album_id, artist_id = excluded.artist_id, disc = excluded.disc,
+          number = excluded.number, duration_ms = excluded.duration_ms, exclude_from_artist_score = excluded.exclude_from_artist_score,
+          score = excluded.score, tree_angle = excluded.tree_angle, tree_length = excluded.tree_length, tree_ring = excluded.tree_ring,
+          tree_since = excluded.tree_since, hidden = excluded.hidden`
     }
-    // After all the items, so a music row can refer to an item later in the batch.
-    for (const i of c.upsert.items) if (i.music) await upsertMusic(tx, i.id, i.music)
-    for (const x of c.upsert.boardItems) {
-      await tx`insert into board_items (board_id, item_id, status, since, position, angle, length, ring)
-        values (${x.boardId}, ${x.itemId}, ${x.status}, ${x.since}, ${x.position ?? null}, ${x.angle ?? null}, ${x.length ?? null}, ${x.ring ?? null})
-        on conflict (board_id, item_id) do update set status = excluded.status, since = excluded.since,
-          position = excluded.position, angle = excluded.angle, length = excluded.length, ring = excluded.ring`
-    }
-    for (const x of c.remove.boardItems) await tx`delete from board_items where board_id = ${x.boardId} and item_id = ${x.itemId}`
-    if (c.remove.items.length) await tx`delete from items where id in ${tx(c.remove.items)}`
-    if (c.remove.boards.length) await tx`delete from boards where id in ${tx(c.remove.boards)}`
-    if (c.remove.types.length) await tx`delete from item_types where id in ${tx(c.remove.types)} and not built_in`
+    for (const m of c.upsert.movies) await upsertSimple(tx, 'movies', m)
+    for (const b of c.upsert.books) await upsertSimple(tx, 'books', b)
+
+    if (c.remove.tracks.length) await tx`delete from music_tracks where id in ${tx(c.remove.tracks)}`
+    if (c.remove.albums.length) await tx`delete from music_albums where id in ${tx(c.remove.albums)}`
+    if (c.remove.artists.length) await tx`delete from music_artists where id in ${tx(c.remove.artists)}`
+    if (c.remove.movies.length) await tx`delete from movies where id in ${tx(c.remove.movies)}`
+    if (c.remove.books.length) await tx`delete from books where id in ${tx(c.remove.books)}`
   })
+}
+
+/** Album and artist scores straight from the database views (for checking the app against SQL). */
+export const loadScores = async (sql: Sql) => {
+  const [albums, artists] = await Promise.all([
+    sql<{ album_id: string, score: number | null }[]>`select album_id, score from music_album_scores`,
+    sql<{ artist_id: string, score: string | null }[]>`select artist_id, score from music_artist_scores`,
+  ])
+  return {
+    albums: Object.fromEntries(albums.map(r => [r.album_id, r.score])),
+    artists: Object.fromEntries(artists.map(r => [r.artist_id, r.score === null ? null : Number(r.score)])),
+  }
 }

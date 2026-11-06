@@ -1,15 +1,17 @@
 import { ThreeEvent, useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useMemo, useRef } from 'react'
 import { Group, MathUtils, PerspectiveCamera, Vector3 } from 'three'
+import { addedColumn, stagedAlbums } from '../state/board'
 import { useStore } from '../state/store'
-import { CoverSphere } from './CoverSphere'
+import { CoverSphere, SHAPE_EXTENT } from './CoverSphere'
 import { useGlow } from './useGlow'
 import { labelElements, placeBelowLabel, toScreen } from './labels'
-import { screenAnchors, useView } from './view'
+import { collapse, screenAnchors, useView } from './view'
 import { cameraDistanceFor, NODE_RADIUS } from './world'
 
 /** Same size as fruit on the tree, so an album doesn't change size when it's placed. */
-const RADIUS = NODE_RADIUS
+/** Floating albums (and artists) are drawn twice the size of the base sphere, bigger than the fruit. */
+const RADIUS = NODE_RADIUS * 2
 /** A press that moves further than this (px) is a drag (orbiting), not a click. */
 const CLICK_SLOP_PX = 6
 /** Vertical spacing between floating spheres, and the band of height they float in. */
@@ -38,12 +40,10 @@ const seeded = (id: string, salt: number) => {
  * cover towards you, so it's readable.
  */
 export const StagingArea = () => {
-  const staged = useStore(s => s.staged)
-  const added = useStore(s => s.added)
-  const items = useStore(s => s.items)
-  const activeBoardId = useStore(s => s.activeBoardId)
-  const left = staged.filter(st => st.boardId === activeBoardId && items[st.itemId])
-  const right = added.filter(st => st.boardId === activeBoardId && items[st.itemId])
+  const albums = useStore(s => s.albums), artists = useStore(s => s.artists)
+  const s = { albums, artists, tracks: {}, movies: {}, books: {} }
+  const left = stagedAlbums(s).map(a => a.id)
+  const right = addedColumn(s).map(x => x.id)
   const { camera, size } = useThree()
 
   // Visible half-width at the trunk from the starting viewpoint; float about 70% of the way out to the left.
@@ -57,19 +57,18 @@ export const StagingArea = () => {
   const column = (list: typeof left, side: -1 | 1) => {
     const spacing = Math.min(SPACING, (TOP - BOTTOM) / Math.max(1, list.length - 1))
     const top = Math.min(TOP, (spacing * (list.length - 1)) / 2 + 0.6)
-    return list.map((st, i) => {
-      const id = st.itemId
+    return list.map((id, i) => {
       return { id, anchor: new Vector3(side * -x0 + (seeded(id, 1) - 0.5) * 0.7, top - i * spacing, (seeded(id, 2) - 0.5) * 1.4) }
     })
   }
 
   return <>{[...column(left, -1), ...column(right, 1)].map(({ id, anchor }) =>
-    <Floating key={id} id={id} image={items[id].image} anchor={anchor} />
+    <Floating key={id} id={id} image={(albums[id] ?? artists[id])?.image} anchor={anchor} />
   )}</>
 }
 
 const Floating = ({ id, image, anchor }: { id: string, image?: string, anchor: Vector3 }) => {
-  const glow = useGlow(useStore(s => s.items[id]))
+  const glow = useGlow(useStore(s => s.albums[id] ?? s.artists[id]))
   const group = useRef<Group>(null)
   const pos = useRef(anchor.clone())
   const bornAt = useRef(performance.now())
@@ -115,17 +114,20 @@ const Floating = ({ id, image, anchor }: { id: string, image?: string, anchor: V
     g.rotation.y = m.turn + angleDelta(m.turn, facing) * m.still
     g.rotation.x = Math.sin(t * 0.2 + phase) * 0.25 * (1 - m.still)
     const age = (performance.now() - bornAt.current) / 1000
-    g.scale.setScalar(Math.max(0.01, Math.min(1, age * 3)))
+    // For the list view, the floating spheres shrink away with the tree.
+    const out = 1 - collapse.value
+    g.scale.setScalar(Math.max(0.01, Math.min(1, age * 3) * out))
+    g.visible = out > 0.02
 
     const centre = toScreen(g.position, camera, size)
-    const r = (RADIUS / (camera.position.distanceTo(g.position) * Math.tan((camera as PerspectiveCamera).fov * Math.PI / 360))) * size.height / 2
+    const r = (RADIUS * SHAPE_EXTENT / (camera.position.distanceTo(g.position) * Math.tan((camera as PerspectiveCamera).fov * Math.PI / 360))) * size.height / 2
     screenAnchors.set(id, { x: centre.x, y: centre.y, r, visible: centre.inFront })
 
     const label = labelElements.get(id)
     if (label) {
-      below.copy(g.position).y -= RADIUS + 0.12
+      below.copy(g.position).y -= RADIUS * SHAPE_EXTENT + 0.12
       const p = toScreen(below, camera, size)
-      placeBelowLabel(label, p.x, p.y + 4, (p.inFront ? 1 : 0) * Math.min(1, age * 3))
+      placeBelowLabel(label, p.x, p.y + 4, (p.inFront ? 1 : 0) * Math.min(1, age * 3) * out * out)
     }
   })
 

@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from 'react'
-import { Color, ShaderMaterial, SRGBColorSpace, Texture, TextureLoader } from 'three'
+import { useFrame } from '@react-three/fiber'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { Color, type Mesh, Quaternion, ShaderMaterial, SRGBColorSpace, Texture, TextureLoader, Vector3 } from 'three'
 import { theme } from '../theme'
 
 const loader = new TextureLoader().setCrossOrigin('anonymous')
@@ -84,6 +85,60 @@ const fragmentShader = /* glsl */`
   }
 `
 
+/**
+ * Experiment: cubes instead of spheres. Each face of the cube shows the whole cover (the box's own UVs, so the
+ * back reads correctly from behind), shaded by how squarely it faces the camera, with its edges lit in the glow
+ * colour so the bloom catches them the way it catches a sphere's rim. They always face the camera (no spin). Without a cover, a softly glowing core.
+ */
+const cubeVertexShader = /* glsl */`
+  varying vec2 vUv;
+  varying vec3 vNormal;
+  varying vec3 vViewPosition;
+  void main() {
+    vUv = uv;
+    vNormal = normalize(normalMatrix * normal);
+    vec4 mv = modelViewMatrix * vec4(position, 1.0);
+    vViewPosition = mv.xyz;
+    gl_Position = projectionMatrix * mv;
+  }
+`
+const cubeFragmentShader = /* glsl */`
+  uniform sampler2D map;
+  uniform float hasMap;
+  uniform vec3 core;
+  uniform vec3 rim;
+  uniform float rimStrength;
+  varying vec2 vUv;
+  varying vec3 vNormal;
+  varying vec3 vViewPosition;
+  void main() {
+    vec3 n = normalize(vNormal);
+    vec3 v = normalize(-vViewPosition);
+    float facing = max(dot(n, v), 0.0);
+    vec3 col = hasMap > 0.5 ? texture2D(map, vUv).rgb : core * (0.35 + 0.65 * facing);
+    col *= mix(0.35, 1.0, smoothstep(0.0, 0.8, facing));
+    // 0 at the centre of the face, 1 on its edges.
+    vec2 d = abs(vUv - 0.5) * 2.0;
+    float edge = max(d.x, d.y);
+    col += rim * (smoothstep(0.86, 1.0, edge) * 0.8 + pow(1.0 - facing, 3.0) * 0.35) * rimStrength;
+    gl_FragColor = vec4(col, 1.0);
+    #include <colorspace_fragment>
+  }
+`
+
+const up = new Vector3(0, 1, 0), at = new Vector3(), facing = new Quaternion(), parent = new Quaternion()
+
+/** Which shape the covers go on: spheres; add ?shape=cube to the URL to see the cube experiment. */
+const SHAPE: 'cube' | 'sphere' =
+  typeof location !== 'undefined' && new URLSearchParams(location.search).get('shape') === 'cube' ? 'cube' : 'sphere'
+/** A cube's edge (and a sphere's diameter), as a multiple of the radius it's given: half the size that first matched the original spheres (1.55). */
+const CUBE_EDGE = 0.775
+/** How far the shape reaches from its centre, as a multiple of the radius it's given: for placing labels, icons and
+ * stem ends against what's actually drawn. Layout spacing still goes by the radius. */
+export const SHAPE_EXTENT = CUBE_EDGE / 2
+/** Spheres are drawn as wide as the cubes: half the radius they're given (which still sets the layout spacing). */
+const SPHERE_SCALE = CUBE_EDGE / 2
+
 type Props = {
   image?: string
   radius: number
@@ -95,8 +150,8 @@ type Props = {
 export const CoverSphere = ({ image, radius, rimStrength = 2.2, glow }: Props) => {
   const texture = useCoverTexture(image)
   const material = useMemo(() => new ShaderMaterial({
-    vertexShader,
-    fragmentShader,
+    vertexShader: SHAPE === 'cube' ? cubeVertexShader : vertexShader,
+    fragmentShader: SHAPE === 'cube' ? cubeFragmentShader : fragmentShader,
     uniforms: {
       map: { value: null },
       hasMap: { value: 0 },
@@ -114,7 +169,21 @@ export const CoverSphere = ({ image, radius, rimStrength = 2.2, glow }: Props) =
   useEffect(() => { (material.uniforms.rim.value as Color).set(glow ?? theme.signal) }, [material, glow])
   useEffect(() => () => material.dispose(), [material])
 
-  return <mesh material={material}>
-    <sphereGeometry args={[radius, 48, 32]} />
+  // Cubes don't spin or tilt with whatever holds them: each one turns its front face to the camera, around the
+  // vertical axis only (so the top face shows from above, and up stays up).
+  const mesh = useRef<Mesh>(null)
+  useFrame(({ camera }) => {
+    const m = mesh.current
+    if (SHAPE !== 'cube' || !m?.parent) return
+    m.getWorldPosition(at)
+    facing.setFromAxisAngle(up, Math.atan2(camera.position.x - at.x, camera.position.z - at.z))
+    m.parent.getWorldQuaternion(parent)
+    m.quaternion.copy(parent.invert().multiply(facing))
+  })
+
+  return <mesh ref={mesh} material={material}>
+    {SHAPE === 'cube'
+      ? <boxGeometry args={[radius * CUBE_EDGE, radius * CUBE_EDGE, radius * CUBE_EDGE]} />
+      : <sphereGeometry args={[radius * SPHERE_SCALE, 48, 32]} />}
   </mesh>
 }

@@ -1,5 +1,5 @@
 import { OrbitControls } from '@react-three/drei'
-import { Canvas } from '@react-three/fiber'
+import { Canvas, useFrame } from '@react-three/fiber'
 import { useRef } from 'react'
 import { useStore } from '../state/store'
 import { theme } from '../theme'
@@ -9,7 +9,7 @@ import { CameraReset } from './CameraReset'
 import { Effects } from './Effects'
 import { Items } from './Items'
 import { StagingArea } from './StagingArea'
-import { useView } from './view'
+import { collapse, COLLAPSE_SECONDS, useView } from './view'
 import { cameraDistanceFor, CAMERA_FOV, CAMERA_MAX_DISTANCE, CAMERA_MIN_DISTANCE, CAMERA_POLAR } from './world'
 
 /**
@@ -17,7 +17,9 @@ import { cameraDistanceFor, CAMERA_FOV, CAMERA_MAX_DISTANCE, CAMERA_MIN_DISTANCE
  * always means "better". Drag (or one finger) to turn the board, scroll or pinch to zoom.
  */
 export const Stage = () => {
-  const boardOpen = useStore(s => s.activeBoardId !== null)
+  const boardOpen = useStore(s => s.activeType !== null)
+  // The list view covers the tree, so there's nothing to draw while it's up.
+  const listing = useView(v => v.phase === 'list')
   const distance = cameraDistanceFor(window.innerWidth / window.innerHeight)
   const start: [number, number, number] = [0, Math.cos(CAMERA_POLAR) * distance, Math.sin(CAMERA_POLAR) * distance]
   // A click on empty space closes an open popup, but not the end of a drag (orbiting), and not while editing.
@@ -31,6 +33,7 @@ export const Stage = () => {
     onPointerMissed={onPointerMissed}
     camera={{ position: start, fov: CAMERA_FOV, near: 0.1, far: 120 }}
     dpr={[1, 2]}
+    frameloop={listing ? 'never' : 'always'}
     gl={{ antialias: false }}
     style={{ position: 'fixed', inset: 0 }}
   >
@@ -38,6 +41,7 @@ export const Stage = () => {
     <Backdrop />
     {boardOpen && <>
       <Axis />
+      <CollapseDriver />
       <Items />
       <StagingArea />
       <OrbitControls
@@ -56,4 +60,17 @@ export const Stage = () => {
     </>}
     <Effects />
   </Canvas>
+}
+
+/** Eases `collapse` towards 1 whenever the list is on its way in or up, and back to 0 for the tree. */
+const CollapseDriver = () => {
+  const progress = useRef(collapse.value)
+  useFrame((_, dt) => {
+    const target = useView.getState().phase === 'tree' ? 0 : 1
+    const step = Math.min(dt, 0.1) / COLLAPSE_SECONDS
+    progress.current = target > progress.current ? Math.min(1, progress.current + step) : Math.max(0, progress.current - step)
+    const p = progress.current
+    collapse.value = p * p * (3 - 2 * p)
+  })
+  return null
 }

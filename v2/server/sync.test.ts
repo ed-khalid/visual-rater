@@ -5,16 +5,13 @@ import { createApp, type Store } from './app'
 
 const id = (n: number) => `00000000-0000-4000-8000-${String(n).padStart(12, '0')}`
 const state = (): Persisted => ({
-  types: { music: { id: 'music', name: 'MUSIC', builtIn: true } },
-  boards: { [id(1)]: { id: id(1), typeId: 'music', name: 'MUSIC', axis: 'linear', bands: [] } },
-  items: {
-    [id(2)]: { id: id(2), typeId: 'music', name: 'Kid A', image: 'https://i.scdn.co/image/x',
-      music: { kind: 'album', vendor: { name: 'spotify', id: 'abc' }, artistId: id(4), year: 2000, tracklistLoaded: true } },
-    [id(3)]: { id: id(3), typeId: 'music', name: 'Idioteque', music: { kind: 'track', albumId: id(2), artistId: id(4), disc: 1, number: 1, durationMs: 1000 } },
-    [id(4)]: { id: id(4), typeId: 'music', name: 'Radiohead', music: { kind: 'artist' } },
-  },
-  staged: [], added: [{ boardId: id(1), itemId: id(2), stagedAt: 1 }],
-  placements: [{ boardId: id(1), itemId: id(3), position: 0.73, placedAt: 2, angle: Math.PI / 2, length: 1.25, ring: 0 }],
+  artists: { [id(4)]: { id: id(4), name: 'Radiohead' } },
+  albums: { [id(2)]: { id: id(2), name: 'Kid A', image: 'https://i.scdn.co/image/x', vendor: { name: 'spotify', id: 'abc' },
+    artistId: id(4), year: 2000, tracklistLoaded: true, stagedAt: 1, addedAt: 2 } },
+  tracks: { [id(3)]: { id: id(3), name: 'Idioteque', albumId: id(2), artistId: id(4), disc: 1, number: 1, durationMs: 1000,
+    score: 73, branch: { angle: Math.PI / 2, length: 1.25, ring: 0 }, since: 2 } },
+  movies: { [id(5)]: { id: id(5), name: 'Stalker', score: 90, branch: { angle: 0, length: 1.25, ring: 0 }, since: 3 } },
+  books: {},
 })
 
 const fakeStore = (): Store & { applied: unknown[] } => {
@@ -45,13 +42,13 @@ describe('state and sync routes', () => {
     const bad = [
       'not json at all',
       { upsert: {}, remove: {} },
-      { ...emptyChanges(), upsert: { ...emptyChanges().upsert, items: [{ id: 'not-a-uuid', typeId: 'music', name: 'x' }] } },
-      { ...emptyChanges(), upsert: { ...emptyChanges().upsert, boardItems: [{ boardId: id(1), itemId: id(3), status: 'placed', since: 1 }] } }, // placed without branch
-      { ...emptyChanges(), upsert: { ...emptyChanges().upsert, boardItems: [{ boardId: id(1), itemId: id(3), status: 'placed', since: 1, position: 1.5, angle: 0, length: 1, ring: 0 }] } },
-      { ...emptyChanges(), upsert: { ...emptyChanges().upsert, items: [{ id: id(9), typeId: 'music', name: 'x', image: 'javascript:alert(1)' }] } },
-      { ...emptyChanges(), upsert: { ...emptyChanges().upsert, items: [{ id: id(9), typeId: 'music', name: 'x', music: { kind: 'band' } }] } },
-      { ...emptyChanges(), upsert: { ...emptyChanges().upsert, items: [{ id: id(9), typeId: 'music', name: 'x', music: { kind: 'track', albumId: 'not-a-uuid' } }] } },
-      { ...emptyChanges(), upsert: { ...emptyChanges().upsert, items: [{ id: id(9), typeId: 'music', name: 'x', music: { kind: 'album' } }] } }, // no tracklistLoaded
+      { ...emptyChanges(), upsert: { ...emptyChanges().upsert, tracks: [{ id: 'not-a-uuid', name: 'x' }] } },
+      { ...emptyChanges(), upsert: { ...emptyChanges().upsert, tracks: [{ id: id(9), name: 'x', branch: { angle: 0, length: 1 } }] } }, // half a branch
+      { ...emptyChanges(), upsert: { ...emptyChanges().upsert, tracks: [{ id: id(9), name: 'x', score: 120 }] } }, // score past 100
+      { ...emptyChanges(), upsert: { ...emptyChanges().upsert, albums: [{ id: id(9), name: 'x', image: 'javascript:alert(1)', tracklistLoaded: false, stagedAt: 1 }] } },
+      { ...emptyChanges(), upsert: { ...emptyChanges().upsert, albums: [{ id: id(9), name: 'x', tracklistLoaded: false }] } }, // no stagedAt
+      { ...emptyChanges(), upsert: { ...emptyChanges().upsert, tracks: [{ id: id(9), name: 'x', albumId: 'not-a-uuid' }] } },
+      { ...emptyChanges(), upsert: { ...emptyChanges().upsert, movies: [{ id: id(9), name: 'x', colors: ['red'] }] } },
     ]
     for (const body of bad) expect((await post(app, body)).status).toBe(400)
     expect(store.applied).toHaveLength(0)

@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
-import { useShallow } from 'zustand/react/shallow'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { liveScores, screenAnchors, useView } from '../scene/view'
-import { albumOf, artistOf, formatScore, ratingLabel, tracksOf, useStore } from '../state/store'
+import { addedColumn, find, formatScore, rating as ratingOf, songTier, stagedAlbums, tracksOf, treeNodes } from '../state/board'
+import { usePersisted, useStore } from '../state/store'
 import { formatDuration, loadAlbumDetails, needsTracklist, useAlbumLoads } from './albumDetails'
 import './albumOverlays.css'
 
@@ -50,47 +50,56 @@ const usePinned = (id: string | null, ref: React.RefObject<HTMLElement | null>, 
 }
 
 /**
- * Hover card for anything on the board, with its score (0–100, or UNRATED while staged). Albums show artist, album
- * and year; tracks show track, artist and album; anything else just its name. Hidden while that item's popup is
- * open (the popup shows the same) and while dragging (the drag readout shows the score).
+ * Hover card for anything on the open tree, with its score: a track's, movie's or book's own (UNRATED until it's
+ * dragged), or an album's or artist's, worked out from their tracks. Albums show artist, album and year; tracks
+ * show track, artist and album; artists their name. Hidden while that thing's popup is open (the popup shows the
+ * same) and while dragging (the drag readout shows the score).
  */
 export const ItemHoverCard = () => {
   const hoveredId = useView(v => v.hoveredId)
   const openId = useView(v => v.openId)
   const draggingId = useView(v => v.draggingId)
-  const item = useStore(s => hoveredId ? s.items[hoveredId] : undefined)
-  const albumName = useStore(s => albumOf(s.items, item)?.name)
-  const artistName = useStore(s => artistOf(s.items, item)?.name)
-  const rating = useStore(s => hoveredId ? ratingLabel(s, hoveredId) : '')
+  const s = usePersisted()
   const ref = useRef<HTMLDivElement>(null)
-  const id = item && hoveredId !== openId && !draggingId ? hoveredId : null
+  const f = find(s, hoveredId)
+  const id = f && hoveredId !== openId && !draggingId ? hoveredId : null
   usePinned(id, ref, 'centre')
-  if (!item || !id) return null
+  if (!f || !id) return null
 
-  const music = item.music
-  const isTrack = music?.kind === 'track'
+  const rating = ratingOf(s, id)
+  const artistName = (artistId?: string) => artistId ? s.artists[artistId]?.name : undefined
   return <div ref={ref} className="album-card" role="tooltip">
-    {music?.kind === 'album'
-      ? <AlbumFacts artist={artistName} album={item.name} year={music.year} rating={rating} />
+    {f.collection === 'albums'
+      ? <AlbumFacts artist={artistName(f.entity.artistId)} album={f.entity.name} year={f.entity.year} rating={rating} />
       : <dl className="album-facts">
-          <dt>{isTrack ? 'TRACK' : 'NAME'}</dt><dd>{item.name}</dd>
-          {isTrack && <><dt>ARTIST</dt><dd>{artistName ?? '—'}</dd><dt>ALBUM</dt><dd>{albumName ?? '—'}</dd></>}
-          <dt>SCORE</dt><dd className={rating === 'UNRATED' ? 'dim' : 'album-score'}>{rating}</dd>
+          <dt>{f.collection === 'tracks' ? 'TRACK' : f.collection === 'artists' ? 'ARTIST' : 'NAME'}</dt><dd>{f.entity.name}</dd>
+          {f.collection === 'tracks' && <>
+            <dt>ARTIST</dt><dd>{artistName(f.entity.artistId) ?? '—'}</dd>
+            <dt>ALBUM</dt><dd>{f.entity.albumId ? s.albums[f.entity.albumId]?.name ?? '—' : '—'}</dd>
+          </>}
+          <dt>SCORE</dt><RatingValue rating={rating} />
         </dl>}
   </div>
 }
 
-/** Live score above the fruit being dragged, so you can see exactly where it will land. */
+/** Live score above the fruit being dragged, so you can see exactly where it will land; on MUSIC, with its song tier
+ * in the tier's v1 colour. */
 export const DragScore = () => {
   const draggingId = useView(v => v.draggingId)
-  const ref = useRef<HTMLDivElement>(null)
+  const music = useStore(s => s.activeType) === 'music'
+  const ref = useRef<HTMLDivElement>(null), value = useRef<HTMLSpanElement>(null), tier = useRef<HTMLSpanElement>(null)
   useEffect(() => {
     if (!draggingId) return
-    let frame = 0
+    let frame = 0, shown = ''
     const tick = () => {
       const el = ref.current, a = screenAnchors.get(draggingId), score = liveScores.get(draggingId)
       if (el && a && score !== undefined) {
-        el.textContent = formatScore(score)
+        const t = songTier(score), text = `${formatScore(score)}|${t.name}`
+        if (text !== shown) {
+          shown = text
+          value.current!.textContent = formatScore(score)
+          if (tier.current) { tier.current.textContent = t.name; tier.current.style.background = t.color }
+        }
         el.style.transform = `translate(${Math.round(a.x)}px, ${Math.round(a.y - a.r - 10)}px) translate(-50%, -100%)`
         el.style.visibility = 'visible'
       }
@@ -100,19 +109,31 @@ export const DragScore = () => {
     return () => cancelAnimationFrame(frame)
   }, [draggingId])
   if (!draggingId) return null
-  return <div ref={ref} className="drag-score" aria-live="polite" />
+  return <div ref={ref} className="drag-score" aria-live="polite">
+    <span ref={value} />
+    {music && <span ref={tier} className="tier-chip" />}
+  </div>
 }
 
-const AlbumFacts = ({ artist, album, year, rating }: { artist?: string, album: string, year?: number, rating: string }) =>
+type Rating = ReturnType<typeof ratingOf>
+
+/** A score with its tier beside it, in the tier's v1 colour (no tier when unrated, or on movies and books). */
+const RatingValue = ({ rating, className = 'album-score' }: { rating: Rating, className?: string }) =>
+  <dd className={rating.label === 'UNRATED' ? 'dim' : className}>
+    {rating.label}
+    {rating.tier && <span className="tier-chip" style={{ background: rating.tier.color }}>{rating.tier.name}</span>}
+  </dd>
+
+const AlbumFacts = ({ artist, album, year, rating }: { artist?: string, album: string, year?: number, rating: Rating }) =>
   <dl className="album-facts">
     <dt>ARTIST</dt><dd>{artist ?? '—'}</dd>
     <dt>ALBUM</dt><dd>{album}</dd>
     <dt>YEAR</dt><dd>{year ?? '—'}</dd>
-    <dt>RATING</dt><dd className={rating === 'UNRATED' ? 'dim' : 'album-score'}>{rating}</dd>
+    <dt>RATING</dt><RatingValue rating={rating} />
   </dl>
 
-/** A track being edited: its item id, name, and what's shown beside it. */
-type DraftTrack = { id: string, name: string, disc: number, number: number, durationMs?: number }
+/** A track in the popup (or being edited): its id, name, and what's shown beside it. */
+type DraftTrack = { id: string, name: string, disc: number, number: number, durationMs?: number, score?: number }
 type Draft = { name: string, year: string, tracks: DraftTrack[] }
 
 /** Whole years between 1000 and 2999, or blank for "no year". */
@@ -133,11 +154,12 @@ export const AlbumPopup = () => {
   const openId = useView(v => v.openId)
   const close = useView(v => v.close)
   const setEditing = useView(v => v.setEditing)
-  const item = useStore(s => openId ? s.items[openId] : undefined)
-  const artistName = useStore(s => artistOf(s.items, item)?.name)
-  const trackItems = useStore(useShallow(s => openId ? tracksOf(s.items, openId) : []))
-  const rating = useStore(s => openId ? ratingLabel(s, openId) : '')
-  const editItem = useStore(s => s.editItem)
+  const s = usePersisted()
+  // The popup is for albums; anything else that's "open" (a tapped artist, say) has no popup.
+  const item = openId ? s.albums[openId] : undefined
+  const artistName = item?.artistId ? s.artists[item.artistId]?.name : undefined
+  const rating = openId ? ratingOf(s, openId) : { label: '' }
+  const editAlbum = useStore(st => st.editAlbum)
   const status = useAlbumLoads(s => openId ? s.status[openId] : undefined)
   const ref = useRef<HTMLDivElement>(null)
   const [draft, setDraft] = useState<Draft | null>(null)
@@ -159,10 +181,10 @@ export const AlbumPopup = () => {
   }, [openId, close, draft])
 
   if (!item || !openId) return null
-  const year0 = item.music?.kind === 'album' ? item.music.year : undefined
-  const tracks: DraftTrack[] = trackItems.flatMap(t => t.music?.kind === 'track'
-    ? [{ id: t.id, name: t.name, disc: t.music.disc ?? 0, number: t.music.number ?? 0, durationMs: t.music.durationMs }]
-    : [])
+  const year0 = item.year
+  const tracks: DraftTrack[] = tracksOf(s, openId).map(t => ({
+    id: t.id, name: t.name, disc: t.disc ?? 0, number: t.number ?? 0, durationMs: t.durationMs, score: t.score,
+  }))
 
   const startEdit = () => { setDraft({ name: item.name, year: year0?.toString() ?? '', tracks }) }
   const year = draft ? parseYear(draft.year) : null
@@ -173,7 +195,7 @@ export const AlbumPopup = () => {
     : null
   const save = () => {
     if (!draft || problem || year === 'invalid') return
-    if (editItem(openId, { name: draft.name, year, tracks: draft.tracks.map(t => ({ id: t.id, name: t.name })) })) setDraft(null)
+    if (editAlbum(openId, { name: draft.name, year, tracks: draft.tracks.map(t => ({ id: t.id, name: t.name })) })) setDraft(null)
   }
 
   const shown = draft ? draft.tracks : tracks
@@ -190,7 +212,7 @@ export const AlbumPopup = () => {
             <dt>ARTIST</dt><dd>{artistName ?? '—'}</dd>
             <dt>YEAR</dt>
             <dd><input className="album-input album-input-year" value={draft.year} onChange={e => setDraft({ ...draft, year: e.target.value })} inputMode="numeric" maxLength={4} placeholder="—" aria-label="Year" /></dd>
-            <dt>RATING</dt><dd className={rating === 'UNRATED' ? 'dim' : ''}>{rating}</dd>
+            <dt>RATING</dt><RatingValue rating={rating} className="" />
           </dl>
         </>
       : <>
@@ -211,7 +233,10 @@ export const AlbumPopup = () => {
                 : <span className="album-track-name">{t.name}</span>}
               {draft
                 ? <button className="album-track-delete" onClick={() => deleteTrack(t.id)} aria-label={`Delete ${t.name}`}>×</button>
-                : <span className="album-track-time">{t.durationMs !== undefined ? formatDuration(t.durationMs) : ''}</span>}
+                : <span className="album-track-time">
+                    {t.score !== undefined && <span className="album-track-score">{formatScore(t.score)}</span>}
+                    {t.durationMs !== undefined ? formatDuration(t.durationMs) : ''}
+                  </span>}
             </li>
           })}
         </ol>
@@ -301,14 +326,20 @@ const useSphereIcon = (eligibleIds: string[], corner: 'top-left' | 'top-right') 
 }
 
 /**
- * Trash icon just outside the top-left of an item's sphere, for anything on the board: staged and added albums,
- * and fruit on the tree. First click arms it (red), a second click within a few seconds removes the item.
+ * Trash icon just outside the top-left of a sphere: fruit on the tree (a track is hidden, keeping its score; a
+ * movie or book is deleted) and albums, staged or added (deleted with their tracks). Artists have none: they're
+ * worked out from their albums. First click arms it (red), a second click within a few seconds removes.
  */
 export const ItemTrash = () => {
   const close = useView(v => v.close)
-  const onBoardIds = useStore(useShallow(s => [...s.staged, ...s.added, ...s.placements].filter(x => x.boardId === s.activeBoardId).map(x => x.itemId)))
-  const removeFromBoard = useStore(s => s.removeFromBoard)
-  const icon = useSphereIcon(onBoardIds, 'top-left')
+  const s = usePersisted()
+  const activeType = useStore(st => st.activeType)
+  const ids = useMemo(() => !activeType ? [] : [
+    ...treeNodes(s, activeType).map(n => n.id),
+    ...(activeType === 'music' ? [...stagedAlbums(s).map(a => a.id), ...addedColumn(s).filter(x => x.collection === 'albums').map(x => x.id)] : []),
+  ], [s, activeType])
+  const remove = useStore(st => st.remove)
+  const icon = useSphereIcon(ids, 'top-left')
   const [armed, setArmed] = useState(false)
 
   useEffect(() => { setArmed(false) }, [icon.target])
@@ -325,7 +356,7 @@ export const ItemTrash = () => {
     const v = useView.getState()
     if (v.openId === target || v.selectedId === target) close()
     if (v.hoveredId === target) v.setHovered(null)
-    removeFromBoard(target)
+    remove(target)
     icon.hide(); setArmed(false)
   }
 
@@ -351,7 +382,8 @@ export const ItemTrash = () => {
  * sends the album to the column on the right. Loads the tracklist first if it isn't there yet.
  */
 export const StagedAdd = () => {
-  const stagedIds = useStore(useShallow(s => s.staged.filter(x => x.boardId === s.activeBoardId).map(x => x.itemId)))
+  const albums = useStore(st => st.albums)
+  const stagedIds = useMemo(() => stagedAlbums({ albums } as Parameters<typeof stagedAlbums>[0]).map(a => a.id), [albums])
   const addAlbumTracks = useStore(s => s.addAlbumTracks)
   const icon = useSphereIcon(stagedIds, 'top-right')
   const [busy, setBusy] = useState(false)

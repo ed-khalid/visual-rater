@@ -109,6 +109,20 @@ const ALIGN_LENGTHS = (() => {
   return out
 })()
 
+/** Stem lengths to try when an item must stay on its own plane: the usual ones, then on out to MAX_BRANCH_LENGTH. */
+const OWN_PLANE_LENGTHS = (() => {
+  const out = [...ALIGN_LENGTHS]
+  for (let l = ALIGN_MAX_LENGTH + ALIGN_STEP; l <= MAX_BRANCH_LENGTH + 1e-9; l += ALIGN_STEP) out.push(+l.toFixed(3))
+  return out
+})()
+
+/**
+ * Planes for groups of items (albums, on MUSIC), as turns away from the main plane: the first group on the main
+ * plane, the rest spread evenly round the half-turn (a plane has a branch either side of the trunk, so half a turn
+ * covers every direction). Orbiting the camera then brings each group face-on in turn.
+ */
+export const groupPlanes = (groups: number) => Array.from({ length: groups }, (_, k) => (k * Math.PI) / Math.max(1, groups))
+
 /**
  * Lays out every item so as many as possible sit on the main plane (left or right of the trunk). Items are taken
  * bottom to top; each goes on the main plane at the stem length nearest normal that keeps it clear of every fruit
@@ -116,9 +130,13 @@ const ALIGN_LENGTHS = (() => {
  * ALIGN_MAX_LENGTH clears on either side, it swings to the next plane (±30°, then ±60°). If nothing fits anywhere,
  * it takes the spot that's least crowded.
  *
+ * With `planes` (a turn per item, e.g. from groupPlanes), each item stays on its own plane instead: either side of
+ * the trunk, stems out to MAX_BRANCH_LENGTH if that's what it takes, and the least crowded spot on that plane if
+ * nothing is clear.
+ *
  * @param positions placement heights (0–1), in any order; results come back in the same order
  */
-export const autoAlign = (positions: number[]): Branch[] => {
+export const autoAlign = (positions: number[], planes?: number[]): Branch[] => {
   const order = positions.map((p, i) => ({ p, i })).sort((a, b) => a.p - b.p || a.i - b.i)
   const placed: { x: number, y: number, z: number }[] = []
   const perSide = new Map<string, number>()
@@ -126,13 +144,15 @@ export const autoAlign = (positions: number[]): Branch[] => {
 
   for (const { p, i } of order) {
     const y = p * TRUNK_HEIGHT
+    const turns = planes ? [planes[i]] : ALIGN_PLANES
+    const lengths = planes ? OWN_PLANE_LENGTHS : ALIGN_LENGTHS
     let chosen: { angle: number, length: number, key: string } | null = null
-    for (const turn of ALIGN_PLANES) {
+    for (const turn of turns) {
       let best: { angle: number, length: number, key: string, cost: number, count: number } | null = null
       for (const side of [1, -1]) {
         const angle = side * Math.PI / 2 + turn
         const key = `${turn}:${side}`
-        const length = ALIGN_LENGTHS.find(l => placed.every(q => apart(fruitAt(y, angle, l), q) >= ALIGN_MIN_DISTANCE))
+        const length = lengths.find(l => placed.every(q => apart(fruitAt(y, angle, l), q) >= ALIGN_MIN_DISTANCE))
         if (length === undefined) continue
         const cost = Math.abs(length - BRANCH_LENGTH), count = perSide.get(key) ?? 0
         if (!best || cost < best.cost - 1e-9 || (Math.abs(cost - best.cost) < 1e-9 && count < best.count)) best = { angle, length, key, cost, count }
@@ -142,7 +162,7 @@ export const autoAlign = (positions: number[]): Branch[] => {
     if (!chosen) {
       // Nowhere is clear: take the spot with the most room.
       let most = -1
-      for (const turn of ALIGN_PLANES) for (const side of [1, -1]) for (const length of ALIGN_LENGTHS) {
+      for (const turn of turns) for (const side of [1, -1]) for (const length of lengths) {
         const angle = side * Math.PI / 2 + turn
         const room = Math.min(...placed.map(q => apart(fruitAt(y, angle, length), q)))
         if (room > most) { most = room; chosen = { angle, length, key: `${turn}:${side}` } }

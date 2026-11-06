@@ -17,9 +17,9 @@ const setStatus = (itemId: string, status: LoadStatus | null) =>
   })
 
 /** Whether this album's tracklist still has to be fetched from the catalogue. */
-export const needsTracklist = (itemId: string) => {
-  const music = useStore.getState().items[itemId]?.music
-  return music?.kind === 'album' && music.vendor?.name === 'spotify' && !music.tracklistLoaded
+export const needsTracklist = (albumId: string) => {
+  const album = useStore.getState().albums[albumId]
+  return !!album && album.vendor?.name === 'spotify' && !album.tracklistLoaded
 }
 
 /**
@@ -27,13 +27,13 @@ export const needsTracklist = (itemId: string) => {
  * Safe to call repeatedly: does nothing if the tracklist is already there or a load is under way.
  */
 export const loadAlbumDetails = (itemId: string): Promise<void> => {
-  const music = useStore.getState().items[itemId]?.music
-  if (!needsTracklist(itemId) || music?.kind !== 'album' || !music.vendor) return Promise.resolve()
+  const vendor = useStore.getState().albums[itemId]?.vendor
+  if (!needsTracklist(itemId) || !vendor) return Promise.resolve()
   const existing = inFlight.get(itemId)
   if (existing) return existing
 
   setStatus(itemId, 'loading')
-  const load = fetch(`/api/music/albums/${encodeURIComponent(music.vendor.id)}`)
+  const load = fetch(`/api/music/albums/${encodeURIComponent(vendor.id)}`)
     .then(async res => {
       if (!res.ok) throw new Error(String(res.status))
       const album = await res.json() as AlbumDetails

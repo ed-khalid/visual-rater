@@ -1,0 +1,98 @@
+/* Small bordered button in the bottom-left corner, just above the item count (as the + key sits under the title) */
+.rubric-button {
+  position: fixed;
+  bottom: 46px;
+  left: 28px;
+  z-index: 15;
+  padding: 3px 9px 3px 11px;
+  font-family: var(--font);
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  color: var(--text-dim);
+  background: rgb(6, 12, 20);
+  border: 1px solid rgba(159, 179, 200, 0.35);
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+.rubric-button:hover,
+.rubric-button:focus-visible,
+.rubric-button.open { color: #5ce1ff; border-color: rgba(92, 225, 255, 0.6); outline: none; }
+
+/* Fingers get a bigger target than the box shows */
+.rubric-button::after { content: ''; position: absolute; inset: -10px -6px; }
+
+/* Same glass panel as the album popup, opening upwards from the button; it stops short of the top-left HUD */
+.rubric {
+  position: fixed;
+  bottom: 80px;
+  left: 28px;
+  z-index: 20;
+  max-height: calc(100vh - 80px - 84px);
+  display: flex;
+  flex-direction: column;
+  width: min(260px, calc(100vw - 56px));
+  padding: 14px 6px 10px 16px;
+  font-family: var(--font);
+  color: var(--text);
+  background: rgb(6, 12, 20);
+  border: 1px solid rgba(92, 225, 255, 0.35);
+  border-radius: 4px;
+  box-shadow: 0 0 24px rgba(92, 225, 255, 0.12), inset 0 0 12px rgba(92, 225, 255, 0.05);
+}
+
+.rubric-title { margin-bottom: 10px; font-size: 11px; letter-spacing: 0.28em; color: #e6f6ff; }
+
+.rubric-close {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 40px;
+  height: 40px;
+  font: inherit;
+  font-size: 17px;
+  line-height: 1;
+  color: var(--text-dim);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.rubric-close:hover,
+.rubric-close:focus-visible { color: #5ce1ff; outline: none; }
+
+.rubric-tiers {
+  margin: 0;
+  padding: 0 10px 0 0;
+  list-style: none;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(92, 225, 255, 0.25) transparent;
+}
+
+.rubric-tiers { display: flex; flex-direction: column; gap: 2px; }
+
+/* Each tier in its v1 colour, white text as in v1; the faint edge keeps the near-black ones visible on the panel */
+.rubric-tier {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 5px 8px;
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  border: 1px solid rgba(230, 246, 255, 0.08);
+  border-radius: 2px;
+}
+
+.rubric-name { color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5); }
+.rubric-range { color: rgba(255, 255, 255, 0.78); letter-spacing: 0.08em; font-variant-numeric: tabular-nums; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5); }
+
+/* Phones: compact, so it stays in the space left of the trunk instead of covering it */
+@media (max-width: 600px) {
+  .rubric { width: calc(50vw - 46px); padding: 10px 2px 8px 10px; }
+  .rubric-title { font-size: 9px; letter-spacing: 0.2em; margin-bottom: 6px; }
+  .rubric-close { width: 34px; height: 34px; font-size: 15px; }
+  .rubric-tiers { padding-right: 6px; }
+  .rubric-tier { gap: 6px; padding: 4px 5px; font-size: 9px; letter-spacing: 0.06em; }
+  .rubric-range { letter-spacing: 0; }
+}

@@ -4,67 +4,55 @@ import { z } from 'zod'
 
 const uuid = z.uuid()
 const text = (max = 500) => z.string().min(1).max(max)
-
-const itemType = z.object({ id: text(64), name: text(64), builtIn: z.boolean() })
-
-const board = z.object({
-  id: uuid,
-  typeId: text(64),
-  name: text(64),
-  axis: z.literal('linear'),
-  bands: z.array(z.object({ name: text(64), from: z.number().min(0).max(1), to: z.number().min(0).max(1) })).max(50),
-})
-
-const vendor = z.object({ name: z.literal('spotify'), id: text(64) }).optional()
 const count = z.number().int().min(0)
+const vendor = z.object({ name: z.literal('spotify'), id: text(64) }).optional()
 
-const music = z.discriminatedUnion('kind', [
-  z.object({ kind: z.literal('artist'), vendor }),
-  z.object({ kind: z.literal('album'), vendor, artistId: uuid.optional(), year: z.number().int().min(0).max(9999).optional(), tracklistLoaded: z.boolean() }),
-  z.object({
-    kind: z.literal('track'), vendor, albumId: uuid.optional(), artistId: uuid.optional(),
-    disc: count.optional(), number: count.optional(), durationMs: count.optional(),
-  }),
-])
-
-const item = z.object({
+const base = {
   id: uuid,
-  typeId: text(64),
   name: text(),
   // http(s) only: a plain url check also accepts javascript:, data:, ftp: and so on
   image: z.url({ protocol: /^https?$/ }).max(2000).optional(),
-  colors: z.array(z.string().max(32)).max(16).optional(),
-  music: music.optional(),
+  colors: z.array(z.string().regex(/^#[0-9a-fA-F]{6}$/)).max(16).optional(),
+}
+
+const rateable = {
+  score: z.number().min(0).max(100).optional(),
+  branch: z.object({ angle: z.number().finite(), length: z.number().positive().max(100), ring: count }).optional(),
+  since: count.optional(),
+  hidden: z.boolean().optional(),
+}
+
+const artist = z.object({ ...base, vendor })
+const album = z.object({
+  ...base, vendor,
+  artistId: uuid.optional(),
+  year: z.number().int().min(0).max(9999).optional(),
+  tracklistLoaded: z.boolean(),
+  stagedAt: count,
+  addedAt: count.optional(),
 })
+const track = z.object({
+  ...base, ...rateable, vendor,
+  albumId: uuid.optional(),
+  artistId: uuid.optional(),
+  disc: count.optional(),
+  number: count.optional(),
+  durationMs: count.optional(),
+  excludeFromArtistScore: z.boolean().optional(),
+})
+const simple = z.object({ ...base, ...rateable })
 
-const boardItem = z.object({
-  boardId: uuid,
-  itemId: uuid,
-  status: z.enum(['staged', 'added', 'placed']),
-  since: z.number().int().min(0),
-  position: z.number().min(0).max(1).optional(),
-  angle: z.number().finite().optional(),
-  length: z.number().positive().max(100).optional(),
-  ring: z.number().int().min(0).optional(),
-}).refine(x => x.status !== 'placed' || (x.position !== undefined && x.angle !== undefined && x.length !== undefined && x.ring !== undefined),
-  { message: 'placed items need position, angle, length and ring' })
-
-const key = z.object({ boardId: uuid, itemId: uuid })
-
-/** At most this many entities of each kind per batch (an import of a big board fits comfortably). */
+/** At most this many records of each kind per batch. */
 const MAX = 5000
+const ids = z.array(uuid).max(MAX)
 
 export const changesSchema = z.object({
   upsert: z.object({
-    types: z.array(itemType).max(MAX),
-    boards: z.array(board).max(MAX),
-    items: z.array(item).max(MAX),
-    boardItems: z.array(boardItem).max(MAX),
+    artists: z.array(artist).max(MAX),
+    albums: z.array(album).max(MAX),
+    tracks: z.array(track).max(MAX),
+    movies: z.array(simple).max(MAX),
+    books: z.array(simple).max(MAX),
   }),
-  remove: z.object({
-    types: z.array(text(64)).max(MAX),
-    boards: z.array(uuid).max(MAX),
-    items: z.array(uuid).max(MAX),
-    boardItems: z.array(key).max(MAX),
-  }),
+  remove: z.object({ artists: ids, albums: ids, tracks: ids, movies: ids, books: ids }),
 })

@@ -1,13 +1,12 @@
 import { create } from 'zustand'
-import type { Persisted } from '../shared/model'
-import { type Changes, diffState, everything, isEmpty, mergeChanges } from '../shared/sync'
-import { LEGACY_STORAGE_KEY, migrateState, type State, useStore } from './store'
+import { COLLECTIONS, type Persisted, TYPES, type TypeId } from '../shared/model'
+import { type Changes, diffState, isEmpty, mergeChanges } from '../shared/sync'
+import { type State, useStore } from './store'
 
 /**
- * Keeps the store and the database in step. On startup, loads everything from the API (importing data that only
- * exists in this browser's localStorage the first time, if the database is empty). After that, every change to the
- * store is turned into a batch of upserts/deletes (shared/sync.ts) and sent to POST /api/sync, debounced, one
- * request at a time; failed saves are kept, merged with newer ones, and retried with backoff.
+ * Keeps the store and the database in step. On startup, loads everything from GET /api/state. After that, every
+ * change to the store is turned into a batch of upserts/deletes (shared/sync.ts) and sent to POST /api/sync,
+ * debounced, one request at a time; failed saves are kept, merged with newer ones, and retried with backoff.
  */
 
 export type SyncStatus = 'loading' | 'offline' | 'ready'
@@ -22,37 +21,16 @@ type Sync = {
 
 export const useSync = create<Sync>()(() => ({ status: 'loading', saving: false, error: null }))
 
-/** UI-only state kept in the browser, not the database: which board was open. */
+/** UI-only state kept in the browser, not the database: which type's tree was open. */
 const UI_KEY = 'visual-rater-v2.ui'
-/** Where the imported localStorage data is kept afterwards, as a backup. */
-const IMPORTED_KEY = 'visual-rater-v2.imported-backup'
 
 const DEBOUNCE_MS = 250
 const MAX_RETRY_MS = 30_000
 
 const persistedOf = (s: Persisted): Persisted =>
-  ({ types: s.types, items: s.items, boards: s.boards, placements: s.placements, staged: s.staged, added: s.added })
+  ({ artists: s.artists, albums: s.albums, tracks: s.tracks, movies: s.movies, books: s.books })
 
-const sameRefs = (a: Persisted, b: Persisted) =>
-  a.types === b.types && a.items === b.items && a.boards === b.boards && a.placements === b.placements && a.staged === b.staged && a.added === b.added
-
-const hasData = (s: Persisted) => Object.keys(s.boards).length > 0 || Object.keys(s.items).length > 0
-
-/**
- * What this browser saved in localStorage before v2 had a database, upgraded to the current shape, plus which board
- * was open (so the first visit after upgrading looks exactly as before).
- */
-export const readLegacy = (storage: Storage = localStorage): { data: Persisted, activeBoardId: string | null } | null => {
-  const raw = storage.getItem(LEGACY_STORAGE_KEY)
-  if (!raw) return null
-  try {
-    const { state, version } = JSON.parse(raw) as { state: unknown, version: number }
-    const s = migrateState(state, version)
-    return { data: persistedOf(s), activeBoardId: s.activeBoardId ?? null }
-  } catch {
-    return null
-  }
-}
+const sameRefs = (a: Persisted, b: Persisted) => COLLECTIONS.every(k => a[k] === b[k])
 
 let synced: Persisted | null = null
 let queue: Changes | null = null
@@ -94,8 +72,8 @@ const flush = async () => {
 }
 
 const onChange = (state: State, prev: State) => {
-  if (state.activeBoardId !== prev.activeBoardId) {
-    try { localStorage.setItem(UI_KEY, JSON.stringify({ activeBoardId: state.activeBoardId })) } catch { /* private mode */ }
+  if (state.activeType !== prev.activeType) {
+    try { localStorage.setItem(UI_KEY, JSON.stringify({ activeType: state.activeType })) } catch { /* private mode */ }
   }
   if (!synced || sameRefs(state, synced)) return
   const next = persistedOf(state)
@@ -126,26 +104,12 @@ export const startSync = async (): Promise<void> => {
     return
   }
 
-  // First run against an empty database: bring over what this browser had saved before.
-  const legacy = readLegacy()
-  let legacyBoard: string | null = null
-  if (!hasData(remote) && legacy && hasData(legacy.data)) {
-    const imported: Persisted = { ...legacy.data, types: { ...remote.types, ...legacy.data.types } }
-    legacyBoard = legacy.activeBoardId
-    try {
-      await post(everything(imported))
-      localStorage.setItem(IMPORTED_KEY, localStorage.getItem(LEGACY_STORAGE_KEY)!)
-      localStorage.removeItem(LEGACY_STORAGE_KEY)
-      remote = imported
-    } catch {
-      useSync.setState({ status: 'offline' })
-      return
-    }
-  }
-
-  let activeBoardId: string | null = legacyBoard
-  try { activeBoardId = (JSON.parse(localStorage.getItem(UI_KEY) ?? '{}') as { activeBoardId?: string }).activeBoardId ?? activeBoardId } catch { /* ignore */ }
-  useStore.setState({ ...remote, activeBoardId: activeBoardId && remote.boards[activeBoardId] ? activeBoardId : null })
+  let activeType: TypeId | null = null
+  try {
+    const saved = (JSON.parse(localStorage.getItem(UI_KEY) ?? '{}') as { activeType?: string }).activeType
+    if (TYPES.some(t => t.id === saved)) activeType = saved as TypeId
+  } catch { /* ignore */ }
+  useStore.setState({ ...remote, activeType })
   synced = persistedOf(useStore.getState())
   unsubscribe?.()
   unsubscribe = useStore.subscribe(onChange)

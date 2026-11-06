@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import type { Item } from '../shared/model'
+import { find } from '../state/board'
 import { useStore } from '../state/store'
 import { dominantColor, fromHex, glowColor, toHex } from './color'
 import { loadCover } from './CoverSphere'
@@ -30,14 +30,14 @@ export const dominantColorOfCover = (url: string): Promise<string | null> => {
  * fact about the image, saved to the database and worked out only once. The glow is derived from it here, every
  * time, so changing how glows look never touches saved data.
  */
-export const useGlow = (item: Pick<Item, 'id' | 'image' | 'colors'> | undefined): string | undefined => {
+export const useGlow = (item: { id: string, image?: string, colors?: string[] } | undefined): string | undefined => {
   const saved = item?.colors?.[0]
   const id = item?.id, image = item?.image
   useEffect(() => {
     if (saved || !id || !image) return
     let cancelled = false
     void dominantColorOfCover(image).then(color => {
-      if (!cancelled && color && useStore.getState().items[id]?.image === image) useStore.getState().setItemDetails(id, { colors: [color] })
+      if (!cancelled && color && find(useStore.getState(), id)?.entity.image === image) useStore.getState().setColors(id, [color])
     })
     return () => { cancelled = true }
   }, [saved, id, image])

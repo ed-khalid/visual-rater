@@ -1,98 +1,89 @@
 /**
- * The entities v2 saves, shared by the app (src/state/store.ts) and the API server (server/), which stores them in
- * Postgres. Plain data only: no functions.
+ * The entities v2 saves, shared by the app (src/state/) and the API server (server/), which keeps each kind in its
+ * own Postgres table. Plain data only: no functions.
+ *
+ * There's no generic "item" or "board": each type (MUSIC, MOVIES, BOOKS) is its own tree, built from that type's
+ * tables. Things that can be rated carry their own score and their branch on the tree (`Rateable`).
  */
-/** A kind of thing being ranked: MUSIC, MOVIES, BOOKS, or anything the user names. */
-export type ItemType = {
-  id: string
-  name: string
-  builtIn: boolean
-}
+
+/** The three types, one tree each. */
+export type TypeId = 'music' | 'movies' | 'books'
+export const TYPES: { id: TypeId, name: string }[] = [
+  { id: 'music', name: 'MUSIC' },
+  { id: 'movies', name: 'MOVIES' },
+  { id: 'books', name: 'BOOKS' },
+]
 
 /**
- * An outside catalogue's id for something, used only to match it (and to fetch more about it). The item's own id is
+ * An outside catalogue's id for something, used only to match it (and to fetch more about it). Our own ids are
  * always ours, so things that aren't in any catalogue work the same way.
  */
 export type VendorRef = { name: 'spotify', id: string }
 
-export type MusicArtist = { kind: 'artist', vendor?: VendorRef }
-export type MusicAlbum = {
-  kind: 'album'
+/** A branch on the 3D tree: direction around the trunk (radians), length (world units), ring (for spacing). */
+export type Branch = { angle: number, length: number, ring: number }
+
+/** What every saved thing has. */
+type Base = {
+  id: string
+  name: string
+  image?: string
+  /** colors[0] is the raw dominant colour of the image ('#rrggbb'); the glow is derived from it when drawing. */
+  colors?: string[]
+}
+
+/**
+ * Something rated directly on a tree. `score` is 0–100 (undefined: unrated). `branch` is set the first time it
+ * goes on the tree (`since` is when); `hidden` takes it off the tree but keeps its score.
+ */
+export type Rateable = {
+  score?: number
+  branch?: Branch
+  since?: number
+  hidden?: boolean
+}
+
+export type Artist = Base & { vendor?: VendorRef }
+
+export type Album = Base & {
   vendor?: VendorRef
-  /** The artist item. */
   artistId?: string
   year?: number
-  /** Whether the tracklist has been fetched, so an album whose tracks were all deleted isn't fetched again. */
+  /** Whether the tracklist has been fetched (or entered), so an album whose tracks were all deleted isn't fetched again. */
   tracklistLoaded: boolean
+  /** When it was added; until its tracks are put on the tree it waits in the staging tray. */
+  stagedAt: number
+  /** When its tracks were put on the tree (it then floats to the right of the tree). */
+  addedAt?: number
 }
-/** A track. Every track on an album is its own item, whether it's on a board or not. */
-export type MusicTrack = {
-  kind: 'track'
+
+/** A track: what's rated on the MUSIC tree. An album's tracklist is its tracks in disc then number order. */
+export type Track = Base & Rateable & {
   vendor?: VendorRef
-  /** The album item; the album's tracklist is its tracks in disc then number order. */
   albumId?: string
-  /** The artist item. */
   artistId?: string
   disc?: number
   /** Position on its disc, from 1. */
   number?: number
   durationMs?: number
-}
-/** What a music item is, and how it links to the others. */
-export type MusicDetails = MusicArtist | MusicAlbum | MusicTrack
-
-/** Anything that can be ranked. `typeId` says what kind of thing it is. */
-export type Item = {
-  id: string
-  typeId: string
-  name: string
-  image?: string
-  colors?: string[]
-  /** Music items picked from the catalogue, or made from one (an album's tracks and artist). Absent for typed items. */
-  music?: MusicDetails
+  /** Left out of its artist's score (interludes, skits, live versions…). */
+  excludeFromArtistScore?: boolean
 }
 
-/** A ranking medium for one item type. `axis` is how placements are laid out; `bands` are optional named regions drawn on it. */
-export type Board = {
-  id: string
-  typeId: string
-  name: string
-  axis: 'linear'
-  bands: { name: string, from: number, to: number }[]
-}
+/** A movie or a book: rated directly, nothing else attached (yet). */
+export type Simple = Base & Rateable
 
-/**
- * Where an item sits on a board. `position` is continuous, 0 (bottom) to 1 (top):
- * rank is the order of positions, and the gaps between them mean something.
- */
-export type Placement = {
-  boardId: string
-  itemId: string
-  position: number
-  placedAt: number
-  /**
-   * The item's branch on the 3D tree: direction around the trunk (radians), length (world units), and ring (for
-   * spacing). Chosen when the item is placed and stored, so moving one item never moves the others.
-   */
-  angle: number
-  length: number
-  ring: number
-}
-
-/** An item that's been added to a board but not given a position yet: it waits in the staging tray. */
-export type Staged = {
-  boardId: string
-  itemId: string
-  stagedAt: number
-}
-
-/** Everything that's saved: the entities, without UI state such as which board is open. */
+/** Everything that's saved. */
 export type Persisted = {
-  types: Record<string, ItemType>
-  items: Record<string, Item>
-  boards: Record<string, Board>
-  placements: Placement[]
-  staged: Staged[]
-  /** Albums whose tracks have been added to the board: they float to the right of the tree. */
-  added: Staged[]
+  artists: Record<string, Artist>
+  albums: Record<string, Album>
+  tracks: Record<string, Track>
+  movies: Record<string, Simple>
+  books: Record<string, Simple>
 }
+
+/** The saved collections, by name (what sync batches and the API are organised by). */
+export type Collection = keyof Persisted
+export const COLLECTIONS: Collection[] = ['artists', 'albums', 'tracks', 'movies', 'books']
+
+export const emptyPersisted = (): Persisted => ({ artists: {}, albums: {}, tracks: {}, movies: {}, books: {} })

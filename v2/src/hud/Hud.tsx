@@ -1,18 +1,26 @@
 import { useState } from 'react'
 import { useView } from '../scene/view'
+import { TYPES } from '../shared/model'
+import { treeNodes } from '../state/board'
 import { useStore } from '../state/store'
 import { AlbumPopup, DragScore, ItemHoverCard, ItemTrash, StagedAdd } from './AlbumOverlays'
 import { CommandPalette, shortcutLabel } from './CommandPalette'
+import { ListView } from './ListView'
+import { ModeSwitch } from './ModeSwitch'
+import { Rubric } from './Rubric'
 import { TypePicker } from './TypePicker'
 import './hud.css'
 
 /** The only DOM UI: corner readouts, the type picker when no board is open, and the command palette. */
 export const Hud = () => {
   const [paletteOpen, setPaletteOpen] = useState(false)
-  const board = useStore(s => s.activeBoardId ? s.boards[s.activeBoardId] : null)
-  const count = useStore(s => s.placements.filter(p => p.boardId === s.activeBoardId).length)
+  const activeType = useStore(s => s.activeType)
+  const board = activeType ? TYPES.find(t => t.id === activeType) ?? null : null
+  const count = useStore(s => s.activeType ? treeNodes(s, s.activeType).length : 0)
   const closeBoard = useStore(s => s.closeBoard)
   const resetView = useView(s => s.requestReset)
+  const phase = useView(s => s.phase)
+  const listing = phase !== 'tree'
 
   return <>
     {!board && <TypePicker />}
@@ -22,7 +30,7 @@ export const Hud = () => {
         : <div className="hud-tl">VISUAL&nbsp;RATER <span className="dim">// v2</span></div>}
       {board && <>
         <div className="hud-tr dim">{board.name}</div>
-        <button className="hud-key hud-reset" onClick={resetView} title="Reset view" aria-label="Reset view">
+        {!listing && <button className="hud-key hud-reset" onClick={resetView} title="Reset view" aria-label="Reset view">
           {/* Same box as the + button: an invisible "ADD" sets the width, the icon sits centred over it. */}
           <span className="hud-key-sizer" aria-hidden="true">ADD</span>
           <span className="hud-key-glyph" aria-hidden="true">
@@ -31,7 +39,7 @@ export const Hud = () => {
               <path d="M12.2 1.2v3.1H9.1" />
             </svg>
           </span>
-        </button>
+        </button>}
         <div className="hud-bl dim">{String(count).padStart(3, '0')} ITEMS</div>
         <button className="hud-key" onClick={() => setPaletteOpen(true)} title={`Add an item (${shortcutLabel})`} aria-label="Add an item">
           {/* An invisible "ADD" keeps the button its original width; the + sits centred over it. */}
@@ -40,7 +48,10 @@ export const Hud = () => {
         </button>
       </>}
     </div>
-    {board && <><ItemHoverCard /><DragScore /><AlbumPopup /><ItemTrash /><StagedAdd /></>}
+    {activeType === 'music' && <Rubric />}
+    {board && <ModeSwitch />}
+    {board && listing && <ListView />}
+    {board && !listing && <><ItemHoverCard /><DragScore /><AlbumPopup /><ItemTrash /><StagedAdd /></>}
     {board && <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />}
   </>
 }

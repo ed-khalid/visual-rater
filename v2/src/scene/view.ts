@@ -1,5 +1,7 @@
 import { create } from 'zustand'
 
+export type Phase = 'tree' | 'to-list' | 'list' | 'to-tree'
+
 type View = {
   /** Counts up each time the reset button is pressed; the camera rig watches it. */
   resetRequests: number
@@ -20,6 +22,15 @@ type View = {
   /** True while the open popup is in edit mode: a stray click on empty space shouldn't throw edits away. */
   editing: boolean
   setEditing: (editing: boolean) => void
+  /**
+   * The tree (3D rater) or the list (a plain table of everything on the tree, best first), and the transitions
+   * between them: to-list (branches and fruit sink into the trunk, then the list opens out from the trunk line),
+   * to-tree (the list closes back into the line, then the branches grow out again).
+   */
+  phase: Phase
+  /** Starts the transition to the other view; ignored while one is already running. */
+  toggleMode: () => void
+  setPhase: (phase: Phase) => void
 }
 
 /**
@@ -40,6 +51,11 @@ export const useView = create<View>()(set => ({
   toggleSelected: id => set(s => ({ selectedId: s.selectedId === id ? null : id })),
   editing: false,
   setEditing: editing => set({ editing }),
+  phase: 'tree',
+  toggleMode: () => set(s => s.phase === 'tree'
+    ? { phase: 'to-list', openId: null, editing: false, hoveredId: null, selectedId: null }
+    : s.phase === 'list' ? { phase: 'to-tree' } : s),
+  setPhase: phase => set({ phase }),
 }))
 
 /**
@@ -50,3 +66,17 @@ export const screenAnchors = new Map<string, { x: number, y: number, r: number, 
 
 /** The live score (0–100) of the fruit being dragged, written every frame while dragging; read by the drag readout. */
 export const liveScores = new Map<string, number>()
+
+/** Key in screenAnchors for the top of the trunk (published by Axis), where the tree/list switch sits. */
+export const TRUNK_TOP_ANCHOR = '__trunk-top'
+
+/** Key in screenAnchors for the bottom of the trunk (published by Axis). */
+export const TRUNK_BOTTOM_ANCHOR = '__trunk-bottom'
+
+/**
+ * How far the tree has sunk into its trunk for the list view: 0 = fully out, 1 = every branch and fruit drawn in.
+ * Eased over COLLAPSE_SECONDS by the stage (CollapseDriver); read every frame by the fruit and floating spheres.
+ */
+export const collapse = { value: 0 }
+/** The list view waits for the collapse to finish before it opens. */
+export const COLLAPSE_SECONDS = 0.3

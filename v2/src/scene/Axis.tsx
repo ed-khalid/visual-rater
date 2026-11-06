@@ -3,6 +3,7 @@ import { useMemo, useRef } from 'react'
 import { Color, Group, MeshBasicMaterial, Vector3 } from 'three'
 import { theme } from '../theme'
 import { scaleElements, toScreen } from './labels'
+import { screenAnchors, TRUNK_BOTTOM_ANCHOR, TRUNK_TOP_ANCHOR } from './view'
 import { AXIS_HEIGHT, positionToY } from './world'
 
 const TICKS = 10
@@ -38,6 +39,14 @@ export const Axis = () => {
       el.style.transform = `translate(${Math.round(p.x - SCALE_OFFSET_PX)}px, ${Math.round(p.y)}px) translate(-100%, -50%)`
       el.style.opacity = p.inFront ? String(t) : '0'
     }
+    // The top of the trunk on screen, for the tree/list switch that sits above it and the list view that opens out of it (the trunk is the axis the board
+    // turns around, so this only moves when zooming).
+    point.set(0, (AXIS_HEIGHT / 2) * grow, 0)
+    const top = toScreen(point, camera, size)
+    screenAnchors.set(TRUNK_TOP_ANCHOR, { x: top.x, y: top.y, r: 0, visible: top.inFront && t >= 1 })
+    point.set(0, (-AXIS_HEIGHT / 2) * grow, 0)
+    const bottom = toScreen(point, camera, size)
+    screenAnchors.set(TRUNK_BOTTOM_ANCHOR, { x: bottom.x, y: bottom.y, r: 0, visible: bottom.inFront && t >= 1 })
     if (line.current) line.current.color.copy(hot).multiplyScalar(0.85 + 0.15 * Math.sin(clock.elapsedTime * 0.8))
   })
 

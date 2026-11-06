@@ -1,0 +1,144 @@
+/* Over the tree, which stays drawn (sunk into its trunk) around the list */
+.list-view {
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  font-family: var(--font);
+  color: var(--text);
+  /* how far the trunk's ends sit inside the list's top and bottom */
+  --rolled-top: max(0px, calc(var(--trunk-top) - var(--list-top)));
+  --rolled-bottom: max(0px, calc(var(--list-bottom) - var(--trunk-bottom)));
+}
+
+/* The list itself, between its two rods; it scrolls, and its header stays put */
+.list-panel {
+  position: absolute;
+  left: var(--list-left);
+  top: var(--list-top);
+  width: calc(var(--list-right) - var(--list-left));
+  height: calc(var(--list-bottom) - var(--list-top));
+  overflow-y: auto;
+  padding: 0 18px;
+  pointer-events: auto;
+  background: var(--void);
+  clip-path: inset(0 0 0 0);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(92, 225, 255, 0.25) transparent;
+}
+
+/* The trunk's glow, shared by the line standing in for it and the two rods that come out of it */
+.list-line, .list-rod {
+  position: absolute;
+  z-index: 1;
+  width: 2px;
+  margin-left: -1px;
+  background: #8ff0ff;
+  border-radius: 1px;
+  box-shadow: 0 0 6px 1px rgba(92, 225, 255, 0.9), 0 0 18px 3px rgba(92, 225, 255, 0.45);
+}
+
+.list-line {
+  left: var(--trunk-x);
+  top: var(--trunk-top);
+  height: calc(var(--trunk-bottom) - var(--trunk-top));
+  opacity: 0;
+}
+
+/* At rest (list open): the rods are the list's side borders */
+.list-rod { top: var(--list-top); height: calc(var(--list-bottom) - var(--list-top)); }
+.list-rod-left { left: var(--list-left); }
+.list-rod-right { left: var(--list-right); }
+
+/*
+ * Opening. While the tree sinks into the trunk the list is rolled up and the line stands in for the trunk. Once it
+ * has sunk (list-sunk), the line becomes two rods: they slide apart to the list's edges with the list unrolling
+ * between them (to 60%), then stretch to its full height. Closing (to-tree) plays the same thing backwards.
+ */
+.list-to-list .list-line { opacity: 1; }
+.list-to-list .list-rod { opacity: 0; }
+.list-to-list .list-panel { clip-path: inset(var(--rolled-top) calc(var(--list-right) - var(--trunk-x)) var(--rolled-bottom) calc(var(--trunk-x) - var(--list-left))); }
+.list-to-list.list-sunk .list-line { opacity: 0; }
+.list-to-list.list-sunk .list-rod { opacity: 1; }
+
+.list-to-list.list-sunk .list-panel, .list-to-tree .list-panel { animation: list-unroll 0.42s cubic-bezier(0.4, 0, 0.2, 1) both; }
+.list-to-list.list-sunk .list-rod-left, .list-to-tree .list-rod-left { animation: list-rod-left 0.42s cubic-bezier(0.4, 0, 0.2, 1) both; }
+.list-to-list.list-sunk .list-rod-right, .list-to-tree .list-rod-right { animation: list-rod-right 0.42s cubic-bezier(0.4, 0, 0.2, 1) both; }
+.list-to-tree .list-panel, .list-to-tree .list-rod { animation-direction: reverse; animation-duration: 0.36s; }
+.list-to-list .list-panel, .list-to-tree .list-panel { pointer-events: none; }
+
+@keyframes list-unroll {
+  0% { clip-path: inset(var(--rolled-top) calc(var(--list-right) - var(--trunk-x)) var(--rolled-bottom) calc(var(--trunk-x) - var(--list-left))); }
+  60% { clip-path: inset(var(--rolled-top) 0 var(--rolled-bottom) 0); }
+  100% { clip-path: inset(0 0 0 0); }
+}
+@keyframes list-rod-left {
+  0% { left: var(--trunk-x); top: var(--trunk-top); height: calc(var(--trunk-bottom) - var(--trunk-top)); }
+  60% { left: var(--list-left); top: var(--trunk-top); height: calc(var(--trunk-bottom) - var(--trunk-top)); }
+  100% { left: var(--list-left); top: var(--list-top); height: calc(var(--list-bottom) - var(--list-top)); }
+}
+@keyframes list-rod-right {
+  0% { left: var(--trunk-x); top: var(--trunk-top); height: calc(var(--trunk-bottom) - var(--trunk-top)); }
+  60% { left: var(--list-right); top: var(--trunk-top); height: calc(var(--trunk-bottom) - var(--trunk-top)); }
+  100% { left: var(--list-right); top: var(--list-top); height: calc(var(--list-bottom) - var(--list-top)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .list-panel, .list-rod { animation-duration: 0.01s !important; }
+}
+
+.list-table {
+  width: 100%;
+  max-width: 880px;
+  margin: 0 auto;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+}
+
+.list-table th {
+  position: sticky;
+  top: 0; /* stays put at the top of the scroll area */
+  z-index: 1;
+  padding: 0 10px 10px;
+  font-size: 10px;
+  font-weight: normal;
+  letter-spacing: 0.24em;
+  text-align: left;
+  color: var(--text-dim);
+  background: var(--void);
+  border-bottom: 1px solid rgba(92, 225, 255, 0.25);
+}
+
+.list-table td {
+  padding: 9px 10px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  border-bottom: 1px solid rgba(92, 225, 255, 0.07);
+}
+
+.list-table tbody tr:hover td { background: rgba(92, 225, 255, 0.04); }
+
+.list-rank { width: 44px; color: var(--text-dim); font-variant-numeric: tabular-nums; }
+.list-table td.list-rank { color: var(--text-dim); }
+.list-name { color: #e6f6ff; }
+.list-artist, .list-album { color: var(--text-dim); }
+.list-table .list-score { width: 72px; text-align: right; font-variant-numeric: tabular-nums; color: #5ce1ff; }
+.list-tier { width: 128px; }
+.list-tier .tier-chip { margin-left: 0; }
+.list-table th.list-score { color: var(--text-dim); }
+.list-unrated td, .list-unrated td.list-score { color: var(--text-dim); }
+
+/* Phones: drop the album column and tighten up */
+@media (max-width: 600px) {
+  .list-panel { padding: 0 8px; }
+  .list-table { font-size: 11px; letter-spacing: 0.04em; }
+  .list-table td, .list-table th { padding-left: 5px; padding-right: 5px; }
+  .list-album { display: none; }
+  .list-rank { width: 28px; }
+  .list-table .list-score { width: 42px; }
+  .list-tier { width: 96px; }
+  .list-tier .tier-chip { font-size: 9px; letter-spacing: 0.1em; padding: 1px 4px; }
+}
