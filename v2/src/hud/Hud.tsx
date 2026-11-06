@@ -3,10 +3,14 @@ import { useView } from '../scene/view'
 import { TYPES } from '../shared/model'
 import { treeNodes } from '../state/board'
 import { useStore } from '../state/store'
-import { AlbumPopup, DragScore, ItemHoverCard, ItemTrash, StagedAdd } from './AlbumOverlays'
+import { AlbumPopup, DragScore, ItemHoverCard, ItemTrash } from './AlbumOverlays'
+import { ScoreMatches } from './ScoreMatches'
+import { AlbumView } from './AlbumView'
 import { CommandPalette, shortcutLabel } from './CommandPalette'
 import { ListView } from './ListView'
 import { ModeSwitch } from './ModeSwitch'
+import { OnTree } from './OnTree'
+import { RatingWatch } from './RatingWatch'
 import { Rubric } from './Rubric'
 import { TypePicker } from './TypePicker'
 import './hud.css'
@@ -18,7 +22,10 @@ export const Hud = () => {
   const board = activeType ? TYPES.find(t => t.id === activeType) ?? null : null
   const count = useStore(s => s.activeType ? treeNodes(s, s.activeType).length : 0)
   const closeBoard = useStore(s => s.closeBoard)
-  const resetView = useView(s => s.requestReset)
+  const requestReset = useView(s => s.requestReset)
+  const flattenBoard = useStore(s => s.flattenBoard)
+  // Reset: the camera glides home and every branch swings onto the main plane, left or right of the trunk.
+  const resetView = () => { flattenBoard(); requestReset() }
   const phase = useView(s => s.phase)
   const listing = phase !== 'tree'
 
@@ -30,7 +37,7 @@ export const Hud = () => {
         : <div className="hud-tl">VISUAL&nbsp;RATER <span className="dim">// v2</span></div>}
       {board && <>
         <div className="hud-tr dim">{board.name}</div>
-        {!listing && <button className="hud-key hud-reset" onClick={resetView} title="Reset view" aria-label="Reset view">
+        {!listing && <button className="hud-key hud-reset" onClick={resetView} title="Reset" aria-label="Reset view and layout">
           {/* Same box as the + button: an invisible "ADD" sets the width, the icon sits centred over it. */}
           <span className="hud-key-sizer" aria-hidden="true">ADD</span>
           <span className="hud-key-glyph" aria-hidden="true">
@@ -50,8 +57,10 @@ export const Hud = () => {
     </div>
     {activeType === 'music' && <Rubric />}
     {board && <ModeSwitch />}
+    {board && <RatingWatch />}
     {board && listing && <ListView />}
-    {board && !listing && <><ItemHoverCard /><DragScore /><AlbumPopup /><ItemTrash /><StagedAdd /></>}
+    {board && !listing && activeType === 'music' && <><OnTree /><AlbumView /></>}
+    {board && !listing && <><ItemHoverCard /><DragScore /><ScoreMatches /><AlbumPopup /><ItemTrash /></>}
     {board && <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />}
   </>
 }

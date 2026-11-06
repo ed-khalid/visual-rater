@@ -1,6 +1,6 @@
 import { ThreeEvent, useFrame, useThree } from '@react-three/fiber'
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Color, Group, MathUtils, Mesh, PerspectiveCamera, Vector3 } from 'three'
+import { Color, Group, MathUtils, Mesh, MeshBasicMaterial, PerspectiveCamera, Vector3 } from 'three'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { MAX_BRANCH_LENGTH, MIN_BRANCH_LENGTH } from '../state/layout'
 import { positionOf, type TreeNode, treeNodes } from '../state/board'
@@ -9,7 +9,7 @@ import { theme } from '../theme'
 import { CoverSphere, SHAPE_EXTENT } from './CoverSphere'
 import { useGlow } from './useGlow'
 import { labelElements, placeSideLabel, toScreen } from './labels'
-import { collapse, liveScores, screenAnchors, useView } from './view'
+import { collapse, liveScores, RATING_FADE, ratingFocus, screenAnchors, useView } from './view'
 import { AXIS_HEIGHT, NODE_RADIUS as LAYOUT_RADIUS, positionToY } from './world'
 
 /** Fruit (songs) are drawn 1.6× the base sphere: bigger than they were, a little smaller than the floating albums.
@@ -69,11 +69,15 @@ const Fruit = ({ node }: FruitProps) => {
   const group = useRef<Group>(null)
   const fruit = useRef<Group>(null)
   const stem = useRef<Mesh>(null)
+  const stemMaterial = useRef<MeshBasicMaterial>(null)
+  /** Active rating: how faded this fruit is right now (0–RATING_FADE), eased towards its target. */
+  const dim = useRef(0)
   const guide = useRef<Group>(null)
   const glow = useMemo(() => new Color(theme.signal).multiplyScalar(1.3), [])
   const bornAt = useRef(performance.now())
   const isNew = useRef(Date.now() - (item.since ?? 0) < 1500).current
-  const state = useRef({ y: positionToY(position), angle: branch.angle, length: isNew ? 0 : branch.length })
+  /** shown: 1 out on its branch, 0 drawn back into the trunk (album view of another album). */
+  const state = useRef({ y: positionToY(position), angle: branch.angle, length: isNew ? 0 : branch.length, shown: 1 })
   const drag = useRef<Drag | null>(null)
   const [dragging, setDragging] = useState(false)
   const world = useMemo(() => new Vector3(), [])
@@ -179,11 +183,22 @@ const Fruit = ({ node }: FruitProps) => {
     st.angle += angleDelta(st.angle, branch.angle) * (1 - Math.exp(-8 * dt))
     st.length = MathUtils.damp(st.length, targetLength, d?.moved ? ease : isNew ? 6 : 8, dt)
 
+    // Active rating: everything but the fruit being rated fades (unless it's picked up).
+    const focus = ratingFocus.ids
+    dim.current = MathUtils.damp(dim.current, focus && !focus.has(item.id) && !d?.moved ? RATING_FADE : 0, 6, dt)
+    if (stemMaterial.current) stemMaterial.current.opacity = 0.75 * (1 - dim.current)
+
     const age = (performance.now() - bornAt.current) / 1000
     const pop = isNew ? Math.min(1, age * 4) * (1 + 0.35 * Math.exp(-age * 5) * Math.cos(age * 16)) : 1
 
-    // For the list view, the branch draws back into the trunk and the fruit shrinks away with it.
-    const out = 1 - collapse.value
+    // For the list view, or album view of another album, the branch draws back into the trunk and the fruit shrinks
+    // away with it.
+    const albumView = useView.getState().albumView
+    const mine = !albumView || (item as { albumId?: string }).albumId === albumView || !!d?.moved
+    st.shown = MathUtils.damp(st.shown, mine ? 1 : 0, 9, dt)
+    const out = (1 - collapse.value) * st.shown
+    // Drawn in: out of the way of the pointer too.
+    g.visible = out > 0.02
     const length = st.length * out
     g.position.set(0, st.y, 0)
     g.rotation.y = st.angle
@@ -214,7 +229,7 @@ const Fruit = ({ node }: FruitProps) => {
       const offset = LABEL_OFFSET_PX + r
       const w = label.offsetWidth
       const side = left ? !(p.x - offset - w < 0) : p.x + offset + w > size.width
-      placeSideLabel(label, p.x, p.y, side, offset, Math.min(1, pop) * fade * (p.inFront ? 1 : 0) * out * out)
+      placeSideLabel(label, p.x, p.y, side, offset, Math.min(1, pop) * fade * (p.inFront ? 1 : 0) * out * out * (1 - dim.current))
     }
   })
 
@@ -222,7 +237,7 @@ const Fruit = ({ node }: FruitProps) => {
     <mesh ref={stem}>
       {/* unit-height cylinder, stretched to the branch's length each frame */}
       <cylinderGeometry args={[0.007, 0.012, 1, 6]} />
-      <meshBasicMaterial color={glow} toneMapped={false} transparent opacity={0.75} />
+      <meshBasicMaterial ref={stemMaterial} color={glow} toneMapped={false} transparent opacity={0.75} />
     </mesh>
     {dragging && <group ref={guide}>
       <mesh rotation={[Math.PI / 2, 0, 0]}>
@@ -241,7 +256,7 @@ const Fruit = ({ node }: FruitProps) => {
       onPointerUp={endDrag}
       onPointerCancel={endDrag}
     >
-      <CoverSphere image={item.image} radius={NODE_RADIUS} glow={coverGlow} rimStrength={unrated && !dragging ? 0.9 : 2.2} />
+      <CoverSphere image={item.image} radius={NODE_RADIUS} glow={coverGlow} rimStrength={unrated && !dragging ? 0.9 : 2.2} dim={dim} />
     </group>
   </group>
 }

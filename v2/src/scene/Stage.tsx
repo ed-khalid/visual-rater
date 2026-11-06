@@ -26,7 +26,10 @@ export const Stage = () => {
   const down = useRef({ x: 0, y: 0 })
   const onPointerMissed = (e: MouseEvent) => {
     const v = useView.getState()
-    if (!v.editing && Math.hypot(e.clientX - down.current.x, e.clientY - down.current.y) < 6) v.close()
+    if (v.editing || Math.hypot(e.clientX - down.current.x, e.clientY - down.current.y) >= 6) return
+    // First click closes whatever's open; with nothing open, it leaves album view.
+    if (v.openId || v.selectedId) v.close()
+    else if (v.albumView) v.setAlbumView(null)
   }
   return <Canvas
     onPointerDown={e => { down.current = { x: e.clientX, y: e.clientY } }}

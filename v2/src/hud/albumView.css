@@ -1,0 +1,106 @@
+/* Album view: title card and docked details, top-left under the + key. */
+.album-view {
+  position: fixed;
+  top: 92px;
+  left: 28px;
+  z-index: 15;
+  /* the left half of the screen, top to bottom between the corner keys */
+  width: calc(50vw - 56px);
+  bottom: 96px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-family: var(--font);
+  color: var(--text);
+}
+
+/* Title card, no border: grade | artist, album, year | score, each column full height. */
+.album-view-title {
+  flex: none;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: stretch;
+  gap: 20px;
+  min-height: 112px;
+}
+
+.album-view-cover {
+  display: block;
+  width: 112px;
+  height: 112px;
+  align-self: center;
+  object-fit: cover;
+  border-radius: 4px;
+  background: rgba(92, 225, 255, 0.06);
+  box-shadow: 0 0 18px rgba(92, 225, 255, 0.15);
+}
+
+/* Grade chip right beside the score */
+.album-view-rating { display: flex; align-items: center; gap: 14px; padding-right: 6px; }
+.album-view-grade {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 64px;
+  height: 64px;
+  padding: 0 10px;
+  border-radius: 4px;
+  font-size: 32px;
+  letter-spacing: 0.02em;
+  color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.album-view-names { display: flex; flex-direction: column; justify-content: center; min-width: 0; gap: 8px; }
+.album-view-artist { font-size: 12px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--text-dim); }
+.album-view-name {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: 0.06em;
+  color: #e6f6ff;
+  text-shadow: 0 0 12px rgba(92, 225, 255, 0.35);
+  overflow-wrap: anywhere;
+}
+.album-view-year { font-size: 13px; letter-spacing: 0.2em; color: var(--text); }
+
+.album-view-score {
+  display: flex;
+  align-items: center;
+  font-size: 64px;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  color: #5ce1ff;
+  text-shadow: 0 0 16px rgba(92, 225, 255, 0.45);
+}
+.album-view-score.dim { font-size: 11px; letter-spacing: 0.24em; color: var(--text-dim); text-shadow: none; }
+
+/* The details panel, docked under the title instead of pinned beside the album. */
+.album-popup.album-popup-docked {
+  position: static;
+  visibility: visible;
+  transform: none;
+  width: auto;
+  max-height: none;
+  flex: 1 1 auto;
+  min-height: 0;
+  padding-top: 8px;
+}
+
+@media (max-width: 640px) {
+  /* Phones: the title card alone, at the bottom above RUBRIC (clear of the switch at the top of the trunk), on a
+     plain backing so the scene behind doesn't show through the text. */
+  .album-view { top: auto; bottom: 92px; left: 12px; width: calc(100vw - 92px); gap: 6px; }
+  .album-view-title { gap: 10px; min-height: 72px; padding: 6px; border-radius: 6px; background: rgba(3, 5, 10, 0.88); }
+  .album-view-cover { width: 60px; height: 60px; }
+  .album-view-rating { gap: 8px; padding-right: 0; }
+  .album-view-grade { min-width: 36px; height: 36px; padding: 0 6px; font-size: 18px; }
+  .album-view-name { font-size: 17px; }
+  .album-view-artist, .album-view-year { font-size: 10px; letter-spacing: 0.16em; }
+  .album-view-names { gap: 4px; }
+  .album-view-score { font-size: 32px; }
+  /* No room for the tracklist beside the tree on a phone: the title card only. */
+  .album-popup.album-popup-docked { display: none; }
+}

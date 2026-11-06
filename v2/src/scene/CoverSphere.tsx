@@ -53,6 +53,7 @@ const fragmentShader = /* glsl */`
   uniform vec3 core;
   uniform vec3 rim;
   uniform float rimStrength;
+  uniform float dim;
   varying vec3 vObjectNormal;
   varying vec3 vNormal;
   varying vec3 vViewPosition;
@@ -80,6 +81,7 @@ const fragmentShader = /* glsl */`
     }
     col *= mix(0.35, 1.0, smoothstep(0.0, 0.7, facing));
     col += rim * pow(1.0 - facing, 2.6) * rimStrength;
+    col *= 1.0 - dim;
     gl_FragColor = vec4(col, 1.0);
     #include <colorspace_fragment>
   }
@@ -108,6 +110,7 @@ const cubeFragmentShader = /* glsl */`
   uniform vec3 core;
   uniform vec3 rim;
   uniform float rimStrength;
+  uniform float dim;
   varying vec2 vUv;
   varying vec3 vNormal;
   varying vec3 vViewPosition;
@@ -121,6 +124,7 @@ const cubeFragmentShader = /* glsl */`
     vec2 d = abs(vUv - 0.5) * 2.0;
     float edge = max(d.x, d.y);
     col += rim * (smoothstep(0.86, 1.0, edge) * 0.8 + pow(1.0 - facing, 3.0) * 0.35) * rimStrength;
+    col *= 1.0 - dim;
     gl_FragColor = vec4(col, 1.0);
     #include <colorspace_fragment>
   }
@@ -145,9 +149,11 @@ type Props = {
   rimStrength?: number
   /** Glow (rim) colour, e.g. the cover's dominant colour; the theme's signal colour when not given. */
   glow?: string
+  /** How faded it is right now (0: not at all, 1: black), read every frame: for active rating. */
+  dim?: { current: number }
 }
 
-export const CoverSphere = ({ image, radius, rimStrength = 2.2, glow }: Props) => {
+export const CoverSphere = ({ image, radius, rimStrength = 2.2, glow, dim }: Props) => {
   const texture = useCoverTexture(image)
   const material = useMemo(() => new ShaderMaterial({
     vertexShader: SHAPE === 'cube' ? cubeVertexShader : vertexShader,
@@ -158,6 +164,7 @@ export const CoverSphere = ({ image, radius, rimStrength = 2.2, glow }: Props) =
       core: { value: new Color(theme.signalDim).multiplyScalar(0.55) }, // kept under the bloom threshold so it reads as a sphere, not a blob
       rim: { value: new Color(theme.signal) },
       rimStrength: { value: rimStrength },
+      dim: { value: 0 },
     },
   }), [])
 
@@ -173,6 +180,7 @@ export const CoverSphere = ({ image, radius, rimStrength = 2.2, glow }: Props) =
   // vertical axis only (so the top face shows from above, and up stays up).
   const mesh = useRef<Mesh>(null)
   useFrame(({ camera }) => {
+    material.uniforms.dim.value = dim?.current ?? 0
     const m = mesh.current
     if (SHAPE !== 'cube' || !m?.parent) return
     m.getWorldPosition(at)

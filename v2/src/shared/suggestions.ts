@@ -8,6 +8,8 @@ export type Suggestion = {
   id: string
   name: string
   image?: string
+  /** Albums only: the edition tag taken off the catalogue's name, e.g. "Remastered Deluxe Box Set" (see shared/names). */
+  edition?: string
   /** One short line of context: genres for an artist, artist and year for an album. */
   detail?: string
   /** Albums only: structured versions of what's in `detail` (the main artist, and their catalogue id). */

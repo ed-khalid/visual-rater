@@ -4,7 +4,7 @@ import type { Album, Artist, Branch, Persisted, Simple, Track, TypeId, VendorRef
 import { emptyPersisted } from '../shared/model'
 import type { AlbumDetails, Track as CatalogueTrack } from '../shared/suggestions'
 import { find, positionOf, tracksOf, treeNodes } from './board'
-import { autoAlign, chooseBranch, groupPlanes, clashes, directionNear, MAX_BRANCH_LENGTH, MIN_BRANCH_LENGTH, NEAR_POSITION, preferredDirection, ringLength } from './layout'
+import { autoAlign, chooseBranch, groupDirections, clashes, directionNear, MAX_BRANCH_LENGTH, MIN_BRANCH_LENGTH, NEAR_POSITION, preferredDirection, ringLength } from './layout'
 
 export type { Album, Artist, Persisted, Simple, Track, TypeId, VendorRef } from '../shared/model'
 
@@ -63,6 +63,11 @@ type Actions = {
   /** Re-lays out the open tree's fruit (see layout.autoAlign). Heights never change. */
   autoAlignBoard: () => void
   /**
+   * The reset button: re-lays out the open tree with every branch on the main plane, heading straight left or right
+   * of the trunk from the starting view (album planes included), stems out as far as it takes. Heights never change.
+   */
+  flattenBoard: () => void
+  /**
    * The trash icon. A track is hidden (off the tree, score kept); a movie or book is deleted; an album is deleted
    * with its tracks, and its artist if nothing else of theirs is left. Artists can't be removed directly.
    */
@@ -84,21 +89,34 @@ const newBranch = (s: Persisted, type: TypeId, position: number, extra: { positi
 }
 
 /**
- * A type's tree, re-laid out (layout.autoAlign); heights never change. On MUSIC each album's tracks share a plane of
- * their own (tracks with no album share one too), in the order the albums went on the tree, so orbiting shows one
- * album at a time face-on. Elsewhere, as many as fit on the main plane.
+ * A type's tree, re-laid out (layout.autoAlign); heights never change. On MUSIC each album's tracks (and the tracks
+ * with no album, as a group of their own) go in the order the albums went on the tree, and with more than one group,
+ * every track in a group points the same way: round the whole turn (two groups straight left and right, three 120°
+ * apart…), or with `flat` (the reset button), all left or all right of the trunk on the main plane, each group on
+ * the side with fewer tracks so far. Elsewhere, as many as fit on the main plane, or with `flat`, all of them.
  */
-const aligned = (s: Persisted, type: TypeId): Partial<Persisted> => {
+const aligned = (s: Persisted, type: TypeId, flat = false): Partial<Persisted> => {
   const nodes = treeNodes(s, type)
-  let planes: number[] | undefined
+  let planes: number[] | undefined = flat ? nodes.map(() => 0) : undefined
+  let sides: (1 | -1)[] | undefined
   if (type === 'music') {
     const groupOf = (n: (typeof nodes)[number]) => (n.entity as Track).albumId ?? ''
     const order = [...new Set(nodes.map(groupOf))]
       .sort((a, b) => (a ? s.albums[a]?.addedAt ?? 0 : Infinity) - (b ? s.albums[b]?.addedAt ?? 0 : Infinity))
-    const turns = groupPlanes(order.length)
-    planes = nodes.map(n => turns[order.indexOf(groupOf(n))])
+    const group = nodes.map(n => order.indexOf(groupOf(n)))
+    if (order.length === 1) planes ??= nodes.map(() => 0)
+    else if (flat) {
+      const sizes = order.map((_, g) => group.filter(x => x === g).length)
+      const used = { 1: 0, [-1]: 0 } as Record<1 | -1, number>
+      const sideOf = sizes.map(size => { const side: 1 | -1 = used[1] <= used[-1] ? 1 : -1; used[side] += size; return side })
+      sides = group.map(g => sideOf[g])
+    } else {
+      const turns = groupDirections(order.length)
+      planes = group.map(g => turns[g])
+      sides = group.map(() => 1)
+    }
   }
-  const branches = autoAlign(nodes.map(n => positionOf(n.entity)), planes)
+  const branches = autoAlign(nodes.map(n => positionOf(n.entity)), planes, sides)
   const updates: Record<string, Record<string, Track | Simple>> = {}
   nodes.forEach((n, i) => {
     const table = updates[n.collection] ?? { ...s[n.collection] }
@@ -299,6 +317,11 @@ export const useStore = create<State & Actions>()((set, get) => ({
   autoAlignBoard: () => {
     const s = get()
     if (s.activeType) set(aligned(s, s.activeType))
+  },
+
+  flattenBoard: () => {
+    const s = get()
+    if (s.activeType) set(aligned(s, s.activeType, true))
   },
 
   remove: (id) => {

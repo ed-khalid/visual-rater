@@ -1,4 +1,5 @@
 import type { AlbumDetails, Suggestion, Track } from '../src/shared/suggestions'
+import { cleanName } from '../src/shared/names'
 
 /**
  * Minimal Spotify Web API client using the client-credentials flow (app token, no user login).
@@ -78,11 +79,13 @@ const artistSuggestion = (a: SpotifyArtist): Suggestion => ({
   detail: a.genres?.slice(0, 2).join(' · ') || undefined,
 })
 
+// Album and track names are saved without edition tags (shared/names); a suggestion keeps the tag it lost as
+// `edition`, so the palette can tell editions apart.
 const albumSuggestion = (a: SpotifyAlbum): Suggestion => ({
   provider: 'spotify',
   kind: 'album',
   id: a.id,
-  name: a.name,
+  ...cleanName(a.name),
   image: pickImage(a.images),
   detail: [a.artists?.map(x => x.name).join(', '), a.release_date?.slice(0, 4), a.album_type && a.album_type !== 'album' ? a.album_type : undefined]
     .filter(Boolean).join(' · ') || undefined,
@@ -92,7 +95,7 @@ const albumSuggestion = (a: SpotifyAlbum): Suggestion => ({
   year: yearOf(a.release_date),
 })
 
-const toTrack = (t: SpotifyTrack): Track => ({ id: t.id, name: t.name, number: t.track_number, disc: t.disc_number, durationMs: t.duration_ms })
+const toTrack = (t: SpotifyTrack): Track => ({ id: t.id, name: cleanName(t.name).name, number: t.track_number, disc: t.disc_number, durationMs: t.duration_ms })
 
 export const createSpotify = ({ clientId, clientSecret, fetch: f = fetch, now = Date.now }: SpotifyConfig) => {
   let token: { value: string, expiresAt: number } | null = null
@@ -155,7 +158,7 @@ export const createSpotify = ({ clientId, clientSecret, fetch: f = fetch, now = 
     }
     return {
       id: album.id,
-      name: album.name,
+      name: cleanName(album.name).name,
       artist: album.artists?.[0]?.name ?? '',
       artistId: album.artists?.[0]?.id,
       year: yearOf(album.release_date),

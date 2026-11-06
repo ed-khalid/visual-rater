@@ -247,26 +247,48 @@ describe('editing an album', () => {
   })
 })
 
-describe('album planes (MUSIC)', () => {
+describe('album directions (MUSIC)', () => {
   const plane = (angle: number) => { const a = ((angle - Math.PI / 2) % Math.PI + Math.PI) % Math.PI; return Math.round(a * 180 / Math.PI) % 180 }
-  const planesOf = (albumId: string) => new Set(tracksOf(s(), albumId).map(t => plane(t.branch!.angle)))
-
-  test('each album on the tree gets a plane of its own; the first stays on the main plane', () => {
-    const kidA = stageKidA(4)
-    s().addAlbumTracks(kidA)
-    expect([...planesOf(kidA)]).toEqual([0])
+  /** Compass direction of a branch in degrees: 90 = right of the trunk from the starting view, 270 = left. */
+  const direction = (angle: number) => Math.round(((angle * 180 / Math.PI) % 360 + 360) % 360) % 360
+  const directionsOf = (albumId: string) => new Set(tracksOf(s(), albumId).map(t => direction(t.branch!.angle)))
+  const addOkc = () => {
     const okc = s().addAlbum({ name: 'OK Computer', vendor: spotify('okc'), artist: { name: 'Radiohead', vendor: spotify('rh') } })!
     s().setAlbumDetails(okc, { ...details('Radiohead', 4), id: 'okc', name: 'OK Computer',
       tracks: details('Radiohead', 4).tracks.map(t => ({ ...t, id: `okc-${t.id}` })) })
     s().addAlbumTracks(okc)
-    expect([...planesOf(kidA)]).toEqual([0])
-    expect([...planesOf(okc)]).toEqual([90])
-    // and they stay there after a drag re-aligns the tree
+    return okc
+  }
+
+  test('one album uses both sides of the main plane; with more, each album points one way, round the whole turn', () => {
+    const kidA = stageKidA(4)
+    s().addAlbumTracks(kidA)
+    expect(new Set(tracksOf(s(), kidA).map(t => plane(t.branch!.angle)))).toEqual(new Set([0]))
+    const okc = addOkc()
+    expect([...directionsOf(kidA)]).toEqual([90])
+    expect([...directionsOf(okc)]).toEqual([270])
+    // and they stay that way after a drag re-aligns the tree
     s().move(tracksOf(s(), okc)[0].id, { position: 0.9 })
     s().autoAlignBoard()
-    expect([...planesOf(okc)]).toEqual([90])
-    // removing one closes the gap
+    expect([...directionsOf(kidA)]).toEqual([90])
+    expect([...directionsOf(okc)]).toEqual([270])
+    // removing one hands the main plane back to the other, both sides
     s().remove(kidA)
-    expect([...planesOf(okc)]).toEqual([0])
+    expect(new Set(tracksOf(s(), okc).map(t => plane(t.branch!.angle)))).toEqual(new Set([0]))
+  })
+
+  test('reset (flattenBoard) puts each album wholly left or right on the main plane, heights unchanged', () => {
+    const kidA = stageKidA(4)
+    s().addAlbumTracks(kidA)
+    const okc = addOkc()
+    s().move(tracksOf(s(), okc)[0].id, { position: 0.9 })
+    s().autoAlignBoard()
+    const scores = Object.values(s().tracks).map(t => t.score)
+    s().flattenBoard()
+    const a = directionsOf(kidA), b = directionsOf(okc)
+    expect(a.size).toBe(1)
+    expect(b.size).toBe(1)
+    expect(new Set([...a, ...b])).toEqual(new Set([90, 270]))
+    expect(Object.values(s().tracks).map(t => t.score)).toEqual(scores)
   })
 })

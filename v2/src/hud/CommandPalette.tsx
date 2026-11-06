@@ -5,6 +5,7 @@ import { albumStatus, nameTaken, usePersisted, useStore } from '../state/store'
 import './palette.css'
 import { loadAlbumDetails } from './albumDetails'
 import { useSuggestions } from './useSuggestions'
+import { useView } from '../scene/view'
 
 export const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/.test(navigator.platform)
 export const shortcutLabel = isMac ? '⌘K' : 'Ctrl K'
@@ -51,7 +52,12 @@ export const CommandPalette = ({ open, onOpenChange }: Props) => {
   useEffect(() => { setSelected(preferred) }, [preferred])
 
   // Stay open after adding, so several things can be added in a row.
-  const addTyped = () => { if (addTypedItem(name)) setQuery('') }
+  const addTyped = () => {
+    const id = addTypedItem(name)
+    if (!id) return
+    setQuery('')
+    useView.getState().startRating([id])
+  }
   // Albums wait in the staging tray.
   const addSuggestion = (sg: Suggestion) => {
     const added = addAlbum({
@@ -75,7 +81,7 @@ export const CommandPalette = ({ open, onOpenChange }: Props) => {
         const taken = onBoard(sg)
         return <Command.Item key={`${sg.kind}:${sg.id}`} value={`sg:${sg.kind}:${sg.id}`} onSelect={() => addSuggestion(sg)} disabled={taken !== false} className="palette-item palette-suggestion" data-kind={sg.kind}>
           {sg.image ? <img className="palette-thumb" src={sg.image} alt="" /> : <span className="palette-thumb" />}
-          <span className="palette-name">{sg.name}{sg.detail && <span className="palette-detail">{sg.detail}</span>}</span>
+          <span className="palette-name">{sg.name}{(sg.edition || sg.detail) && <span className="palette-detail">{[sg.edition, sg.detail].filter(Boolean).join(' · ')}</span>}</span>
           <span className="palette-tag">{taken === 'added' ? 'ON BOARD' : taken === 'staged' ? 'STAGED' : 'ALBUM'}</span>
         </Command.Item>
       })}

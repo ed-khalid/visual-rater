@@ -191,7 +191,7 @@
 
 .album-popup-problem { padding: 8px 8px 0 0; font-size: 11px; letter-spacing: 0.04em; color: #ff8a8a; }
 
-/* Action icons on a sphere's corners: trash (top-left), add (top-right) */
+/* Action icon on a sphere's corner: trash (top-left) */
 .sphere-icon {
   position: fixed;
   top: 0;
@@ -231,13 +231,9 @@
   animation: trash-armed 0.9s ease-in-out infinite;
 }
 
-.sphere-icon-add { color: #5ce1ff; }
-.sphere-icon-add.busy { cursor: progress; animation: add-busy 0.9s ease-in-out infinite; }
-.sphere-icon-add.failed { color: #ff8a8a; border-color: rgba(255, 120, 120, 0.8); }
 
 @keyframes icon-fade-in { from { opacity: 0; } }
 @keyframes trash-armed { 50% { box-shadow: 0 0 18px rgba(255, 110, 110, 0.75); } }
-@keyframes add-busy { 50% { box-shadow: 0 0 18px rgba(92, 225, 255, 0.6); } }
 
 /* A score, wherever it's shown: bright signal colour */
 .album-facts dd.album-score { color: #5ce1ff; letter-spacing: 0.12em; }

@@ -1,20 +1,20 @@
 .palette-overlay {
+  /* Catches the click outside that closes it, but leaves the scene in full view */
   position: fixed;
   inset: 0;
-  background: rgba(3, 5, 10, 0.55);
-  backdrop-filter: blur(2px);
+  z-index: 30;
+  background: transparent;
 }
 
 .palette {
   --palette-bg: rgb(6, 12, 20);
   --palette-line: rgba(92, 225, 255, 0.35);
+  /* Hangs from the + key (top-left): its close tab lands exactly over the key, so + turns into × */
   position: fixed;
-  top: 22vh;
-  /* centred with auto margins, not translateX(-50%), which can land on a half pixel and blur the border */
-  left: 0;
-  right: 0;
-  margin: 0 auto;
-  width: min(560px, 90vw);
+  z-index: 31; /* above the HUD, mode switch, popups */
+  top: 66px; /* the + key is 48px down and 19px tall: the tab (19px) sits on it exactly */
+  left: 28px;
+  width: min(400px, calc(100vw - 56px));
   font-family: var(--font);
   color: var(--text);
   background: var(--palette-bg);
@@ -48,7 +48,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 3px 6px 2px;
+  /* the + key's size, so it covers the key */
+  box-sizing: border-box;
+  width: 44px;
+  height: 19px;
+  padding: 0;
   font: inherit;
   font-size: 15px;
   line-height: 1;
@@ -93,7 +97,7 @@
 
 .palette-verb { color: #5ce1ff; letter-spacing: 0.24em; font-size: 11px; line-height: 18px; }
 
-.palette-list { max-height: min(420px, 55vh); overflow-y: auto; }
+.palette-list { max-height: min(360px, 50vh); overflow-y: auto; }
 
 .palette-suggestion { align-items: center; }
 

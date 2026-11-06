@@ -1,6 +1,8 @@
 import { create } from 'zustand'
 import type { AlbumDetails } from '../shared/suggestions'
+import { useView } from '../scene/view'
 import { useStore } from '../state/store'
+import { enterAlbumView } from './OnTree'
 
 type LoadStatus = 'loading' | 'error'
 
@@ -45,6 +47,25 @@ export const loadAlbumDetails = (itemId: string): Promise<void> => {
     .finally(() => inFlight.delete(itemId))
   inFlight.set(itemId, load)
   return load
+}
+
+/**
+ * Puts a staged album's tracks on the tree (loading its tracklist first if it isn't there yet) and opens album view
+ * on it, which is where its songs get rated. Used when an album is dropped on the tree (scene/StagingArea).
+ * Resolves false if the tracklist couldn't be loaded.
+ */
+export const addStagedAlbum = async (albumId: string): Promise<boolean> => {
+  if (needsTracklist(albumId)) {
+    await loadAlbumDetails(albumId)
+    if (needsTracklist(albumId)) return false
+  }
+  const v = useView.getState()
+  if (v.openId === albumId) v.close()
+  if (v.hoveredId === albumId) v.setHovered(null)
+  useStore.getState().addAlbumTracks(albumId)
+  // Its new tracks are rated in album view: everything else on the tree draws back into the trunk.
+  enterAlbumView(albumId)
+  return true
 }
 
 /** "4:11" */

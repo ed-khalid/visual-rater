@@ -99,3 +99,38 @@ export const ratingLabel = (s: Persisted, id: string): string => rating(s, id).l
 /** The type a saved thing belongs to. */
 export const typeOf = (collection: Collection): TypeId =>
   collection === 'movies' ? 'movies' : collection === 'books' ? 'books' : 'music'
+
+/**
+ * Active rating: while any of `batch` (fruit just added, unrated) is still on the tree unrated, the things to keep
+ * bright are those fruit (rated or not by now) and, on MUSIC, their albums and artists; everything else fades.
+ * Null once every one of them has a score (or left the tree), which ends it.
+ */
+export const ratingFocus = (s: Persisted, type: TypeId, batch: readonly string[]): Set<string> | null => {
+  const ids = new Set(batch)
+  const mine = treeNodes(s, type).filter(n => ids.has(n.id))
+  if (!mine.some(n => n.entity.score === undefined)) return null
+  const focus = new Set(mine.map(n => n.id))
+  for (const n of mine) {
+    const t = n.entity as Track
+    if (t.albumId) focus.add(t.albumId)
+    if (t.artistId) focus.add(t.artistId)
+  }
+  return focus
+}
+
+/** How far (in points, either way) a rated item's score may be from the one being dragged to and still be offered. */
+export const SAME_SCORE_RANGE = 2
+
+/**
+ * Already-rated items of a type whose score is the same as `score` (as shown, rounded), or the nearest within
+ * SAME_SCORE_RANGE: closest first, then most recently put on the tree. Hidden tracks count (their score was kept).
+ * Used while a song is held still mid-drag, to compare it with songs already at that height.
+ */
+export const sameScore = (s: Persisted, type: TypeId, score: number, excludeId: string, limit = 5): (Track | Simple)[] => {
+  const target = Math.round(score)
+  const all = Object.values(s[rateableCollection(type)]) as (Track | Simple)[]
+  return all
+    .filter(e => e.id !== excludeId && e.score !== undefined && Math.abs(Math.round(e.score) - target) <= SAME_SCORE_RANGE)
+    .sort((a, b) => Math.abs(Math.round(a.score!) - target) - Math.abs(Math.round(b.score!) - target) || (b.since ?? 0) - (a.since ?? 0))
+    .slice(0, limit)
+}

@@ -1,0 +1,33 @@
+/* Songs already rated at the score a dragged song is held on: a small card beside it, fading in. */
+.score-matches {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 22;
+  visibility: hidden; /* until pinned on the first frame */
+  width: 248px;
+  padding: 6px;
+  pointer-events: none;
+  font-family: var(--font);
+  color: var(--text);
+  background: rgb(6, 12, 20);
+  border: 1px solid rgba(92, 225, 255, 0.35);
+  border-radius: 4px;
+  box-shadow: 0 0 24px rgba(92, 225, 255, 0.12);
+  will-change: transform;
+  /* Fade only: transform is set inline every frame to pin it. */
+  animation: score-matches-in 0.35s ease backwards;
+}
+@keyframes score-matches-in { from { opacity: 0; } }
+
+.score-match { display: flex; align-items: center; gap: 9px; padding: 5px 4px; }
+.score-match-thumb { flex: none; width: 26px; height: 26px; object-fit: cover; border-radius: 2px; background: rgba(92, 225, 255, 0.06); }
+.score-match-names { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.score-match-name, .score-match-detail { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.score-match-name { font-size: 12px; letter-spacing: 0.04em; color: #e6f6ff; }
+.score-match-detail { font-size: 10px; letter-spacing: 0.08em; color: var(--text-dim); }
+.score-match-score { font-size: 12px; letter-spacing: 0.08em; color: #5ce1ff; font-variant-numeric: tabular-nums; }
+/* the song's tier colour, as a thin bar */
+.score-match-tier { flex: none; width: 3px; height: 22px; border-radius: 1px; }
+
+@media (prefers-reduced-motion: reduce) { .score-matches { animation: none; } }

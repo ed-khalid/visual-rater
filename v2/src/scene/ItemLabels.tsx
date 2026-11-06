@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { addedColumn, find, stagedAlbums, treeNodes } from '../state/board'
+import { find, stagedAlbums, treeNodes } from '../state/board'
 import { useStore } from '../state/store'
 import { useView } from './view'
 import { labelElements, scaleElements } from './labels'
@@ -22,7 +22,8 @@ export const ItemLabels = () => {
     const name = (id: string) => find(s, id)?.entity.name ?? ''
     return [
       ...treeNodes(s, activeType).map(n => ({ id: n.id, kind: 'side', name: n.entity.name, unrated: n.entity.score === undefined })),
-      ...(activeType === 'music' ? [...stagedAlbums(s).map(a => a.id), ...addedColumn(s).map(x => x.id)] : [])
+      // Only the staging tray floats in the scene; albums on the tree are listed by the HUD's on-the-tree panel.
+      ...(activeType === 'music' ? stagedAlbums(s).map(a => a.id) : [])
         .map(id => ({ id, kind: 'below', name: name(id), unrated: false })),
     ]
   }, [activeType, artists, albums, tracks, movies, books])

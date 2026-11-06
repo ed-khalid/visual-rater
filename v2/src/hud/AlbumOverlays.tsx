@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { liveScores, screenAnchors, useView } from '../scene/view'
 import { addedColumn, find, formatScore, rating as ratingOf, songTier, stagedAlbums, tracksOf, treeNodes } from '../state/board'
 import { usePersisted, useStore } from '../state/store'
+import { AlbumChart } from './AlbumChart'
 import { formatDuration, loadAlbumDetails, needsTracklist, useAlbumLoads } from './albumDetails'
 import './albumOverlays.css'
 
@@ -29,7 +30,7 @@ const usePinned = (id: string | null, ref: React.RefObject<HTMLElement | null>, 
         if (right + w <= vw - EDGE_PX || left >= EDGE_PX) {
           el.style.maxHeight = ''
           const h = el.offsetHeight
-          x = right + w <= vw - EDGE_PX ? right : left
+          x = (a.preferLeft ? left < EDGE_PX : right + w <= vw - EDGE_PX) ? right : left
           y = Math.min(Math.max(EDGE_PX, align === 'top' ? a.y - a.r : a.y - h / 2), vh - h - EDGE_PX)
         } else {
           const below = vh - (a.y + a.r + GAP_PX) - EDGE_PX, above = a.y - a.r - GAP_PX - EDGE_PX
@@ -150,9 +151,13 @@ const parseYear = (text: string): number | null | 'invalid' => {
  * EDIT turns the title, year and track names into fields and lets tracks be deleted; nothing changes until SAVE
  * (CANCEL or Esc throws the draft away). Removing an album is the trash icon on its sphere (ItemTrash).
  */
-export const AlbumPopup = () => {
-  const openId = useView(v => v.openId)
-  const close = useView(v => v.close)
+export const AlbumPopup = ({ docked }: { docked?: string } = {}) => {
+  // Docked (album view): always this album, under its title in the HUD instead of pinned beside it; its × and Esc
+  // leave album view.
+  const pinnedId = useView(v => v.openId)
+  const openId = docked ?? pinnedId
+  const closePinned = useView(v => v.close)
+  const close = docked ? () => useView.getState().setAlbumView(null) : closePinned
   const setEditing = useView(v => v.setEditing)
   const s = usePersisted()
   // The popup is for albums; anything else that's "open" (a tapped artist, say) has no popup.
@@ -163,7 +168,7 @@ export const AlbumPopup = () => {
   const status = useAlbumLoads(s => openId ? s.status[openId] : undefined)
   const ref = useRef<HTMLDivElement>(null)
   const [draft, setDraft] = useState<Draft | null>(null)
-  usePinned(item ? openId : null, ref, 'top')
+  usePinned(item && !docked ? openId : null, ref, 'top')
 
   // Fresh state for each album opened.
   useEffect(() => { setDraft(null) }, [openId])
@@ -171,14 +176,14 @@ export const AlbumPopup = () => {
   useEffect(() => { if (openId) void loadAlbumDetails(openId) }, [openId])
   useEffect(() => {
     if (!openId) return
-    // Esc leaves edit mode first, then closes.
+    // Esc leaves edit mode first, then closes. (Docked, album view's own Esc does the closing.)
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== 'Escape') return
-      if (draft) setDraft(null); else close()
+      if (draft) setDraft(null); else if (!docked) close()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [openId, close, draft])
+  }, [openId, close, draft, docked])
 
   if (!item || !openId) return null
   const year0 = item.year
@@ -203,8 +208,9 @@ export const AlbumPopup = () => {
   const setTrackName = (id: string, name: string) => draft && setDraft({ ...draft, tracks: draft.tracks.map(t => t.id === id ? { ...t, name } : t) })
   const deleteTrack = (id: string) => draft && setDraft({ ...draft, tracks: draft.tracks.filter(t => t.id !== id) })
 
-  return <div ref={ref} className={`album-popup${draft ? ' album-popup-editing' : ''}`} role="dialog" aria-label={`${item.name} tracklist`}>
-    <button className="album-popup-close" onClick={close} aria-label="Close">×</button>
+  return <div ref={ref} className={`album-popup${draft ? ' album-popup-editing' : ''}${docked ? ' album-popup-docked' : ''}`}
+    role={docked ? 'region' : 'dialog'} aria-label={`${item.name} tracklist`}>
+    {!docked && <button className="album-popup-close" onClick={close} aria-label="Close">×</button>}
     {draft
       ? <>
           <input className="album-input album-input-title" value={draft.name} onChange={e => setDraft({ ...draft, name: e.target.value })} aria-label="Title" autoFocus />
@@ -215,11 +221,11 @@ export const AlbumPopup = () => {
             <dt>RATING</dt><RatingValue rating={rating} className="" />
           </dl>
         </>
-      : <>
+      : !docked && <>
           <div className="album-popup-title">{item.name}</div>
           <AlbumFacts artist={artistName} album={item.name} year={year0} rating={rating} />
         </>}
-    <div className="album-popup-divider" />
+    {(!docked || draft) && <div className="album-popup-divider" />}
     {shown.length > 0
       ? <ol className="album-tracks">
           {shown.map((t, i) => {
@@ -236,6 +242,11 @@ export const AlbumPopup = () => {
                 : <span className="album-track-time">
                     {t.score !== undefined && <span className="album-track-score">{formatScore(t.score)}</span>}
                     {t.durationMs !== undefined ? formatDuration(t.durationMs) : ''}
+                    {/* Album view: each song's tier, in its colour. */}
+                    {docked && t.score !== undefined && (() => {
+                      const tier = songTier(t.score)
+                      return <span className="album-track-tier" style={{ background: tier.color }}>{tier.name}</span>
+                    })()}
                   </span>}
             </li>
           })}
@@ -245,6 +256,7 @@ export const AlbumPopup = () => {
           : status === 'error' ? 'Tracklist unavailable right now.'
           : status === 'loading' || needsTracklist(openId) ? 'Loading tracklist…'
           : 'No tracks.'}</div>}
+    {docked && !draft && shown.length > 0 && <AlbumChart tracks={shown} />}
     {problem && <div className="album-popup-problem" role="alert">{problem}</div>}
     <div className="album-popup-actions">
       {draft
@@ -278,6 +290,7 @@ const useSphereIcon = (eligibleIds: string[], corner: 'top-left' | 'top-right') 
   const selectedId = useView(v => v.selectedId)
   const editing = useView(v => v.editing)
   const draggingId = useView(v => v.draggingId)
+  const albumView = useView(v => v.albumView)
   const [target, setTarget] = useState<string | null>(null)
   /** Fading out: still on screen, on its way to being removed. */
   const [leaving, setLeaving] = useState(false)
@@ -285,7 +298,8 @@ const useSphereIcon = (eligibleIds: string[], corner: 'top-left' | 'top-right') 
   const ref = useRef<HTMLButtonElement>(null)
   const key = eligibleIds.join(',')
   const hidden = editing || draggingId !== null
-  const wanted = hidden ? null : [hoveredId, openId, selectedId].find(id => id && eligibleIds.includes(id)) ?? null
+  // In album view the album's own icons stay up (on its row in the on-the-tree panel).
+  const wanted = hidden ? null : [hoveredId, openId, selectedId, albumView].find(id => id && eligibleIds.includes(id)) ?? null
 
   useEffect(() => {
     if (wanted) {
@@ -373,52 +387,6 @@ export const ItemTrash = () => {
       <path d="M6 4V2.5h4V4" />
       <path d="M3.8 4l.7 9.5h7l.7-9.5" />
       <path d="M6.6 6.5v4.5M9.4 6.5v4.5" />
-    </svg>
-  </button>
-}
-
-/**
- * Plus icon just outside the top-right of a staged album's sphere: one click adds all its tracks to the tree and
- * sends the album to the column on the right. Loads the tracklist first if it isn't there yet.
- */
-export const StagedAdd = () => {
-  const albums = useStore(st => st.albums)
-  const stagedIds = useMemo(() => stagedAlbums({ albums } as Parameters<typeof stagedAlbums>[0]).map(a => a.id), [albums])
-  const addAlbumTracks = useStore(s => s.addAlbumTracks)
-  const icon = useSphereIcon(stagedIds, 'top-right')
-  const [busy, setBusy] = useState(false)
-  const [failed, setFailed] = useState(false)
-
-  useEffect(() => { setFailed(false) }, [icon.target])
-
-  const target = icon.target
-  if (!target) return null
-  const onClick = async () => {
-    if (busy) return
-    if (needsTracklist(target)) {
-      setBusy(true)
-      await loadAlbumDetails(target)
-      setBusy(false)
-      if (needsTracklist(target)) return setFailed(true)
-    }
-    const v = useView.getState()
-    if (v.openId === target) v.close()
-    if (v.hoveredId === target) v.setHovered(null)
-    addAlbumTracks(target)
-    icon.hide()
-  }
-
-  const label = failed ? 'Couldn\'t load the tracklist, try again' : busy ? 'Loading tracklist…' : 'Add tracks to the tree'
-  return <button
-    ref={icon.ref}
-    className={`sphere-icon sphere-icon-add${busy ? ' busy' : ''}${failed ? ' failed' : ''}${icon.leaving ? ' leaving' : ''}`}
-    onClick={onClick}
-    {...icon.pointer}
-    aria-label={label}
-    title={label}
-  >
-    <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" aria-hidden="true">
-      <path d="M8 2.5v11M2.5 8h11" />
     </svg>
   </button>
 }
