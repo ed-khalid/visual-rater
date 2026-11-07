@@ -25,7 +25,7 @@ const usePinned = (id: string | null, ref: React.RefObject<HTMLElement | null>, 
       if (el && a) {
         const w = el.offsetWidth
         const vw = window.innerWidth, vh = window.innerHeight
-        const right = a.x + a.r + GAP_PX, left = a.x - a.r - GAP_PX - w
+        const hw = a.halfWidth ?? a.r, right = a.x + hw + GAP_PX, left = a.x - hw - GAP_PX - w
         let x: number, y: number
         if (right + w <= vw - EDGE_PX || left >= EDGE_PX) {
           el.style.maxHeight = ''
@@ -298,7 +298,7 @@ const useSphereIcon = (eligibleIds: string[], corner: 'top-left' | 'top-right') 
   const ref = useRef<HTMLButtonElement>(null)
   const key = eligibleIds.join(',')
   const hidden = editing || draggingId !== null
-  // In album view the album's own icons stay up (on its row in the on-the-tree panel).
+  // In album view the album's own icons stay up (on its row in the catalog).
   const wanted = hidden ? null : [hoveredId, openId, selectedId, albumView].find(id => id && eligibleIds.includes(id)) ?? null
 
   useEffect(() => {

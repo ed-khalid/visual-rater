@@ -95,6 +95,24 @@ const albumSuggestion = (a: SpotifyAlbum): Suggestion => ({
   year: yearOf(a.release_date),
 })
 
+/** Pages of an artist's albums to follow (50 each): plenty for any discography. */
+const MAX_ARTIST_PAGES = 4
+
+/**
+ * One entry per album from an artist's discography: Spotify often lists several editions of the same album
+ * (remastered, deluxe, anniversary…), which all clean to the same name (shared/names). Of those, the one with no
+ * edition tag wins, otherwise the earliest; then oldest first.
+ */
+export const distinctAlbums = (albums: Suggestion[]): Suggestion[] => {
+  const best = new Map<string, Suggestion>()
+  for (const a of albums) {
+    const key = a.name.toLowerCase(), held = best.get(key)
+    const better = !held || (!!held.edition && !a.edition) || (!!held.edition === !!a.edition && (a.year ?? Infinity) < (held.year ?? Infinity))
+    if (better) best.set(key, a)
+  }
+  return [...best.values()].sort((a, b) => (a.year ?? Infinity) - (b.year ?? Infinity) || a.name.localeCompare(b.name))
+}
+
 const toTrack = (t: SpotifyTrack): Track => ({ id: t.id, name: cleanName(t.name).name, number: t.track_number, disc: t.disc_number, durationMs: t.duration_ms })
 
 export const createSpotify = ({ clientId, clientSecret, fetch: f = fetch, now = Date.now }: SpotifyConfig) => {
@@ -167,5 +185,17 @@ export const createSpotify = ({ clientId, clientSecret, fetch: f = fetch, now = 
     }
   }
 
-  return { searchMusic, getAlbum }
+  /** An artist's albums (studio and live, not singles or compilations), one per album (distinctAlbums), oldest first. */
+  const getArtistAlbums = async (id: string): Promise<Suggestion[]> => {
+    const albums: SpotifyAlbum[] = []
+    let next: string | null = `https://api.spotify.com/v1/artists/${encodeURIComponent(id)}/albums?include_groups=album&limit=50`
+    for (let page = 0; next && page < MAX_ARTIST_PAGES; page++) {
+      const body: SpotifyPage<SpotifyAlbum> = await apiGet<SpotifyPage<SpotifyAlbum>>(next)
+      albums.push(...body.items)
+      next = body.next
+    }
+    return distinctAlbums(albums.map(albumSuggestion))
+  }
+
+  return { searchMusic, getAlbum, getArtistAlbums }
 }

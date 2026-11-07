@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { find, stagedAlbums, treeNodes } from '../state/board'
+import { treeNodes } from '../state/board'
 import { useStore } from '../state/store'
 import { useView } from './view'
 import { labelElements, scaleElements } from './labels'
@@ -7,8 +7,8 @@ import './items.css'
 
 /**
  * DOM layer holding one name label per thing on the open tree: beside fruit (with an UNRATED tag until it's
- * dragged), under the floating albums and artists.
- * The 3D objects position them every frame (see Items.tsx and StagingArea.tsx).
+ * dragged).
+ * The 3D objects position them every frame (see Items.tsx).
  */
 export const ItemLabels = () => {
   const activeType = useStore(s => s.activeType)
@@ -19,12 +19,8 @@ export const ItemLabels = () => {
   const labels = useMemo(() => {
     if (!activeType) return []
     const s = { artists, albums, tracks, movies, books }
-    const name = (id: string) => find(s, id)?.entity.name ?? ''
     return [
       ...treeNodes(s, activeType).map(n => ({ id: n.id, kind: 'side', name: n.entity.name, unrated: n.entity.score === undefined })),
-      // Only the staging tray floats in the scene; albums on the tree are listed by the HUD's on-the-tree panel.
-      ...(activeType === 'music' ? stagedAlbums(s).map(a => a.id) : [])
-        .map(id => ({ id, kind: 'below', name: name(id), unrated: false })),
     ]
   }, [activeType, artists, albums, tracks, movies, books])
 

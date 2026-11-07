@@ -260,6 +260,22 @@ describe('album directions (MUSIC)', () => {
     return okc
   }
 
+  test('an album\'s unrated tracks go outwards in tracklist order: track 1 has the shortest stem', () => {
+    const kidA = stageKidA(5)
+    s().addAlbumTracks(kidA)
+    const lengths = () => tracksOf(s(), kidA).filter(t => t.score === undefined).map(t => t.branch!.length)
+    const increasing = (ls: number[]) => ls.every((l, i) => i === 0 || l > ls[i - 1])
+    expect(increasing(lengths())).toBe(true)
+    // with another album on the tree too (each album one way), and after rating one of them, the rest stay in order
+    const okc = addOkc()
+    expect(increasing(lengths())).toBe(true)
+    expect(increasing(tracksOf(s(), okc).map(t => t.branch!.length))).toBe(true)
+    s().move(tracksOf(s(), kidA)[2].id, { position: 0.9 })
+    s().autoAlignBoard()
+    expect(lengths()).toHaveLength(4)
+    expect(increasing(lengths())).toBe(true)
+  })
+
   test('one album uses both sides of the main plane; with more, each album points one way, round the whole turn', () => {
     const kidA = stageKidA(4)
     s().addAlbumTracks(kidA)

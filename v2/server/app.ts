@@ -79,5 +79,18 @@ export const createApp = ({ spotify, store = null }: Deps) => {
     }
   })
 
+  app.get('/api/music/artists/:id/albums', async c => {
+    const id = c.req.param('id')
+    if (!SPOTIFY_ID.test(id)) return c.json({ error: 'Not a Spotify artist id' }, 400)
+    if (!spotify) return c.json({ error: 'Spotify is not configured on the server' }, 503)
+    try {
+      return c.json({ albums: await spotify.getArtistAlbums(id) })
+    } catch (e) {
+      if (e instanceof NotFoundError) return c.json({ error: 'Artist not found' }, 404)
+      console.error(e)
+      return c.json({ error: 'Spotify request failed' }, 502)
+    }
+  })
+
   return app
 }

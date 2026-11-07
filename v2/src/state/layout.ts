@@ -131,27 +131,54 @@ export const groupDirections = (groups: number) => Array.from({ length: groups }
  * nothing is clear. With `sides` as well (1 or -1 per item), each item also keeps to that side of its plane, so it
  * points one way only.
  *
+ * With `chains` (a key per item, or undefined), the items sharing a key are laid out in `rank` order with each stem
+ * longer than the one before, starting from the shortest that's clear: an album's unrated tracks, which all sit at
+ * the same height, read outwards from the trunk in tracklist order (track 1 nearest). Neighbours in a chain are a
+ * fruit's width apart, or closer (evenly, overlapping a little) when that's what it takes for the whole chain to fit.
+ *
  * @param positions placement heights (0–1), in any order; results come back in the same order
  */
-export const autoAlign = (positions: number[], planes?: number[], sides?: (1 | -1)[]): Branch[] => {
-  const order = positions.map((p, i) => ({ p, i })).sort((a, b) => a.p - b.p || a.i - b.i)
-  const placed: { x: number, y: number, z: number }[] = []
+export const autoAlign = (positions: number[], planes?: number[], sides?: (1 | -1)[],
+  chains?: { key: (string | undefined)[], rank: number[] }): Branch[] => {
+  const rank = (i: number) => chains?.rank[i] ?? 0
+  const order = positions.map((p, i) => ({ p, i })).sort((a, b) => a.p - b.p || rank(a.i) - rank(b.i) || a.i - b.i)
+  /** Each chain's last stem length so far, and the step between its neighbours. */
+  const last = new Map<string, number>()
+  const steps = new Map<string, number>()
+  const chainMax = planes ? MAX_BRANCH_LENGTH : ALIGN_MAX_LENGTH
+  for (const key of chains?.key ?? []) if (key !== undefined) steps.set(key, (steps.get(key) ?? 0) + 1)
+  for (const [key, size] of steps) steps.set(key, Math.min(ALIGN_MIN_DISTANCE, (chainMax - ALIGN_MIN_LENGTH) / Math.max(1, size - 1)))
+  const placed: { x: number, y: number, z: number, chain?: string }[] = []
   const perSide = new Map<string, number>()
   const result: Branch[] = new Array(positions.length)
 
   for (const { p, i } of order) {
     const y = p * TRUNK_HEIGHT
     const turns = planes ? [planes[i]] : ALIGN_PLANES
-    const lengths = planes ? OWN_PLANE_LENGTHS : ALIGN_LENGTHS
+    const chain = chains?.key[i], after = chain !== undefined ? last.get(chain) : undefined
+    const all = planes ? OWN_PLANE_LENGTHS : ALIGN_LENGTHS
+    // In a chain: shortest first, and at least a step longer than the one before (exactly a step if that's clear).
+    let lengths = all
+    if (chain !== undefined) {
+      const ascending = [...all].sort((a, b) => a - b)
+      if (after === undefined) lengths = ascending
+      else {
+        const next = +(after + steps.get(chain)!).toFixed(3)
+        lengths = [Math.min(next, chainMax), ...ascending.filter(l => l > next + 1e-9)]
+      }
+    }
+    // Chain neighbours keep their own spacing (the step); everything else has to be clear.
+    const clear = (p: { x: number, y: number, z: number }) =>
+      placed.every(q => (chain !== undefined && q.chain === chain) || apart(p, q) >= ALIGN_MIN_DISTANCE)
     let chosen: { angle: number, length: number, key: string } | null = null
     for (const turn of turns) {
       let best: { angle: number, length: number, key: string, cost: number, count: number } | null = null
       for (const side of sides ? [sides[i]] : [1, -1]) {
         const angle = side * Math.PI / 2 + turn
         const key = `${turn}:${side}`
-        const length = lengths.find(l => placed.every(q => apart(fruitAt(y, angle, l), q) >= ALIGN_MIN_DISTANCE))
+        const length = lengths.find(l => clear(fruitAt(y, angle, l)))
         if (length === undefined) continue
-        const cost = Math.abs(length - BRANCH_LENGTH), count = perSide.get(key) ?? 0
+        const cost = chain === undefined ? Math.abs(length - BRANCH_LENGTH) : length, count = perSide.get(key) ?? 0
         if (!best || cost < best.cost - 1e-9 || (Math.abs(cost - best.cost) < 1e-9 && count < best.count)) best = { angle, length, key, cost, count }
       }
       if (best) { chosen = best; break }
@@ -166,7 +193,8 @@ export const autoAlign = (positions: number[], planes?: number[], sides?: (1 | -
       }
     }
     const c = chosen!
-    placed.push(fruitAt(y, c.angle, c.length))
+    if (chain !== undefined) last.set(chain, c.length)
+    placed.push({ ...fruitAt(y, c.angle, c.length), chain })
     perSide.set(c.key, (perSide.get(c.key) ?? 0) + 1)
     result[i] = { angle: c.angle, length: c.length, ring: 0 }
   }

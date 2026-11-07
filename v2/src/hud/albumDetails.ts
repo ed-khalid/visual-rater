@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import type { AlbumDetails } from '../shared/suggestions'
 import { useView } from '../scene/view'
 import { useStore } from '../state/store'
-import { enterAlbumView } from './OnTree'
+import { enterAlbumView } from './Catalog'
 
 type LoadStatus = 'loading' | 'error'
 
@@ -51,7 +51,7 @@ export const loadAlbumDetails = (itemId: string): Promise<void> => {
 
 /**
  * Puts a staged album's tracks on the tree (loading its tracklist first if it isn't there yet) and opens album view
- * on it, which is where its songs get rated. Used when an album is dropped on the tree (scene/StagingArea).
+ * on it, which is where its songs get rated. Used when an album is dropped on the tree (hud/StagedList).
  * Resolves false if the tracklist couldn't be loaded.
  */
 export const addStagedAlbum = async (albumId: string): Promise<boolean> => {

@@ -8,7 +8,6 @@ import { Backdrop } from './Backdrop'
 import { CameraReset } from './CameraReset'
 import { Effects } from './Effects'
 import { Items } from './Items'
-import { StagingArea } from './StagingArea'
 import { collapse, COLLAPSE_SECONDS, useView } from './view'
 import { cameraDistanceFor, CAMERA_FOV, CAMERA_MAX_DISTANCE, CAMERA_MIN_DISTANCE, CAMERA_POLAR } from './world'
 
@@ -46,7 +45,6 @@ export const Stage = () => {
       <Axis />
       <CollapseDriver />
       <Items />
-      <StagingArea />
       <OrbitControls
         makeDefault
         target={[0, 0, 0]}

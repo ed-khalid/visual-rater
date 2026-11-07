@@ -193,8 +193,10 @@ const Fruit = ({ node }: FruitProps) => {
 
     // For the list view, or album view of another album, the branch draws back into the trunk and the fruit shrinks
     // away with it.
-    const albumView = useView.getState().albumView
-    const mine = !albumView || (item as { albumId?: string }).albumId === albumView || !!d?.moved
+    // Albums hidden from the rater contents draw back in too (unless it's their album view).
+    const { albumView, hiddenAlbums } = useView.getState()
+    const albumId = (item as { albumId?: string }).albumId
+    const mine = (albumView ? albumId === albumView : !(albumId && hiddenAlbums.has(albumId))) || !!d?.moved
     st.shown = MathUtils.damp(st.shown, mine ? 1 : 0, 9, dt)
     const out = (1 - collapse.value) * st.shown
     // Drawn in: out of the way of the pointer too.

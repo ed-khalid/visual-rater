@@ -12,7 +12,7 @@ const SPEED = 5
 
 /**
  * The camera rig's glides: back to the starting viewpoint (front, starting distance) when the reset button is
- * pressed, or round to face a branch's plane (view.requestFace, from the on-the-tree panel), keeping the distance.
+ * pressed, or round to face a branch's plane (view.requestFace, from the catalog or the rater contents), keeping the distance.
  * Grabbing the board mid-glide cancels it, so it never fights the user. Also publishes the camera's turn
  * (cameraAzimuth) every frame.
  */

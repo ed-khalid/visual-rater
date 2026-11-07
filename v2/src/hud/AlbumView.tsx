@@ -7,7 +7,7 @@ import './albumView.css'
 /**
  * Album view's HUD (MUSIC): on the left, the album's title card in three columns (its cover, the artist, album and
  * year, and its letter grade in the grade's colour beside its score), and its details (tracklist, EDIT) docked underneath. Shown while
- * view.albumView is set (from the on-the-tree panel).
+ * view.albumView is set (from the catalog or the rater contents).
  */
 export const AlbumView = () => {
   const id = useView(v => v.albumView)

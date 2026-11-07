@@ -1,0 +1,87 @@
+/* What's on the rater right now: centred just under the bottom of the trunk. */
+.rater-contents {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  visibility: hidden; /* until pinned under the trunk on the first frame */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font);
+  font-size: 9px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  white-space: nowrap;
+  user-select: none;
+  will-change: transform;
+}
+.rater-contents-title { color: var(--text); }
+.rater-contents-count { color: var(--text-dim); letter-spacing: 0.16em; }
+
+.rater-contents-groups { display: flex; align-items: flex-end; gap: 14px; }
+/* One artist: their name over their albums' covers. */
+.rater-contents-group { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 26px; }
+.rater-contents-artist {
+  /* never wider than the covers under it, unless it's a single cover */
+  max-width: max(100%, 72px);
+  min-height: 20px;
+  padding: 0 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: inherit;
+  font-size: 8px;
+  letter-spacing: 0.16em;
+  text-transform: inherit;
+  color: var(--text-dim);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.rater-contents-artist:hover, .rater-contents-artist:focus-visible { color: var(--text); outline: none; }
+.rater-contents-artist.off { opacity: 0.45; text-decoration: line-through; }
+.rater-contents-covers { display: flex; align-items: center; gap: 6px; }
+.rater-contents-cover {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: opacity 0.3s;
+}
+.rater-contents-cover img,
+.rater-contents-blank {
+  display: block;
+  width: 26px;
+  height: 26px;
+  object-fit: cover;
+  border-radius: 3px;
+  background: rgba(47, 143, 176, 0.35);
+  transition: box-shadow 0.2s;
+}
+/* bigger hit area for fingers */
+.rater-contents-cover::after { content: ''; position: absolute; inset: -9px -3px; }
+/* its album grade, as a thin bar under the cover; faint when unrated */
+.rater-contents-grade { height: 2px; border-radius: 1px; background: rgba(92, 225, 255, 0.12); }
+
+/* Branches facing the camera right now */
+.rater-contents-cover.facing img,
+.rater-contents-cover.facing .rater-contents-blank { box-shadow: 0 0 0 1px rgba(92, 225, 255, 0.7), 0 0 10px rgba(92, 225, 255, 0.35); }
+.rater-contents-cover:focus-visible { outline: none; }
+.rater-contents-cover:focus-visible img { box-shadow: 0 0 0 1px #e6f6ff; }
+/* Album view: the album on its own stands out; the others step back */
+.rater-contents-cover.viewing img { box-shadow: 0 0 0 2px #5ce1ff, 0 0 12px rgba(92, 225, 255, 0.5); }
+/* Hidden from the tree for now */
+.rater-contents-cover.off { opacity: 0.35; }
+.rater-contents-cover.off img { filter: grayscale(1); }
+
+.rater-contents-more { font-size: 10px; letter-spacing: 0.08em; color: var(--text-dim); }
+
+/* Phones: album view's title card takes this spot, and already says which album it is. */
+@media (max-width: 640px) { .rater-contents.in-album-view { display: none; } }

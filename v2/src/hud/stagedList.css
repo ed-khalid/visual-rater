@@ -1,0 +1,86 @@
+/* The staging tray: albums not on the tree yet, a column under the + key. Scrolls once it reaches the rubric key. */
+.staged-list {
+  position: fixed;
+  top: 92px;
+  left: 28px;
+  z-index: 10;
+  width: 236px;
+  max-height: calc(100vh - 92px - 96px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(92, 225, 255, 0.25) transparent;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  user-select: none;
+}
+.staged-list.in-album-view { display: none; }
+
+.staged-title { padding: 0 0 6px 6px; font-size: 10px; letter-spacing: 0.28em; color: var(--text); }
+
+.staged-row {
+  display: grid;
+  grid-template-columns: 26px minmax(0, auto) minmax(0, 1fr);
+  align-items: center;
+  column-gap: 10px;
+  min-height: 40px;
+  padding: 0 8px 0 6px;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  text-align: left;
+  color: var(--text-dim);
+  background: none;
+  border: none;
+  border-left: 1px dashed rgba(92, 225, 255, 0.18);
+  cursor: grab;
+  /* sideways drags carry the album; up and down still scroll the list */
+  touch-action: pan-y;
+  transition: color 0.2s, background-color 0.2s, opacity 0.3s;
+}
+.staged-row:hover, .staged-row:focus-visible { color: var(--text); background: rgba(92, 225, 255, 0.05); outline: none; }
+.staged-row.carried { opacity: 0.3; }
+
+.staged-thumb {
+  width: 26px;
+  height: 26px;
+  border-radius: 3px;
+  object-fit: cover;
+  background: rgba(47, 143, 176, 0.35);
+}
+.staged-artist, .staged-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.4; }
+.staged-artist { max-width: 90px; color: var(--text-dim); font-size: 9px; }
+.staged-artist::after { content: ' –'; }
+.staged-name { color: var(--text); }
+
+/* The cover being carried to the tree; it swells over the trunk, where letting go puts it on. */
+.staged-carry {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 40;
+  pointer-events: none;
+  will-change: transform;
+}
+.staged-carry img, .staged-carry span {
+  display: block;
+  width: 56px;
+  height: 56px;
+  border-radius: 4px;
+  object-fit: cover;
+  background: rgba(47, 143, 176, 0.35);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.staged-carry.over img, .staged-carry.over span { transform: scale(1.15); box-shadow: 0 0 0 2px #5ce1ff, 0 0 18px rgba(92, 225, 255, 0.5); }
+
+/* Phones: covers only, so the column stays clear of the tree. */
+@media (max-width: 640px) {
+  .staged-list { width: auto; left: 10px; top: 84px; max-height: calc(100vh - 84px - 90px); }
+  .staged-title { display: none; }
+  .staged-row { display: flex; justify-content: center; min-width: 44px; min-height: 44px; padding: 0; border-left: none; }
+  .staged-artist, .staged-name { display: none; }
+}

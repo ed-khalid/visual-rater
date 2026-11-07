@@ -9,7 +9,7 @@ import { autoAlign, chooseBranch, groupDirections, clashes, directionNear, MAX_B
 export type { Album, Artist, Persisted, Simple, Track, TypeId, VendorRef } from '../shared/model'
 
 /** An album's artist as the catalogue gives it: matched to an artist by catalogue id, or by name without one. */
-export type ArtistRef = { name: string, vendor?: VendorRef }
+export type ArtistRef = { name: string, vendor?: VendorRef, /** their picture, if the catalogue has one; fills in a missing one */ image?: string }
 
 /** A catalogue album being added (from an ADD suggestion). */
 export type NewAlbum = { name: string, image?: string, vendor?: VendorRef, year?: number, artist?: ArtistRef }
@@ -116,7 +116,12 @@ const aligned = (s: Persisted, type: TypeId, flat = false): Partial<Persisted> =
       sides = group.map(() => 1)
     }
   }
-  const branches = autoAlign(nodes.map(n => positionOf(n.entity)), planes, sides)
+  // An album's unrated tracks (all at the same height) go outwards in tracklist order, track 1 nearest the trunk.
+  const chains = type !== 'music' ? undefined : {
+    key: nodes.map(n => { const t = n.entity as Track; return t.score === undefined && t.albumId ? t.albumId : undefined }),
+    rank: nodes.map(n => { const t = n.entity as Track; return (t.disc ?? 1) * 1000 + (t.number ?? 0) }),
+  }
+  const branches = autoAlign(nodes.map(n => positionOf(n.entity)), planes, sides, chains)
   const updates: Record<string, Record<string, Track | Simple>> = {}
   nodes.forEach((n, i) => {
     const table = updates[n.collection] ?? { ...s[n.collection] }
@@ -127,6 +132,12 @@ const aligned = (s: Persisted, type: TypeId, flat = false): Partial<Persisted> =
 }
 
 /** The artist for an album, found or made in `artists` (which it may change). */
+/** An existing artist gets the catalogue's picture if they have none yet; returns their id. */
+const withImage = (artists: Record<string, Artist>, artist: Artist, image?: string) => {
+  if (image && !artist.image) artists[artist.id] = { ...artist, image }
+  return artist.id
+}
+
 const ensureArtist = (artists: Record<string, Artist>, ref: ArtistRef): string | undefined => {
   const name = normalise(ref.name)
   if (!name) return undefined
@@ -134,14 +145,14 @@ const ensureArtist = (artists: Record<string, Artist>, ref: ArtistRef): string |
   const sameName = (a: Artist) => a.name.toLowerCase() === name.toLowerCase()
   if (ref.vendor) {
     const byVendor = all.find(a => sameVendor(a.vendor, ref.vendor))
-    if (byVendor) return byVendor.id
+    if (byVendor) return withImage(artists, byVendor, ref.image)
     const byName = all.find(a => !a.vendor && sameName(a))
-    if (byName) { artists[byName.id] = { ...byName, vendor: ref.vendor }; return byName.id }
+    if (byName) { artists[byName.id] = { ...byName, vendor: ref.vendor }; return withImage(artists, artists[byName.id], ref.image) }
   } else {
     const byName = all.find(sameName)
-    if (byName) return byName.id
+    if (byName) return withImage(artists, byName, ref.image)
   }
-  const artist: Artist = { id: crypto.randomUUID(), name, ...(ref.vendor ? { vendor: ref.vendor } : {}) }
+  const artist: Artist = { id: crypto.randomUUID(), name, ...(ref.vendor ? { vendor: ref.vendor } : {}), ...(ref.image ? { image: ref.image } : {}) }
   artists[artist.id] = artist
   return artist.id
 }

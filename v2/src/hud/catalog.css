@@ -1,0 +1,152 @@
+/* The catalog: every artist and album, a column in the bottom-right corner, growing upwards (scrolls once it reaches the reset key). */
+.catalog {
+  position: fixed;
+  bottom: 28px;
+  right: 28px;
+  z-index: 10;
+  width: 236px;
+  max-height: calc(100vh - 184px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(92, 225, 255, 0.25) transparent;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  font-family: var(--font);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  user-select: none;
+}
+
+.catalog-group { display: flex; flex-direction: column; }
+
+.catalog-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 0 8px 0 6px;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  text-align: left;
+  color: var(--text-dim);
+  background: none;
+  border: none;
+  border-left: 1px solid rgba(92, 225, 255, 0.12);
+  transition: color 0.2s, border-color 0.2s, background-color 0.2s, opacity 0.3s;
+}
+
+.catalog-artist { color: var(--text); border-left-color: transparent; cursor: pointer; }
+.catalog-artist:focus-visible { color: #e6f6ff; outline: none; }
+
+/* A small caret after the artist's name: down when its albums show, right when collapsed. */
+.catalog-chevron {
+  flex: none;
+  width: 5px;
+  height: 5px;
+  margin-left: auto;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  transform: rotate(45deg) translate(-2px, -2px);
+  opacity: 0.7;
+  transition: transform 0.2s;
+}
+.catalog-artist[aria-expanded='false'] .catalog-chevron { transform: rotate(-45deg); }
+
+/* Title, then year / score: which way the albums go. */
+.catalog-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: -4px; padding-left: 6px; }
+.catalog-title { font-size: 10px; letter-spacing: 0.28em; color: var(--text); }
+.catalog-order { display: flex; justify-content: flex-end; gap: 2px; }
+.catalog-order button {
+  min-height: 28px;
+  padding: 0 8px;
+  font: inherit;
+  font-size: 9px;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: var(--text-dim);
+  background: none;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.catalog-order button.on { color: #5ce1ff; border-color: rgba(92, 225, 255, 0.4); }
+.catalog-album { cursor: pointer; margin-left: 14px; }
+.catalog-album:focus-visible { color: var(--text); background: rgba(92, 225, 255, 0.05); outline: none; }
+
+/* Staged: in the database, not on the tree yet. */
+.catalog-album.staged { opacity: 0.55; border-left-style: dashed; }
+.catalog-album.staged .catalog-thumb { filter: grayscale(0.6); }
+
+.catalog-thumb {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 3px;
+  object-fit: cover;
+  background: rgba(47, 143, 176, 0.35);
+}
+.catalog-thumb.round { border-radius: 50%; width: 28px; height: 28px; }
+
+/* Album grade: a thin bar in the grade's colour (v1's album tiers) just before the thumbnail; empty when unrated. */
+.catalog-grade {
+  flex: none;
+  width: 3px;
+  height: 22px;
+  margin-right: -4px;
+  border-radius: 1px;
+  background: rgba(92, 225, 255, 0.12);
+}
+
+.catalog-score {
+  flex: none;
+  margin-left: auto;
+  padding-left: 6px;
+  color: var(--text);
+  letter-spacing: 0.06em;
+  font-variant-numeric: tabular-nums;
+}
+.catalog-artist .catalog-chevron { margin-left: 8px; }
+
+/* An artist's letter grade, on a chip in the grade's colour, after its score. */
+.catalog-letter {
+  flex: none;
+  min-width: 22px;
+  height: 18px;
+  margin-left: 6px;
+  padding: 0 4px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  color: #fff;
+  font-size: 10px;
+  letter-spacing: 0.02em;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Album view: the album on its own is marked solid; the others step back. */
+.catalog-album.viewing { color: #e6f6ff; border-left: 2px solid #5ce1ff; background: rgba(92, 225, 255, 0.12); }
+.catalog-album.viewing .catalog-score { color: #e6f6ff; }
+.catalog-album.other { opacity: 0.5; }
+
+.catalog-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.4; }
+
+/* Phones: thumbnails only, so the column stays clear of the tree. */
+@media (max-width: 640px) {
+  .catalog { width: auto; right: 10px; bottom: 24px; gap: 8px; max-height: calc(100vh - 170px); }
+  .catalog-name, .catalog-score, .catalog-letter { display: none; }
+  .catalog-row { gap: 5px; }
+  .catalog-grade { margin-right: 0; }
+  .catalog-row { justify-content: center; min-height: 44px; min-width: 44px; padding: 0; }
+  .catalog-artist { border-left: none; }
+  .catalog-chevron { display: none; }
+  .catalog-head { flex-direction: column; padding-left: 0; margin-bottom: 0; }
+  .catalog-title { display: none; }
+  .catalog-order { flex-direction: column; align-items: center; }
+  .catalog-order button { min-height: 32px; min-width: 44px; padding: 0 4px; font-size: 8px; letter-spacing: 0.08em; }
+  .catalog-album { margin-left: 0; }
+}

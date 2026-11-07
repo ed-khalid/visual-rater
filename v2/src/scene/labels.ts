@@ -24,9 +24,3 @@ export const placeSideLabel = (el: HTMLElement, x: number, y: number, left: bool
   el.style.textAlign = left ? 'right' : 'left'
   el.style.opacity = String(opacity)
 }
-
-/** Pin a label centred under a point. */
-export const placeBelowLabel = (el: HTMLElement, x: number, y: number, opacity: number) => {
-  el.style.transform = `translate(${x}px, ${y}px) translate(-50%, 0)`
-  el.style.opacity = String(opacity)
-}

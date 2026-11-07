@@ -1,7 +1,7 @@
 import { describe, expect, test, vi } from 'vitest'
 import { createApp } from './app'
 import type { Suggestion } from '../src/shared/suggestions'
-import { createSpotify, mergeByRelevance, NotFoundError, pickImage } from './spotify'
+import { createSpotify, distinctAlbums, mergeByRelevance, NotFoundError, pickImage } from './spotify'
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
 const artist = (id: string, name: string, genres: string[] = []) => ({
@@ -140,10 +140,42 @@ describe('mergeByRelevance', () => {
   })
 })
 
+describe('artist albums', () => {
+  const sg = (id: string, name: string, year?: number, edition?: string): Suggestion =>
+    ({ provider: 'spotify', kind: 'album', id, name, ...(year ? { year } : {}), ...(edition ? { edition } : {}) })
+
+  test('one per album: the untagged edition, else the earliest; oldest first', () => {
+    const out = distinctAlbums([
+      sg('okc-rm', 'OK Computer', 2017, 'Remastered'), sg('kida', 'Kid A', 2000), sg('okc', 'OK Computer', 1997),
+      sg('kida-mn', 'Kid A', 2021, 'Kid A Mnesia Edition'), sg('itb-dlx', 'In Rainbows', 2008, 'Deluxe'), sg('itb-dlx2', 'In Rainbows', 2016, 'Deluxe'),
+    ])
+    expect(out.map(a => a.id)).toEqual(['okc', 'kida', 'itb-dlx'])
+  })
+
+  test('follows the pages of an artist\'s albums, cleaning names', async () => {
+    const page = (items: unknown[], next: string | null) => ({ items, next })
+    const alb = (id: string, name: string, date: string) => ({ id, name, album_type: 'album', artists: [{ id: 'rh', name: 'Radiohead' }], release_date: date, images: [] })
+    const pages: Record<string, unknown> = {
+      'https://api.spotify.com/v1/artists/rh/albums?include_groups=album&limit=50': page([alb('b', 'OK Computer OKNOTOK 1997 2017', '2017'), alb('a', 'Pablo Honey (Remastered)', '1993')], 'p2'),
+      p2: page([alb('c', 'Pablo Honey', '1993')], null),
+    }
+    const f = vi.fn(async (url: string | URL | Request) => String(url).includes('accounts.spotify.com')
+      ? json({ access_token: 't', expires_in: 3600 })
+      : json(pages[String(url)])) as unknown as typeof fetch
+    const albums = await createSpotify({ clientId: 'id', clientSecret: 's', fetch: f }).getArtistAlbums('rh')
+    expect(albums.map(a => [a.id, a.name, a.year])).toEqual([['c', 'Pablo Honey', 1993], ['b', 'OK Computer OKNOTOK 1997 2017', 2017]])
+    expect(albums[0]).toMatchObject({ artist: 'Radiohead', artistId: 'rh', kind: 'album' })
+  })
+})
+
 describe('api', () => {
   const album = { id: 'x'.repeat(22), name: 'Kid A', artist: 'Radiohead', year: 2000, tracks: [] }
   const spotifyStub = {
     searchMusic: vi.fn(async (q: string): Promise<Suggestion[]> => [{ provider: 'spotify', kind: 'artist', id: '1', name: q }]),
+    getArtistAlbums: vi.fn(async (id: string): Promise<Suggestion[]> => {
+      if (id === 'n'.repeat(22)) throw new NotFoundError('nope')
+      return [{ provider: 'spotify', kind: 'album', id: 'a'.repeat(22), name: 'Kid A', year: 2000 }]
+    }),
     getAlbum: vi.fn(async (id: string) => {
       if (id === 'n'.repeat(22)) throw new NotFoundError('nope')
       if (id === 'f'.repeat(22)) throw new Error('down')
@@ -181,5 +213,11 @@ describe('api', () => {
     expect((await app.request(`/api/music/albums/${'n'.repeat(22)}`)).status).toBe(404)
     vi.spyOn(console, 'error').mockImplementation(() => {})
     expect((await app.request(`/api/music/albums/${'f'.repeat(22)}`)).status).toBe(502)
+  })
+
+  test('artist albums: validates the id, 404 when Spotify has no such artist', async () => {
+    expect(await (await app.request(`/api/music/artists/${'r'.repeat(22)}/albums`)).json()).toMatchObject({ albums: [{ name: 'Kid A' }] })
+    expect((await app.request('/api/music/artists/nope/albums')).status).toBe(400)
+    expect((await app.request(`/api/music/artists/${'n'.repeat(22)}/albums`)).status).toBe(404)
   })
 })

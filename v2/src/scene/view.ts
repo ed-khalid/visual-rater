@@ -44,13 +44,21 @@ type View = {
    * unrated, everything else on the scene fades (see board.ratingFocus); adding more joins in. Null: not rating.
    */
   /**
-   * Album view (MUSIC): the album picked in the on-the-tree panel. Every other album's branches and fruit draw back
+   * Album view (MUSIC): the album picked in the catalog or the rater contents. Every other album's branches and fruit draw back
    * into the trunk (as for the list view), so only its tracks are on the tree. Null: everything shows. Leaving it,
    * however that happens, glides the camera home (as the reset button does), undoing album view's turn. While it's
    * on, the picture slides right (CameraReset's view offset) to make room for the album's title and details.
    */
   albumView: string | null
   setAlbumView: (id: string | null) => void
+  /**
+   * Albums taken off the tree for now, from the rater contents (MUSIC): their branches and fruit draw back into the
+   * trunk, as in album view, but nothing about them changes and they come back with a click. Not saved.
+   * Album view of one of them shows it anyway.
+   */
+  hiddenAlbums: ReadonlySet<string>
+  /** Hide these albums, or show them again if they're all hidden already. */
+  toggleAlbumsHidden: (ids: string[]) => void
   rating: string[] | null
   startRating: (ids: string[]) => void
   endRating: () => void
@@ -66,6 +74,12 @@ export const useView = create<View>()(set => ({
   faceRequest: null,
   requestFace: angle => set(s => ({ faceRequest: { angle, seq: (s.faceRequest?.seq ?? 0) + 1 } })),
   requestAzimuth: azimuth => set(s => ({ faceRequest: { azimuth, seq: (s.faceRequest?.seq ?? 0) + 1 } })),
+  hiddenAlbums: new Set(),
+  toggleAlbumsHidden: ids => set(s => {
+    const next = new Set(s.hiddenAlbums), all = ids.every(id => next.has(id))
+    for (const id of ids) { if (all) next.delete(id); else next.add(id) }
+    return { hiddenAlbums: next }
+  }),
   hoveredId: null,
   setHovered: id => set({ hoveredId: id }),
   openId: null,
@@ -103,7 +117,7 @@ export const RATING_FADE = 0.82
  * Where things are on screen right now (CSS px): centre and apparent radius. Written by 3D objects every frame,
  * read by page overlays (hover card, popup) every frame, so they stay pinned while the view moves.
  */
-export const screenAnchors = new Map<string, { x: number, y: number, r: number, visible: boolean, /** pinned overlays go on its left when they fit there (rows of the on-the-tree panel) */ preferLeft?: boolean }>()
+export const screenAnchors = new Map<string, { x: number, y: number, r: number, visible: boolean, /** pinned overlays go on its left when they fit there (rows of the catalog) */ preferLeft?: boolean, /** half its width, if wider than r (a list row): popups go beside it, not over it */ halfWidth?: number }>()
 
 /** The live score (0–100) of the fruit being dragged, written every frame while dragging; read by the drag readout. */
 export const liveScores = new Map<string, number>()

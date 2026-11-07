@@ -9,7 +9,9 @@ import { AlbumView } from './AlbumView'
 import { CommandPalette, shortcutLabel } from './CommandPalette'
 import { ListView } from './ListView'
 import { ModeSwitch } from './ModeSwitch'
-import { OnTree } from './OnTree'
+import { Catalog } from './Catalog'
+import { RaterContents } from './RaterContents'
+import { StagedList } from './StagedList'
 import { RatingWatch } from './RatingWatch'
 import { Rubric } from './Rubric'
 import { TypePicker } from './TypePicker'
@@ -59,7 +61,8 @@ export const Hud = () => {
     {board && <ModeSwitch />}
     {board && <RatingWatch />}
     {board && listing && <ListView />}
-    {board && !listing && activeType === 'music' && <><OnTree /><AlbumView /></>}
+    {board && !listing && <RaterContents />}
+    {board && !listing && activeType === 'music' && <><StagedList /><Catalog /><AlbumView /></>}
     {board && !listing && <><ItemHoverCard /><DragScore /><ScoreMatches /><AlbumPopup /><ItemTrash /></>}
     {board && <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />}
   </>
