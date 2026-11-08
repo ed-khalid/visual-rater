@@ -8,12 +8,15 @@ import { Backdrop } from './Backdrop'
 import { CameraReset } from './CameraReset'
 import { Effects } from './Effects'
 import { Items } from './Items'
+import { Nodes } from './Nodes'
+import { Raters } from './Raters'
 import { collapse, COLLAPSE_SECONDS, useView } from './view'
-import { cameraDistanceFor, CAMERA_FOV, CAMERA_MAX_DISTANCE, CAMERA_MIN_DISTANCE, CAMERA_POLAR } from './world'
+import { cameraDistanceFor, CAMERA_FOV, CAMERA_MIN_DISTANCE, CAMERA_POLAR } from './world'
 
 /**
  * Full-screen 3D workspace. The camera orbits the vertical axis only: its elevation is fixed, so "up"
- * always means "better". Drag (or one finger) to turn the board, scroll or pinch to zoom.
+ * always means "better". Drag (or one finger) to turn the board, scroll or pinch to zoom; in split view, right-drag
+ * (or two fingers) to pan along the floor. The zoom limit and panning are set every frame by CameraReset.
  */
 export const Stage = () => {
   const boardOpen = useStore(s => s.activeType !== null)
@@ -26,14 +29,15 @@ export const Stage = () => {
   const onPointerMissed = (e: MouseEvent) => {
     const v = useView.getState()
     if (v.editing || Math.hypot(e.clientX - down.current.x, e.clientY - down.current.y) >= 6) return
-    // First click closes whatever's open; with nothing open, it leaves album view.
+    // First click closes whatever's open; with nothing open, it leaves album view, or goes back to the artists.
     if (v.openId || v.selectedId) v.close()
     else if (v.albumView) v.setAlbumView(null)
+    else if (v.drill) v.setDrill(null)
   }
   return <Canvas
     onPointerDown={e => { down.current = { x: e.clientX, y: e.clientY } }}
     onPointerMissed={onPointerMissed}
-    camera={{ position: start, fov: CAMERA_FOV, near: 0.1, far: 120 }}
+    camera={{ position: start, fov: CAMERA_FOV, near: 0.1, far: 300 }}
     dpr={[1, 2]}
     frameloop={listing ? 'never' : 'always'}
     gl={{ antialias: false }}
@@ -44,18 +48,18 @@ export const Stage = () => {
     {boardOpen && <>
       <Axis />
       <CollapseDriver />
+      <Raters />
       <Items />
+      <Nodes />
       <OrbitControls
         makeDefault
         target={[0, 0, 0]}
-        enablePan={false}
         enableDamping
         dampingFactor={0.08}
         rotateSpeed={0.6}
         minPolarAngle={CAMERA_POLAR}
         maxPolarAngle={CAMERA_POLAR}
         minDistance={CAMERA_MIN_DISTANCE}
-        maxDistance={CAMERA_MAX_DISTANCE}
       />
       <CameraReset />
     </>}
@@ -69,9 +73,11 @@ const CollapseDriver = () => {
   useFrame((_, dt) => {
     const target = useView.getState().phase === 'tree' ? 0 : 1
     const step = Math.min(dt, 0.1) / COLLAPSE_SECONDS
-    progress.current = target > progress.current ? Math.min(1, progress.current + step) : Math.max(0, progress.current - step)
+    progress.current = target > progress.current ? Math.min(1, progress.current + step)
+      : target < progress.current ? Math.max(0, progress.current - step) : target
     const p = progress.current
     collapse.value = p * p * (3 - 2 * p)
   })
   return null
 }
+

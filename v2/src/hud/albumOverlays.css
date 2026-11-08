@@ -162,12 +162,23 @@
 .album-input-title { width: calc(100% - 40px); margin-bottom: 10px; font-size: 16px; }
 .album-input-year { width: 5.5ch; padding: 1px 4px; font-size: 16px; }
 .album-input-track { width: 100%; padding: 2px 4px; }
+/* Editing a track: its name, and beside it the short title the rater shows for it. */
+.album-track-fields { display: flex; gap: 6px; min-width: 0; }
+.album-input-track { flex: 3 1 0; }
+.album-input-short { flex: 2 1 0; max-width: 17ch; padding: 2px 4px; color: var(--text-dim); }
+.album-input-short:focus { color: inherit; }
+/* Phones: too narrow for both on a line, so the short title goes under the name. */
+@media (pointer: coarse) {
+  .album-track-fields { flex-direction: column; gap: 4px; }
+  .album-input-track, .album-input-short { flex: none; max-width: none; width: 100%; }
+}
 
 @media (pointer: fine) {
   .album-input { font-size: 13px; }
   .album-input-title { font-size: 14px; }
   .album-input-year { font-size: 12px; }
   .album-input-track { font-size: 12px; }
+  .album-input-short { font-size: 11px; }
 }
 
 .album-popup-editing .album-track { align-items: center; padding: 3px 0; }

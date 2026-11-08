@@ -245,6 +245,17 @@ describe('editing an album', () => {
     s().editAlbum(id, { tracks: [t1, t3, t4].map(t => ({ id: t.id, name: t.name })) })
     expect(tracksOf(s(), id).map(t => `${t.number}:${t.name}`)).toEqual(['1:Track 1', '2:Track 3', '3:Track 4'])
   })
+
+  test('short titles: made with each track, kept as typed, blank removes it, and a rename carries an automatic one along', () => {
+    const id = stageKidA(3)
+    const [t1, t2, t3] = tracksOf(s(), id)
+    expect(t1.shortTitle).toBe('Track 1')
+    s().editAlbum(id, { tracks: [{ id: t1.id, name: t1.name, shortTitle: '  Opener ' }, { id: t2.id, name: t2.name, shortTitle: ' ' }, { id: t3.id, name: t3.name }] })
+    expect(tracksOf(s(), id).map(t => t.shortTitle)).toEqual(['Opener', undefined, 'Track 3'])
+    expect('shortTitle' in s().tracks[t2.id]).toBe(false)
+    s().editAlbum(id, { tracks: [{ id: t1.id, name: 'The Long Opening Song' }, { id: t2.id, name: t2.name }, { id: t3.id, name: 'Master of Puppets' }] })
+    expect(tracksOf(s(), id).map(t => t.shortTitle)).toEqual(['Opener', undefined, 'Master'])
+  })
 })
 
 describe('album directions (MUSIC)', () => {

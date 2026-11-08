@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { cleanName } from './names'
+import { cleanName, shortTitle } from './names'
 
 describe('cleanName (edition tags)', () => {
   test('strips edition tags at the end, in brackets or after a dash', () => {
@@ -22,4 +22,19 @@ describe('cleanName (edition tags)', () => {
   test('never strips a name down to nothing', () => {
     expect(cleanName('(Remastered)')).toEqual({ name: '(Remastered)' })
   })
+})
+
+describe('shortTitle', () => {
+  test.each([
+    ['Battery', 'Battery'],
+    ['The Unforgiven', 'The Unforgiven'],
+    ['Master of Puppets', 'Master'],
+    ['The Thing That Should Not Be', 'Thing'],
+    ['Welcome Home (Sanitarium)', 'Welcome Home'],
+    ['Damage, Inc.', 'Damage Inc'],
+    ['For Whom the Bell Tolls', 'For Whom'],
+    ['Paranoid Android - Live', 'Paranoid Android'],
+    ['Everything In Its Right Place', 'Everything'],
+    ['(Untitled)', 'Untitled'],
+  ])('%s → %s', (name, short) => expect(shortTitle(name)).toBe(short))
 })

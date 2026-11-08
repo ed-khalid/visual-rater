@@ -9,7 +9,8 @@ import { theme } from '../theme'
 import { CoverSphere, SHAPE_EXTENT } from './CoverSphere'
 import { useGlow } from './useGlow'
 import { labelElements, placeSideLabel, toScreen } from './labels'
-import { collapse, liveScores, RATING_FADE, ratingFocus, screenAnchors, useView } from './view'
+import { collapse, isSplit, liveScores, RATING_FADE, raterNow, ratingFocus, screenAnchors, useView } from './view'
+import { raterKey } from '../state/split'
 import { AXIS_HEIGHT, NODE_RADIUS as LAYOUT_RADIUS, positionToY } from './world'
 
 /** Fruit (songs) are drawn 1.6× the base sphere: bigger than they were, a little smaller than the floating albums.
@@ -21,6 +22,9 @@ const BRANCH_RISE = 0
 const LABEL_OFFSET_PX = 12
 /** A press that moves further than this (px) is a drag, not a tap. */
 const CLICK_SLOP_PX = 6
+/** Labels fade out as their fruit get this small on screen (radius, CSS px): zoomed far out, names would only pile up. */
+const LABEL_MIN_R_PX = 7
+const HOME = { x: 0, z: 0, turn: 0 }
 
 /** Everything on the open tree: a fruit on its own branch (tracks on MUSIC, movies, books). */
 export const Items = () => {
@@ -82,11 +86,15 @@ const Fruit = ({ node }: FruitProps) => {
   const [dragging, setDragging] = useState(false)
   const world = useMemo(() => new Vector3(), [])
   const trunk = useMemo(() => new Vector3(), [])
+  const forward = useMemo(() => new Vector3(), [])
+  const view = useMemo(() => new Vector3(), [])
   const { camera, size } = useThree()
   const controls = useThree(s => s.controls) as OrbitControlsImpl | null
   const move = useStore(s => s.move)
   const autoAlignBoard = useStore(s => s.autoAlignBoard)
   const coverGlow = useGlow(item)
+  /** Its rater in split view (its album's own trunk); at the origin otherwise. */
+  const key = raterKey(item as { albumId?: string })
 
   useEffect(() => () => {
     screenAnchors.delete(item.id)
@@ -118,9 +126,9 @@ const Fruit = ({ node }: FruitProps) => {
     // Hold the board still while this fruit is being dragged.
     if (controls) controls.enabled = false
     ;(e.target as Element).setPointerCapture(e.pointerId)
-    const st = state.current
-    world.set(Math.sin(st.angle) * length, st.y, Math.cos(st.angle) * length)
-    trunk.set(0, st.y, 0)
+    const st = state.current, at = raterNow.places.get(key) ?? HOME, a = st.angle + at.turn
+    world.set(at.x + Math.sin(a) * st.length, st.y, at.z + Math.cos(a) * st.length)
+    trunk.set(at.x, st.y, at.z)
     const fruitX = toScreen(world, camera, size).x, trunkX = toScreen(trunk, camera, size).x
     const fov = (camera as PerspectiveCamera).fov * Math.PI / 180
     drag.current = {
@@ -194,16 +202,22 @@ const Fruit = ({ node }: FruitProps) => {
     // For the list view, or album view of another album, the branch draws back into the trunk and the fruit shrinks
     // away with it.
     // Albums hidden from the rater contents draw back in too (unless it's their album view).
-    const { albumView, hiddenAlbums } = useView.getState()
+    // MUSIC's default view is the read-only rater of artists (Nodes): songs stay in the trunk there, except ones
+    // being rated after they were typed in (view.rating). They come out in album view and split view.
+    const v = useView.getState(), { albumView, hiddenAlbums } = v
     const albumId = (item as { albumId?: string }).albumId
-    const mine = (albumView ? albumId === albumView : !(albumId && hiddenAlbums.has(albumId))) || !!d?.moved
+    const readOnly = node.collection === 'tracks' && !albumView && !isSplit(v)
+    const mine = (albumView ? albumId === albumView
+      : readOnly ? !!v.rating?.includes(item.id)
+      : !(albumId && hiddenAlbums.has(albumId))) || !!d?.moved
     st.shown = MathUtils.damp(st.shown, mine ? 1 : 0, 9, dt)
     const out = (1 - collapse.value) * st.shown
     // Drawn in: out of the way of the pointer too.
     g.visible = out > 0.02
     const length = st.length * out
-    g.position.set(0, st.y, 0)
-    g.rotation.y = st.angle
+    const at = raterNow.places.get(key) ?? HOME, angle = st.angle + at.turn
+    g.position.set(at.x, st.y, at.z)
+    g.rotation.y = angle
     f.position.set(0, 0, length)
     f.scale.setScalar(Math.max(0.01, pop * out) * (d?.moved ? 1.12 : 1))
     s.visible = out > 0.02
@@ -215,8 +229,8 @@ const Fruit = ({ node }: FruitProps) => {
     // Alignment guide: the circle this branch sweeps around the trunk, at the fruit's height.
     if (guide.current) guide.current.scale.setScalar(st.length)
 
-    world.set(Math.sin(st.angle) * length, st.y, Math.cos(st.angle) * length)
-    trunk.set(0, st.y, 0)
+    world.set(at.x + Math.sin(angle) * length, st.y, at.z + Math.cos(angle) * length)
+    trunk.set(at.x, st.y, at.z)
     const p = toScreen(world, camera, size)
     const dist = camera.position.distanceTo(world)
     const r = (NODE_RADIUS * SHAPE_EXTENT * pop / (dist * Math.tan((camera as PerspectiveCamera).fov * Math.PI / 360))) * size.height / 2
@@ -226,16 +240,19 @@ const Fruit = ({ node }: FruitProps) => {
     if (label) {
       const left = p.x < toScreen(trunk, camera, size).x - 1
       // Fruit behind the trunk (as seen from here) lose their labels, so the far side doesn't clutter the near.
-      const behind = dist - camera.position.distanceTo(trunk)
+      // Depth along the view, not distance: a rater off to the side (split view) is no more behind for that.
+      const behind = forward.subVectors(world, trunk).dot(camera.getWorldDirection(view))
       const fade = d?.moved ? 1 : MathUtils.clamp(1 - (behind + 0.2) / 0.6, 0, 1)
       const offset = LABEL_OFFSET_PX + r
       const w = label.offsetWidth
       const side = left ? !(p.x - offset - w < 0) : p.x + offset + w > size.width
-      placeSideLabel(label, p.x, p.y, side, offset, Math.min(1, pop) * fade * (p.inFront ? 1 : 0) * out * out * (1 - dim.current))
+      const small = MathUtils.clamp((r - LABEL_MIN_R_PX) / LABEL_MIN_R_PX, 0, 1)
+      placeSideLabel(label, p.x, p.y, side, offset, Math.min(1, pop) * fade * small * (p.inFront ? 1 : 0) * out * out * (1 - dim.current))
     }
   })
 
-  return <group ref={group} position={[0, state.current.y, 0]} rotation={[0, branch.angle, 0]}>
+  const start = raterNow.places.get(key) ?? HOME
+  return <group ref={group} position={[start.x, state.current.y, start.z]} rotation={[0, branch.angle + start.turn, 0]}>
     <mesh ref={stem}>
       {/* unit-height cylinder, stretched to the branch's length each frame */}
       <cylinderGeometry args={[0.007, 0.012, 1, 6]} />

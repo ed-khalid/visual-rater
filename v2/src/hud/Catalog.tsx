@@ -103,16 +103,17 @@ export const Catalog = () => {
   const onTreeIds = groups.flatMap(g => g.albums.filter(a => !a.staged).map(a => a.id)).join(',')
   useEffect(() => { if (viewing && !onTreeIds.split(',').includes(viewing)) useView.getState().setAlbumView(null) }, [viewing, onTreeIds])
   useEffect(() => () => { if (useView.getState().albumView) useView.getState().setAlbumView(null) }, [])
+  // Esc (with no popup or palette open) goes back a step: out of album view, or from an artist's albums to the artists.
   useEffect(() => {
-    if (!viewing) return
     const onKey = (e: KeyboardEvent) => {
       const v = useView.getState()
       if (e.key !== 'Escape' || v.openId || v.editing || document.querySelector('.palette')) return
-      useView.getState().setAlbumView(null)
+      if (v.albumView) v.setAlbumView(null)
+      else if (v.drill) v.setDrill(null)
     }
     window.addEventListener('keydown', onKey, true)
     return () => window.removeEventListener('keydown', onKey, true)
-  }, [viewing])
+  }, [])
 
   if (groups.length === 0) return null
   return <nav className="catalog" aria-label="Catalog">

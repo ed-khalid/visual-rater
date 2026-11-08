@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { SHORT_TITLE_MAX } from '../src/shared/names'
 
 /** Validation for POST /api/sync bodies: everything the server writes to the database goes through this first. */
 
@@ -39,6 +40,7 @@ const track = z.object({
   number: count.optional(),
   durationMs: count.optional(),
   excludeFromArtistScore: z.boolean().optional(),
+  shortTitle: z.string().trim().min(1).max(SHORT_TITLE_MAX).optional(),
 })
 const simple = z.object({ ...base, ...rateable })
 

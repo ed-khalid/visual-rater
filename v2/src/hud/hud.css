@@ -13,9 +13,12 @@
 .hud > * { position: absolute; }
 .hud-tl { top: 24px; left: 28px; }
 .hud-tr { top: 24px; right: 28px; }
-.hud-bl { bottom: 24px; left: 28px; }
+.hud-bl { bottom: 42px; left: 28px; }
 .hud-key { top: 48px; left: 28px; }
 .hud-key.hud-reset { left: auto; right: 28px; }
+/* Split: just left of reset */
+.hud-key.hud-split { left: auto; right: 82px; }
+.hud-key.hud-split.on { color: #5ce1ff; border-color: rgba(92, 225, 255, 0.6); }
 
 .hud .dim { color: var(--text-dim); }
 

@@ -12,6 +12,8 @@ export const CAMERA_DISTANCE_NARROW = 19
 export const cameraDistanceFor = (aspect: number) => aspect < 0.8 ? CAMERA_DISTANCE_NARROW : CAMERA_DISTANCE
 export const CAMERA_MIN_DISTANCE = 7
 export const CAMERA_MAX_DISTANCE = 24
+/** Split view: far enough back to see a long row of raters. */
+export const SPLIT_MAX_DISTANCE = 100
 
 /** Camera elevation, fixed: orbiting is around the vertical axis only. Slightly above level, for depth. */
 export const CAMERA_POLAR = Math.PI / 2 - 0.14

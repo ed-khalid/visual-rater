@@ -1,0 +1,23 @@
+/* Split view: a name tag under each rater's trunk. */
+.rater-labels { position: fixed; inset: 0; z-index: 9; pointer-events: none; }
+.rater-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  opacity: 0;
+  font-family: var(--font);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  transition: opacity 0.3s;
+  will-change: transform;
+}
+.rater-label-bar { width: 22px; height: 2px; border-radius: 1px; background: rgba(92, 225, 255, 0.2); }
+.rater-label-name, .rater-label-meta { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.rater-label-name { color: var(--text); }
+.rater-label-meta { color: var(--text-dim); font-size: 8px; letter-spacing: 0.14em; }

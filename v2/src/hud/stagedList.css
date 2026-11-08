@@ -5,7 +5,7 @@
   left: 28px;
   z-index: 10;
   width: 236px;
-  max-height: calc(100vh - 92px - 96px);
+  max-height: calc(100vh - 92px - 114px);
   overflow-y: auto;
   scrollbar-width: thin;
   scrollbar-color: rgba(92, 225, 255, 0.25) transparent;
@@ -19,7 +19,35 @@
 }
 .staged-list.in-album-view { display: none; }
 
-.staged-title { padding: 0 0 6px 6px; font-size: 10px; letter-spacing: 0.28em; color: var(--text); }
+.staged-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  min-height: 32px;
+  padding: 0 8px 0 6px;
+  font: inherit;
+  font-size: 10px;
+  letter-spacing: 0.28em;
+  text-transform: inherit;
+  color: var(--text);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.staged-title:focus-visible { color: #e6f6ff; outline: none; }
+.staged-count { color: var(--text-dim); letter-spacing: 0.1em; }
+/* down when open, right when collapsed (as the catalog's artists) */
+.staged-chevron {
+  width: 5px;
+  height: 5px;
+  border-right: 1px solid currentColor;
+  border-bottom: 1px solid currentColor;
+  transform: rotate(-45deg);
+  opacity: 0.7;
+  transition: transform 0.2s;
+}
+.staged-title[aria-expanded='true'] .staged-chevron { transform: rotate(45deg) translate(-2px, -2px); }
 
 .staged-row {
   display: grid;
@@ -80,7 +108,7 @@
 /* Phones: covers only, so the column stays clear of the tree. */
 @media (max-width: 640px) {
   .staged-list { width: auto; left: 10px; top: 84px; max-height: calc(100vh - 84px - 90px); }
-  .staged-title { display: none; }
+  .staged-title { min-height: 44px; padding: 0 4px; font-size: 8px; letter-spacing: 0.12em; gap: 5px; }
   .staged-row { display: flex; justify-content: center; min-width: 44px; min-height: 44px; padding: 0; border-left: none; }
   .staged-artist, .staged-name { display: none; }
 }

@@ -13,7 +13,7 @@ type VendorRow = { vendor: string | null, vendor_id: string | null }
 type TreeRow = { score: number | null, tree_angle: number | null, tree_length: number | null, tree_ring: number | null, tree_since: number | null, hidden: boolean }
 type AlbumRow = BaseRow & VendorRow & { artist_id: string | null, year: number | null, tracklist_loaded: boolean, staged_at: number, added_at: number | null }
 type TrackRow = BaseRow & VendorRow & TreeRow & {
-  album_id: string | null, artist_id: string | null, disc: number | null, number: number | null, duration_ms: number | null, exclude_from_artist_score: boolean,
+  album_id: string | null, artist_id: string | null, disc: number | null, number: number | null, duration_ms: number | null, exclude_from_artist_score: boolean, short_title: string | null,
 }
 
 const vendorOf = (r: VendorRow): VendorRef | undefined => r.vendor && r.vendor_id ? { name: r.vendor as VendorRef['name'], id: r.vendor_id } : undefined
@@ -33,7 +33,7 @@ export const loadState = async (sql: Sql): Promise<Persisted> => {
     sql<AlbumRow[]>`select id, name, image, colors, vendor, vendor_id, artist_id, year, tracklist_loaded,
       staged_at::double precision as staged_at, added_at::double precision as added_at from music_albums`,
     sql.unsafe<TrackRow[]>(`select id, name, image, colors, vendor, vendor_id, album_id, artist_id, disc, number, duration_ms,
-      exclude_from_artist_score, ${TREE_COLS} from music_tracks`),
+      exclude_from_artist_score, short_title, ${TREE_COLS} from music_tracks`),
     sql.unsafe<(BaseRow & TreeRow)[]>(`select id, name, image, colors, ${TREE_COLS} from movies`),
     sql.unsafe<(BaseRow & TreeRow)[]>(`select id, name, image, colors, ${TREE_COLS} from books`),
   ])
@@ -44,7 +44,7 @@ export const loadState = async (sql: Sql): Promise<Persisted> => {
     }))),
     tracks: byId(tracks.map(r => defined(base(r) as Track, {
       vendor: vendorOf(r), albumId: r.album_id, artistId: r.artist_id, disc: r.disc, number: r.number, durationMs: r.duration_ms,
-      excludeFromArtistScore: r.exclude_from_artist_score || null, ...tree(r),
+      excludeFromArtistScore: r.exclude_from_artist_score || null, shortTitle: r.short_title, ...tree(r),
     }))),
     movies: byId(movies.map(r => defined(base(r) as Simple, tree(r)))),
     books: byId(books.map(r => defined(base(r) as Simple, tree(r)))),
@@ -89,13 +89,14 @@ export const applyChanges = async (sql: Sql, c: Changes): Promise<void> => {
     for (const r of c.upsert.tracks) {
       const t = treeValues(r)
       await tx`insert into music_tracks (id, name, image, colors, vendor, vendor_id, album_id, artist_id, disc, number, duration_ms,
-                                         exclude_from_artist_score, score, tree_angle, tree_length, tree_ring, tree_since, hidden)
+                                         exclude_from_artist_score, short_title, score, tree_angle, tree_length, tree_ring, tree_since, hidden)
         values (${r.id}, ${r.name}, ${r.image ?? null}, ${r.colors ?? null}, ${r.vendor?.name ?? null}, ${r.vendor?.id ?? null},
                 ${r.albumId ?? null}, ${r.artistId ?? null}, ${r.disc ?? null}, ${r.number ?? null}, ${r.durationMs ?? null},
-                ${r.excludeFromArtistScore ?? false}, ${t.score}, ${t.tree_angle}, ${t.tree_length}, ${t.tree_ring}, ${t.tree_since}, ${t.hidden})
+                ${r.excludeFromArtistScore ?? false}, ${r.shortTitle ?? null}, ${t.score}, ${t.tree_angle}, ${t.tree_length}, ${t.tree_ring}, ${t.tree_since}, ${t.hidden})
         on conflict (id) do update set name = excluded.name, image = excluded.image, colors = excluded.colors, vendor = excluded.vendor,
           vendor_id = excluded.vendor_id, album_id = excluded.album_id, artist_id = excluded.artist_id, disc = excluded.disc,
           number = excluded.number, duration_ms = excluded.duration_ms, exclude_from_artist_score = excluded.exclude_from_artist_score,
+          short_title = excluded.short_title,
           score = excluded.score, tree_angle = excluded.tree_angle, tree_length = excluded.tree_length, tree_ring = excluded.tree_ring,
           tree_since = excluded.tree_since, hidden = excluded.hidden`
     }

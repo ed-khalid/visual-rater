@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { RATING_FADE, ratingFocus, screenAnchors, TRUNK_BOTTOM_ANCHOR, TRUNK_TOP_ANCHOR, useView } from '../scene/view'
+import { isSplit, raterBottomAnchor, raterNow, raterTopAnchor, RATING_FADE, ratingFocus, screenAnchors, TRUNK_BOTTOM_ANCHOR, TRUNK_TOP_ANCHOR, useView } from '../scene/view'
 import { useGlow } from '../scene/useGlow'
 import type { Album } from '../shared/model'
 import { stagedAlbums } from '../state/board'
@@ -14,9 +14,13 @@ const DROP_PX = 70
 /** Slack above the trunk's top and below its bottom (px) that still counts as on it. */
 const DROP_END_PX = 40
 
-/** Whether a point on screen is over the trunk, as it's drawn right now (Axis publishes both of its ends). */
-const overTrunk = (x: number, y: number) => {
-  const top = screenAnchors.get(TRUNK_TOP_ANCHOR), bottom = screenAnchors.get(TRUNK_BOTTOM_ANCHOR)
+/** Whether a point on screen is over the trunk, or in split view any rater's, as drawn right now (both ends are published). */
+const overTrunk = (x: number, y: number) => isSplit(useView.getState())
+  ? raterNow.keys.some(k => overLine(screenAnchors.get(raterTopAnchor(k)), screenAnchors.get(raterBottomAnchor(k)), x, y))
+  : overLine(screenAnchors.get(TRUNK_TOP_ANCHOR), screenAnchors.get(TRUNK_BOTTOM_ANCHOR), x, y)
+
+type Anchor = { x: number, y: number, visible: boolean }
+const overLine = (top: Anchor | undefined, bottom: Anchor | undefined, x: number, y: number) => {
   if (!top || !bottom || !top.visible || !bottom.visible) return false
   if (y < top.y - DROP_END_PX || y > bottom.y + DROP_END_PX) return false
   const t = bottom.y === top.y ? 0 : (y - top.y) / (bottom.y - top.y)
@@ -27,8 +31,8 @@ type Carry = { id: string, image?: string, x: number, y: number, over: boolean, 
 
 /**
  * The staging tray (MUSIC): albums in the database whose tracks aren't on the tree yet, as a list under the + key:
- * cover, artist, name, oldest first. Tap one for its tracklist (the popup and its trash icon pin beside the row). Drag
- * one onto the trunk to put its tracks on the tree and open album view on it, where they get rated
+ * cover, artist, name, oldest first. Collapsed to its title to begin with; click the title to open or close it. Tap one for its tracklist (the popup and its trash icon pin beside the row). Drag
+ * one onto the trunk (in split view, any rater's) to put its tracks on the tree and open album view on it, where they get rated
  * (albumDetails.addStagedAlbum); its cover follows the pointer and swells over the trunk. Let go anywhere else and
  * nothing happens. Hidden in album view, which takes the left half of the screen.
  */
@@ -38,6 +42,8 @@ export const StagedList = () => {
   const viewing = useView(v => v.albumView)
   const rows = useRef(new Map<string, { row: HTMLElement, thumb: HTMLElement }>())
   const [carry, setCarry] = useState<Carry | null>(null)
+  /** Starts collapsed: just the title (and how many), until it's clicked open. */
+  const [open, setOpen] = useState(false)
   const press = useRef<{ id: string, image?: string, pointerId: number, x: number, y: number, moved: boolean } | null>(null)
   const key = albums.map(a => a.id).join(',')
 
@@ -98,8 +104,10 @@ export const StagedList = () => {
   if (albums.length === 0 && !carry) return null
   return <>
     {albums.length > 0 && <nav className={`staged-list${viewing ? ' in-album-view' : ''}`} aria-label="Unrated albums">
-      <div className="staged-title">Unrated</div>
-      {albums.map(a => <StagedRow key={a.id} album={a} artist={a.artistId ? s.artists[a.artistId]?.name : undefined}
+      <button className="staged-title" onClick={() => setOpen(o => !o)} aria-expanded={open}>
+        Unrated <span className="staged-count">{albums.length}</span><span className="staged-chevron" aria-hidden="true" />
+      </button>
+      {open && albums.map(a => <StagedRow key={a.id} album={a} artist={a.artistId ? s.artists[a.artistId]?.name : undefined}
         carried={carry?.id === a.id} bind={bind(a.id)} onDown={onDown(a)} onMove={onMove} onUp={onUp} />)}
     </nav>}
     {carry && <div className={`staged-carry${carry.over ? ' over' : ''}`} aria-hidden="true"

@@ -68,6 +68,8 @@ export type Track = Base & Rateable & {
   durationMs?: number
   /** Left out of its artist's score (interludes, skits, live versions…). */
   excludeFromArtistScore?: boolean
+  /** One or two words shown for it on the rater instead of its full name (names.ts `shortTitle`); unset on older tracks. */
+  shortTitle?: string
 }
 
 /** A movie or a book: rated directly, nothing else attached (yet). */

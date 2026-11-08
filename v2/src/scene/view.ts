@@ -62,6 +62,24 @@ type View = {
   rating: string[] | null
   startRating: (ids: string[]) => void
   endRating: () => void
+  /**
+   * Split view (MUSIC; state/split.ts): every album on its own rater, in a row, and the camera can pan. Album view and
+   * the list view put them back on the one tree while they're up (isSplit). Not saved.
+   */
+  split: boolean
+  setSplit: (split: boolean) => void
+  /**
+   * MUSIC's default view (state/drill.ts): null, the rater of artists; an artist's id, that artist's albums. Not saved.
+   */
+  drill: string | null
+  setDrill: (artistId: string | null) => void
+  /** The last thing done on the read-only rater, shown under the item count (hud/ActionLog). */
+  lastAction: { text: string, seq: number } | null
+  logAction: (text: string) => void
+  /** Raters moved by hand in split view (dragged by their trunk), by rater key: where each now stands on the floor. */
+  raterPlaces: Readonly<Record<string, { x: number, z: number }>>
+  moveRater: (key: string, x: number, z: number) => void
+  clearRaterPlaces: () => void
 }
 
 /**
@@ -100,6 +118,19 @@ export const useView = create<View>()(set => ({
   setAlbumView: id => set(s => id === null && s.albumView !== null
     ? { albumView: null, resetRequests: s.resetRequests + 1 }
     : { albumView: id }),
+  split: false,
+  setSplit: split => set({ split }),
+  drill: null,
+  setDrill: drill => set(s => {
+    if (s.drill === drill) return s
+    levelChange.at = performance.now()
+    return { drill }
+  }),
+  lastAction: null,
+  logAction: text => set(s => ({ lastAction: { text, seq: (s.lastAction?.seq ?? 0) + 1 } })),
+  raterPlaces: {},
+  moveRater: (key, x, z) => set(s => ({ raterPlaces: { ...s.raterPlaces, [key]: { x, z } } })),
+  clearRaterPlaces: () => set({ raterPlaces: {} }),
   rating: null,
   startRating: ids => set(s => ids.length ? { rating: [...new Set([...(s.rating ?? []), ...ids])] } : s),
   endRating: () => set({ rating: null }),
@@ -147,3 +178,26 @@ export const TRUNK_BOTTOM_ANCHOR = '__trunk-bottom'
 export const collapse = { value: 0 }
 /** The list view waits for the collapse to finish before it opens. */
 export const COLLAPSE_SECONDS = 0.3
+
+/** Whether the raters stand apart right now: split view is on, and neither album view nor the list view is up. */
+export const isSplit = (v: Pick<View, 'split' | 'albumView' | 'phase'>) => v.split && !v.albumView && v.phase === 'tree'
+
+/** How far apart the raters are: 0 one tree, 1 split. Eased by the stage (Raters) towards isSplit. */
+export const splitness = { value: 0 }
+
+/**
+ * Where each rater is right now, by rater key (state/split.raterKey), eased between the one tree (all at the origin,
+ * no turn) and the row: written every frame by Raters, read by the fruit. `keys`: the raters standing in the row.
+ */
+export const raterNow = { places: new Map<string, { x: number, z: number, turn: number }>(), keys: [] as string[] }
+/** Key in screenAnchors for a rater's trunk top and bottom, in split view. */
+export const raterTopAnchor = (key: string) => `__rater-top:${key}`
+export const raterBottomAnchor = (key: string) => `__rater-bottom:${key}`
+
+/**
+ * When the read-only rater last changed level (artists ⟷ one artist's albums): the new level's fruit wait for the
+ * old ones to draw back into the trunk before they come out.
+ */
+export const levelChange = { at: 0 }
+/** How long after a level change the new fruit start to come out (ms). */
+export const LEVEL_DELAY_MS = 320

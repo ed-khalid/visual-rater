@@ -1,7 +1,7 @@
 /* Small bordered button in the bottom-left corner, just above the item count (as the + key sits under the title) */
 .rubric-button {
   position: fixed;
-  bottom: 46px;
+  bottom: 64px;
   left: 28px;
   z-index: 15;
   padding: 3px 9px 3px 11px;
@@ -25,10 +25,10 @@
 /* Same glass panel as the album popup, opening upwards from the button; it stops short of the top-left HUD */
 .rubric {
   position: fixed;
-  bottom: 80px;
+  bottom: 98px;
   left: 28px;
   z-index: 20;
-  max-height: calc(100vh - 80px - 84px);
+  max-height: calc(100vh - 98px - 84px);
   display: flex;
   flex-direction: column;
   width: min(260px, calc(100vw - 56px));

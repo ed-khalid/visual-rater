@@ -1,13 +1,14 @@
 import { useMemo } from 'react'
 import { treeNodes } from '../state/board'
-import { useStore } from '../state/store'
+import { type Track, useStore } from '../state/store'
 import { useView } from './view'
 import { labelElements, scaleElements } from './labels'
+import { nodeKey, useDrillNodes } from './Nodes'
 import './items.css'
 
 /**
  * DOM layer holding one name label per thing on the open tree: beside fruit (with an UNRATED tag until it's
- * dragged).
+ * dragged), and beside the read-only rater's artists and albums.
  * The 3D objects position them every frame (see Items.tsx).
  */
 export const ItemLabels = () => {
@@ -16,13 +17,18 @@ export const ItemLabels = () => {
   const artists = useStore(s => s.artists), albums = useStore(s => s.albums), tracks = useStore(s => s.tracks)
   const movies = useStore(s => s.movies), books = useStore(s => s.books)
 
+  const nodes = useDrillNodes()
   const labels = useMemo(() => {
     if (!activeType) return []
     const s = { artists, albums, tracks, movies, books }
     return [
-      ...treeNodes(s, activeType).map(n => ({ id: n.id, kind: 'side', name: n.entity.name, unrated: n.entity.score === undefined })),
+      // a track goes by its short title, if it has one (the full name is clutter on the rater)
+      ...treeNodes(s, activeType).map(n => ({ id: n.id, kind: 'side', name: (n.entity as Track).shortTitle ?? n.entity.name, unrated: n.entity.score === undefined })),
+      // the read-only rater's artists and albums (MUSIC; Nodes)
+      ...[...new Map(nodes.map(n => [n.node.id, n.node])).values()]
+        .map(n => ({ id: nodeKey(n.id), kind: 'side', name: n.name, unrated: n.score === undefined })),
     ]
-  }, [activeType, artists, albums, tracks, movies, books])
+  }, [activeType, artists, albums, tracks, movies, books, nodes])
 
   if (listing) return null
   return <div className="item-labels">

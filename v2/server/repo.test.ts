@@ -37,7 +37,7 @@ describe.skipIf(!url)('Postgres repository (real database)', () => {
     albums: { [id(2)]: { id: id(2), name: 'Kid A', image: 'https://i.scdn.co/image/x', colors: ['#45372c'], vendor: { name: 'spotify', id: 'kida' },
       artistId: id(1), year: 2000, tracklistLoaded: true, stagedAt: 1730000000001, addedAt: 1730000000002 } },
     tracks: {
-      [id(3)]: { id: id(3), name: 'Idioteque', albumId: id(2), artistId: id(1), disc: 1, number: 8, durationMs: 309000, vendor: { name: 'spotify', id: 't8' },
+      [id(3)]: { id: id(3), name: 'Idioteque', shortTitle: 'Idioteque', albumId: id(2), artistId: id(1), disc: 1, number: 8, durationMs: 309000, vendor: { name: 'spotify', id: 't8' },
         score: 96, branch: { angle: Math.PI / 2, length: 1.35, ring: 0 }, since: 1730000000003 },
       [id(4)]: { id: id(4), name: 'Treefingers', albumId: id(2), artistId: id(1), disc: 1, number: 5, excludeFromArtistScore: true, score: 99 },
       [id(5)]: { id: id(5), name: 'Morning Bell', albumId: id(2), artistId: id(1), disc: 1, number: 9, score: 82, hidden: true },
@@ -47,7 +47,7 @@ describe.skipIf(!url)('Postgres repository (real database)', () => {
   })
 
   test('the schema applies once, and has exactly the tables and views planned', async () => {
-    expect(await migrate(db.sql)).toEqual(['001.schema.sql'])
+    expect(await migrate(db.sql)).toEqual(['001.schema.sql', '002.track_short_title.sql'])
     expect(await migrate(db.sql)).toEqual([])
     const tables = await db.sql<{ t: string }[]>`select table_name as t from information_schema.tables where table_schema = current_schema() order by 1`
     expect(tables.map(r => r.t)).toEqual(['books', 'movies', 'music_album_scores', 'music_albums', 'music_artist_scores', 'music_artists', 'music_tracks', 'schema_migrations'])

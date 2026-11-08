@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { liveScores, screenAnchors, useView } from '../scene/view'
 import { addedColumn, find, formatScore, rating as ratingOf, songTier, stagedAlbums, tracksOf, treeNodes } from '../state/board'
 import { usePersisted, useStore } from '../state/store'
+import { SHORT_TITLE_MAX, shortTitle } from '../shared/names'
 import { AlbumChart } from './AlbumChart'
 import { formatDuration, loadAlbumDetails, needsTracklist, useAlbumLoads } from './albumDetails'
 import './albumOverlays.css'
@@ -134,7 +135,7 @@ const AlbumFacts = ({ artist, album, year, rating }: { artist?: string, album: s
   </dl>
 
 /** A track in the popup (or being edited): its id, name, and what's shown beside it. */
-type DraftTrack = { id: string, name: string, disc: number, number: number, durationMs?: number, score?: number }
+type DraftTrack = { id: string, name: string, /** what the rater shows for it; blank: its full name */ shortTitle: string, disc: number, number: number, durationMs?: number, score?: number }
 type Draft = { name: string, year: string, tracks: DraftTrack[] }
 
 /** Whole years between 1000 and 2999, or blank for "no year". */
@@ -188,7 +189,7 @@ export const AlbumPopup = ({ docked }: { docked?: string } = {}) => {
   if (!item || !openId) return null
   const year0 = item.year
   const tracks: DraftTrack[] = tracksOf(s, openId).map(t => ({
-    id: t.id, name: t.name, disc: t.disc ?? 0, number: t.number ?? 0, durationMs: t.durationMs, score: t.score,
+    id: t.id, name: t.name, shortTitle: t.shortTitle ?? '', disc: t.disc ?? 0, number: t.number ?? 0, durationMs: t.durationMs, score: t.score,
   }))
 
   const startEdit = () => { setDraft({ name: item.name, year: year0?.toString() ?? '', tracks }) }
@@ -200,12 +201,15 @@ export const AlbumPopup = ({ docked }: { docked?: string } = {}) => {
     : null
   const save = () => {
     if (!draft || problem || year === 'invalid') return
-    if (editAlbum(openId, { name: draft.name, year, tracks: draft.tracks.map(t => ({ id: t.id, name: t.name })) })) setDraft(null)
+    if (editAlbum(openId, { name: draft.name, year, tracks: draft.tracks.map(t => ({ id: t.id, name: t.name, shortTitle: t.shortTitle })) })) setDraft(null)
   }
 
   const shown = draft ? draft.tracks : tracks
   const multiDisc = new Set(shown.map(t => t.disc)).size > 1
-  const setTrackName = (id: string, name: string) => draft && setDraft({ ...draft, tracks: draft.tracks.map(t => t.id === id ? { ...t, name } : t) })
+  // The short title follows the name while it's still the one worked out from it (or blank).
+  const setTrackName = (id: string, name: string) => draft && setDraft({ ...draft, tracks: draft.tracks.map(t => t.id !== id ? t
+    : { ...t, name, shortTitle: !t.shortTitle.trim() || t.shortTitle === shortTitle(t.name) ? shortTitle(name) : t.shortTitle }) })
+  const setTrackShort = (id: string, short: string) => draft && setDraft({ ...draft, tracks: draft.tracks.map(t => t.id === id ? { ...t, shortTitle: short } : t) })
   const deleteTrack = (id: string) => draft && setDraft({ ...draft, tracks: draft.tracks.filter(t => t.id !== id) })
 
   return <div ref={ref} className={`album-popup${draft ? ' album-popup-editing' : ''}${docked ? ' album-popup-docked' : ''}`}
@@ -235,7 +239,11 @@ export const AlbumPopup = ({ docked }: { docked?: string } = {}) => {
               {multiDisc && (i === 0 || shown[i - 1].disc !== t.disc) && <div className="album-disc">DISC {t.disc}</div>}
               <span className="album-track-no">{String(number).padStart(2, '0')}</span>
               {draft
-                ? <input className="album-input album-input-track" value={t.name} onChange={e => setTrackName(t.id, e.target.value)} aria-label={`Track ${number} name`} />
+                ? <span className="album-track-fields">
+                    <input className="album-input album-input-track" value={t.name} onChange={e => setTrackName(t.id, e.target.value)} aria-label={`Track ${number} name`} />
+                    <input className="album-input album-input-short" value={t.shortTitle} onChange={e => setTrackShort(t.id, e.target.value)}
+                      maxLength={SHORT_TITLE_MAX} placeholder="—" aria-label={`Track ${number} short title`} />
+                  </span>
                 : <span className="album-track-name">{t.name}</span>}
               {draft
                 ? <button className="album-track-delete" onClick={() => deleteTrack(t.id)} aria-label={`Delete ${t.name}`}>×</button>

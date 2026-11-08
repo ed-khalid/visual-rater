@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { useShallow } from 'zustand/react/shallow'
 import type { Album, Artist, Branch, Persisted, Simple, Track, TypeId, VendorRef } from '../shared/model'
 import { emptyPersisted } from '../shared/model'
+import { SHORT_TITLE_MAX, shortTitle } from '../shared/names'
 import type { AlbumDetails, Track as CatalogueTrack } from '../shared/suggestions'
 import { find, positionOf, tracksOf, treeNodes } from './board'
 import { autoAlign, chooseBranch, groupDirections, clashes, directionNear, MAX_BRANCH_LENGTH, MIN_BRANCH_LENGTH, NEAR_POSITION, preferredDirection, ringLength } from './layout'
@@ -48,7 +49,7 @@ type Actions = {
    * Text is trimmed; blank titles or track names are rejected (returns false, nothing changes). Tracks are renumbered
    * 1, 2, 3… within each disc, and tracks left out are deleted.
    */
-  editAlbum: (albumId: string, edit: { name?: string, year?: number | null, tracks?: { id: string, name: string }[] }) => boolean
+  editAlbum: (albumId: string, edit: { name?: string, year?: number | null, tracks?: { id: string, name: string, /** blank: none */ shortTitle?: string }[] }) => boolean
   /**
    * Puts a staged album's tracks on the tree (each gets a branch, unrated until dragged) and moves the album to the
    * added column. Returns how many tracks went on, or null if the album isn't staged.
@@ -157,16 +158,20 @@ const ensureArtist = (artists: Record<string, Artist>, ref: ArtistRef): string |
   return artist.id
 }
 
-const trackFrom = (album: Album, t: CatalogueTrack): Track => ({
-  id: crypto.randomUUID(),
-  name: normalise(t.name) || 'Untitled',
-  ...(album.image ? { image: album.image } : {}),
-  ...(album.colors ? { colors: album.colors } : {}),
-  ...(album.vendor ? { vendor: { name: album.vendor.name, id: t.id } } : {}),
-  albumId: album.id,
-  ...(album.artistId ? { artistId: album.artistId } : {}),
-  disc: t.disc, number: t.number, durationMs: t.durationMs,
-})
+const trackFrom = (album: Album, t: CatalogueTrack): Track => {
+  const name = normalise(t.name) || 'Untitled'
+  return {
+    id: crypto.randomUUID(),
+    name,
+    shortTitle: shortTitle(name),
+    ...(album.image ? { image: album.image } : {}),
+    ...(album.colors ? { colors: album.colors } : {}),
+    ...(album.vendor ? { vendor: { name: album.vendor.name, id: t.id } } : {}),
+    albumId: album.id,
+    ...(album.artistId ? { artistId: album.artistId } : {}),
+    disc: t.disc, number: t.number, durationMs: t.durationMs,
+  }
+}
 
 /** Whether a typed name is already on a type's tree (ignoring case). */
 export const nameTaken = (s: Persisted, type: TypeId, name: string) => {
@@ -195,7 +200,8 @@ export const useStore = create<State & Actions>()((set, get) => ({
     const name = normalise(rawName)
     const type = s.activeType
     if (!type || !name || nameTaken(s, type, name)) return null
-    const entity: Simple = { id: crypto.randomUUID(), name, branch: newBranch(s, type, positionOf({})), since: Date.now() }
+    const entity: Simple | Track = { id: crypto.randomUUID(), name, branch: newBranch(s, type, positionOf({})), since: Date.now(),
+      ...(type === 'music' ? { shortTitle: shortTitle(name) } : {}) }
     const collection = type === 'music' ? 'tracks' : type
     set({ [collection]: { ...s[collection], [entity.id]: entity } } as Partial<State>)
     return entity.id
@@ -276,7 +282,16 @@ export const useStore = create<State & Actions>()((set, get) => ({
         const disc = track.disc ?? 0
         const number = (perDisc.get(disc) ?? 0) + 1
         perDisc.set(disc, number)
-        if (track.name !== names[i] || track.number !== number) tracks[t.id] = { ...track, name: names[i], number }
+        // A short title given is kept as typed (blank: none, the rater shows the full name). Not given, a renamed
+        // track's short title follows its name, unless it was set to something else.
+        const short = t.shortTitle !== undefined ? normalise(t.shortTitle).slice(0, SHORT_TITLE_MAX) || undefined
+          : track.name !== names[i] && (track.shortTitle === undefined || track.shortTitle === shortTitle(track.name)) ? shortTitle(names[i])
+          : track.shortTitle
+        if (track.name !== names[i] || track.number !== number || track.shortTitle !== short) {
+          const next: Track = { ...track, name: names[i], number, shortTitle: short }
+          if (short === undefined) delete next.shortTitle
+          tracks[t.id] = next
+        }
       })
     }
     set({ albums: { ...s.albums, [albumId]: album }, tracks })
