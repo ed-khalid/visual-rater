@@ -33,7 +33,7 @@ const useBox = () => {
   }, [])
   const albumView = useView(v => v.albumView)
   const phone = size.w <= 640
-  const top = phone ? 150 : 158, bottom = size.h - (phone ? 228 : 150)
+  const top = phone ? 150 : 158, bottom = size.h - (phone ? 228 : 100)
   const wide = size.w >= 1200, desktop = size.w > 900
   /**
    * Kept clear either side: the catalog on the left, the unrated list on the right (their full columns on desktops,
@@ -231,11 +231,16 @@ const Spine = ({ height, topKey, bottomKey, numbers = true }: { height: number, 
   return <div ref={ref} className="spine-wrap" style={{ height }}>
     <motion.div className="spine" style={{ height }} initial={{ scaleY: 0 }} animate={{ scaleY: 1 }}
       transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }} />
-    {numbers && Array.from({ length: 11 }, (_, i) => i * 10).map((v, i) =>
-      <motion.span key={v} className={`spine-number${v % 50 === 0 ? ' major' : ''}`} style={{ top: (1 - v / 100) * height }}
-        initial={{ opacity: 0, x: 6 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.3 + 0.04 * i }}>{v}</motion.span>)}
+    {numbers && <Numbers height={height} />}
   </div>
 }
+
+/** 0 to 100 every 10, right-aligned against where they're put (the spine's left, or the start of split view's row). */
+const Numbers = ({ height }: { height: number }) => <>
+  {Array.from({ length: 11 }, (_, i) => i * 10).map((v, i) =>
+    <motion.span key={v} className={`spine-number${v % 50 === 0 ? ' major' : ''}`} style={{ top: (1 - v / 100) * height }}
+      initial={{ opacity: 0, x: 6 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.3 + 0.04 * i }}>{v}</motion.span>)}
+</>
 
 type DragState = { pointerId: number, startY: number, startAt: number, moved: boolean, y: number }
 
@@ -352,32 +357,40 @@ const SplitRow = () => {
   const resets = useView(v => v.resetRequests)
   const scroller = useRef<HTMLDivElement>(null)
   const batch = useView(v => v.rating)
-  // Shorter than the one rater, so each one's caption fits under it, above the rater contents.
+  // Shorter than the one rater, so each one's caption fits under it.
   const height = box.height - CAPTION_PX
   // Clear of the catalog on the left and the unrated list on the right.
   const right = box.gutter, leftEdge = box.gutterLeft
 
-  const columns = useMemo(() => {
+  const marksByKey = useMemo(() => {
     const focus = batch ? focusOf(s, 'music', batch) : null
     const keys = splitLayout(s, hidden, {}).map(sp => sp.key)
     const byKey = new Map(keys.map(k => [k, [] as Mark[]]))
     for (const n of treeNodes(s, 'music')) {
       const t = n.entity as Track, list = byKey.get(raterKey(t))
-      if (list) list.push({ ...fruitMark(t, box.radius, !!focus && !focus.has(t.id)), side: 1 })
+      if (list) list.push(fruitMark(t, box.radius, !!focus && !focus.has(t.id)))
     }
-    return keys.map(key => {
-      const marks = byKey.get(key)!.sort((a, b) => trackOrder(s.tracks[a.id]) - trackOrder(s.tracks[b.id]))
-      const placed = placePieces(marks, { height, minLength: 22, maxReach: 230 })
-      return { key, marks, placed, width: Math.max(180, reachOf(marks, placed) + 36) }
-    })
-  }, [s, hidden, batch, box.radius, height])
+    for (const list of byKey.values()) list.sort((a, b) => trackOrder(s.tracks[a.id]) - trackOrder(s.tracks[b.id]))
+    return byKey
+  }, [s, hidden, batch, box.radius])
 
-  const keys = columns.map(c => c.key)
+  const keys = [...marksByKey.keys()]
   const ordered = order ? [...order.filter(k => keys.includes(k)), ...keys.filter(k => !order.includes(k))] : keys
+  const orderKey = ordered.join(',')
+  // In pairs, back to back: the first of each pair hangs everything to the left of its spine, which sits at the right of
+  // its column; the second to the right of a spine at the left of its column. So each pair's spines are close together.
+  const columns = useMemo(() => orderKey.split(',').filter(Boolean).map((key, i) => {
+    const side: 1 | -1 = i % 2 === 0 ? -1 : 1
+    const marks = marksByKey.get(key)!.map(m => ({ ...m, side }))
+    const placed = placePieces(marks, { height, minLength: 22, maxReach: box.phone ? 150 : 230 })
+    const width = Math.max(box.phone ? 110 : 150, reachOf(marks, placed) + SPLIT_INNER + SPLIT_OUTER)
+    return { key, side, marks, placed, width, spineX: side < 0 ? width - SPLIT_INNER : SPLIT_INNER }
+  }), [orderKey, marksByKey, height, box.phone])
+
   raterNow.keys = ordered
   useEffect(() => () => { raterNow.keys = [] }, [])
   useEffect(() => { scroller.current?.scrollTo({ left: 0, behavior: 'smooth' }) }, [resets])
-  const total = ordered.reduce((n, k) => n + columns.find(c => c.key === k)!.width, 0)
+  const total = columns.reduce((n, c) => n + c.width, 0)
 
   const onWheel = (e: React.WheelEvent) => {
     const el = scroller.current
@@ -385,32 +398,36 @@ const SplitRow = () => {
   }
 
   const view = box.w - right - leftEdge, inner = Math.max(total + 128, view)
+  const padLeft = Math.max(box.phone ? 44 : 64, (view - total) / 2)
   return <div ref={scroller} className="split-scroller" onWheel={onWheel} style={{ top: box.top - 40, height: height + 40 + CAPTION_PX + 10, right, left: leftEdge }}>
-    <div className="split-scale" style={{ top: 40, width: inner }}><Scale height={height} left={0} right={inner} /></div>
+    <div className="split-scale" style={{ top: 40, width: inner }}>
+      <Scale height={height} left={0} right={inner} />
+      {/* The scale's numbers, once, at the start of the row (the first rater's marks hang on its left). */}
+      <div className="split-numbers" style={{ left: padLeft - 6 }}><Numbers height={height} /></div>
+    </div>
     <Reorder.Group axis="x" values={ordered} onReorder={setOrder} className="split-row"
-      style={{ paddingLeft: Math.max(box.phone ? 44 : 64, (view - total) / 2), paddingTop: 40, minWidth: inner }}>
-      {ordered.map((k, i) => {
-        const c = columns.find(col => col.key === k)!
-        return <SplitColumn key={k} index={i} column={c} height={height} />
-      })}
+      style={{ paddingLeft: padLeft, paddingTop: 40, minWidth: inner }}>
+      {columns.map((c, i) => <SplitColumn key={c.key} index={i} column={c} height={height} />)}
     </Reorder.Group>
   </div>
 }
 
 /** Room under each split-view rater for its caption (px). */
 const CAPTION_PX = 64
+/** Split view: spine to its column's edge on the side facing its pair's spine, and room beyond the marks on the other. */
+const SPLIT_INNER = 12, SPLIT_OUTER = 30
 
-const SplitColumn = ({ column: c, height, index }: { column: { key: string, marks: Mark[], placed: Map<string, Placed>, width: number }, height: number, index: number }) => {
+const SplitColumn = ({ column: c, height, index }: { column: { key: string, side: 1 | -1, marks: Mark[], placed: Map<string, Placed>, width: number, spineX: number }, height: number, index: number }) => {
   const s = usePersisted()
   const controls = useDragControls()
   const album = c.key === SINGLES ? undefined : s.albums[c.key]
   const artist = album?.artistId ? s.artists[album.artistId]?.name : undefined
   const g = album ? rating(s, album.id) : undefined
-  return <Reorder.Item value={c.key} dragListener={false} dragControls={controls} className="split-column" style={{ width: c.width }}
+  return <Reorder.Item value={c.key} dragListener={false} dragControls={controls} className={`split-column ${c.side < 0 ? 'side-left' : 'side-right'}`} style={{ width: c.width }}
     initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ ...SPRING, delay: index * 0.06 }}
     whileDrag={{ scale: 1.02, zIndex: 40 }}>
-    <div className="split-rater" style={{ height }}>
-      <Spine height={height} topKey={raterTopAnchor(c.key)} bottomKey={raterBottomAnchor(c.key)} numbers={index === 0} />
+    <div className="split-rater" style={{ height, left: c.spineX }}>
+      <Spine height={height} topKey={raterTopAnchor(c.key)} bottomKey={raterBottomAnchor(c.key)} numbers={false} />
       <AnimatePresence>
         {outermostFirst(c.marks, c.placed).map(({ m, i }) => <Marker key={m.key} mark={m} at={c.placed.get(m.id)!} height={height} delay={index * 0.06 + Math.min(0.4, i * 0.02)} />)}
       </AnimatePresence>

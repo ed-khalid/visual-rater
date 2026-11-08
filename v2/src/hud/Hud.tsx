@@ -11,7 +11,6 @@ import { ListView } from './ListView'
 import { ModeSwitch } from './ModeSwitch'
 import { Breadcrumb } from './Breadcrumb'
 import { Catalog } from './Catalog'
-import { RaterContents } from './RaterContents'
 import { StagedList } from './StagedList'
 import { ActionLog } from './ActionLog'
 import { RatingWatch } from './RatingWatch'
@@ -79,7 +78,6 @@ export const Hud = () => {
     {board && <ModeSwitch />}
     {board && <RatingWatch />}
     {board && listing && <ListView />}
-    {board && !listing && <RaterContents />}
     {board && !listing && activeType === 'music' && <><StagedList /><Catalog /><Breadcrumb /><AlbumView /><ActionLog /><ZoomSwitch /></>}
     {board && !listing && <><ItemHoverCard /><DragScore /><ScoreMatches /><AlbumPopup /><ItemTrash /></>}
     {board && <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />}

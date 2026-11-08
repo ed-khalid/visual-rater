@@ -37,7 +37,63 @@
 }
 
 /* Artist: a serif name over a ruled line, its score and grade chip on the right. */
-.catalog-artist { min-height: 42px; border-bottom: 1px solid var(--ink); cursor: pointer; }
+.catalog-artist { min-height: 42px; cursor: pointer; }
+
+/* A row with its on-the-rater box on the left; the line under it runs under both. */
+.catalog-line { display: flex; align-items: stretch; }
+.catalog-line > .catalog-row { flex: 1; min-width: 0; gap: 8px; }
+.catalog-line .catalog-artist .catalog-chevron { margin-left: 6px; }
+.catalog-line .catalog-letter { margin-left: 4px; }
+.line-artist { border-bottom: 1px solid var(--ink); }
+.line-album { border-bottom: 1px solid var(--hair); }
+
+/* The box: ticked in ink when on the rater, a dash when only some of an artist's albums are, empty when off. */
+.catalog-onrater-slot { flex: none; width: 22px; }
+.catalog-onrater {
+  position: relative;
+  flex: none;
+  width: 22px;
+  padding: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.catalog-onrater::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 14px;
+  height: 14px;
+  margin-top: -7px;
+  box-sizing: border-box;
+  border: 1.5px solid var(--ink);
+  background: var(--paper);
+  transition: background-color 0.2s;
+}
+.catalog-onrater.on::before, .catalog-onrater.some::before { background: var(--ink); }
+.catalog-onrater::after {
+  content: '';
+  position: absolute;
+  opacity: 0;
+  transition: opacity 0.2s, transform 0.25s var(--ease-out);
+}
+.catalog-onrater.on::after {
+  /* the tick */
+  left: 5px;
+  top: 50%;
+  width: 4px;
+  height: 7px;
+  margin-top: -5px;
+  border-right: 1.5px solid var(--paper);
+  border-bottom: 1.5px solid var(--paper);
+  transform: rotate(45deg);
+  opacity: 1;
+}
+.catalog-onrater.some::after { left: 3px; top: 50%; width: 8px; height: 1.5px; margin-top: -0.75px; background: var(--paper); opacity: 1; }
+.catalog-onrater:hover::before, .catalog-onrater:focus-visible::before { box-shadow: 0 0 0 3px var(--paper-deep); }
+.catalog-onrater:focus-visible { outline: none; }
+.catalog-onrater:focus-visible::before { box-shadow: 0 0 0 2px var(--paper), 0 0 0 3.5px var(--accent); }
 .catalog-artist .catalog-name { font-family: var(--serif); font-size: 17px; font-weight: 600; letter-spacing: -0.005em; }
 .catalog-artist:focus-visible { outline: none; background: var(--paper-deep); }
 
@@ -89,7 +145,10 @@
 .catalog-order button.on { color: var(--ink); }
 .catalog-order button.on::after { transform: scaleX(1); }
 
-.catalog-album { cursor: pointer; border-bottom: 1px solid var(--hair); }
+.catalog-album { cursor: pointer; }
+/* Taken off the rater for now. */
+.catalog-album.off .catalog-name, .catalog-album.off .catalog-score { color: var(--ink-faint); }
+.catalog-album.off .catalog-thumb { opacity: 0.55; }
 .catalog-album .catalog-name { font-size: 12.5px; font-weight: 500; }
 .catalog-album:hover, .catalog-album:focus-visible { background: var(--paper-deep); padding-left: 4px; outline: none; }
 
@@ -149,8 +208,10 @@
 @media (max-width: 640px) {
   .catalog { width: auto; left: 10px; top: 118px; gap: 8px; max-height: calc(100vh - 118px - 110px); }
   .catalog-name, .catalog-score, .catalog-letter { display: none; }
-  .catalog-row { gap: 5px; justify-content: center; min-height: 44px; min-width: 44px; padding: 0; border-bottom: none; }
-  .catalog-artist { border-bottom: 1.5px solid var(--ink); }
+  .catalog-row { gap: 5px; justify-content: center; min-height: 44px; min-width: 44px; padding: 0; }
+  .line-album { border-bottom: none; }
+  .line-artist { border-bottom: 1.5px solid var(--ink); }
+  .catalog-onrater, .catalog-onrater-slot { display: none; }
   .catalog-chevron { display: none; }
   .catalog-head { flex-direction: column; align-items: center; margin-bottom: 0; }
   .catalog-title { display: none; }

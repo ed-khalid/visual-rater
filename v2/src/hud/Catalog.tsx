@@ -24,13 +24,15 @@ type Group = { artist?: Row, albums: Row[] }
 
 /**
  * The catalog (MUSIC): every artist and album in the database, on the tree or not, in the left-hand sidebar under the
- * + key. Artists go best first (by artist score), unrated ones after. (What's on the rater right now is
- * hud/RaterContents.tsx, under the spine.)
+ * + key. Artists go best first (by artist score), unrated ones after.
  * - click an album on the tree for album view (view.albumView, hud/AlbumView.tsx): every other album draws back into
  *   the spine and its title and details fill the left half of the screen (the rater slides right to make room). Another album switches to that one; clicking it
  *   again, a click on empty space (with nothing open) or Esc leaves album view.
  * - click a staged album (dim, no score yet) for its tracklist.
  * Each artist and album shows its score and letter grade (v1's grades), the letter on a chip in the grade's colour.
+ * Left of each row, a box puts the artist (all their albums on the tree) or the album on the rater or takes it off for
+ * now (view.hiddenAlbums; not saved): ticked when on, a dash when only some of an artist's
+ * are; staged albums aren't on the tree, so they get none.
  * Each artist collapses to its own row (click it); albums go by year or by score (the switch at the top).
  * No hover behaviour (for now). Each thumbnail of something on the tree publishes its place on screen (screenAnchors),
  * so the popup (to the right of the row) and its trash icon pin to it. In active rating, the rows not being rated fade.
@@ -108,6 +110,8 @@ export const Catalog = () => {
 
   // Album view ends if its album leaves the tree, on Esc (with no popup or palette open), and with the panel.
   const viewing = useView(v => v.albumView)
+  const hidden = useView(v => v.hiddenAlbums)
+  const toggleHidden = useView(v => v.toggleAlbumsHidden)
   const onTreeIds = groups.flatMap(g => g.albums.filter(a => !a.staged).map(a => a.id)).join(',')
   useEffect(() => { if (viewing && !onTreeIds.split(',').includes(viewing)) useView.getState().setAlbumView(null) }, [viewing, onTreeIds])
   // Album view opens the album's artist here, so its row shows.
@@ -134,25 +138,34 @@ export const Catalog = () => {
           className={order === o ? 'on' : ''} onClick={() => setOrder(o)}>{o}</button>)}
       </div>
     </div>
-    {groups.map(g => <div className="catalog-group" key={g.artist?.id ?? ''}>
-      {g.artist && <button className="catalog-row catalog-artist" ref={bind(g.artist.id)}
-        onClick={() => toggle(g.artist!.id)} aria-expanded={shown(g)}
-        aria-label={g.artist.label ? `${g.artist.name}, ${g.artist.label} (${g.artist.grade})` : `${g.artist.name}, unrated`}>
-        <Thumb image={g.artist.image} round />
-        <span className="catalog-name">{g.artist.name}</span>
-        <span className="catalog-score">{g.artist.label ?? '—'}</span>
-        {g.artist.grade && <span className="catalog-letter" style={{ background: g.artist.color }}>{g.artist.grade}</span>}
-        <span className="catalog-chevron" aria-hidden="true" />
-      </button>}
-      {shown(g) && g.albums.map(a => <button key={a.id} className={`catalog-row catalog-album${a.staged ? ' staged' : ''}${viewing === a.id ? ' viewing' : viewing ? ' other' : ''}`}
-        ref={a.staged ? undefined : bind(a.id)} onClick={() => onAlbum(a)} aria-pressed={a.staged ? undefined : viewing === a.id}
-        aria-label={a.staged ? `${a.name}, not on the tree yet` : a.label ? `${a.name}, ${a.label} (${a.grade})` : `${a.name}, unrated`}>
-        <Thumb image={a.image} />
-        <span className="catalog-name">{a.name}</span>
-        <span className="catalog-score">{a.staged ? '' : a.label ?? '—'}</span>
-        {!a.staged && a.grade && <span className="catalog-letter" style={{ background: a.color }}>{a.grade}</span>}
-      </button>)}
-    </div>)}
+    {groups.map(g => {
+      const onTree = g.albums.filter(a => !a.staged).map(a => a.id)
+      return <div className="catalog-group" key={g.artist?.id ?? ''}>
+      {g.artist && <div className="catalog-line line-artist">
+        <OnRater name={g.artist.name} ids={onTree} hidden={hidden} toggle={toggleHidden} />
+        <button className="catalog-row catalog-artist" ref={bind(g.artist.id)}
+          onClick={() => toggle(g.artist!.id)} aria-expanded={shown(g)}
+          aria-label={g.artist.label ? `${g.artist.name}, ${g.artist.label} (${g.artist.grade})` : `${g.artist.name}, unrated`}>
+          <Thumb image={g.artist.image} round />
+          <span className="catalog-name">{g.artist.name}</span>
+          <span className="catalog-score">{g.artist.label ?? '—'}</span>
+          {g.artist.grade && <span className="catalog-letter" style={{ background: g.artist.color }}>{g.artist.grade}</span>}
+          <span className="catalog-chevron" aria-hidden="true" />
+        </button>
+      </div>}
+      {shown(g) && g.albums.map(a => <div key={a.id} className="catalog-line line-album">
+        <OnRater name={a.name} ids={a.staged ? [] : [a.id]} hidden={hidden} toggle={toggleHidden} />
+        <button className={`catalog-row catalog-album${a.staged ? ' staged' : ''}${viewing === a.id ? ' viewing' : viewing ? ' other' : ''}${!a.staged && hidden.has(a.id) ? ' off' : ''}`}
+          ref={a.staged ? undefined : bind(a.id)} onClick={() => onAlbum(a)} aria-pressed={a.staged ? undefined : viewing === a.id}
+          aria-label={a.staged ? `${a.name}, not on the tree yet` : a.label ? `${a.name}, ${a.label} (${a.grade})` : `${a.name}, unrated`}>
+          <Thumb image={a.image} />
+          <span className="catalog-name">{a.name}</span>
+          <span className="catalog-score">{a.staged ? '' : a.label ?? '—'}</span>
+          {!a.staged && a.grade && <span className="catalog-letter" style={{ background: a.color }}>{a.grade}</span>}
+        </button>
+      </div>)}
+    </div>
+    })}
   </nav>
 }
 
@@ -165,3 +178,13 @@ export const enterAlbumView = (albumId: string) => { useView.getState().setAlbum
 const Thumb = ({ image, round }: { image?: string, round?: boolean }) =>
   image ? <img className={`catalog-thumb${round ? ' round' : ''}`} src={image} alt="" draggable={false} />
     : <span className={`catalog-thumb${round ? ' round' : ''}`} />
+
+/** The on-the-rater box: ticked (all on), a dash (some), empty (none); an empty slot keeps the column when there's nothing to put on. */
+const OnRater = ({ name, ids, hidden, toggle }: { name: string, ids: string[], hidden: ReadonlySet<string>, toggle: (ids: string[]) => void }) => {
+  if (ids.length === 0) return <span className="catalog-onrater-slot" aria-hidden="true" />
+  const off = ids.filter(id => hidden.has(id)).length
+  const state = off === 0 ? 'on' : off === ids.length ? 'none' : 'some'
+  return <button className={`catalog-onrater ${state}`} role="checkbox" aria-checked={state === 'on' ? true : state === 'some' ? 'mixed' : false}
+    aria-label={`${name} on the rater`} title={state === 'none' ? 'Put on the rater' : 'Take off the rater'}
+    onClick={() => toggle(off > 0 && off < ids.length ? ids.filter(id => hidden.has(id)) : ids)} />
+}

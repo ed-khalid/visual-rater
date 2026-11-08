@@ -38,14 +38,14 @@ type View = {
    * unrated, everything else on the scene fades (see board.ratingFocus); adding more joins in. Null: not rating.
    */
   /**
-   * Album view (MUSIC): the album picked in the catalog or the rater contents. Every other album's branches and fruit draw back
+   * Album view (MUSIC): the album picked in the catalog. Every other album's branches and fruit draw back
    * into the trunk (as for the list view), so only its tracks are on the tree. Null: everything shows. While it's on,
    * the rater slides right to make room for the album's title and details.
    */
   albumView: string | null
   setAlbumView: (id: string | null) => void
   /**
-   * Albums taken off the tree for now, from the rater contents (MUSIC): their branches and fruit draw back into the
+   * Albums taken off the tree for now, from the catalog's boxes (MUSIC): their branches and fruit draw back into the
    * trunk, as in album view, but nothing about them changes and they come back with a click. Not saved.
    * Album view of one of them shows it anyway.
    */

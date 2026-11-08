@@ -121,9 +121,9 @@ export const placePieces = (pieces: readonly Piece[], o: PlaceOptions): Map<stri
 /** Roughly how wide a label is (px), for layout before it's drawn: short titles keep this small. */
 export const labelWidth = (text: string, pxPerChar = 6.4) => text ? Math.min(150, Math.ceil(text.length * pxPerChar) + 4) : 0
 
-/** How far a rater's pieces reach from its spine, labels included (px). */
+/** How far a rater's pieces reach from its spine, labels included (px; not for those placed bare). */
 export const reachOf = (pieces: readonly Piece[], placed: ReadonlyMap<string, Placed>) =>
   Math.max(0, ...pieces.map(p => {
     const at = placed.get(p.id)
-    return at ? at.x + p.radius + (p.labelWidth ? LABEL_GAP + p.labelWidth : 0) : 0
+    return at ? at.x + p.radius + (p.labelWidth && !at.bare ? LABEL_GAP + p.labelWidth : 0) : 0
   }))
