@@ -1,120 +1,109 @@
 .palette-overlay {
-  /* Catches the click outside that closes it, but leaves the scene in full view */
+  /* Catches the click outside that closes it, but leaves the page in full view */
   position: fixed;
   inset: 0;
   z-index: 30;
-  background: transparent;
+  background: rgba(239, 233, 222, 0.35);
+  animation: palette-veil 0.3s ease both;
 }
+@keyframes palette-veil { from { opacity: 0; } }
 
 .palette {
-  --palette-bg: rgb(6, 12, 20);
-  --palette-line: rgba(92, 225, 255, 0.35);
+  --palette-bg: var(--paper-raised);
+  --palette-line: var(--ink);
   /* Hangs from the + key (top-left): its close tab lands exactly over the key, so + turns into × */
   position: fixed;
   z-index: 31; /* above the HUD, mode switch, popups */
-  top: 66px; /* the + key is 48px down and 19px tall: the tab (19px) sits on it exactly */
+  top: 106px; /* the + key is 74px down and 32px tall: the tab sits on it exactly */
   left: 28px;
-  width: min(400px, calc(100vw - 56px));
-  font-family: var(--font);
-  color: var(--text);
+  width: min(420px, calc(100vw - 56px));
+  font-family: var(--sans);
+  color: var(--ink);
   background: var(--palette-bg);
-  border: 1px solid var(--palette-line);
-  box-shadow: 0 0 24px rgba(92, 225, 255, 0.12), inset 0 0 12px rgba(92, 225, 255, 0.05);
-  border-radius: 0 4px 4px 4px; /* square top-left corner, where the close tab joins */
+  border: 1.5px solid var(--palette-line);
+  box-shadow: 6px 6px 0 var(--ink);
+  transform-origin: 0 0;
+  animation: palette-in 0.35s var(--ease-out) both;
 }
+@keyframes palette-in { from { opacity: 0; transform: translateY(-6px) scaleY(0.96); } to { opacity: 1; transform: none; } }
 
 .palette-input {
   width: 100%;
   padding: 16px 18px;
-  font: inherit;
-  font-size: 16px; /* below 16px, iOS Safari zooms the page when the input is focused */
-  letter-spacing: 0.06em;
-  color: #e6f6ff;
-  caret-color: #5ce1ff;
+  font-family: var(--serif);
+  font-size: 22px; /* 16px or more, or iOS Safari zooms the page when the input is focused */
+  font-weight: 500;
+  color: var(--ink);
+  caret-color: var(--accent);
   background: transparent;
   border: none;
-  border-bottom: 1px solid rgba(92, 225, 255, 0.15);
+  border-bottom: 1.5px solid var(--ink);
   outline: none;
 }
 
-/* A small tab sitting on the palette's top-left edge; its bottom border is drawn exactly over the
-   palette's top border, so the line runs straight under it. The box hugs the glyph. */
+/* A tab sitting on the palette's top-left edge, the + key's size, so the key turns into ×. */
 .palette-close {
   position: absolute;
-  /* Offsets are measured from inside the palette's 1px border: -1px puts the tab's left border on the
-     palette's left border, and 100% puts the tab's bottom border exactly on the palette's top border. */
-  left: -1px;
+  left: -1.5px;
   bottom: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  /* the + key's size, so it covers the key */
   box-sizing: border-box;
-  width: 44px;
-  height: 19px;
+  width: 36px;
+  height: 32px;
   padding: 0;
   font: inherit;
-  font-size: 15px;
+  font-size: 20px;
+  font-weight: 300;
   line-height: 1;
-  color: var(--text-dim);
-  background: var(--palette-bg);
-  border: 1px solid var(--palette-line);
-  border-radius: 3px 3px 0 0;
+  color: var(--paper);
+  background: var(--ink);
+  border: 1.5px solid var(--ink);
   cursor: pointer;
+  transition: background 0.2s;
 }
+@media (pointer: coarse) { .palette-close { width: 44px; height: 40px; } .palette { top: 114px; } }
 
-/* Invisible hit area so it stays easy to tap (~44px) without a bigger visible box.
-   Extends up and sideways only, never down over the input. */
-.palette-close::after {
-  content: '';
-  position: absolute;
-  inset: -23px -12px 0 -12px;
-}
+/* Invisible hit area so it stays easy to tap; extends up and sideways only, never down over the input. */
+.palette-close::after { content: ''; position: absolute; inset: -12px -8px 0 -8px; }
+.palette-close:hover, .palette-close:focus-visible { background: var(--accent); border-color: var(--accent); outline: none; }
 
-.palette-close:hover,
-.palette-close:focus-visible { color: #5ce1ff; outline: none; }
+.palette-input::placeholder { color: var(--ink-faint); font-style: italic; }
 
-.palette-input::placeholder { color: var(--text-dim); }
+.palette-list { padding: 6px; font-size: 14px; }
 
-.palette-list { padding: 6px; font-size: 13px; }
-
-.palette-hint {
-  padding: 10px 12px;
-  color: var(--text-dim);
-  letter-spacing: 0.08em;
-}
+.palette-hint { padding: 10px 12px; font-family: var(--serif); font-style: italic; color: var(--ink-soft); }
 
 .palette-item {
   display: flex;
   gap: 14px;
   padding: 10px 12px;
-  border-radius: 3px;
   cursor: pointer;
-  letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--hair);
+  transition: background 0.15s, padding 0.25s var(--ease-out);
 }
+.palette-item[data-selected='true'] { background: var(--ink); color: var(--paper); padding-left: 16px; }
+.palette-item[data-selected='true'] .palette-detail, .palette-item[data-selected='true'] .palette-tag { color: var(--paper-deep); }
 
-.palette-item[data-selected='true'] { background: rgba(92, 225, 255, 0.1); color: #e6f6ff; }
+.palette-verb { font-size: 10px; font-weight: 700; letter-spacing: 0.18em; line-height: 20px; color: var(--accent); }
+.palette-item[data-selected='true'] .palette-verb { color: var(--paper); }
 
-.palette-verb { color: #5ce1ff; letter-spacing: 0.24em; font-size: 11px; line-height: 18px; }
-
-.palette-list { max-height: min(360px, 50vh); overflow-y: auto; }
+.palette-list { max-height: min(380px, 50vh); overflow-y: auto; }
 
 .palette-suggestion { align-items: center; }
-
-/* Albums get a faint tint so they read apart from artists at a glance; the highlight still wins */
-.palette-suggestion[data-kind='album'] { background: rgba(92, 225, 255, 0.04); }
-.palette-suggestion[data-kind='album'][data-selected='true'] { background: rgba(92, 225, 255, 0.12); }
+.palette-suggestion[data-kind='album'] .palette-name > :first-child { font-family: var(--serif); font-size: 16px; font-weight: 500; }
 .palette-item[data-disabled='true'] { cursor: default; opacity: 0.45; }
 
 .palette-thumb {
   flex: none;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   object-fit: cover;
-  border: 1px solid rgba(92, 225, 255, 0.25);
-  border-radius: 2px;
-  background: rgba(92, 225, 255, 0.05);
+  background: var(--paper-deep);
+  box-shadow: 0 0 0 1px var(--hair-strong);
 }
+.palette-suggestion[data-kind='artist'] .palette-thumb { border-radius: 50%; }
 
 .palette-name {
   display: flex;
@@ -128,8 +117,7 @@
 
 .palette-detail {
   font-size: 11px;
-  letter-spacing: 0.08em;
-  color: var(--text-dim);
+  color: var(--ink-soft);
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -138,9 +126,10 @@
 
 .palette-tag {
   margin-left: auto;
-  font-size: 10px;
-  letter-spacing: 0.24em;
-  color: var(--text-dim);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--ink-faint);
 }
 
 /* Nothing typed yet: just the input, no empty list strip or divider under it */

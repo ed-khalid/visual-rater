@@ -1,55 +1,76 @@
+/* The contents page: what to rank. */
 .picker {
   position: fixed;
   inset: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
-  gap: 36px;
-  padding: 24px;
-  font-family: var(--font);
-  animation: picker-in 0.6s ease-out both;
+  width: min(720px, calc(100vw - 48px));
+  margin: 0 auto;
+  padding: 24px 0;
 }
 
-@keyframes picker-in {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: none; }
+.picker-kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
 }
 
 .picker-prompt {
-  font-size: 11px;
-  letter-spacing: 0.32em;
-  color: var(--text-dim);
+  margin: 10px 0 18px;
+  font-family: var(--serif);
+  font-size: clamp(38px, 7vw, 68px);
+  font-weight: 600;
+  line-height: 1.02;
+  letter-spacing: -0.02em;
+  color: var(--ink);
 }
 
-.picker-list {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
+.picker-rule { height: 3px; background: var(--ink); transform-origin: 0 50%; }
 
-/* Large, quiet words that light up; min 44px tall for touch */
+.picker-list { margin: 0; padding: 0; list-style: none; }
+.picker-list li { border-bottom: 1px solid var(--hair-strong); }
+
 .picker-type {
-  min-height: 52px;
-  padding: 8px 24px;
+  display: flex;
+  align-items: baseline;
+  gap: 22px;
+  width: 100%;
+  min-height: 64px;
+  padding: 14px 0;
   font: inherit;
-  font-size: clamp(22px, 5vw, 34px);
-  letter-spacing: 0.4em;
-  margin-right: -0.4em; /* letter-spacing adds a trailing gap; cancel it so words stay centred */
-  color: var(--text);
+  text-align: left;
+  color: var(--ink);
   background: none;
   border: none;
   cursor: pointer;
-  transition: color 0.2s, text-shadow 0.2s;
 }
-
-.picker-type:hover,
-.picker-type:focus-visible {
-  color: #e6f6ff;
-  text-shadow: 0 0 12px rgba(92, 225, 255, 0.9), 0 0 32px rgba(92, 225, 255, 0.45);
-  outline: none;
+.picker-number {
+  width: 2.2em;
+  font-family: var(--serif);
+  font-size: 15px;
+  font-style: italic;
+  color: var(--ink-faint);
+  transition: color 0.3s;
 }
+.picker-name {
+  flex: 1;
+  font-family: var(--serif);
+  font-size: clamp(30px, 5.4vw, 46px);
+  font-weight: 400;
+  letter-spacing: -0.015em;
+  text-transform: capitalize;
+  transition: transform 0.5s var(--ease-out), font-variation-settings 0.5s;
+}
+.picker-arrow {
+  font-size: 22px;
+  opacity: 0;
+  transform: translateX(-12px);
+  transition: opacity 0.3s, transform 0.5s var(--ease-out);
+}
+.picker-type:hover .picker-number, .picker-type:focus-visible .picker-number { color: var(--accent); }
+.picker-type:hover .picker-name, .picker-type:focus-visible .picker-name { transform: translateX(10px); font-style: italic; }
+.picker-type:hover .picker-arrow, .picker-type:focus-visible .picker-arrow { opacity: 1; transform: none; }
+.picker-type:focus-visible { outline: none; }

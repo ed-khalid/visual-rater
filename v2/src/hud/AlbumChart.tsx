@@ -87,7 +87,7 @@ export const AlbumChart = ({ tracks }: { tracks: ChartTrack[] }) => {
   const label = (t: ChartTrack) => multiDisc ? `${t.disc}-${t.number}` : String(t.number)
 
   return <figure className="album-chart" aria-label="Flow: song scores by track number">
-    <figcaption className="album-chart-title">FLOW</figcaption>
+    <figcaption className="album-chart-title">Flow</figcaption>
     <div ref={box} className="album-chart-plot"
       onPointerMove={e => pick(e.clientX)} onPointerDown={e => pick(e.clientX)} onPointerLeave={() => setHover(null)}>
       {width > 0 && <svg width={width} height={HEIGHT} role="img"

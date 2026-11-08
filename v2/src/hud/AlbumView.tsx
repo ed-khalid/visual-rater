@@ -16,7 +16,8 @@ export const AlbumView = () => {
   if (!id || !album) return null
   const artist = album.artistId ? s.artists[album.artistId]?.name : undefined
   const r = ratingOf(s, id)
-  return <section className="album-view" aria-label={`Album view: ${album.name}`}>
+  // Keyed by album, so switching albums plays the opening again.
+  return <section key={id} className="album-view" aria-label={`Album view: ${album.name}`}>
     <header className="album-view-title">
       {/* Three columns: the cover, the album's names and year, its grade (in its colour) beside its score; each full height. */}
       {album.image ? <img className="album-view-cover" src={album.image} alt="" draggable={false} />
@@ -31,7 +32,7 @@ export const AlbumView = () => {
           <div className="album-view-grade" style={{ background: r.tier.color }}>{r.tier.name}</div>
           <div className="album-view-score">{r.label}</div>
         </div>
-        : <div className="album-view-rating"><div className="album-view-score dim">UNRATED</div></div>}
+        : <div className="album-view-rating"><div className="album-view-score dim">Unrated</div></div>}
     </header>
     <AlbumPopup docked={id} />
   </section>

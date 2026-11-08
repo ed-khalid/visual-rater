@@ -30,7 +30,7 @@ const overLine = (top: Anchor | undefined, bottom: Anchor | undefined, x: number
 type Carry = { id: string, image?: string, x: number, y: number, over: boolean, pending: boolean }
 
 /**
- * The staging tray (MUSIC): albums in the database whose tracks aren't on the tree yet, as a list under the + key:
+ * The staging tray (MUSIC): albums in the database whose tracks aren't on the tree yet, as a list in the right-hand sidebar, under the reset key:
  * cover, artist, name, oldest first. Collapsed to its title to begin with; click the title to open or close it. Tap one for its tracklist (the popup and its trash icon pin beside the row). Drag
  * one onto the trunk (in split view, any rater's) to put its tracks on the tree and open album view on it, where they get rated
  * (albumDetails.addStagedAlbum); its cover follows the pointer and swells over the trunk. Let go anywhere else and
@@ -53,10 +53,9 @@ export const StagedList = () => {
     const tick = () => {
       const focus = ratingFocus.ids
       for (const [id, { row, thumb }] of rows.current) {
-        // The cover (the trash icon pins to it), as wide as the row, so the popup opens beside the row, not over its text.
-        const r = thumb.getBoundingClientRect(), w = row.getBoundingClientRect()
-        const x = r.left + r.width / 2
-        screenAnchors.set(id, { x, y: r.top + r.height / 2, r: r.width / 2, visible: r.height > 0, halfWidth: Math.max(r.width / 2, w.right - x) })
+        // The cover (the trash icon pins to it); the list is on the right, so popups open on its left.
+        const r = thumb.getBoundingClientRect()
+        screenAnchors.set(id, { x: r.left + r.width / 2, y: r.top + r.height / 2, r: r.width / 2, visible: r.height > 0, preferLeft: true })
         row.style.opacity = focus && !focus.has(id) ? String(1 - RATING_FADE) : ''
       }
       frame = requestAnimationFrame(tick)

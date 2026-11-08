@@ -1,0 +1,199 @@
+/* The board: the rater as a page. Ink spine, serif numerals, hairline scale, covers on leader lines. */
+.board { position: fixed; inset: 0; overflow: hidden; }
+
+.rater { position: absolute; left: 0; width: 0; }
+
+/* ── the scale: hairlines across the page every 10 points ── */
+.scale { position: absolute; inset: 0; pointer-events: none; }
+.scale-line {
+  position: absolute;
+  height: 1px;
+  background: var(--hair);
+  transform-origin: 50% 50%;
+}
+.scale-line.major { background: var(--hair-strong); }
+
+/* ── the spine ── */
+.spine-wrap { position: absolute; left: 0; top: 0; width: 0; }
+.spine {
+  position: absolute;
+  left: -1px;
+  top: 0;
+  width: 2px;
+  background: var(--ink);
+  transform-origin: 50% 100%;
+}
+.spine::before, .spine::after {
+  /* serif-like terminals at both ends */
+  content: '';
+  position: absolute;
+  left: -6px;
+  width: 14px;
+  height: 2px;
+  background: var(--ink);
+}
+.spine::before { top: 0; }
+.spine::after { bottom: 0; }
+.spine-number {
+  position: absolute;
+  right: 14px;
+  transform: translateY(-50%);
+  font-family: var(--serif);
+  font-size: 13px;
+  font-variant-numeric: lining-nums tabular-nums;
+  color: var(--ink-faint);
+  user-select: none;
+}
+.spine-number.major { color: var(--ink); font-weight: 600; font-size: 15px; }
+
+/* ── a mark: leader, cover, label ── */
+.mark { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+.mark-leader {
+  position: absolute;
+  top: -0.5px;
+  height: 1px;
+  background: var(--ink);
+}
+.mark-leader.right { left: 0; }
+.mark-leader.left { right: 0; }
+.mark.unrated .mark-leader { background: transparent; border-top: 1px dashed var(--ink-faint); }
+
+.mark-fruit {
+  position: absolute;
+  border-radius: 50%;
+  overflow: hidden;
+  background: var(--paper-deep);
+  box-shadow: 0 0 0 1.5px var(--paper), 0 0 0 3.5px var(--tier), 0 1px 3px rgba(21, 19, 16, 0.18);
+  cursor: grab;
+  touch-action: none;
+  transition: box-shadow 0.25s var(--ease-out), filter 0.3s;
+}
+.mark-fruit img, .mark-blank { display: block; width: 100%; height: 100%; object-fit: cover; pointer-events: none; }
+.mark.unrated .mark-fruit {
+  filter: grayscale(1) contrast(0.9);
+  opacity: 0.75;
+  box-shadow: 0 0 0 1.5px var(--paper), 0 0 0 2.5px var(--ink-faint);
+}
+.kind-artist .mark-fruit, .kind-album .mark-fruit { cursor: pointer; }
+.mark.lit .mark-fruit { box-shadow: 0 0 0 1.5px var(--paper), 0 0 0 3.5px var(--tier), 0 0 0 5px var(--ink), 0 4px 12px rgba(21, 19, 16, 0.25); }
+.mark.dragging .mark-fruit {
+  cursor: grabbing;
+  box-shadow: 0 0 0 1.5px var(--paper), 0 0 0 3.5px var(--ink), 0 10px 24px rgba(21, 19, 16, 0.3);
+}
+/* While dragging: a hairline across the page at the fruit's height, to read it against the scale. */
+.mark.dragging::before {
+  content: '';
+  position: absolute;
+  left: -100vw;
+  width: 200vw;
+  top: -0.5px;
+  height: 1px;
+  background: var(--accent);
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.mark-label {
+  position: absolute;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  translate: 0 -50%;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}
+.mark-label.right { left: 0; align-items: flex-start; }
+.mark-label.left { right: 0; align-items: flex-end; }
+.mark-name {
+  font-family: var(--sans);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.005em;
+  color: var(--ink);
+  background: linear-gradient(var(--paper), var(--paper)) padding-box;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+.mark.lit .mark-name { font-weight: 650; }
+.mark.unrated .mark-name { color: var(--ink-soft); font-style: italic; font-family: var(--serif); font-size: 13px; font-weight: 400; }
+.mark-tag {
+  font-size: 8.5px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  padding: 0 2px;
+}
+.kind-artist .mark-name, .kind-album .mark-name {
+  font-family: var(--serif);
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+.mark-sub {
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  padding: 0 2px;
+}
+
+/* ── split view: a row of raters that scrolls sideways ── */
+.split-scroller {
+  position: absolute;
+  left: 0;
+  right: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+}
+.split-scale { position: absolute; left: 0; height: 0; }
+
+.split-row {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  margin: 0;
+  list-style: none;
+}
+.split-column { position: relative; flex: none; list-style: none; }
+.split-rater { position: relative; left: 0; }
+.split-caption {
+  position: absolute;
+  left: -10px;
+  top: calc(100% + 14px);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  max-width: calc(100% - 4px);
+  padding: 6px 10px 8px;
+  border-top: 2px solid var(--ink);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+.split-caption:active { cursor: grabbing; }
+.split-caption-bar { width: 26px; height: 4px; background: var(--hair-strong); margin-bottom: 4px; }
+.split-caption-name {
+  font-family: var(--serif);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.15;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.split-caption-meta {
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.split-rater .spine-number { right: 12px; }

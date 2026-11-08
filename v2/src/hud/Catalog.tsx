@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { RATING_FADE, ratingFocus, screenAnchors, useView } from '../scene/view'
 import { rating, tracksOf } from '../state/board'
-import { albumScore } from '../state/scores'
-import { usePersisted, useStore } from '../state/store'
+import { albumScore, artistScore } from '../state/scores'
+import { usePersisted } from '../state/store'
 import './catalog.css'
 
 type Row = {
@@ -23,19 +23,18 @@ const byOrder = (order: Order) => (a: Row, b: Row) => {
 type Group = { artist?: Row, albums: Row[] }
 
 /**
- * The catalog (MUSIC): every artist and album in the database, on the tree or not, in a panel in the bottom-right
- * corner. (What's on the tree right now is hud/RaterContents.tsx, under the trunk.)
+ * The catalog (MUSIC): every artist and album in the database, on the tree or not, in the left-hand sidebar under the
+ * + key. Artists go best first (by artist score), unrated ones after. (What's on the rater right now is
+ * hud/RaterContents.tsx, under the spine.)
  * - click an album on the tree for album view (view.albumView, hud/AlbumView.tsx): every other album draws back into
- *   the trunk, the camera turns so its branches run out to the right and towards you, and its title and details fill
- *   the left half of the screen (the tree slides right to make room). Another album switches to that one; clicking it
+ *   the spine and its title and details fill the left half of the screen (the rater slides right to make room). Another album switches to that one; clicking it
  *   again, a click on empty space (with nothing open) or Esc leaves album view.
- * - click a staged album (dim, no score yet) for its tracklist, as a click on its floating sphere does.
+ * - click a staged album (dim, no score yet) for its tracklist.
  * Each album shows its score, each artist its score and letter grade (on a chip in the grade's colour), with a thin
  * bar in the grade's colour (v1's album and artist grades) before the thumbnail.
  * Each artist collapses to its own row (click it); albums go by year or by score (the switch at the top).
  * No hover behaviour (for now). Each thumbnail of something on the tree publishes its place on screen (screenAnchors),
- * so the popup and its trash icon pin to it (on its left) the way they pin to a sphere; a staged album's stay with its
- * floating sphere. In active rating, the rows not being rated fade.
+ * so the popup (to the right of the row) and its trash icon pin to it. In active rating, the rows not being rated fade.
  */
 export const Catalog = () => {
   const s = usePersisted()
@@ -60,8 +59,16 @@ export const Catalog = () => {
         ...(r.tier ? { label: r.label, color: r.tier.color, grade: r.tier.name } : {}) })
     }
     for (const g of byArtist.values()) g.albums.sort(byOrder(order))
-    // Albums with no artist go last.
-    return [...byArtist.entries()].sort(([a], [b]) => (a === '' ? 1 : 0) - (b === '' ? 1 : 0)).map(([, g]) => g)
+    // Artists best first, by artist score; unrated ones after them (by name), and albums with no artist last.
+    const tracks = Object.values(s.tracks)
+    const scoreOf = (id: string) => id ? artistScore(tracks.filter(t => t.artistId === id)) : undefined
+    const scores = new Map([...byArtist.keys()].map(k => [k, scoreOf(k)]))
+    return [...byArtist.entries()].sort(([a, ga], [b, gb]) =>
+      (a === '' ? 1 : 0) - (b === '' ? 1 : 0)
+      || (scores.get(a) === undefined ? 1 : 0) - (scores.get(b) === undefined ? 1 : 0)
+      || (scores.get(b) ?? 0) - (scores.get(a) ?? 0)
+      || (ga.artist?.name ?? '').localeCompare(gb.artist?.name ?? ''))
+      .map(([, g]) => g)
   }, [s, order])
 
   const rows = useRef(new Map<string, { row: HTMLElement, thumb: HTMLElement }>())
@@ -69,14 +76,15 @@ export const Catalog = () => {
   const ids = groups.flatMap(g => [...(g.artist ? [g.artist.id] : []), ...(shown(g) ? g.albums.filter(a => !a.staged).map(a => a.id) : [])])
   const key = ids.join(',')
 
-  // Every frame: publish each thumbnail's place, fade what isn't being rated.
+  // Every frame: publish each row's place, fade what isn't being rated.
   useEffect(() => {
     let frame = 0
     const tick = () => {
       const focus = ratingFocus.ids
       for (const [id, { row, thumb }] of rows.current) {
-        const r = thumb.getBoundingClientRect()
-        screenAnchors.set(id, { x: r.left + r.width / 2, y: r.top + r.height / 2, r: r.width / 2, visible: r.height > 0, preferLeft: true })
+        // The cover (the trash icon pins to it), as wide as the row, so the popup opens right of the row, not over it.
+        const r = thumb.getBoundingClientRect(), w = row.getBoundingClientRect(), x = r.left + r.width / 2
+        screenAnchors.set(id, { x, y: r.top + r.height / 2, r: r.width / 2, visible: r.height > 0, halfWidth: Math.max(r.width / 2, w.right - x) })
         row.style.opacity = focus && !focus.has(id) ? String(1 - RATING_FADE) : ''
       }
       frame = requestAnimationFrame(tick)
@@ -116,7 +124,7 @@ export const Catalog = () => {
   }, [])
 
   if (groups.length === 0) return null
-  return <nav className="catalog" aria-label="Catalog">
+  return <nav className={`catalog${viewing ? ' in-album-view' : ''}`} aria-label="Catalog">
     <div className="catalog-head">
       <span className="catalog-title">Catalog</span>
       <div className="catalog-order" role="radiogroup" aria-label="Order albums by">
@@ -149,16 +157,9 @@ export const Catalog = () => {
 
 /**
  * Album view of an album on the tree: from a click on its row here, or when a staged album is dropped on the tree
- * (that's how its new tracks get rated). The camera turns to 45° short of face-on: the album's branches run out to
- * the right and towards you (south-east, as the camera sees it). A branch at angle a points along (sin a, cos a);
- * from a camera at turn a − 45° that's 45° right of straight at you.
+ * (that's how its new tracks get rated). The rater slides right and only that album's songs stay on it.
  */
-export const enterAlbumView = (albumId: string) => {
-  const v = useView.getState()
-  const angle = tracksOf(useStore.getState(), albumId).find(t => t.branch && !t.hidden)?.branch!.angle
-  v.setAlbumView(albumId)
-  if (angle !== undefined) v.requestAzimuth(angle - Math.PI / 4)
-}
+export const enterAlbumView = (albumId: string) => { useView.getState().setAlbumView(albumId) }
 
 /** A thin bar in the grade's colour; empty when there's no score yet. */
 const Grade = ({ row }: { row: Row }) =>

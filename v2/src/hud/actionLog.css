@@ -1,19 +1,18 @@
-/* Under the item count, bottom-left */
+/* Under the item count, bottom-left: the last thing done, like a news ticker line. */
 .action-log {
   position: fixed;
-  bottom: 22px;
+  bottom: 18px;
   left: 28px;
   z-index: 10;
   max-width: calc(100vw - 56px);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-family: var(--font);
-  font-size: 9px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--text-dim);
+  font-family: var(--serif);
+  font-size: 13px;
+  font-style: italic;
+  color: var(--ink-soft);
   pointer-events: none;
 }
-.action-log span { animation: action-log-in 0.4s ease-out; }
-@keyframes action-log-in { from { opacity: 0; color: #e6f6ff; } to { opacity: 1; } }
+.action-log span { display: inline-block; animation: action-log-in 0.5s var(--ease-out); }
+@keyframes action-log-in { from { opacity: 0; transform: translateY(8px); color: var(--accent); } to { opacity: 1; transform: none; } }

@@ -1,47 +1,47 @@
-/* Small bordered button in the bottom-left corner, just above the item count (as the + key sits under the title) */
+/* A small ink key in the bottom-left corner, above the item count */
 .rubric-button {
   position: fixed;
-  bottom: 64px;
+  bottom: 66px;
   left: 28px;
   z-index: 15;
-  padding: 3px 9px 3px 11px;
-  font-family: var(--font);
-  font-size: 10px;
-  letter-spacing: 0.28em;
-  color: var(--text-dim);
-  background: rgb(6, 12, 20);
-  border: 1px solid rgba(159, 179, 200, 0.35);
-  border-radius: 3px;
+  padding: 5px 10px;
+  font-family: var(--sans);
+  font-size: 9.5px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--ink);
+  background: transparent;
+  border: 1.5px solid var(--ink);
   cursor: pointer;
+  transition: background 0.2s, color 0.2s;
 }
-
-.rubric-button:hover,
-.rubric-button:focus-visible,
-.rubric-button.open { color: #5ce1ff; border-color: rgba(92, 225, 255, 0.6); outline: none; }
+.rubric-button:hover, .rubric-button:focus-visible, .rubric-button.open { color: var(--paper); background: var(--ink); outline: none; }
 
 /* Fingers get a bigger target than the box shows */
 .rubric-button::after { content: ''; position: absolute; inset: -10px -6px; }
 
-/* Same glass panel as the album popup, opening upwards from the button; it stops short of the top-left HUD */
+/* A boxed key to the tiers, opening upwards from the button */
 .rubric {
   position: fixed;
-  bottom: 98px;
+  bottom: 104px;
   left: 28px;
   z-index: 20;
-  max-height: calc(100vh - 98px - 84px);
+  max-height: calc(100vh - 104px - 120px);
   display: flex;
   flex-direction: column;
-  width: min(260px, calc(100vw - 56px));
-  padding: 14px 6px 10px 16px;
-  font-family: var(--font);
-  color: var(--text);
-  background: rgb(6, 12, 20);
-  border: 1px solid rgba(92, 225, 255, 0.35);
-  border-radius: 4px;
-  box-shadow: 0 0 24px rgba(92, 225, 255, 0.12), inset 0 0 12px rgba(92, 225, 255, 0.05);
+  width: min(270px, calc(100vw - 56px));
+  padding: 16px 8px 12px 16px;
+  font-family: var(--sans);
+  color: var(--ink);
+  background: var(--paper-raised);
+  border: 1.5px solid var(--ink);
+  box-shadow: 5px 5px 0 var(--ink);
+  transform-origin: 0 100%;
+  animation: rubric-in 0.4s var(--ease-out) both;
 }
+@keyframes rubric-in { from { opacity: 0; transform: translateY(8px) scale(0.97); } to { opacity: 1; transform: none; } }
 
-.rubric-title { margin-bottom: 10px; font-size: 11px; letter-spacing: 0.28em; color: #e6f6ff; }
+.rubric-title { margin-bottom: 10px; font-family: var(--serif); font-size: 21px; font-weight: 600; letter-spacing: -0.01em; text-transform: capitalize; }
 
 .rubric-close {
   position: absolute;
@@ -50,49 +50,53 @@
   width: 40px;
   height: 40px;
   font: inherit;
-  font-size: 17px;
+  font-size: 20px;
+  font-weight: 300;
   line-height: 1;
-  color: var(--text-dim);
+  color: var(--ink);
   background: none;
   border: none;
   cursor: pointer;
+  transition: color 0.2s, transform 0.3s var(--ease-out);
 }
-
-.rubric-close:hover,
-.rubric-close:focus-visible { color: #5ce1ff; outline: none; }
+.rubric-close:hover, .rubric-close:focus-visible { color: var(--accent); transform: rotate(90deg); outline: none; }
 
 .rubric-tiers {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   margin: 0;
   padding: 0 10px 0 0;
   list-style: none;
   overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(92, 225, 255, 0.25) transparent;
 }
 
-.rubric-tiers { display: flex; flex-direction: column; gap: 2px; }
-
-/* Each tier in its v1 colour, white text as in v1; the faint edge keeps the near-black ones visible on the panel */
+/* Each tier on its own colour, white text */
 .rubric-tier {
   display: flex;
   justify-content: space-between;
   gap: 16px;
-  padding: 5px 8px;
-  font-size: 11px;
-  letter-spacing: 0.16em;
-  border: 1px solid rgba(230, 246, 255, 0.08);
-  border-radius: 2px;
+  padding: 5px 9px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  animation: rubric-tier-in 0.4s var(--ease-out) both;
 }
+.rubric-tier:nth-child(1) { animation-delay: 0.04s; } .rubric-tier:nth-child(2) { animation-delay: 0.06s; }
+.rubric-tier:nth-child(3) { animation-delay: 0.08s; } .rubric-tier:nth-child(4) { animation-delay: 0.1s; }
+.rubric-tier:nth-child(5) { animation-delay: 0.12s; } .rubric-tier:nth-child(6) { animation-delay: 0.14s; }
+.rubric-tier:nth-child(7) { animation-delay: 0.16s; } .rubric-tier:nth-child(8) { animation-delay: 0.18s; }
+.rubric-tier:nth-child(n + 9) { animation-delay: 0.2s; }
+@keyframes rubric-tier-in { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: none; } }
 
-.rubric-name { color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5); }
-.rubric-range { color: rgba(255, 255, 255, 0.78); letter-spacing: 0.08em; font-variant-numeric: tabular-nums; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5); }
+.rubric-name { color: #fff; }
+.rubric-range { color: rgba(255, 255, 255, 0.82); font-family: var(--serif); font-size: 12px; font-weight: 600; letter-spacing: 0; font-variant-numeric: lining-nums tabular-nums; }
 
-/* Phones: compact, so it stays in the space left of the trunk instead of covering it */
+/* Phones: compact, so it stays in the space left of the spine instead of covering it */
 @media (max-width: 600px) {
   .rubric { width: calc(50vw - 46px); padding: 10px 2px 8px 10px; }
-  .rubric-title { font-size: 9px; letter-spacing: 0.2em; margin-bottom: 6px; }
-  .rubric-close { width: 34px; height: 34px; font-size: 15px; }
+  .rubric-title { font-size: 15px; margin-bottom: 6px; }
+  .rubric-close { width: 34px; height: 34px; font-size: 16px; }
   .rubric-tiers { padding-right: 6px; }
-  .rubric-tier { gap: 6px; padding: 4px 5px; font-size: 9px; letter-spacing: 0.06em; }
-  .rubric-range { letter-spacing: 0; }
+  .rubric-tier { gap: 6px; padding: 4px 5px; font-size: 8.5px; letter-spacing: 0.06em; }
 }

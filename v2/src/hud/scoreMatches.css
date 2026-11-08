@@ -1,33 +1,33 @@
-/* Songs already rated at the score a dragged song is held on: a small card beside it, fading in. */
+/* Songs already rated at the score a dragged song is held on: a small boxed note beside it, fading in. */
 .score-matches {
   position: fixed;
   top: 0;
   left: 0;
   z-index: 22;
   visibility: hidden; /* until pinned on the first frame */
-  width: 248px;
-  padding: 6px;
+  width: 256px;
+  padding: 6px 8px;
   pointer-events: none;
-  font-family: var(--font);
-  color: var(--text);
-  background: rgb(6, 12, 20);
-  border: 1px solid rgba(92, 225, 255, 0.35);
-  border-radius: 4px;
-  box-shadow: 0 0 24px rgba(92, 225, 255, 0.12);
+  font-family: var(--sans);
+  color: var(--ink);
+  background: var(--paper-raised);
+  border: 1.5px solid var(--ink);
+  box-shadow: 4px 4px 0 var(--ink);
   will-change: transform;
   /* Fade only: transform is set inline every frame to pin it. */
   animation: score-matches-in 0.35s ease backwards;
 }
 @keyframes score-matches-in { from { opacity: 0; } }
 
-.score-match { display: flex; align-items: center; gap: 9px; padding: 5px 4px; }
-.score-match-thumb { flex: none; width: 26px; height: 26px; object-fit: cover; border-radius: 2px; background: rgba(92, 225, 255, 0.06); }
-.score-match-names { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.score-match { display: flex; align-items: center; gap: 9px; padding: 5px 2px; border-bottom: 1px solid var(--hair); }
+.score-match:last-child { border-bottom: none; }
+.score-match-thumb { flex: none; width: 28px; height: 28px; object-fit: cover; background: var(--paper-deep); }
+.score-match-names { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1; }
 .score-match-name, .score-match-detail { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.score-match-name { font-size: 12px; letter-spacing: 0.04em; color: #e6f6ff; }
-.score-match-detail { font-size: 10px; letter-spacing: 0.08em; color: var(--text-dim); }
-.score-match-score { font-size: 12px; letter-spacing: 0.08em; color: #5ce1ff; font-variant-numeric: tabular-nums; }
-/* the song's tier colour, as a thin bar */
-.score-match-tier { flex: none; width: 3px; height: 22px; border-radius: 1px; }
+.score-match-name { font-family: var(--serif); font-size: 14px; font-weight: 500; }
+.score-match-detail { font-size: 10px; color: var(--ink-soft); }
+.score-match-score { font-family: var(--serif); font-size: 16px; font-weight: 600; font-variant-numeric: lining-nums tabular-nums; }
+/* the song's tier colour, as a bar */
+.score-match-tier { flex: none; width: 3px; height: 26px; }
 
 @media (prefers-reduced-motion: reduce) { .score-matches { animation: none; } }

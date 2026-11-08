@@ -1,15 +1,14 @@
 import type { Persisted } from '../shared/model'
 import { UNRATED_POSITION } from './board'
-import { ALIGN_MIN_LENGTH, FRUIT_RADIUS, MAX_BRANCH_LENGTH, TRUNK_HEIGHT } from './layout'
 import { albumScore, artistScore } from './scores'
 
 /**
- * MUSIC's default view: a read-only rater of artists. Click an artist and its fruit (and every other artist's) draw
- * back into the trunk, then that artist's albums come out instead. Nothing here is stored or dragged: each node's
- * height is worked out from its tracks' scores and its branch is laid out fresh (spreadNodes) every time.
+ * MUSIC's default view: a read-only rater of artists. Click an artist and every artist draws back into the spine,
+ * then that artist's albums come out instead. Nothing here is stored or dragged: each node's height is worked out
+ * from its tracks' scores, and the board places it fresh (state/place.ts) every time.
  *
  * - Artists: those with an album on the tree (not hidden from the rater contents). Height: the artist score itself,
- *   capped at 100 (artist scores are open-ended); unrated (none of their tracks rated) sit mid-trunk.
+ *   capped at 100 (artist scores are open-ended); unrated (none of their tracks rated) sit mid-spine.
  * - Albums of one artist: those on the tree and not hidden. Height: the album score.
  */
 export type DrillNode = { id: string, kind: 'artist' | 'album', name: string, image?: string, colors?: string[], score?: number, position: number }
@@ -35,28 +34,4 @@ export const albumNodes = (s: Persisted, hidden: ReadonlySet<string>, artistId: 
     const score = albumScore(tracks.filter(t => t.albumId === a.id))
     return { id: a.id, kind: 'album', name: a.name, image: a.image, colors: a.colors, score, position: positionFor(score) }
   })
-}
-
-/** Right of the trunk from the front view, and left (branch angles: a branch at angle a points along (sin a, cos a)). */
-const RIGHT = Math.PI / 2, LEFT = -Math.PI / 2
-
-/**
- * A branch for each node, on the main plane: each goes on whichever side has fewer so far (ties: right), on the
- * shortest stem that keeps it clear of the nodes already on that side (`radius`: the nodes' drawn radius).
- */
-export const spreadNodes = (nodes: { id: string, position: number }[], radius = FRUIT_RADIUS): Map<string, { angle: number, length: number }> => {
-  const placed: { side: number, y: number, length: number }[] = []
-  const out = new Map<string, { angle: number, length: number }>()
-  const gap = radius * 2 + 0.12
-  for (const n of nodes) {
-    const y = n.position * TRUNK_HEIGHT
-    const count = (side: number) => placed.filter(p => p.side === side).length
-    const side = count(RIGHT) <= count(LEFT) ? RIGHT : LEFT
-    const near = placed.filter(p => p.side === side && Math.abs(p.y - y) < gap)
-    let length = Math.max(ALIGN_MIN_LENGTH, radius + 0.5)
-    while (length < MAX_BRANCH_LENGTH && near.some(p => Math.hypot(p.length - length, p.y - y) < gap)) length += gap / 2
-    placed.push({ side, y, length })
-    out.set(n.id, { angle: side, length })
-  }
-  return out
 }

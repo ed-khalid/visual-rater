@@ -1,47 +1,46 @@
-/* What's on the rater right now: centred just under the bottom of the trunk. */
+/* What's on the rater right now: a caption centred just under the bottom of the spine. */
 .rater-contents {
   position: fixed;
   top: 0;
   left: 0;
   z-index: 10;
-  visibility: hidden; /* until pinned under the trunk on the first frame */
+  visibility: hidden; /* until pinned under the spine on the first frame */
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  font-family: var(--font);
-  font-size: 9px;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--text-dim);
+  gap: 8px;
+  font-family: var(--sans);
+  color: var(--ink-soft);
   white-space: nowrap;
   user-select: none;
   will-change: transform;
+  animation: contents-in 0.8s 0.5s var(--ease-out) both;
 }
-.rater-contents-title { color: var(--text); }
-.rater-contents-count { color: var(--text-dim); letter-spacing: 0.16em; }
+@keyframes contents-in { from { opacity: 0; } to { opacity: 1; } }
+.rater-contents-title { font-size: 9.5px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: var(--ink); }
+.rater-contents-count { font-family: var(--serif); font-size: 13px; font-style: italic; font-weight: 400; letter-spacing: 0; text-transform: none; color: var(--ink-soft); }
 
-.rater-contents-groups { display: flex; align-items: flex-end; gap: 14px; }
+.rater-contents-groups { display: flex; align-items: flex-end; gap: 16px; }
 /* One artist: their name over their albums' covers. */
-.rater-contents-group { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 26px; }
+.rater-contents-group { display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 28px; }
 .rater-contents-artist {
   /* never wider than the covers under it, unless it's a single cover */
-  max-width: max(100%, 72px);
+  max-width: max(100%, 80px);
   min-height: 20px;
   padding: 0 2px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font: inherit;
-  font-size: 8px;
-  letter-spacing: 0.16em;
-  text-transform: inherit;
-  color: var(--text-dim);
+  font-family: var(--serif);
+  font-size: 12px;
+  font-style: italic;
+  color: var(--ink-soft);
   background: none;
   border: none;
   cursor: pointer;
+  transition: color 0.2s;
 }
-.rater-contents-artist:hover, .rater-contents-artist:focus-visible { color: var(--text); outline: none; }
+.rater-contents-artist:hover, .rater-contents-artist:focus-visible { color: var(--ink); outline: none; }
 .rater-contents-artist.off { opacity: 0.45; text-decoration: line-through; }
 .rater-contents-covers { display: flex; align-items: center; gap: 6px; }
 .rater-contents-cover {
@@ -53,35 +52,34 @@
   background: none;
   border: none;
   cursor: pointer;
-  transition: opacity 0.3s;
+  transition: opacity 0.3s, transform 0.3s var(--ease-out);
 }
+.rater-contents-cover:hover { transform: translateY(-3px); }
 .rater-contents-cover img,
 .rater-contents-blank {
   display: block;
-  width: 26px;
-  height: 26px;
+  width: 28px;
+  height: 28px;
   object-fit: cover;
-  border-radius: 3px;
-  background: rgba(47, 143, 176, 0.35);
-  transition: box-shadow 0.2s;
+  background: var(--paper-deep);
+  box-shadow: 0 0 0 1px var(--hair-strong);
+  transition: box-shadow 0.2s, filter 0.3s;
 }
 /* bigger hit area for fingers */
 .rater-contents-cover::after { content: ''; position: absolute; inset: -9px -3px; }
-/* its album grade, as a thin bar under the cover; faint when unrated */
-.rater-contents-grade { height: 2px; border-radius: 1px; background: rgba(92, 225, 255, 0.12); }
+/* its album grade, as a bar under the cover; faint when unrated */
+.rater-contents-grade { height: 3px; background: var(--hair); }
 
-/* Branches facing the camera right now */
-.rater-contents-cover.facing img,
-.rater-contents-cover.facing .rater-contents-blank { box-shadow: 0 0 0 1px rgba(92, 225, 255, 0.7), 0 0 10px rgba(92, 225, 255, 0.35); }
 .rater-contents-cover:focus-visible { outline: none; }
-.rater-contents-cover:focus-visible img { box-shadow: 0 0 0 1px #e6f6ff; }
-/* Album view: the album on its own stands out; the others step back */
-.rater-contents-cover.viewing img { box-shadow: 0 0 0 2px #5ce1ff, 0 0 12px rgba(92, 225, 255, 0.5); }
-/* Hidden from the tree for now */
+.rater-contents-cover:focus-visible img { box-shadow: 0 0 0 1.5px var(--ink); }
+/* Album view: the album on its own stands out in ink */
+.rater-contents-cover.viewing img { box-shadow: 0 0 0 1.5px var(--paper), 0 0 0 3px var(--ink); }
+/* Hidden from the rater for now */
 .rater-contents-cover.off { opacity: 0.35; }
 .rater-contents-cover.off img { filter: grayscale(1); }
 
-.rater-contents-more { font-size: 10px; letter-spacing: 0.08em; color: var(--text-dim); }
+.rater-contents-more { font-family: var(--serif); font-size: 13px; font-style: italic; color: var(--ink-soft); }
 
 /* Phones: album view's title card takes this spot, and already says which album it is. */
 @media (max-width: 640px) { .rater-contents.in-album-view { display: none; } }
+@media (min-width: 641px) { .rater-contents.in-album-view { align-items: flex-start; } }

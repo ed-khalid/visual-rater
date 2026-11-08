@@ -1,34 +1,39 @@
-/* Album view: the scores-by-track line chart under the tracklist. Grid and axes stay recessive; the line carries it. */
-.album-chart { flex: none; margin: 8px 8px 0 0; padding-top: 10px; border-top: 1px solid rgba(92, 225, 255, 0.15); }
-.album-chart-title { margin-bottom: 4px; font-size: 10px; letter-spacing: 0.24em; color: var(--text-dim); }
+/* Album view: the scores-by-track line chart under the tracklist. Grid and axes recessive; the ink line carries it. */
+.album-chart { flex: none; margin: 10px 8px 0 0; padding-top: 10px; border-top: 1px solid var(--ink); }
+.album-chart-title {
+  margin-bottom: 6px;
+  font-family: var(--serif);
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
 .album-chart-plot { position: relative; touch-action: none; cursor: crosshair; }
 .album-chart svg { display: block; overflow: visible; }
 
-.album-chart-grid { stroke: rgba(92, 225, 255, 0.08); stroke-width: 1; }
-.album-chart-grid.base { stroke: rgba(92, 225, 255, 0.22); }
-.album-chart-tick { fill: var(--text-dim); font-family: var(--font); font-size: 9px; letter-spacing: 0.06em; }
-.album-chart-cross { stroke: rgba(230, 246, 255, 0.35); stroke-width: 1; stroke-dasharray: 2 3; }
-.album-chart-line { fill: none; stroke: #5ce1ff; stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
-/* A ring in the panel's own colour keeps each dot clear of the line. */
-.album-chart-dot { stroke: rgb(6, 12, 20); stroke-width: 2; transition: r 0.12s; }
+.album-chart-grid { stroke: var(--hair); stroke-width: 1; }
+.album-chart-grid.base { stroke: var(--ink); stroke-width: 1.5; }
+.album-chart-tick { fill: var(--ink-soft); font-family: var(--serif); font-size: 11px; font-variant-numeric: lining-nums tabular-nums; }
+.album-chart-cross { stroke: var(--ink-soft); stroke-width: 1; stroke-dasharray: 2 3; }
+.album-chart-line { fill: none; stroke: var(--ink); stroke-width: 2; stroke-linejoin: round; stroke-linecap: round; }
+/* A paper ring keeps each dot clear of the line. */
+.album-chart-dot { stroke: var(--paper); stroke-width: 2; transition: r 0.12s; }
 
 .album-chart-tip {
   position: absolute;
   z-index: 1;
   transform: translate(-50%, calc(-100% - 12px));
-  padding: 6px 9px;
+  padding: 7px 10px;
   white-space: nowrap;
   pointer-events: none;
-  background: rgb(3, 5, 10);
-  border: 1px solid rgba(92, 225, 255, 0.35);
-  border-radius: 3px;
+  color: var(--paper);
+  background: var(--ink);
   font-size: 11px;
-  letter-spacing: 0.04em;
 }
-.album-chart-tip-name { color: var(--text); }
-.album-chart-tip-value { display: flex; align-items: center; gap: 6px; margin-top: 3px; color: #e6f6ff; font-variant-numeric: tabular-nums; }
-.album-chart-tip-swatch { width: 8px; height: 8px; margin-left: 4px; border-radius: 2px; }
+.album-chart-tip-name { font-family: var(--serif); font-size: 13px; font-weight: 500; }
+.album-chart-tip-value { display: flex; align-items: center; gap: 6px; margin-top: 3px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.album-chart-tip-swatch { width: 9px; height: 9px; margin-left: 4px; }
 
 /* Tier chips in the docked tracklist. */
-.album-popup-docked .album-track-tier { min-width: 84px; text-align: center; box-sizing: border-box; margin-left: 10px; padding: 1px 6px; border-radius: 3px; font-size: 9px; letter-spacing: 0.08em; color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5); }
+.album-popup-docked .album-track-tier { min-width: 84px; text-align: center; box-sizing: border-box; margin-left: 10px; padding: 2px 6px; font-size: 9px; font-weight: 700; letter-spacing: 0.1em; color: #fff; }
 .album-popup-docked .album-track-time { display: inline-flex; align-items: baseline; }

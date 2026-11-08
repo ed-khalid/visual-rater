@@ -9,9 +9,9 @@ export const Connection = ({ children }: { children: React.ReactNode }) => {
   const status = useSync(s => s.status)
   const error = useSync(s => s.error)
 
-  if (status === 'loading') return <div className="connection" aria-live="polite">LOADING</div>
+  if (status === 'loading') return <div className="connection" aria-live="polite">Loading…</div>
   if (status === 'offline') return <div className="connection" role="alert">
-    <span>CAN&apos;T REACH THE SERVER</span>
+    <span>Can&apos;t reach the server.</span>
     <button className="connection-retry" onClick={() => void startSync()}>RETRY</button>
   </div>
   return <>

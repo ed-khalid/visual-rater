@@ -3,17 +3,9 @@ import { create } from 'zustand'
 export type Phase = 'tree' | 'to-list' | 'list' | 'to-tree'
 
 type View = {
-  /** Counts up each time the reset button is pressed; the camera rig watches it. */
+  /** Counts up each time the reset button is pressed: the split row scrolls back to its start. */
   resetRequests: number
   requestReset: () => void
-  /**
-   * Turn the camera to face a branch direction (radians, as stored on a branch): it glides round the vertical axis
-   * until that branch's plane is face-on, whichever way round is nearer. The camera rig watches `seq`.
-   */
-  faceRequest: { angle: number, seq: number } | { azimuth: number, seq: number } | null
-  requestFace: (angle: number) => void
-  /** Turn the camera round the vertical axis to exactly this turn (radians, as cameraAzimuth), keeping the distance. */
-  requestAzimuth: (azimuth: number) => void
   /** The item under the pointer, if any (drives the hover card). */
   hoveredId: string | null
   setHovered: (id: string | null) => void
@@ -31,7 +23,7 @@ type View = {
   editing: boolean
   setEditing: (editing: boolean) => void
   /**
-   * The tree (3D rater) or the list (a plain table of everything on the tree, best first), and the transitions
+   * The tree (the rater) or the list (a plain table of everything on the tree, best first), and the transitions
    * between them: to-list (branches and fruit sink into the trunk, then the list opens out from the trunk line),
    * to-tree (the list closes back into the line, then the branches grow out again).
    */
@@ -45,9 +37,8 @@ type View = {
    */
   /**
    * Album view (MUSIC): the album picked in the catalog or the rater contents. Every other album's branches and fruit draw back
-   * into the trunk (as for the list view), so only its tracks are on the tree. Null: everything shows. Leaving it,
-   * however that happens, glides the camera home (as the reset button does), undoing album view's turn. While it's
-   * on, the picture slides right (CameraReset's view offset) to make room for the album's title and details.
+   * into the trunk (as for the list view), so only its tracks are on the tree. Null: everything shows. While it's on,
+   * the rater slides right to make room for the album's title and details.
    */
   albumView: string | null
   setAlbumView: (id: string | null) => void
@@ -63,7 +54,7 @@ type View = {
   startRating: (ids: string[]) => void
   endRating: () => void
   /**
-   * Split view (MUSIC; state/split.ts): every album on its own rater, in a row, and the camera can pan. Album view and
+   * Split view (MUSIC; state/split.ts): every album on its own rater, in a row that scrolls sideways. Album view and
    * the list view put them back on the one tree while they're up (isSplit). Not saved.
    */
   split: boolean
@@ -76,22 +67,17 @@ type View = {
   /** The last thing done on the read-only rater, shown under the item count (hud/ActionLog). */
   lastAction: { text: string, seq: number } | null
   logAction: (text: string) => void
-  /** Raters moved by hand in split view (dragged by their trunk), by rater key: where each now stands on the floor. */
-  raterPlaces: Readonly<Record<string, { x: number, z: number }>>
-  moveRater: (key: string, x: number, z: number) => void
-  clearRaterPlaces: () => void
+  /** Split view's raters in the order they were dragged into, by rater key (null: the order they went on the tree). */
+  raterOrder: readonly string[] | null
+  setRaterOrder: (order: readonly string[] | null) => void
 }
 
 /**
- * UI state shared between the page and the 3D view (which lives inside the canvas and can't be reached
- * directly). Not persisted.
+ * UI state shared between the board and the overlays around it. Not persisted.
  */
 export const useView = create<View>()(set => ({
   resetRequests: 0,
   requestReset: () => set(s => ({ resetRequests: s.resetRequests + 1 })),
-  faceRequest: null,
-  requestFace: angle => set(s => ({ faceRequest: { angle, seq: (s.faceRequest?.seq ?? 0) + 1 } })),
-  requestAzimuth: azimuth => set(s => ({ faceRequest: { azimuth, seq: (s.faceRequest?.seq ?? 0) + 1 } })),
   hiddenAlbums: new Set(),
   toggleAlbumsHidden: ids => set(s => {
     const next = new Set(s.hiddenAlbums), all = ids.every(id => next.has(id))
@@ -115,9 +101,7 @@ export const useView = create<View>()(set => ({
     : s.phase === 'list' ? { phase: 'to-tree' } : s),
   setPhase: phase => set({ phase }),
   albumView: null,
-  setAlbumView: id => set(s => id === null && s.albumView !== null
-    ? { albumView: null, resetRequests: s.resetRequests + 1 }
-    : { albumView: id }),
+  setAlbumView: id => set({ albumView: id }),
   split: false,
   setSplit: split => set({ split }),
   drill: null,
@@ -128,9 +112,8 @@ export const useView = create<View>()(set => ({
   }),
   lastAction: null,
   logAction: text => set(s => ({ lastAction: { text, seq: (s.lastAction?.seq ?? 0) + 1 } })),
-  raterPlaces: {},
-  moveRater: (key, x, z) => set(s => ({ raterPlaces: { ...s.raterPlaces, [key]: { x, z } } })),
-  clearRaterPlaces: () => set({ raterPlaces: {} }),
+  raterOrder: null,
+  setRaterOrder: raterOrder => set({ raterOrder }),
   rating: null,
   startRating: ids => set(s => ids.length ? { rating: [...new Set([...(s.rating ?? []), ...ids])] } : s),
   endRating: () => set({ rating: null }),
@@ -145,7 +128,7 @@ export const ratingFocus: { ids: Set<string> | null } = { ids: null }
 export const RATING_FADE = 0.82
 
 /**
- * Where things are on screen right now (CSS px): centre and apparent radius. Written by 3D objects every frame,
+ * Where things are on screen right now (CSS px): centre and apparent radius. Written by the board (scene/anchors.ts) every frame,
  * read by page overlays (hover card, popup) every frame, so they stay pinned while the view moves.
  */
 export const screenAnchors = new Map<string, { x: number, y: number, r: number, visible: boolean, /** pinned overlays go on its left when they fit there (rows of the catalog) */ preferLeft?: boolean, /** half its width, if wider than r (a list row): popups go beside it, not over it */ halfWidth?: number }>()
@@ -153,17 +136,6 @@ export const screenAnchors = new Map<string, { x: number, y: number, r: number, 
 /** The live score (0–100) of the fruit being dragged, written every frame while dragging; read by the drag readout. */
 export const liveScores = new Map<string, number>()
 
-/** The camera's turn round the vertical axis right now (radians, 0 = the starting view), written every frame by the camera rig. */
-export const cameraAzimuth = { value: 0 }
-
-/** Shortest signed turn from one angle to another. */
-export const angleDelta = (from: number, to: number) => Math.atan2(Math.sin(to - from), Math.cos(to - from))
-
-/** The camera turn that shows a branch's plane face-on, from whichever side is nearer `from`. */
-export const facingAzimuth = (branchAngle: number, from: number) => {
-  const a = branchAngle - Math.PI / 2, b = branchAngle + Math.PI / 2
-  return Math.abs(angleDelta(from, a)) <= Math.abs(angleDelta(from, b)) ? a : b
-}
 
 /** Key in screenAnchors for the top of the trunk (published by Axis), where the tree/list switch sits. */
 export const TRUNK_TOP_ANCHOR = '__trunk-top'
@@ -173,7 +145,7 @@ export const TRUNK_BOTTOM_ANCHOR = '__trunk-bottom'
 
 /**
  * How far the tree has sunk into its trunk for the list view: 0 = fully out, 1 = every branch and fruit drawn in.
- * Eased over COLLAPSE_SECONDS by the stage (CollapseDriver); read every frame by the fruit and floating spheres.
+ * Eased over COLLAPSE_SECONDS by the board (Board's CollapseDriver); the list view waits for it.
  */
 export const collapse = { value: 0 }
 /** The list view waits for the collapse to finish before it opens. */
@@ -182,14 +154,8 @@ export const COLLAPSE_SECONDS = 0.3
 /** Whether the raters stand apart right now: split view is on, and neither album view nor the list view is up. */
 export const isSplit = (v: Pick<View, 'split' | 'albumView' | 'phase'>) => v.split && !v.albumView && v.phase === 'tree'
 
-/** How far apart the raters are: 0 one tree, 1 split. Eased by the stage (Raters) towards isSplit. */
-export const splitness = { value: 0 }
-
-/**
- * Where each rater is right now, by rater key (state/split.raterKey), eased between the one tree (all at the origin,
- * no turn) and the row: written every frame by Raters, read by the fruit. `keys`: the raters standing in the row.
- */
-export const raterNow = { places: new Map<string, { x: number, z: number, turn: number }>(), keys: [] as string[] }
+/** The raters standing in split view's row right now, by rater key (state/split.raterKey), in order. */
+export const raterNow = { keys: [] as string[] }
 /** Key in screenAnchors for a rater's trunk top and bottom, in split view. */
 export const raterTopAnchor = (key: string) => `__rater-top:${key}`
 export const raterBottomAnchor = (key: string) => `__rater-bottom:${key}`

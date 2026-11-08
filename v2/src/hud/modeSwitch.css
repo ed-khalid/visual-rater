@@ -1,18 +1,19 @@
-/* TREE ⟷ LIST slider above the top of the trunk */
+/* TREE ⟷ LIST above the top of the spine: two words, the current one underlined in ink. */
 .mode-switch {
   position: fixed;
   top: 0;
   left: 0;
   z-index: 15;
-  visibility: hidden; /* until pinned to the trunk on the first frame */
+  visibility: hidden; /* until pinned to the spine on the first frame */
   display: flex;
   align-items: center;
-  gap: 9px;
+  gap: 10px;
   padding: 4px 6px;
-  font-family: var(--font);
+  font-family: var(--sans);
   font-size: 10px;
-  letter-spacing: 0.28em;
-  color: var(--text-dim);
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--ink-faint);
   background: none;
   border: none;
   cursor: pointer;
@@ -21,33 +22,41 @@
 /* Fingers get a bigger target than the switch shows */
 .mode-switch::after { content: ''; position: absolute; inset: -12px -4px; }
 
-.mode-switch-label { transition: color 0.2s; }
-.mode-switch-label.on { color: #5ce1ff; }
+.mode-switch-label { position: relative; padding-bottom: 3px; transition: color 0.25s; }
+.mode-switch-label::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0.2em;
+  bottom: 0;
+  height: 2px;
+  background: var(--ink);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform 0.35s var(--ease-out);
+}
+.mode-switch-label.on { color: var(--ink); }
+.mode-switch-label.on::after { transform: scaleX(1); }
 
+/* The slider between them: a thin ink track, a dot that slides. */
 .mode-switch-track {
   position: relative;
-  width: 30px;
-  height: 14px;
-  background: rgb(6, 12, 20);
-  border: 1px solid rgba(92, 225, 255, 0.45);
+  width: 28px;
+  height: 12px;
+  border: 1.5px solid var(--ink);
   border-radius: 7px;
-  transition: border-color 0.2s;
 }
-
 .mode-switch-thumb {
   position: absolute;
-  top: 2px;
+  top: 1.5px;
   left: 2px;
-  width: 8px;
-  height: 8px;
-  background: #5ce1ff;
+  width: 6px;
+  height: 6px;
+  background: var(--ink);
   border-radius: 50%;
-  box-shadow: 0 0 6px rgba(92, 225, 255, 0.8);
-  transition: transform 0.2s ease;
+  transition: transform 0.35s var(--ease-out);
 }
-
-.mode-switch[aria-checked='true'] .mode-switch-thumb { transform: translateX(16px); }
-
-.mode-switch:hover .mode-switch-track,
-.mode-switch:focus-visible .mode-switch-track { border-color: #5ce1ff; }
+.mode-switch[aria-checked='true'] .mode-switch-thumb { transform: translateX(14px); }
+.mode-switch:hover .mode-switch-thumb { background: var(--accent); }
 .mode-switch:focus-visible { outline: none; }
+.mode-switch:focus-visible .mode-switch-track { border-color: var(--accent); }

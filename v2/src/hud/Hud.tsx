@@ -12,7 +12,6 @@ import { ModeSwitch } from './ModeSwitch'
 import { Catalog } from './Catalog'
 import { RaterContents } from './RaterContents'
 import { StagedList } from './StagedList'
-import { RaterLabels } from './RaterLabels'
 import { ActionLog } from './ActionLog'
 import { RatingWatch } from './RatingWatch'
 import { Rubric } from './Rubric'
@@ -27,25 +26,24 @@ export const Hud = () => {
   const count = useStore(s => s.activeType ? treeNodes(s, s.activeType).length : 0)
   const closeBoard = useStore(s => s.closeBoard)
   const requestReset = useView(s => s.requestReset)
-  const flattenBoard = useStore(s => s.flattenBoard)
-  // Reset: the camera glides home and every branch swings onto the main plane, left or right of the trunk; in split
-  // view the raters also go back into their row.
-  const resetView = () => { flattenBoard(); useView.getState().clearRaterPlaces(); useView.getState().setDrill(null); requestReset() }
+  // Reset: back to the artists, and in split view the raters go back into their order and the row to its start.
+  const resetView = () => { useView.getState().setRaterOrder(null); useView.getState().setDrill(null); requestReset() }
   const phase = useView(s => s.phase)
   const listing = phase !== 'tree'
   const split = useView(s => s.split)
   const setSplit = useView(s => s.setSplit)
   // Split view is MUSIC's, and only for the tree that's open.
-  useEffect(() => { const v = useView.getState(); v.setSplit(false); v.clearRaterPlaces(); v.setDrill(null) }, [activeType])
+  useEffect(() => { const v = useView.getState(); v.setSplit(false); v.setRaterOrder(null); v.setDrill(null) }, [activeType])
 
   return <>
     {!board && <TypePicker />}
     <div className="hud">
       {board
-        ? <button className="hud-tl hud-home" onClick={closeBoard} title="Back to types">VISUAL&nbsp;RATER <span className="dim">// v2</span></button>
-        : <div className="hud-tl">VISUAL&nbsp;RATER <span className="dim">// v2</span></div>}
+        ? <button className="hud-tl hud-home" onClick={closeBoard} title="Back to contents">Visual Rater</button>
+        : <div className="hud-tl">Visual Rater</div>}
+      <div className="hud-rule" aria-hidden="true" />
       {board && <>
-        <div className="hud-tr dim">{board.name}</div>
+        <div className="hud-tr" key={board.id}>{board.name.toLowerCase()}</div>
         {!listing && <button className="hud-key hud-reset" onClick={resetView} title="Reset" aria-label="Reset view and layout">
           {/* Same box as the + button: an invisible "ADD" sets the width, the icon sits centred over it. */}
           <span className="hud-key-sizer" aria-hidden="true">ADD</span>
@@ -67,7 +65,7 @@ export const Hud = () => {
             </svg>
           </span>
         </button>}
-        <div className="hud-bl dim">{String(count).padStart(3, '0')} ITEMS</div>
+        <div className="hud-bl"><span className="hud-count" key={count}>{count}</span> {count === 1 ? 'item' : 'items'}</div>
         <button className="hud-key" onClick={() => setPaletteOpen(true)} title={`Add an item (${shortcutLabel})`} aria-label="Add an item">
           {/* An invisible "ADD" keeps the button its original width; the + sits centred over it. */}
           <span className="hud-key-sizer" aria-hidden="true">ADD</span>
@@ -80,7 +78,7 @@ export const Hud = () => {
     {board && <RatingWatch />}
     {board && listing && <ListView />}
     {board && !listing && <RaterContents />}
-    {board && !listing && activeType === 'music' && <><StagedList /><Catalog /><AlbumView /><RaterLabels /><ActionLog /></>}
+    {board && !listing && activeType === 'music' && <><StagedList /><Catalog /><AlbumView /><ActionLog /></>}
     {board && !listing && <><ItemHoverCard /><DragScore /><ScoreMatches /><AlbumPopup /><ItemTrash /></>}
     {board && <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />}
   </>

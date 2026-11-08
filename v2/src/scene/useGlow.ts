@@ -2,18 +2,25 @@ import { useEffect } from 'react'
 import { find } from '../state/board'
 import { useStore } from '../state/store'
 import { dominantColor, fromHex, glowColor, toHex } from './color'
-import { loadCover } from './CoverSphere'
 
 /** Sample size: covers are shrunk to this many pixels a side before picking a colour. */
 const SAMPLE = 32
 /** Dominant colour per cover URL, so an album's tracks (same cover) only work it out once. */
 const byUrl = new Map<string, Promise<string | null>>()
 
+/** Loads a cover so its pixels can be read (Spotify's image server allows that across origins). */
+const loadImage = (url: string) => new Promise<HTMLImageElement>((resolve, reject) => {
+  const img = new Image()
+  img.crossOrigin = 'anonymous'
+  img.onload = () => resolve(img)
+  img.onerror = reject
+  img.src = url
+})
+
 /** A cover image's dominant colour as '#rrggbb', or null if it can't be read. */
 export const dominantColorOfCover = (url: string): Promise<string | null> => {
   if (!byUrl.has(url)) {
-    byUrl.set(url, loadCover(url).then(texture => {
-      const image = texture.image as CanvasImageSource
+    byUrl.set(url, loadImage(url).then(image => {
       const canvas = document.createElement('canvas')
       canvas.width = canvas.height = SAMPLE
       const ctx = canvas.getContext('2d', { willReadFrequently: true })

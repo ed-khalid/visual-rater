@@ -1,8 +1,62 @@
+@import '@fontsource-variable/newsreader/opsz.css';
+@import '@fontsource-variable/newsreader/opsz-italic.css';
+@import '@fontsource-variable/inter/opsz.css';
+
+/*
+ * A magazine page: warm paper, black ink, hairline rules, one red. Headlines and numbers are set in Newsreader (an
+ * editorial serif); labels, captions and controls in Inter, small caps-like with letter-spacing.
+ */
+:root {
+  --paper: #efe9de;
+  --paper-deep: #e5ddcf;
+  --paper-raised: #f6f2ea;
+  --ink: #151310;
+  --ink-soft: #5f584e;
+  --ink-faint: #9a9184;
+  --hair: rgba(21, 19, 16, 0.14);
+  --hair-strong: rgba(21, 19, 16, 0.32);
+  --accent: #b3261e;
+  --serif: "Newsreader Variable", Georgia, "Times New Roman", serif;
+  --sans: "Inter Variable", "Helvetica Neue", Arial, sans-serif;
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* names the older stylesheets use */
+  --void: var(--paper);
+  --text: var(--ink);
+  --text-dim: var(--ink-soft);
+  --font: var(--sans);
+
+  color: var(--ink);
+  font-family: var(--sans);
+  font-feature-settings: 'ss01', 'cv11';
+  -webkit-font-smoothing: antialiased;
+}
+
 html, body, #root {
   margin: 0;
   height: 100%;
   overflow: hidden;
-  background: var(--void);
+  background: var(--paper);
+}
+
+/* A faint paper grain: two soft gradients, nothing to load. */
+body {
+  background:
+    radial-gradient(120% 80% at 20% 0%, rgba(255, 255, 255, 0.45), transparent 60%),
+    radial-gradient(100% 70% at 100% 100%, rgba(120, 100, 70, 0.08), transparent 60%),
+    var(--paper);
 }
 
 * { box-sizing: border-box; }
+
+::selection { background: var(--ink); color: var(--paper); }
+
+button { color: inherit; }
+
+/* Thin ink scrollbars, like a column rule. */
+* { scrollbar-width: thin; scrollbar-color: var(--hair-strong) transparent; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
+}

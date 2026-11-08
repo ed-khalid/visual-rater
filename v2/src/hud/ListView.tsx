@@ -30,9 +30,11 @@ export const ListView = () => {
 
   // Where the trunk is on screen (the line, and where the scroll opens from), and where the list's edges end up.
   useLayoutEffect(() => {
+    let frame = 0
     const place = () => {
       const top = screenAnchors.get(TRUNK_TOP_ANCHOR), bottom = screenAnchors.get(TRUNK_BOTTOM_ANCHOR), el = root.current
-      if (!el || !top || !bottom) return
+      // Coming from split view, the one rater (and its spine's anchors) only appears with the list: try next frame.
+      if (!el || !top || !bottom) { frame = requestAnimationFrame(place); return }
       const vw = window.innerWidth, vh = window.innerHeight
       const switchBottom = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--mode-switch-bottom')) || 70
       const left = Math.max(EDGE_PX, Math.round((vw - LIST_MAX_WIDTH) / 2))
@@ -45,7 +47,7 @@ export const ListView = () => {
     }
     place()
     window.addEventListener('resize', place)
-    return () => window.removeEventListener('resize', place)
+    return () => { cancelAnimationFrame(frame); window.removeEventListener('resize', place) }
   }, [])
 
   // The list only starts opening once the tree has fully sunk into the trunk (however long that takes to draw).
@@ -97,8 +99,8 @@ export const ListView = () => {
         </tr>
       </thead>
       <tbody>
-        {rows.map((r, i) => <tr key={r.id} className={r.score === undefined ? 'list-unrated' : undefined}>
-          <td className="list-rank">{r.score === undefined ? '' : String(i + 1).padStart(2, '0')}</td>
+        {rows.map((r, i) => <tr key={r.id} className={r.score === undefined ? 'list-unrated' : undefined} style={{ ['--row' as string]: i }}>
+          <td className="list-rank">{r.score === undefined ? '' : i + 1}</td>
           <td className="list-name" title={r.name}>{r.name}</td>
           {music && <>
             <td className="list-artist" title={r.artist}>{r.artist ?? '—'}</td>
