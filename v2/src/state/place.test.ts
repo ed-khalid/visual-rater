@@ -36,4 +36,24 @@ describe('placePieces', () => {
     expect(at.get('a')!.side).toBe(-1)
     expect(at.get('b')!.side).toBe(-1)
   })
+
+  test('a rated piece that would run out of room on its side goes to the other side', () => {
+    // three at one height: right, left, then right again would need more room than the right has
+    const at = placePieces([piece('a', 0.5), piece('b', 0.5), piece('c', 0.5)], { ...o, maxReach: 140, maxReachLeft: 400 })
+    expect(at.get('a')!.side).toBe(1)
+    expect(at.get('b')!.side).toBe(-1)
+    expect(at.get('c')!.side).toBe(-1)
+    expect(at.get('c')!.x).toBeGreaterThan(at.get('b')!.x)
+  })
+
+  test('with no room for its label either side, a piece goes in as its cover alone, inside the room', () => {
+    const tight = { ...o, maxReach: 140, maxReachLeft: 140 }
+    const at = placePieces(['a', 'b', 'c', 'd'].map(id => piece(id, 0.5)), tight)
+    expect(at.get('a')!.bare).toBeUndefined()
+    expect(at.get('b')!.bare).toBeUndefined()
+    for (const id of ['c', 'd']) {
+      expect(at.get(id)!.bare).toBe(true)
+      expect(at.get(id)!.x + 15).toBeLessThanOrEqual(140)
+    }
+  })
 })

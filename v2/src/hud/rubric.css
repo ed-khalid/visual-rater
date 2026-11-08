@@ -29,7 +29,7 @@
   max-height: calc(100vh - 104px - 120px);
   display: flex;
   flex-direction: column;
-  width: min(270px, calc(100vw - 56px));
+  width: min(820px, calc(100vw - 56px));
   padding: 16px 8px 12px 16px;
   font-family: var(--sans);
   color: var(--ink);
@@ -99,4 +99,52 @@
   .rubric-close { width: 34px; height: 34px; font-size: 16px; }
   .rubric-tiers { padding-right: 6px; }
   .rubric-tier { gap: 6px; padding: 4px 5px; font-size: 8.5px; letter-spacing: 0.06em; }
+}
+
+/* Three columns side by side, ruled between: songs, albums, artists. Each: heading, explanation, then its grades. */
+.rubric-columns {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 10px;
+  border-top: 1.5px solid var(--ink);
+}
+.rubric-column { display: flex; flex-direction: column; padding: 12px 16px 2px; animation: rubric-tier-in 0.4s var(--ease-out) both; }
+.rubric-column:first-child { padding-left: 0; }
+.rubric-column:last-child { padding-right: 0; }
+.rubric-column + .rubric-column { border-left: 1px solid var(--hair-strong); }
+.rubric-column:nth-child(2) { animation-delay: 0.05s; } .rubric-column:nth-child(3) { animation-delay: 0.1s; }
+.rubric-heading { margin: 0 0 6px; font-size: 10px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; }
+.rubric-columns .rubric-tiers { overflow: visible; padding-right: 0; }
+.rubric-text { margin: 0 0 12px; font-family: var(--serif); font-size: 14px; line-height: 1.35; color: var(--ink-soft); }
+
+/* What each song adds to its artist: "Every CLASSIC adds 6 points", a line each, hairlines between */
+.rubric-points { margin: -2px 0 12px; padding: 0; list-style: none; }
+.rubric-points li { padding: 4px 0; border-bottom: 1px solid var(--hair); font-family: var(--serif); font-size: 13.5px; color: var(--ink-soft); }
+.rubric-points b { font-weight: 600; color: var(--ink); font-variant-numeric: lining-nums tabular-nums; }
+
+/* A song tier's name on its colour, inline */
+.rubric-chip {
+  display: inline-block;
+  padding: 1px 5px;
+  font-family: var(--sans);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  line-height: 1.5;
+  vertical-align: 1px;
+  color: #fff;
+}
+
+/* Narrower screens: the columns stack, one scrolling list */
+@media (max-width: 860px) {
+  .rubric-columns { grid-template-columns: 1fr; }
+  .rubric-column { padding: 12px 0 4px; }
+  .rubric-column + .rubric-column { border-left: none; border-top: 1px solid var(--hair-strong); }
+}
+@media (min-width: 601px) and (max-width: 860px) { .rubric { width: 300px; } }
+@media (max-width: 600px) {
+  .rubric-columns { padding-right: 6px; }
+  .rubric-text { font-size: 12px; }
 }

@@ -1,7 +1,7 @@
 /* Album view: an article opener on the left half (cover, kicker, headline, grade and score) and the details under it. */
 .album-view {
   position: fixed;
-  top: 122px;
+  top: 156px; /* under the breadcrumb */
   left: 28px;
   z-index: 15;
   /* the left half of the screen, top to bottom between the corner keys */

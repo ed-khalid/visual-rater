@@ -9,6 +9,7 @@ import { AlbumView } from './AlbumView'
 import { CommandPalette, shortcutLabel } from './CommandPalette'
 import { ListView } from './ListView'
 import { ModeSwitch } from './ModeSwitch'
+import { Breadcrumb } from './Breadcrumb'
 import { Catalog } from './Catalog'
 import { RaterContents } from './RaterContents'
 import { StagedList } from './StagedList'
@@ -16,6 +17,7 @@ import { ActionLog } from './ActionLog'
 import { RatingWatch } from './RatingWatch'
 import { Rubric } from './Rubric'
 import { TypePicker } from './TypePicker'
+import { ZoomSwitch } from './ZoomSwitch'
 import './hud.css'
 
 /** The only DOM UI: corner readouts, the type picker when no board is open, and the command palette. */
@@ -78,7 +80,7 @@ export const Hud = () => {
     {board && <RatingWatch />}
     {board && listing && <ListView />}
     {board && !listing && <RaterContents />}
-    {board && !listing && activeType === 'music' && <><StagedList /><Catalog /><AlbumView /><ActionLog /></>}
+    {board && !listing && activeType === 'music' && <><StagedList /><Catalog /><Breadcrumb /><AlbumView /><ActionLog /><ZoomSwitch /></>}
     {board && !listing && <><ItemHoverCard /><DragScore /><ScoreMatches /><AlbumPopup /><ItemTrash /></>}
     {board && <CommandPalette open={paletteOpen} onOpenChange={setPaletteOpen} />}
   </>

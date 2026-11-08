@@ -9,7 +9,7 @@ type Row = {
   id: string, name: string, image?: string, year?: number, score?: number
   /** In the staging tray: none of its tracks are on the tree yet. */
   staged?: boolean
-  /** The score as shown, its letter grade and that grade's colour (v1's), if it has a score yet. Artists show the score and grade, albums the score. */
+  /** The score as shown, its letter grade and that grade's colour (v1's), if it has a score yet. Artists and albums show both. */
   label?: string, color?: string, grade?: string
 }
 type Order = 'year' | 'score'
@@ -30,8 +30,7 @@ type Group = { artist?: Row, albums: Row[] }
  *   the spine and its title and details fill the left half of the screen (the rater slides right to make room). Another album switches to that one; clicking it
  *   again, a click on empty space (with nothing open) or Esc leaves album view.
  * - click a staged album (dim, no score yet) for its tracklist.
- * Each album shows its score, each artist its score and letter grade (on a chip in the grade's colour), with a thin
- * bar in the grade's colour (v1's album and artist grades) before the thumbnail.
+ * Each artist and album shows its score and letter grade (v1's grades), the letter on a chip in the grade's colour.
  * Each artist collapses to its own row (click it); albums go by year or by score (the switch at the top).
  * No hover behaviour (for now). Each thumbnail of something on the tree publishes its place on screen (screenAnchors),
  * so the popup (to the right of the row) and its trash icon pin to it. In active rating, the rows not being rated fade.
@@ -39,8 +38,9 @@ type Group = { artist?: Row, albums: Row[] }
 export const Catalog = () => {
   const s = usePersisted()
   const [order, setOrder] = useState<Order>('year')
-  const [collapsed, setCollapsed] = useState<Set<string>>(() => new Set())
-  const toggle = (id: string) => setCollapsed(c => { const n = new Set(c); if (!n.delete(id)) n.add(id); return n })
+  // Every artist starts collapsed; click one to open it.
+  const [open, setOpen] = useState<Set<string>>(() => new Set())
+  const toggle = (id: string) => setOpen(c => { const n = new Set(c); if (!n.delete(id)) n.add(id); return n })
   const groups = useMemo(() => {
     const albums = Object.values(s.albums).sort((a, b) => a.stagedAt - b.stagedAt)
     const byArtist = new Map<string, Group>()
@@ -72,7 +72,7 @@ export const Catalog = () => {
   }, [s, order])
 
   const rows = useRef(new Map<string, { row: HTMLElement, thumb: HTMLElement }>())
-  const shown = (g: Group) => !g.artist || !collapsed.has(g.artist.id)
+  const shown = (g: Group) => !g.artist || open.has(g.artist.id)
   const ids = groups.flatMap(g => [...(g.artist ? [g.artist.id] : []), ...(shown(g) ? g.albums.filter(a => !a.staged).map(a => a.id) : [])])
   const key = ids.join(',')
 
@@ -110,14 +110,16 @@ export const Catalog = () => {
   const viewing = useView(v => v.albumView)
   const onTreeIds = groups.flatMap(g => g.albums.filter(a => !a.staged).map(a => a.id)).join(',')
   useEffect(() => { if (viewing && !onTreeIds.split(',').includes(viewing)) useView.getState().setAlbumView(null) }, [viewing, onTreeIds])
+  // Album view opens the album's artist here, so its row shows.
+  const viewingArtist = viewing ? s.albums[viewing]?.artistId : undefined
+  useEffect(() => { if (viewingArtist) setOpen(c => c.has(viewingArtist) ? c : new Set(c).add(viewingArtist)) }, [viewingArtist])
   useEffect(() => () => { if (useView.getState().albumView) useView.getState().setAlbumView(null) }, [])
   // Esc (with no popup or palette open) goes back a step: out of album view, or from an artist's albums to the artists.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const v = useView.getState()
       if (e.key !== 'Escape' || v.openId || v.editing || document.querySelector('.palette')) return
-      if (v.albumView) v.setAlbumView(null)
-      else if (v.drill) v.setDrill(null)
+      v.goBack()
     }
     window.addEventListener('keydown', onKey, true)
     return () => window.removeEventListener('keydown', onKey, true)
@@ -136,7 +138,6 @@ export const Catalog = () => {
       {g.artist && <button className="catalog-row catalog-artist" ref={bind(g.artist.id)}
         onClick={() => toggle(g.artist!.id)} aria-expanded={shown(g)}
         aria-label={g.artist.label ? `${g.artist.name}, ${g.artist.label} (${g.artist.grade})` : `${g.artist.name}, unrated`}>
-        <Grade row={g.artist} />
         <Thumb image={g.artist.image} round />
         <span className="catalog-name">{g.artist.name}</span>
         <span className="catalog-score">{g.artist.label ?? '—'}</span>
@@ -146,10 +147,10 @@ export const Catalog = () => {
       {shown(g) && g.albums.map(a => <button key={a.id} className={`catalog-row catalog-album${a.staged ? ' staged' : ''}${viewing === a.id ? ' viewing' : viewing ? ' other' : ''}`}
         ref={a.staged ? undefined : bind(a.id)} onClick={() => onAlbum(a)} aria-pressed={a.staged ? undefined : viewing === a.id}
         aria-label={a.staged ? `${a.name}, not on the tree yet` : a.label ? `${a.name}, ${a.label} (${a.grade})` : `${a.name}, unrated`}>
-        <Grade row={a} />
         <Thumb image={a.image} />
         <span className="catalog-name">{a.name}</span>
         <span className="catalog-score">{a.staged ? '' : a.label ?? '—'}</span>
+        {!a.staged && a.grade && <span className="catalog-letter" style={{ background: a.color }}>{a.grade}</span>}
       </button>)}
     </div>)}
   </nav>
@@ -160,10 +161,6 @@ export const Catalog = () => {
  * (that's how its new tracks get rated). The rater slides right and only that album's songs stay on it.
  */
 export const enterAlbumView = (albumId: string) => { useView.getState().setAlbumView(albumId) }
-
-/** A thin bar in the grade's colour; empty when there's no score yet. */
-const Grade = ({ row }: { row: Row }) =>
-  <span className="catalog-grade" style={row.color ? { background: row.color } : undefined} title={row.grade} />
 
 const Thumb = ({ image, round }: { image?: string, round?: boolean }) =>
   image ? <img className={`catalog-thumb${round ? ' round' : ''}`} src={image} alt="" draggable={false} />

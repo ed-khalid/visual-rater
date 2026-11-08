@@ -1,6 +1,8 @@
 import { create } from 'zustand'
 
 export type Phase = 'tree' | 'to-list' | 'list' | 'to-tree'
+/** How far in MUSIC's default view goes (view.zoom). */
+export type Zoom = 'artists' | 'albums' | 'songs'
 
 type View = {
   /** Counts up each time the reset button is pressed: the split row scrolls back to its start. */
@@ -60,10 +62,20 @@ type View = {
   split: boolean
   setSplit: (split: boolean) => void
   /**
-   * MUSIC's default view (state/drill.ts): null, the rater of artists; an artist's id, that artist's albums. Not saved.
+   * MUSIC's default view (state/drill.ts), whose: null, every artist on the rater; an artist's id, just that artist
+   * (clicked on the rater, or picked in the breadcrumb). Setting one zooms to its albums; clearing it, back to the
+   * artists. Not saved.
    */
   drill: string | null
   setDrill: (artistId: string | null) => void
+  /**
+   * MUSIC's default view, how far in: the artists, their albums, or their songs (hud/ZoomSwitch), for every artist on
+   * the rater or just `drill`'s, leaving out albums taken off the rater (hiddenAlbums). Not saved.
+   */
+  zoom: Zoom
+  setZoom: (zoom: Zoom) => void
+  /** One step back: out of album view, else from one artist to all of them, else back out to the artists. */
+  goBack: () => void
   /** The last thing done on the read-only rater, shown under the item count (hud/ActionLog). */
   lastAction: { text: string, seq: number } | null
   logAction: (text: string) => void
@@ -106,10 +118,23 @@ export const useView = create<View>()(set => ({
   setSplit: split => set({ split }),
   drill: null,
   setDrill: drill => set(s => {
-    if (s.drill === drill) return s
+    const zoom: Zoom = drill ? 'albums' : 'artists'
+    if (s.drill === drill && s.zoom === zoom) return s
     levelChange.at = performance.now()
-    return { drill }
+    return { drill, zoom }
   }),
+  zoom: 'artists',
+  setZoom: zoom => set(s => {
+    if (s.zoom === zoom) return s
+    levelChange.at = performance.now()
+    return { zoom }
+  }),
+  goBack: () => {
+    const s = useView.getState()
+    if (s.albumView) s.setAlbumView(null)
+    else if (s.drill) s.setDrill(null)
+    else if (s.zoom !== 'artists') s.setZoom('artists')
+  },
   lastAction: null,
   logAction: text => set(s => ({ lastAction: { text, seq: (s.lastAction?.seq ?? 0) + 1 } })),
   raterOrder: null,

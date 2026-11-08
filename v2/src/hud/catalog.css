@@ -108,15 +108,6 @@
 }
 .catalog-thumb.round { border-radius: 50%; width: 30px; height: 30px; }
 
-/* Album grade: a short bar in the grade's colour before the cover; empty when unrated. */
-.catalog-grade {
-  flex: none;
-  width: 3px;
-  height: 26px;
-  margin-right: -5px;
-  background: var(--hair);
-}
-
 .catalog-score {
   flex: none;
   margin-left: auto;
@@ -130,7 +121,7 @@
 .catalog-artist .catalog-score { font-size: 14px; color: var(--ink-soft); }
 .catalog-artist .catalog-chevron { margin-left: 8px; }
 
-/* An artist's letter grade, on a chip in the grade's colour, after its score. */
+/* An artist's or album's letter grade, on a chip in the grade's colour, after its score. */
 .catalog-letter {
   flex: none;
   min-width: 24px;
@@ -148,6 +139,8 @@
 /* Album view: the album on its own is marked in ink; the others step back. */
 .catalog-album.viewing { background: var(--ink); color: var(--paper); padding-left: 6px; }
 .catalog-album.viewing .catalog-score { color: var(--paper); }
+.catalog-album .catalog-letter { min-width: 22px; height: 18px; font-size: 10.5px; }
+.catalog-album.viewing .catalog-letter { box-shadow: 0 0 0 1px var(--paper); }
 .catalog-album.other { opacity: 0.45; }
 
 .catalog-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.3; }
@@ -157,7 +150,6 @@
   .catalog { width: auto; left: 10px; top: 118px; gap: 8px; max-height: calc(100vh - 118px - 110px); }
   .catalog-name, .catalog-score, .catalog-letter { display: none; }
   .catalog-row { gap: 5px; justify-content: center; min-height: 44px; min-width: 44px; padding: 0; border-bottom: none; }
-  .catalog-grade { margin-right: 0; }
   .catalog-artist { border-bottom: 1.5px solid var(--ink); }
   .catalog-chevron { display: none; }
   .catalog-head { flex-direction: column; align-items: center; margin-bottom: 0; }

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { nodeKey } from '../scene/Board'
 import { liveScores, screenAnchors, useView } from '../scene/view'
 import { addedColumn, find, formatScore, rating as ratingOf, songTier, stagedAlbums, tracksOf, treeNodes } from '../state/board'
 import { usePersisted, useStore } from '../state/store'
@@ -16,13 +17,17 @@ const EDGE_PX = 12
  * phone screens), it goes above or below the item, whichever has more room, and shrinks to fit, so it never
  * covers the item it belongs to.
  */
-const usePinned = (id: string | null, ref: React.RefObject<HTMLElement | null>, align: 'top' | 'centre') => {
+/**
+ * Pins `ref` beside the thing `id` names, every frame. `keys`: where to look for it on screen, first found wins
+ * (default: its own id, as fruit and catalog rows publish it).
+ */
+const usePinned = (id: string | null, ref: React.RefObject<HTMLElement | null>, align: 'top' | 'centre', keys?: (id: string) => string[]) => {
   useEffect(() => {
     if (!id) return
     let frame = 0
     const tick = () => {
       const el = ref.current
-      const a = screenAnchors.get(id)
+      const a = (keys ? keys(id) : [id]).map(k => screenAnchors.get(k)).find(Boolean)
       if (el && a) {
         const w = el.offsetWidth
         const vw = window.innerWidth, vh = window.innerHeight
@@ -48,8 +53,14 @@ const usePinned = (id: string | null, ref: React.RefObject<HTMLElement | null>, 
     }
     tick()
     return () => cancelAnimationFrame(frame)
-  }, [id, ref, align])
+  }, [id, ref, align, keys])
 }
+
+/**
+ * Where the hover card looks for what's hovered: an artist or album on the read-only rater first (nodeKey: their
+ * plain ids are the catalog's rows), then the plain id (songs, movies, books).
+ */
+const hoverKeys = (id: string) => [nodeKey(id), id]
 
 /**
  * Hover card for anything on the open tree, with its score: a track's, movie's or book's own (UNRATED until it's
@@ -65,7 +76,7 @@ export const ItemHoverCard = () => {
   const ref = useRef<HTMLDivElement>(null)
   const f = find(s, hoveredId)
   const id = f && hoveredId !== openId && !draggingId ? hoveredId : null
-  usePinned(id, ref, 'centre')
+  usePinned(id, ref, 'centre', hoverKeys)
   if (!f || !id) return null
 
   const rating = ratingOf(s, id)

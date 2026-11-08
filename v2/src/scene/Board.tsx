@@ -85,8 +85,7 @@ export const Board = () => {
     const v = useView.getState()
     if (v.editing) return
     if (v.openId || v.selectedId) v.close()
-    else if (v.albumView) v.setAlbumView(null)
-    else if (v.drill) v.setDrill(null)
+    else v.goBack()
   }
   return <MotionConfig reducedMotion="user">
     <div className="board" onPointerDown={e => { down.current = { x: e.clientX, y: e.clientY } }} onClick={onClick}>
@@ -127,33 +126,46 @@ const OneRater = () => {
   const box = useBox()
   const s = usePersisted()
   const type = useStore(st => st.activeType)!
-  const { albumView, hiddenAlbums, rating: batch, drill, phase } = useView(useShallow(v => ({ albumView: v.albumView, hiddenAlbums: v.hiddenAlbums, rating: v.rating, drill: v.drill, phase: v.phase })))
+  const { albumView, hiddenAlbums, rating: batch, drill, zoom, phase } = useView(useShallow(v => ({ albumView: v.albumView, hiddenAlbums: v.hiddenAlbums, rating: v.rating, drill: v.drill, zoom: v.zoom, phase: v.phase })))
   const tree = phase === 'tree'
 
   const marks = useMemo(() => {
     if (!tree) return []
     const focus = batch ? focusOf(s, type, batch) : null
     const out: Mark[] = []
+    // MUSIC's default view: whose things are out (every artist on the rater, or the one picked), and how far in.
+    const artists = type === 'music' && !albumView ? new Set(artistNodes(s, hiddenAlbums).map(n => n.id).filter(id => !drill || id === drill)) : null
+    const songs = !!artists && zoom === 'songs'
     for (const n of treeNodes(s, type)) {
       const t = n.entity as Track
+      const artistOf = t.albumId ? s.albums[t.albumId]?.artistId ?? t.artistId : t.artistId
       const show = albumView ? t.albumId === albumView
-        // MUSIC's default view is the read-only rater: songs only come out while being rated after they were typed in.
+        // MUSIC's default view: songs come out zoomed in to songs (their artist on the rater, their album not taken
+        // off it), and while being rated after they were typed in.
         : n.collection === 'tracks' ? !!batch?.includes(t.id)
+          || (songs && !!artistOf && artists!.has(artistOf) && !(t.albumId && hiddenAlbums.has(t.albumId)))
         : true
-      if (show) out.push(fruitMark(t, box.radius, !!focus && !focus.has(t.id)))
+      if (show) out.push({ ...fruitMark(t, box.radius, !!focus && !focus.has(t.id)), ...(songs ? { key: `songs:${t.id}`, level: 'songs' } : {}) })
+    }
+    // Zoomed in to songs, a lot can be out at once: the more there are, the smaller each cover (down to a minimum).
+    if (songs) {
+      const n = out.filter(m => m.level === 'songs').length
+      const r = Math.round(Math.max(box.phone ? 8 : 9, Math.min(box.radius, box.radius * Math.sqrt(40 / Math.max(1, n)))))
+      for (const m of out) if (m.level === 'songs') m.radius = r
     }
     if (albumView) {
       out.sort((a, b) => trackOrder(s.tracks[a.id]) - trackOrder(s.tracks[b.id]))
       for (const m of out) m.side = 1
     }
-    if (type === 'music' && !albumView) {
-      const nodes = drill ? albumNodes(s, hiddenAlbums, drill) : artistNodes(s, hiddenAlbums)
-      const r = drill ? box.radius + (box.phone ? 3 : 6) : box.radius + (box.phone ? 6 : 10)
+    if (artists && zoom !== 'songs') {
+      const nodes = zoom === 'artists' ? artistNodes(s, hiddenAlbums).filter(n => artists.has(n.id))
+        : [...artists].flatMap(id => albumNodes(s, hiddenAlbums, id))
+      const r = zoom === 'albums' ? box.radius + (box.phone ? 3 : 6) : box.radius + (box.phone ? 6 : 10)
       for (const n of nodes) {
         const g = rating(s, n.id)
         const sub = g.label ? `${g.label}${g.tier ? ` · ${g.tier.name}` : ''}` : 'Unrated'
         out.push({
-          id: n.id, key: `${drill ?? ''}:${n.id}`, anchor: nodeKey(n.id), glowId: n.id, kind: n.kind, level: drill,
+          id: n.id, key: `${zoom}:${drill ?? ''}:${n.id}`, anchor: nodeKey(n.id), glowId: n.id, kind: n.kind, level: zoom,
           image: n.image, label: n.name, sub, radius: r, position: n.position, unrated: false,
           labelWidth: Math.max(labelWidth(n.name, 7), labelWidth(sub, 5.6)), tier: g.tier?.color,
           dim: !!focus && !focus.has(n.id),
@@ -163,19 +175,21 @@ const OneRater = () => {
     // Phones: the spine stands near the left edge, so everything goes on its right.
     if (box.phone) for (const m of out) m.side = 1
     return out
-  }, [s, type, albumView, hiddenAlbums, batch, drill, tree, box.radius, box.phone])
+  }, [s, type, albumView, hiddenAlbums, batch, drill, zoom, tree, box.radius, box.phone])
 
   const maxReach = albumView ? Math.max(160, box.w - box.spineX - box.gutter - 10)
     : Math.max(120, Math.min(440, box.w - box.spineX - box.gutter - 10))
   // Leaders start clear of the scale's numbers (left of the spine).
-  const placed = useMemo(() => placePieces(marks, { height: box.height, minLength: 40, maxReach }), [marks, box.height, maxReach])
+  // Room on the left: up to the catalog (album view puts everything on the right anyway).
+  const maxReachLeft = Math.max(120, box.spineX - box.gutterLeft - 10)
+  const placed = useMemo(() => placePieces(marks, { height: box.height, minLength: 40, maxReach, maxReachLeft }), [marks, box.height, maxReach, maxReachLeft])
 
   return <motion.div className="rater" initial={false} animate={{ x: box.spineX }} transition={SPRING} style={{ top: box.top }}>
     <Scale height={box.height} left={albumView && box.w > 900 ? 60 : Math.max(48, Math.min(box.spineX - box.gutterLeft, maxReach + 60))} right={Math.min(box.w - box.spineX - box.gutter, maxReach + 60)} />
     <Spine height={box.height} topKey={TRUNK_TOP_ANCHOR} bottomKey={TRUNK_BOTTOM_ANCHOR} />
     <AnimatePresence>
       {outermostFirst(marks, placed).map(({ m, i }) => <Marker key={m.key} mark={m} at={placed.get(m.id)!} height={box.height}
-        delay={m.kind === 'fruit' ? Math.min(0.5, i * 0.025) : LEVEL_DELAY_MS / 1000 + i * 0.05} />)}
+        delay={m.kind === 'fruit' ? (m.level === 'songs' ? LEVEL_DELAY_MS / 1000 : 0) + Math.min(0.5, i * (m.level === 'songs' ? 0.008 : 0.025)) : LEVEL_DELAY_MS / 1000 + i * 0.05} />)}
     </AnimatePresence>
   </motion.div>
 }
@@ -314,13 +328,13 @@ const Marker = ({ mark: m, at, height, delay }: { mark: Mark, at: Placed, height
       role="button" aria-label={m.unrated ? `${m.label}, unrated` : m.label}>
       {m.image ? <img src={m.image} alt="" draggable={false} /> : <span className="mark-blank" />}
     </motion.div>
-    <motion.div className={`mark-label ${side > 0 ? 'right' : 'left'}`}
+    {!at.bare && <motion.div className={`mark-label ${side > 0 ? 'right' : 'left'}`}
       initial={{ opacity: 0, x: side * (r + 8) }} animate={{ opacity: 1, x: side * labelX }} exit={{ opacity: 0, x: side * (r + 8), transition: RETRACT }}
       transition={{ ...enter, opacity: { duration: 0.3, delay: delay + 0.15 } }}>
       <span className="mark-name">{m.label}</span>
       {m.unrated && !dragging && m.kind === 'fruit' && <span className="mark-tag">Unrated</span>}
       {m.sub && <span className="mark-sub">{m.sub}</span>}
-    </motion.div>
+    </motion.div>}
   </motion.div>
 }
 
