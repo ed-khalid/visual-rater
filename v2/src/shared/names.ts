@@ -47,3 +47,23 @@ export const shortTitle = (name: string): string => {
   while (picked.length > 1 && FILLER.has(picked[picked.length - 1].toLowerCase())) picked.pop()
   return picked.join(' ').slice(0, SHORT_TITLE_MAX)
 }
+
+/** Whether a track's name says it's a skit ("Paul - Skit", "Skit #2"): it's marked not a song when it's added (Track.notASong). */
+export const isSkit = (name: string) => /\bskits?\b/i.test(name)
+
+/** A live tag at the end of a track's name: "Battery - Live with the SFSO", "Polly (Live)", "Dumb [Live at …]". */
+const LIVE_TAG = /(\s+-\s+[^-]*\blive\b.*|\s*[([][^)\]]*\blive\b[^)\]]*[)\]])\s*$/i
+/**
+ * An album named as a live one: "MTV Unplugged In New York", "Live at Wembley", "Alive (Live)". Not just the word
+ * Live, which starts studio titles too ("Live Through This").
+ */
+const LIVE_ALBUM = /\bunplugged\b|\blive (at|in|from|on)\b|[([]live\b|\bin concert\b/i
+
+/** Whether a track looks like a live recording, by its name or its album's. */
+export const looksLive = (trackName: string, albumName = '') => LIVE_TAG.test(trackName) || LIVE_ALBUM.test(albumName)
+
+/**
+ * What a song is called, for matching a live recording with the studio one: the name without a live tag, lowercase,
+ * letters and digits only ("- Human - Live with the SFSO" → "human"). The migration 007 backfill does the same in SQL.
+ */
+export const songKey = (name: string) => name.replace(LIVE_TAG, '').toLowerCase().replace(/[^a-z0-9]/g, '')

@@ -50,16 +50,24 @@
 @keyframes hud-rule-in { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 
 .hud-bl {
-  bottom: 40px;
+  bottom: 18px;
   left: 28px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   font-size: 10px;
   font-weight: 600;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--ink-soft);
 }
+.hud-count-line { display: flex; align-items: baseline; gap: 6px; line-height: 16px; }
+.hud-count-line dd { margin: 0; }
 .hud-count {
   display: inline-block;
+  min-width: 30px;
+  text-align: right;
   font-family: var(--serif);
   font-size: 15px;
   font-weight: 600;
@@ -71,8 +79,7 @@
 
 /* Keys: small ink-outlined squares under the rule; filled ink on hover. */
 .hud-key { top: 74px; left: 28px; }
-.hud-key.hud-reset { left: auto; right: 28px; }
-.hud-key.hud-split { left: auto; right: 72px; }
+.hud-key.hud-split { left: auto; right: 28px; }
 .hud-key {
   pointer-events: auto;
   width: 36px;
@@ -90,7 +97,7 @@
 .hud-key:hover, .hud-key:focus-visible { background: var(--ink); color: var(--paper); outline: none; }
 .hud-key:active { transform: scale(0.94); }
 .hud-key.hud-split.on { background: var(--ink); color: var(--paper); }
-@media (pointer: coarse) { .hud-key { width: 44px; height: 40px; } .hud-key.hud-split { right: 80px; } }
+@media (pointer: coarse) { .hud-key { width: 44px; height: 40px; } .hud-key.hud-split { right: 28px; } }
 
 .hud-key-sizer { display: none; }
 .hud-key-glyph {

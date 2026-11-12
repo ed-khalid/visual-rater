@@ -2,20 +2,21 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { Suggestion } from '../shared/suggestions'
 import { albumStatus, usePersisted, useStore } from '../state/store'
 import { loadAlbumDetails } from './albumDetails'
+import { loadArtistsFor } from '../state/remote'
 import './artistAlbums.css'
 
 type Load = { status: 'loading' } | { status: 'error' } | { status: 'ready', albums: Suggestion[] }
 
 /**
  * Picked an artist in the ADD palette: a checklist of their albums (from Spotify, one per album, oldest first) beside
- * the palette. Tick the ones you want and ADD puts them all in the staging tray at once, with their tracklists
- * loading in the background. Albums already in the catalog show where they are instead of a tick box. One of the
+ * the palette. Tick the ones you want and ADD stages them all at once, with their tracklists loading in the
+ * background; the palette then closes and the first of them (the oldest) opens in album view (onAdded). Albums already in the catalog show where they are instead of a tick box. One of the
  * artist's albums under a different Spotify edition (same name, same artist) is marked IN CATALOG: still tickable,
  * since we never match by name, but left out of All so another edition isn't added by accident.
  * Lives inside the palette's dialog (so it can take clicks and focus), and keeps its keys to itself: arrows and
  * Enter don't reach the palette's list, and Esc closes only the checklist.
  */
-export const ArtistAlbums = ({ artist, onClose, onAdded }: { artist: Suggestion, onClose: () => void, onAdded: () => void }) => {
+export const ArtistAlbums = ({ artist, onClose, onAdded }: { artist: Suggestion, onClose: () => void, onAdded: (firstId: string) => void }) => {
   const [load, setLoad] = useState<Load>({ status: 'loading' })
   const [checked, setChecked] = useState<Set<string>>(() => new Set())
   const s = usePersisted()
@@ -25,9 +26,11 @@ export const ArtistAlbums = ({ artist, onClose, onAdded }: { artist: Suggestion,
   useEffect(() => {
     let live = true
     setLoad({ status: 'loading' }); setChecked(new Set())
+    // Their albums already here load too, so the list can show where each one is.
+    const here = loadArtistsFor([{ name: artist.name, vendor: { name: artist.provider, id: artist.id } }])
     fetch(`/api/music/artists/${encodeURIComponent(artist.id)}/albums`)
       .then(async res => { if (!res.ok) throw new Error(String(res.status)); return (await res.json()) as { albums: Suggestion[] } })
-      .then(body => { if (live) setLoad({ status: 'ready', albums: body.albums }) })
+      .then(async body => { await here; if (live) setLoad({ status: 'ready', albums: body.albums }) })
       .catch(() => { if (live) setLoad({ status: 'error' }) })
     return () => { live = false }
   }, [artist.id])
@@ -46,9 +49,12 @@ export const ArtistAlbums = ({ artist, onClose, onAdded }: { artist: Suggestion,
   const allOn = fresh.length > 0 && fresh.every(a => checked.has(a.id))
   const flip = (id: string) => setChecked(c => { const n = new Set(c); if (!n.delete(id)) n.add(id); return n })
 
-  const add = () => {
+  const add = async () => {
     if (load.status !== 'ready') return
     const picked = free.filter(a => checked.has(a.id))
+    // Albums credited to someone else: that artist's albums load first, so none is added twice.
+    await loadArtistsFor(picked.filter(a => a.artistId && a.artistId !== artist.id && a.artist)
+      .map(a => ({ name: a.artist!, vendor: { name: a.provider, id: a.artistId! } })))
     const ids: string[] = []
     for (const a of picked) {
       const mine = !a.artistId || a.artistId === artist.id
@@ -65,7 +71,7 @@ export const ArtistAlbums = ({ artist, onClose, onAdded }: { artist: Suggestion,
     }
     // Tracklists one after another, so a long discography doesn't hit Spotify all at once.
     void ids.reduce((p, id) => p.then(() => loadAlbumDetails(id)), Promise.resolve())
-    if (ids.length) onAdded()
+    if (ids.length) onAdded(ids[0])
   }
 
   const n = free.filter(a => checked.has(a.id)).length

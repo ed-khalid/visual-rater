@@ -1,8 +1,8 @@
 import { serve } from '@hono/node-server'
 import postgres from 'postgres'
-import { createApp } from './app'
+import { createApp, type Store } from './app'
 import { migrate } from './migrate'
-import { applyChanges, loadState } from './repo'
+import { applyChanges, decodeCursor, findArtists, loadArtistPage, loadArtists, loadCounts, loadNear, loadStart } from './repo'
 import { createSpotify } from './spotify'
 
 /** v1's Spotify app id (public). The secret comes from the same env var v1 uses and never leaves the server. */
@@ -25,14 +25,21 @@ const schema = process.env.V2_DATABASE_SCHEMA
 if (schema && !/^[a-z_][a-z0-9_]{0,62}$/.test(schema)) throw new Error('V2_DATABASE_SCHEMA must be a plain lowercase identifier')
 
 const sql = databaseUrl ? postgres(databaseUrl, { max: 5, onnotice: () => {}, ...(schema ? { connection: { search_path: schema } } : {}) }) : null
-let store = null
+let store: Store | null = null
 if (!sql) console.warn('No database configured (set VISUAL_RATER_DATABASE_PW or V2_DATABASE_URL): saving is disabled.')
 else {
   try {
     if (schema) await sql.unsafe(`create schema if not exists ${schema}`)
     const applied = await migrate(sql)
     if (applied.length) console.log(`database migrations applied: ${applied.join(', ')}`)
-    store = { load: () => loadState(sql), apply: (c: Parameters<typeof applyChanges>[1]) => applyChanges(sql, c) }
+    store = {
+      load: () => loadStart(sql), loadArtists: (ids: string[]) => loadArtists(sql, ids),
+      artistPage: async (after: string) => { const c = decodeCursor(after); return c ? loadArtistPage(sql, c) : undefined },
+      findArtists: q => findArtists(sql, q),
+      near: (score: number, range: number, exclude: string[], limit: number) => loadNear(sql, score, range, exclude, limit),
+      counts: () => loadCounts(sql),
+      apply: c => applyChanges(sql, c),
+    }
   } catch (e) {
     console.error(`Database unavailable (${(e as Error).message}): saving is disabled.`)
   }

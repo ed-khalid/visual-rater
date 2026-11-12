@@ -20,15 +20,25 @@ describe('placePieces', () => {
     expect(at.get('b')!.y).toBe(250)
   })
 
-  test('unrated pieces fill rows round the middle, out to maxReach, then the next row', () => {
+  test('unrated pieces fill rows in their order, top to bottom, each out to maxReach, centred on the middle', () => {
     const many = Array.from({ length: 10 }, (_, i) => piece(`u${i}`, 0, { unrated: true, side: 1 }))
     const at = placePieces(many, o)
-    const ys = new Set(many.map(p => at.get(p.id)!.y))
-    expect([...ys].sort((a, b) => a - b)).toEqual([210, 250, 290, 330]) // three to a row, labels and all
+    // three to a row, labels and all: four rows, centred on 250
+    expect(many.map(p => at.get(p.id)!.y)).toEqual([190, 190, 190, 230, 230, 230, 270, 270, 270, 310])
     for (const p of many) expect(at.get(p.id)!.x + 15 + 8 + 60).toBeLessThanOrEqual(400)
-    // the middle row fills first
-    expect(at.get('u0')!.y).toBe(250)
-    expect(at.get('u1')!.y).toBe(250)
+    // left to right within a row
+    expect(at.get('u0')!.x).toBeLessThan(at.get('u1')!.x)
+    expect(at.get('u1')!.x).toBeLessThan(at.get('u2')!.x)
+  })
+
+  test('a narrower piece later on never goes back to fill a gap in an earlier row', () => {
+    const wide = (id: string) => piece(id, 0, { unrated: true, side: 1, labelWidth: 120 })
+    const narrow = (id: string) => piece(id, 0, { unrated: true, side: 1, labelWidth: 10 })
+    // a row holds two wide pieces, with room left over for a narrow one
+    const list = [wide('a'), wide('b'), wide('c'), narrow('d')]
+    const at = placePieces(list, o)
+    expect(at.get('c')!.y).toBeGreaterThan(at.get('a')!.y)
+    expect(at.get('d')!.y).toBe(at.get('c')!.y)
   })
 
   test('a fixed side is kept', () => {

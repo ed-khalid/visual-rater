@@ -5,20 +5,12 @@ export type Phase = 'tree' | 'to-list' | 'list' | 'to-tree'
 export type Zoom = 'artists' | 'albums' | 'songs'
 
 type View = {
-  /** Counts up each time the reset button is pressed: the split row scrolls back to its start. */
-  resetRequests: number
-  requestReset: () => void
   /** The item under the pointer, if any (drives the hover card). */
   hoveredId: string | null
   setHovered: (id: string | null) => void
-  /** The item whose detail popup is open, if any. */
-  openId: string | null
-  toggleOpen: (id: string) => void
+  /** Leaves edit mode. */
   close: () => void
-  /** An item tapped or clicked on the tree: shows its trash icon on touch screens, which have no hover. */
-  selectedId: string | null
-  toggleSelected: (id: string) => void
-  /** The fruit being dragged, if any: its action icons hide until it's dropped. */
+  /** The fruit being dragged, if any. */
   draggingId: string | null
   setDragging: (id: string | null) => void
   /** True while the open popup is in edit mode: a stray click on empty space shouldn't throw edits away. */
@@ -44,6 +36,19 @@ type View = {
    */
   albumView: string | null
   setAlbumView: (id: string | null) => void
+  /**
+   * Compare (album view, desktop): the screen splits in two, album view on the left and, mirrored on the right, the
+   * album it's compared with (`compareWith`; null until one is picked), the two raters facing each other in the middle.
+   * `picking`: the picker is open on the right (always, until an album is picked; CHANGE opens it again). Changing or
+   * leaving album view ends it. Not saved.
+   */
+  comparing: boolean
+  compareWith: string | null
+  picking: boolean
+  startCompare: () => void
+  setCompareWith: (id: string) => void
+  setPicking: (picking: boolean) => void
+  endCompare: () => void
   /**
    * Albums taken off the tree for now, from the catalog's boxes (MUSIC): their branches and fruit draw back into the
    * trunk, as in album view, but nothing about them changes and they come back with a click. Not saved.
@@ -87,9 +92,10 @@ type View = {
 /**
  * UI state shared between the board and the overlays around it. Not persisted.
  */
+/** Compare off. */
+const NO_COMPARE = { comparing: false, compareWith: null, picking: false }
+
 export const useView = create<View>()(set => ({
-  resetRequests: 0,
-  requestReset: () => set(s => ({ resetRequests: s.resetRequests + 1 })),
   hiddenAlbums: new Set(),
   toggleAlbumsHidden: ids => set(s => {
     const next = new Set(s.hiddenAlbums), all = ids.every(id => next.has(id))
@@ -98,40 +104,50 @@ export const useView = create<View>()(set => ({
   }),
   hoveredId: null,
   setHovered: id => set({ hoveredId: id }),
-  openId: null,
-  toggleOpen: id => set(s => s.editing ? s : ({ openId: s.openId === id ? null : id })),
-  close: () => set({ openId: null, editing: false, selectedId: null }),
+  close: () => set({ editing: false }),
   draggingId: null,
   setDragging: id => set({ draggingId: id }),
-  selectedId: null,
-  toggleSelected: id => set(s => ({ selectedId: s.selectedId === id ? null : id })),
   editing: false,
   setEditing: editing => set({ editing }),
   phase: 'tree',
   toggleMode: () => set(s => s.phase === 'tree'
-    ? { phase: 'to-list', openId: null, editing: false, hoveredId: null, selectedId: null }
+    ? { phase: 'to-list', editing: false, hoveredId: null }
     : s.phase === 'list' ? { phase: 'to-tree' } : s),
   setPhase: phase => set({ phase }),
   albumView: null,
-  setAlbumView: id => set({ albumView: id }),
+  // Album view is always on the tree: opening it from the list view goes back to the tree.
+  setAlbumView: id => set(s => ({
+    albumView: id,
+    ...(id && s.phase === 'list' ? { phase: 'to-tree' as const } : {}),
+    ...(id !== s.albumView ? NO_COMPARE : {}),
+  })),
+  ...NO_COMPARE,
+  startCompare: () => set({ comparing: true, compareWith: null, picking: true }),
+  setCompareWith: id => set({ compareWith: id, picking: false }),
+  setPicking: picking => set({ picking }),
+  endCompare: () => set(NO_COMPARE),
   split: false,
   setSplit: split => set({ split }),
   drill: null,
+  // Artists, and an artist's overview, are seen on the tree: going to either from the list view goes back to it.
   setDrill: drill => set(s => {
     const zoom: Zoom = drill ? 'albums' : 'artists'
-    if (s.drill === drill && s.zoom === zoom) return s
+    const tree = s.phase === 'list' ? { phase: 'to-tree' as const } : {}
+    if (s.drill === drill && s.zoom === zoom) return tree
     levelChange.at = performance.now()
-    return { drill, zoom }
+    return { drill, zoom, ...tree }
   }),
   zoom: 'artists',
   setZoom: zoom => set(s => {
     if (s.zoom === zoom) return s
     levelChange.at = performance.now()
-    return { zoom }
+    return { zoom, ...(zoom === 'artists' && s.phase === 'list' ? { phase: 'to-tree' as const } : {}) }
   }),
   goBack: () => {
     const s = useView.getState()
-    if (s.albumView) s.setAlbumView(null)
+    if (s.picking && s.compareWith) s.setPicking(false)
+    else if (s.comparing) s.endCompare()
+    else if (s.albumView) s.setAlbumView(null)
     else if (s.drill) s.setDrill(null)
     else if (s.zoom !== 'artists') s.setZoom('artists')
   },
@@ -178,6 +194,17 @@ export const COLLAPSE_SECONDS = 0.3
 
 /** Whether the raters stand apart right now: split view is on, and neither album view nor the list view is up. */
 export const isSplit = (v: Pick<View, 'split' | 'albumView' | 'phase'>) => v.split && !v.albumView && v.phase === 'tree'
+/**
+ * Artist view (MUSIC): an artist picked on the read-only rater (view.drill), outside album view and split view. Their
+ * overview (hud/ArtistView.tsx) takes the left half, as album view's details do, and the rater moves right.
+ */
+export const artistView = (v: Pick<View, 'split' | 'albumView' | 'phase' | 'drill'>) =>
+  v.drill && !v.albumView && !v.split && v.phase === 'tree' ? v.drill : null
+/** Compare is up: album view, on the tree. */
+export const isComparing = (v: Pick<View, 'comparing' | 'albumView' | 'phase'>) => v.comparing && !!v.albumView && v.phase === 'tree'
+
+/** Album view or artist view: a panel on the left half, the rater on the right. */
+export const sidePanel = (v: Pick<View, 'split' | 'albumView' | 'phase' | 'drill'>) => !!v.albumView || !!artistView(v)
 
 /** The raters standing in split view's row right now, by rater key (state/split.raterKey), in order. */
 export const raterNow = { keys: [] as string[] }

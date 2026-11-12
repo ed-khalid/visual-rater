@@ -24,6 +24,7 @@ type SpotifyAlbum = {
   images?: SpotifyImage[]
 }
 type SpotifyTrack = { id: string, name: string, track_number: number, disc_number: number, duration_ms: number }
+type SpotifySearchTrack = SpotifyTrack & { album?: SpotifyAlbum, artists?: { id: string, name: string }[] }
 type SpotifyPage<T> = { items: T[], next: string | null }
 type SpotifyAlbumWithTracks = SpotifyAlbum & { tracks: SpotifyPage<SpotifyTrack> }
 
@@ -54,14 +55,15 @@ const matchRank = (name: string, query: string) => {
 }
 
 /**
- * Merges Spotify's separate artist and album lists into one: closer name matches first, and within the same
- * closeness artists and albums alternate in Spotify's own order. Stable, so Spotify's relevance breaks ties.
+ * Merges Spotify's separate artist, album and track lists into one: closer name matches first, and within the same
+ * closeness they alternate (artist, album, track) in Spotify's own order. Stable, so Spotify's relevance breaks ties.
  */
-export const mergeByRelevance = (query: string, artists: Suggestion[], albums: Suggestion[], limit = 8): Suggestion[] => {
+export const mergeByRelevance = (query: string, artists: Suggestion[], albums: Suggestion[], tracks: Suggestion[] = [], limit = 10): Suggestion[] => {
   const interleaved: Suggestion[] = []
-  for (let i = 0; i < Math.max(artists.length, albums.length); i++) {
+  for (let i = 0; i < Math.max(artists.length, albums.length, tracks.length); i++) {
     if (artists[i]) interleaved.push(artists[i])
     if (albums[i]) interleaved.push(albums[i])
+    if (tracks[i]) interleaved.push(tracks[i])
   }
   return interleaved
     .map((sg, order) => ({ sg, order, rank: matchRank(sg.name, query) }))
@@ -94,6 +96,26 @@ const albumSuggestion = (a: SpotifyAlbum): Suggestion => ({
   artistId: a.artists?.[0]?.id,
   year: yearOf(a.release_date),
 })
+
+const trackSuggestion = (t: SpotifySearchTrack): Suggestion => {
+  const album = t.album && cleanName(t.album.name).name
+  return {
+    provider: 'spotify',
+    kind: 'track',
+    id: t.id,
+    ...cleanName(t.name),
+    image: pickImage(t.album?.images),
+    detail: [t.artists?.map(x => x.name).join(', '), album, t.album?.release_date?.slice(0, 4)].filter(Boolean).join(' · ') || undefined,
+    artist: t.artists?.[0]?.name,
+    artistId: t.artists?.[0]?.id,
+    year: yearOf(t.album?.release_date),
+    albumId: t.album?.id,
+    albumName: album,
+    number: t.track_number,
+    disc: t.disc_number,
+    durationMs: t.duration_ms,
+  }
+}
 
 /** Pages of an artist's albums to follow (50 each): plenty for any discography. */
 const MAX_ARTIST_PAGES = 4
@@ -153,14 +175,15 @@ export const createSpotify = ({ clientId, clientSecret, fetch: f = fetch, now = 
     return await res.json() as T
   }
 
-  /** Artists and albums matching free text, merged into one list (see mergeByRelevance). */
-  const searchMusic = async (query: string, limit = 8): Promise<Suggestion[]> => {
-    const url = `https://api.spotify.com/v1/search?type=artist,album&limit=6&q=${encodeURIComponent(query)}`
-    const body = await apiGet<{ artists?: { items: SpotifyArtist[] }, albums?: { items: SpotifyAlbum[] } }>(url)
+  /** Artists, albums and songs matching free text, merged into one list (see mergeByRelevance). */
+  const searchMusic = async (query: string, limit = 10): Promise<Suggestion[]> => {
+    const url = `https://api.spotify.com/v1/search?type=artist,album,track&limit=6&q=${encodeURIComponent(query)}`
+    const body = await apiGet<{ artists?: { items: SpotifyArtist[] }, albums?: { items: SpotifyAlbum[] }, tracks?: { items: SpotifySearchTrack[] } }>(url)
     return mergeByRelevance(
       query,
       (body.artists?.items ?? []).map(artistSuggestion),
       (body.albums?.items ?? []).map(albumSuggestion),
+      (body.tracks?.items ?? []).map(trackSuggestion),
       limit,
     )
   }

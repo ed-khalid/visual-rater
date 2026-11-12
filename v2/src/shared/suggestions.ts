@@ -3,8 +3,8 @@
 /** A match from an outside catalogue, offered while adding an item. */
 export type Suggestion = {
   provider: 'spotify'
-  /** What sort of catalogue entry this is (one MUSIC board can hold both). */
-  kind: 'artist' | 'album'
+  /** What sort of catalogue entry this is. */
+  kind: 'artist' | 'album' | 'track'
   id: string
   name: string
   image?: string
@@ -12,10 +12,16 @@ export type Suggestion = {
   edition?: string
   /** One short line of context: genres for an artist, artist and year for an album. */
   detail?: string
-  /** Albums only: structured versions of what's in `detail` (the main artist, and their catalogue id). */
+  /** Albums and tracks: structured versions of what's in `detail` (the main artist, and their catalogue id). */
   artist?: string
   artistId?: string
   year?: number
+  /** Tracks only: the album it's on (catalogue id and name), and its place and length there. */
+  albumId?: string
+  albumName?: string
+  number?: number
+  disc?: number
+  durationMs?: number
 }
 
 export type Track = {

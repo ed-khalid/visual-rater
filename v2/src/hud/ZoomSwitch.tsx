@@ -14,19 +14,26 @@ const LAST = LEVELS.length - 1
  * The rater's zoom (MUSIC), at the bottom of the rater's area: a slider with three stops, artists, albums and songs,
  * for every artist on the rater (or just the one picked; view.drill), leaving out albums taken off it in the rater
  * contents. Drag the knob (it snaps to the nearest stop when let go), tap a stop or its word, or use the arrow keys.
- * Hidden in album view and split view, which show songs their own way.
+ * Also in the list view, which lists that level; moving to albums or songs from the tree opens the list view. Hidden in album view and split view, which show songs their own way.
  */
 export const ZoomSwitch = () => {
   const zoom = useView(v => v.zoom)
   const setZoom = useView(v => v.setZoom)
-  const hidden = useView(v => !!v.albumView || isSplit(v) || v.phase !== 'tree')
+  const hidden = useView(v => !!v.albumView || isSplit(v) || (v.phase !== 'tree' && v.phase !== 'list'))
   const track = useRef<HTMLDivElement>(null)
   /** While dragging: where the knob is, 0 to LAST (fractional); otherwise null and the knob sits on its stop. */
   const [dragAt, setDragAt] = useState<number | null>(null)
   if (hidden) return null
 
   const index = LEVELS.findIndex(l => l.zoom === zoom)
-  const go = (i: number) => { const z = LEVELS[Math.max(0, Math.min(LAST, i))].zoom; if (z !== zoom) setZoom(z) }
+  // Albums and songs are read in the list view: moving to either from the tree opens it.
+  const go = (i: number) => {
+    const z = LEVELS[Math.max(0, Math.min(LAST, i))].zoom
+    if (z === zoom) return
+    setZoom(z)
+    const v = useView.getState()
+    if (z !== 'artists' && v.phase === 'tree') v.toggleMode()
+  }
   const at = (e: React.PointerEvent) => {
     const r = track.current!.getBoundingClientRect()
     return Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * LAST

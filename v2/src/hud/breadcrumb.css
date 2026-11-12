@@ -45,3 +45,6 @@
 
 /* Phones: no room beside the switch over the spine. */
 @media (max-width: 640px) { .breadcrumb { display: none; } }
+
+/* Compare: the catalog has stepped aside, so the breadcrumb starts at the page's edge, over the left album. */
+@media (min-width: 901px) { .breadcrumb.in-compare { left: 28px; max-width: calc(50vw - 56px); } }

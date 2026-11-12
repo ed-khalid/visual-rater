@@ -1,23 +1,21 @@
 import { useEffect, useRef, useState } from 'react'
-import { ARTIST_TIERS } from '../state/scores'
-import { ALBUM_GRADES, ARTIST_GRADES, tierRanges, TRACK_TIERS, type Tier } from '../shared/tiers'
+import { formatPrecise, SCALE, tierSteps, TRACK_TIERS } from '../shared/scale'
+import { ALBUM_GRADES, ARTIST_GRADES, type Tier } from '../shared/tiers'
 import './rubric.css'
 
-/** Songs: whole-number ranges. */
-const songRanges = tierRanges(TRACK_TIERS, 100).map(r => ({ ...r, range: `${r.from}–${r.to === 100 ? 100 : r.to - 1}` }))
-/** Albums and artists: their scores aren't whole numbers, so each grade is shown by where it starts. */
-const fromRanges = (tiers: Tier[]) => tiers.map(t => ({ ...t, range: t.from === 0 ? `under ${tiers[tiers.length - 2].from}` : `${t.from}+` }))
+/** Songs: the scores each tier can be shown at, on the scale in use. */
+const songRanges = tierSteps()
+/** Albums and artists: their scores aren't on the steps, so each grade is shown by where it starts (`at` reads a bound). */
+const fromRanges = (tiers: Tier[], at: (from: number) => string = String) =>
+  tiers.map(t => ({ ...t, range: t.from === 0 ? `under ${at(tiers[tiers.length - 2].from)}` : `${at(t.from)}+` }))
 
-/** What a song adds to its artist's score, by its tier (named and coloured as in the song tiers). */
-const ARTIST_POINTS = ARTIST_TIERS.map(t => {
-  const tier = TRACK_TIERS.find(x => x.from === t.from)!
-  return { name: tier.name, color: tier.color, weight: t.weight }
-})
+/** What a song adds to its artist's score: its tier's points (named and coloured as in the song tiers). */
+const ARTIST_POINTS = TRACK_TIERS.filter(t => t.points).map(t => ({ name: t.name, color: t.color, weight: t.points! }))
 const LOWEST_COUNTED = ARTIST_POINTS[ARTIST_POINTS.length - 1]
 
 /**
  * RUBRIC: a small button in the bottom-left corner, above the item count, that opens a read-only guide just above it,
- * in three columns side by side (stacked on phones): song tiers (v1's names, score ranges and colours), and how album and artist scores are worked out
+ * in three columns side by side (stacked on phones): song tiers (on the scale in use: shared/scale.ts), and how album and artist scores are worked out
  * (state/scores.ts) with their letter grades. It's informational only. Closes on its ×, Esc, the
  * button again, or a click anywhere else.
  */
@@ -48,13 +46,13 @@ export const Rubric = () => {
       <div className="rubric-columns">
         <section className="rubric-column" aria-label="Songs">
           <h3 className="rubric-heading">Songs</h3>
-          <p className="rubric-text">Each song is scored 0–100 by where it sits on the rater.</p>
+          <p className="rubric-text">Each song is scored 0–{SCALE.max} by where it sits on the rater.</p>
           <Tiers rows={songRanges} />
         </section>
         <section className="rubric-column" aria-label="Albums">
           <h3 className="rubric-heading">Albums</h3>
-          <p className="rubric-text">The average score of its rated songs. Unrated songs don't count.</p>
-          <Tiers rows={fromRanges(ALBUM_GRADES)} />
+          <p className="rubric-text">The average score of its songs, once they're all rated; until then it's Incomplete.</p>
+          <Tiers rows={fromRanges(ALBUM_GRADES, formatPrecise)} />
         </section>
         <section className="rubric-column" aria-label="Artists">
           <h3 className="rubric-heading">Artists</h3>
@@ -62,7 +60,7 @@ export const Rubric = () => {
             no ceiling. Songs below <Chip t={LOWEST_COUNTED} /> add nothing.</p>
           <ul className="rubric-points">
             {ARTIST_POINTS.map(p => <li key={p.name}>
-              Every <Chip t={p} /> adds <b>{p.weight}</b> {p.weight === 1 ? 'point' : 'points'}
+              Every <Chip t={p} /> song adds <b>{p.weight}</b> {p.weight === 1 ? 'point' : 'points'}
             </li>)}
           </ul>
           <Tiers rows={fromRanges(ARTIST_GRADES)} />

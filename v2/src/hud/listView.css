@@ -95,7 +95,7 @@
 .list-table th {
   position: sticky;
   top: 0; /* stays put at the top of the scroll area */
-  z-index: 1;
+  z-index: 3; /* above the rows' positioned score cells as they scroll under it */
   padding: 4px 10px 8px;
   font-size: 9.5px;
   font-weight: 700;
@@ -113,32 +113,104 @@
   text-overflow: ellipsis;
   border-bottom: 1px solid var(--hair);
 }
-.list-table tbody tr { animation: list-row-in 0.5s var(--ease-out) both; animation-delay: calc(min(var(--row, 0), 24) * 18ms + 0.25s); }
+/* backwards, not both: once in, the row's transform is motion's, for sliding to a new place */
+.list-table tbody tr { animation: list-row-in 0.5s var(--ease-out) backwards; animation-delay: calc(min(var(--row, 0), 24) * 18ms + 0.25s); }
 @keyframes list-row-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 .list-table tbody tr:hover td { background: var(--paper-deep); }
 
-.list-rank { width: 52px; font-variant-numeric: lining-nums tabular-nums; }
+.list-rank { width: 64px; font-variant-numeric: lining-nums tabular-nums; }
 .list-table td.list-rank { font-family: var(--serif); font-size: 20px; font-weight: 600; color: var(--ink); }
 .list-table tbody tr:nth-child(-n + 3) td.list-rank { color: var(--accent); }
 .list-name { font-family: var(--serif); font-size: 16px; font-weight: 500; }
 .list-artist, .list-album { color: var(--ink-soft); font-size: 12px; }
-.list-table .list-score { width: 72px; text-align: right; font-family: var(--serif); font-size: 18px; font-weight: 600; font-variant-numeric: lining-nums tabular-nums; }
+.list-album-link {
+  max-width: 100%;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  vertical-align: bottom;
+  background: none;
+  border: none;
+  border-bottom: 1px solid transparent;
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+}
+.list-album-link:hover, .list-album-link:focus-visible { color: var(--accent); border-bottom-color: currentColor; outline: none; }
+.list-year { width: 64px; color: var(--ink-soft); font-size: 12px; font-variant-numeric: lining-nums tabular-nums; }
+.list-table .list-score { width: 120px; white-space: nowrap; text-align: right; font-family: var(--serif); font-size: 18px; font-weight: 600; font-variant-numeric: lining-nums tabular-nums; }
 .list-tier { width: 128px; }
+.list-tier.list-grade { width: 72px; }
 .list-tier .tier-chip { margin-left: 0; }
 .list-table th.list-score { font-family: var(--sans); font-size: 9.5px; }
 .list-unrated td, .list-unrated td.list-score { color: var(--ink-faint); }
+/* UNRATED as a label, small enough for the score column */
+.list-table .list-unrated td.list-score { font-family: var(--sans); font-size: 9.5px; font-weight: 700; letter-spacing: 0.16em; }
 .list-unrated .list-name { font-style: italic; }
 
-/* Phones: drop the album column and tighten up */
-@media (max-width: 600px) {
+/* The pencil left of a score: shows on the row's hover (always, on touch); a tap turns the score into a field. */
+.list-edit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  /* In the flow (a positioned cell would draw over the sticky header), and never making the row taller */
+  position: relative;
+  margin: -4px 8px -4px 0;
+  padding: 0;
+  vertical-align: middle;
+  color: var(--ink-soft);
+  background: none;
+  border: none;
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s, color 0.2s, transform 0.25s var(--ease-out);
+}
+.list-edit::after { content: ''; position: absolute; inset: -12px; }
+.list-table tbody tr:hover .list-edit, .list-edit:focus-visible { opacity: 1; }
+.list-edit:hover, .list-edit:focus-visible { color: var(--accent); transform: rotate(-12deg); outline: none; }
+@media (pointer: coarse) { .list-edit { opacity: 0.55; } }
+
+.list-score-input {
+  width: 64px;
+  margin: -4px 0;
+  padding: 2px 6px;
+  font-family: var(--serif);
+  font-size: 18px; /* 16px or more, or iOS zooms */
+  font-weight: 600;
+  text-align: right;
+  color: var(--ink);
+  caret-color: var(--accent);
+  background: var(--paper-raised);
+  border: none;
+  border-bottom: 2px solid var(--accent);
+  outline: none;
+  animation: list-input-in 0.2s var(--ease-out) backwards;
+}
+@keyframes list-input-in { from { opacity: 0; transform: translateY(3px); } }
+
+/* Just changed: the row lights up where it lands, and its score settles in */
+.list-table tbody tr.list-edited td { animation: list-edited 1.8s ease-out; }
+@keyframes list-edited { 0%, 30% { background: var(--paper-deep); } 100% { background: transparent; } }
+.list-edited .list-score-value { display: inline-block; animation: list-score-in 1.8s var(--ease-out) backwards; }
+@keyframes list-score-in { 0% { opacity: 0; transform: translateY(-6px); color: var(--accent); } 25% { opacity: 1; transform: none; } 50% { color: var(--accent); } }
+
+/* Phones: beside the catalog's covers, so just song, score and tier */
+@media (max-width: 640px) {
   .list-panel { padding: 0 8px; }
   .list-table { font-size: 11px; }
   .list-table td, .list-table th { padding-left: 5px; padding-right: 5px; }
   .list-name { font-size: 14px; }
-  .list-album { display: none; }
-  .list-rank { width: 32px; }
+  .list-album, .list-artist { display: none; }
+  .list-rank { width: 40px; }
   .list-table td.list-rank { font-size: 15px; }
-  .list-table .list-score { width: 42px; font-size: 15px; }
+  .list-table .list-score { width: 96px; font-size: 15px; }
+  .list-edit { margin-right: 2px; }
   .list-tier { width: 96px; }
+  .list-tier.list-grade { width: 52px; }
   .list-tier .tier-chip { font-size: 8px; letter-spacing: 0.08em; padding: 1px 4px; }
 }

@@ -24,23 +24,29 @@ const fakeSpotify = (opts: { rejectFirstSearch?: boolean } = {}) => {
         { ...artist('okc', 'OK Computer'), album_type: 'album', artists: [{ id: 'rh', name: 'Radiohead' }], release_date: '1997-05-28' },
         { ...artist('crp', 'Creep'), album_type: 'single', artists: [{ id: 'rh', name: 'Radiohead' }], release_date: '1992' },
       ] },
+      tracks: { items: [
+        { id: 'ppa', name: 'Paranoid Android - Remastered', track_number: 2, disc_number: 1, duration_ms: 387000, artists: [{ id: 'rh', name: 'Radiohead' }],
+          album: { ...artist('okc', 'OK Computer'), album_type: 'album', artists: [{ id: 'rh', name: 'Radiohead' }], release_date: '1997-05-28' } },
+      ] },
     })
   })
   return { fetch: fetch as unknown as typeof globalThis.fetch, tokens: () => tokens, calls: fetch.mock.calls }
 }
 
 describe('spotify client', () => {
-  test('searches artists and albums together and maps both', async () => {
+  test('searches artists, albums and songs together and maps them all', async () => {
     const f = fakeSpotify()
     const results = await createSpotify({ clientId: 'id', clientSecret: 'secret', fetch: f.fetch }).searchMusic('zzz')
     expect(results).toEqual([
       { provider: 'spotify', kind: 'artist', id: 'rh', name: 'Radiohead', image: 'rh-64', detail: 'art rock · alternative rock' },
       { provider: 'spotify', kind: 'album', id: 'okc', name: 'OK Computer', image: 'okc-64', detail: 'Radiohead · 1997', artist: 'Radiohead', artistId: 'rh', year: 1997 },
+      { provider: 'spotify', kind: 'track', id: 'ppa', name: 'Paranoid Android', edition: 'Remastered', image: 'okc-64', detail: 'Radiohead · OK Computer · 1997',
+        artist: 'Radiohead', artistId: 'rh', year: 1997, albumId: 'okc', albumName: 'OK Computer', number: 2, disc: 1, durationMs: 387000 },
       { provider: 'spotify', kind: 'artist', id: 'ty', name: 'Thom Yorke', image: 'ty-64', detail: undefined },
       { provider: 'spotify', kind: 'album', id: 'crp', name: 'Creep', image: 'crp-64', detail: 'Radiohead · 1992 · single', artist: 'Radiohead', artistId: 'rh', year: 1992 },
     ])
     const url = String(f.calls[1][0])
-    expect(url).toContain('type=artist,album')
+    expect(url).toContain('type=artist,album,track')
     expect(url).toContain('q=zzz')
   })
 
@@ -65,7 +71,7 @@ describe('spotify client', () => {
   test('a 401 gets a fresh token and retries once', async () => {
     const f = fakeSpotify({ rejectFirstSearch: true })
     const results = await createSpotify({ clientId: 'id', clientSecret: 'secret', fetch: f.fetch }).searchMusic('radioh')
-    expect(results).toHaveLength(4)
+    expect(results).toHaveLength(5)
     expect(f.tokens()).toBe(2)
   })
 
@@ -114,7 +120,7 @@ describe('getAlbum', () => {
 })
 
 describe('mergeByRelevance', () => {
-  const sg = (kind: 'artist' | 'album', name: string): Suggestion => ({ provider: 'spotify', kind, id: `${kind}:${name}`, name })
+  const sg = (kind: Suggestion['kind'], name: string): Suggestion => ({ provider: 'spotify', kind, id: `${kind}:${name}`, name })
   const names = (list: Suggestion[]) => list.map(x => `${x.kind}:${x.name}`)
 
   test('closer name matches first: exact, then starts-with, then contains, then the rest', () => {
@@ -136,7 +142,12 @@ describe('mergeByRelevance', () => {
 
   test('caps the list', () => {
     const many = Array.from({ length: 10 }, (_, i) => sg('artist', `a${i}`))
-    expect(mergeByRelevance('x', many, many.map(a => ({ ...a, kind: 'album' as const })), 8)).toHaveLength(8)
+    expect(mergeByRelevance('x', many, many.map(a => ({ ...a, kind: 'album' as const })), [], 8)).toHaveLength(8)
+  })
+
+  test('songs take their turn after artists and albums', () => {
+    expect(names(mergeByRelevance('x', [sg('artist', 'a1')], [sg('album', 'b1')], [sg('track', 'c1'), sg('track', 'c2')])))
+      .toEqual(['artist:a1', 'album:b1', 'track:c1', 'track:c2'])
   })
 })
 

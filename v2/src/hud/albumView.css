@@ -126,3 +126,29 @@
   /* No room for the tracklist beside the rater on a phone: the title card only. */
   .album-popup.album-popup-docked { display: none; }
 }
+
+/* Compare (desktop): each album at its own edge of the page, narrower (width and edge set inline, from scene/box
+   compareBox), the title card stacked: cover and names, then the grade and score. The right one is mirrored: its
+   cover on the right, its names and score against it. */
+.album-view.compare { gap: 10px; }
+.album-view.compare .album-view-title { grid-template-columns: auto 1fr; row-gap: 10px; gap: 16px; }
+.album-view.compare .album-view-cover { width: 88px; height: 88px; }
+.album-view.compare .album-view-rating { grid-column: 1 / -1; }
+.album-view.compare .album-view-name { font-size: clamp(22px, 2vw, 32px); overflow-wrap: break-word; }
+.album-view.compare .album-view-grade { min-width: 42px; height: 42px; font-size: 20px; }
+.album-view.compare .album-view-score { font-size: 48px; }
+.album-view.compare-right .album-view-title { grid-template-columns: 1fr auto; }
+.album-view.compare-right .album-view-cover { grid-column: 2; grid-row: 1; box-shadow: 0 0 0 1px var(--ink), -6px 6px 0 var(--paper-deep); }
+.album-view.compare-right .album-view-names { grid-column: 1; grid-row: 1; align-items: flex-end; text-align: right; }
+.album-view.compare-right .album-view-rating { justify-content: flex-end; }
+.album-view.compare-right { animation: av-right 0.5s var(--ease-out) both; }
+@keyframes av-right { from { opacity: 0; transform: translateX(24px); } to { opacity: 1; transform: none; } }
+
+/* No room to compare below a desktop's width. */
+@media (max-width: 900px) { .album-action-compare { display: none; } }
+
+/* The cover (or artist photo) as an upload button: a click picks a new picture. */
+.cover-upload { padding: 0; border: 0; cursor: pointer; overflow: hidden; position: relative; font: inherit; color: inherit; }
+.cover-upload img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.cover-upload:hover, .cover-upload:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.cover-upload.busy { opacity: 0.6; }

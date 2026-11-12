@@ -23,7 +23,9 @@ export const RatingWatch = () => {
   useEffect(() => {
     if (!batch) return
     const onKey = (e: KeyboardEvent) => {
-      if (e.key !== 'Escape' || useView.getState().openId || document.querySelector('.palette')) return
+      if (e.key !== 'Escape' || useView.getState().editing || document.querySelector('.palette')) return
+      // Esc in a text field (a score in the list, a song typed onto Misc) is that field's own.
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return
       useView.getState().endRating()
     }
     // Capture phase: decide before the popup or palette closes itself on the same Esc.

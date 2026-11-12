@@ -45,6 +45,9 @@ export type Rateable = {
 
 export type Artist = Base & { vendor?: VendorRef }
 
+/** What an artist's Misc album (`misc` on Album: their songs added on their own) is called when it's made. */
+export const MISC_NAME = 'Singles'
+
 export type Album = Base & {
   vendor?: VendorRef
   artistId?: string
@@ -55,6 +58,11 @@ export type Album = Base & {
   stagedAt: number
   /** When its tracks were put on the tree (it then floats to the right of the tree). */
   addedAt?: number
+  /**
+   * The artist's "Misc" album (one each at most): songs added on their own whose real album isn't in the catalog. No
+   * album score or grade, left out of the Career chart and the Albums zoom; its songs count for the artist as usual.
+   */
+  misc?: true
 }
 
 /** A track: what's rated on the MUSIC tree. An album's tracklist is its tracks in disc then number order. */
@@ -66,8 +74,19 @@ export type Track = Base & Rateable & {
   /** Position on its disc, from 1. */
   number?: number
   durationMs?: number
-  /** Left out of its artist's score (interludes, skits, live versions…). */
-  excludeFromArtistScore?: boolean
+  /**
+   * Not a song (a skit, spoken intro, interlude, hidden track…): in its album's tracklist, dim and tagged, but never on
+   * the rater and counted for nothing: no score or tier, not in the album's average or completeness, the artist's
+   * score, the FLOW chart's scores, the list view or the song counts. A score it had is kept, for if it's unmarked.
+   * Set by hand in album view's EDIT; tracks named with "skit" get it when they're added (names.ts `isSkit`).
+   */
+  notASong?: boolean
+  /**
+   * A live recording of a song the artist already has (state/live.ts): rated, and counted for its album, but not for the
+   * artist's score or their Songs by tier, so a song doesn't count twice. Tagged LIVE in the tracklist. Covers and songs
+   * that only exist live aren't marked, so they count. Set when it's added if it matches; changed in album view's EDIT.
+   */
+  live?: boolean
   /** One or two words shown for it on the rater instead of its full name (names.ts `shortTitle`); unset on older tracks. */
   shortTitle?: string
 }
@@ -89,3 +108,39 @@ export type Collection = keyof Persisted
 export const COLLECTIONS: Collection[] = ['artists', 'albums', 'tracks', 'movies', 'books']
 
 export const emptyPersisted = (): Persisted => ({ artists: {}, albums: {}, tracks: {}, movies: {}, books: {} })
+
+/**
+ * What the app starts with for an artist whose albums and tracks aren't loaded yet (they load when needed; see
+ * GET /api/library/artists): their score, from the database's music_artist_scores view (the same formula as
+ * state/scores.ts), how many albums they have, when the first of those went on the tree, and how many of their tracks
+ * are on it (not hidden).
+ */
+export type ArtistInfo = { score?: number, albums: number, firstAdded?: number, fruit: number }
+
+/** GET /api/counts: how many of each MUSIC record the database holds (albums: not counting Misc). */
+export type MusicCounts = { artists: number, albums: number, songs: number }
+
+/** How many artists a page of them holds (GET /api/state's first, GET /api/library/artists/page's after it). */
+export const ARTIST_PAGE = 30
+
+/**
+ * Some artists with a summary of each (ArtistInfo), standing in for their albums and tracks until those are loaded.
+ * A page of them (best first by artist score, unrated ones after by name) has `next`: where the next page starts
+ * (an opaque cursor for GET /api/library/artists/page), null after the last.
+ */
+export type ArtistPage = { artists: Record<string, Artist>, artistInfo: Record<string, ArtistInfo>, next: string | null }
+
+/** GET /api/library/artists/find: artists by Spotify id, by exact name (any case), or whose name contains `q`. */
+export type ArtistQuery = { vendorIds?: string[], names?: string[], q?: string }
+
+/**
+ * GET /api/state: the first page of artists (ArtistPage, `next` for the rest), every movie and book, and only the
+ * albums and tracks that belong to no artist.
+ */
+export type StartState = Persisted & { artistInfo: Record<string, ArtistInfo>, next: string | null }
+
+/** GET /api/library/artists?ids=…: those artists' albums, and every track on them or credited to them. */
+export type ArtistLibrary = Pick<Persisted, 'albums' | 'tracks'>
+
+/** GET /api/library/tracks/near: a rated track, with its album's and artist's names. */
+export type NearTrack = Track & { albumName?: string, artistName?: string }

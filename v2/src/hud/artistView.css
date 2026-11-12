@@ -1,0 +1,88 @@
+/* Artist view: album view's opener with a round photo, then the overview sections in a column that scrolls. */
+.artist-view-photo { border-radius: 50%; box-shadow: 0 0 0 1px var(--ink), 5px 5px 0 var(--paper-deep); }
+
+.artist-view-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding-right: 8px;
+}
+.artist-view-section { animation: av-up 0.7s var(--ease-out) both; }
+.artist-view-section:nth-child(1) { animation-delay: 0.3s; }
+.artist-view-section:nth-child(2) { animation-delay: 0.4s; }
+.artist-view-section:nth-child(3) { animation-delay: 0.5s; }
+
+.artist-view-heading {
+  margin: 0 0 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid var(--ink);
+  font-family: var(--serif);
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+/* Songs by tier: name, a bar in the tier's colour, the count */
+.artist-tiers { margin: 0; padding: 0; list-style: none; display: grid; gap: 3px; }
+.artist-tier { display: grid; grid-template-columns: 92px 1fr 28px; align-items: center; gap: 10px; height: 16px; }
+.artist-tier-name { font-size: 9px; font-weight: 700; letter-spacing: 0.12em; color: var(--ink-soft); white-space: nowrap; }
+.artist-tier.none .artist-tier-name { color: var(--ink-faint); }
+.artist-tier-track { position: relative; height: 100%; border-left: 1px solid var(--ink); }
+.artist-tier-bar {
+  position: absolute;
+  left: 0;
+  top: 2px;
+  bottom: 2px;
+  transform-origin: 0 50%;
+  animation: tier-grow 0.7s var(--ease-out) both;
+}
+@keyframes tier-grow { from { transform: scaleX(0); } to { transform: none; } }
+.artist-tier-count { font-family: var(--serif); font-size: 14px; font-weight: 600; text-align: right; font-variant-numeric: lining-nums tabular-nums; }
+
+/* Hovering a tier (with songs in it): the row lights up and its songs show in a card beside it (scoreMatches.css's look). */
+.artist-tier:not(.none) { cursor: default; outline: none; }
+.artist-tier.hovered .artist-tier-name { color: var(--ink); }
+.artist-tier.hovered .artist-tier-track { background: var(--paper-deep); }
+.tier-songs { width: 280px; }
+.tier-songs-head { display: flex; align-items: center; justify-content: space-between; padding: 2px 2px 6px; border-bottom: 1px solid var(--ink); }
+.tier-songs-chip { padding: 2px 6px; font-size: 9px; font-weight: 700; letter-spacing: 0.12em; color: #fff; }
+.tier-songs-count { font-size: 10px; color: var(--ink-soft); }
+.tier-songs-more { padding: 6px 2px 2px; font-family: var(--serif); font-size: 13px; font-style: italic; color: var(--ink-soft); }
+
+/* Albums: cover, name, year, score, grade chip; hairlines between */
+.av-albums { margin: 0; padding: 0; list-style: none; }
+.av-album {
+  display: grid;
+  grid-template-columns: 32px 1fr auto 34px 26px;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 44px;
+  padding: 0 4px 0 0;
+  font: inherit;
+  text-align: left;
+  color: var(--ink);
+  background: none;
+  border: none;
+  border-bottom: 1px solid var(--hair);
+  cursor: pointer;
+  transition: background-color 0.2s, padding 0.3s var(--ease-out);
+}
+.av-album:hover, .av-album:focus-visible { background: var(--paper-deep); padding-left: 4px; outline: none; }
+.av-album-cover { width: 32px; height: 32px; object-fit: cover; background: var(--paper-deep); box-shadow: 0 0 0 1px var(--hair-strong); }
+.av-album-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; font-weight: 500; }
+.av-album-year { font-family: var(--serif); font-size: 13px; font-style: italic; color: var(--ink-soft); }
+.av-album-score { font-family: var(--serif); font-size: 16px; font-weight: 600; text-align: right; font-variant-numeric: lining-nums tabular-nums; }
+.av-album-grade { display: flex; align-items: center; justify-content: center; height: 18px; font-size: 10.5px; font-weight: 700; color: #fff; }
+.av-album.staged { opacity: 0.5; }
+.av-album.staged .av-album-name { font-family: var(--serif); font-style: italic; font-size: 14px; }
+.av-album.staged .av-album-cover { filter: grayscale(1); }
+
+/* Phones: the opener alone, as in album view. */
+@media (max-width: 640px) {
+  .artist-view-body { display: none; }
+}
+.av-album-score.incomplete { font-family: var(--sans); font-size: 9px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--ink-faint); }

@@ -2,7 +2,7 @@
  * Names for scores, from the v1 app (frontend/src/models/ScoreModels.ts). Like album and artist scores, a tier is
  * worked out from a score whenever it's shown; it's never stored.
  *
- * For now these are an informational guide only (the rubric popup on the MUSIC tree shows the track tiers).
+ * Grades' bounds are on the stored 0–100 scale (albums) or the open-ended artist score, whatever scale scores are shown on.
  */
 
 export type Tier = { name: string, from: number, color: string }
@@ -27,23 +27,7 @@ export const TIER_COLORS = {
 } as const
 const C = TIER_COLORS
 
-/** Track tiers on the 0–100 scale, best first; each runs from `from` up to the next tier's `from`. */
-export const TRACK_TIERS: Tier[] = [
-  { name: 'CLASSIC', from: 95, color: C.CLASSIC },
-  { name: 'GREAT', from: 90, color: C.GREAT },
-  { name: 'VERY GOOD', from: 85, color: C.VERY_GOOD },
-  { name: 'GOOD', from: 80, color: C.GOOD },
-  { name: 'PLEASANT', from: 75, color: C.PLEASANT },
-  { name: 'DECENT', from: 70, color: C.DECENT },
-  { name: 'INTERESTING', from: 65, color: C.INTERESTING },
-  { name: 'OK', from: 60, color: C.OK },
-  { name: 'MEH', from: 55, color: C.MEH },
-  { name: 'AVERAGE', from: 50, color: C.AVERAGE },
-  { name: 'BORING', from: 40, color: C.BORING },
-  { name: 'POOR', from: 30, color: C.POOR },
-  { name: 'BAD', from: 10, color: C.BAD },
-  { name: 'OFFENSIVE', from: 0, color: C.OFFENSIVE },
-]
+/** Track (song) tiers depend on the scale in use: see scale.ts (TRACK_TIERS, in 0–100 like these). */
 
 /** Album letter grades, by the album's score (the average of its rated tracks, 0–100). */
 export const ALBUM_GRADES: Tier[] = [
@@ -72,7 +56,7 @@ export const ARTIST_GRADES: Tier[] = [
 ]
 
 /** The tier a score falls in (the first, from the top, whose lower bound it reaches); undefined when unrated. */
-export const tierOf = (tiers: Tier[], score: number | undefined): Tier | undefined =>
+export const tierOf = <T extends Tier>(tiers: T[], score: number | undefined): T | undefined =>
   score === undefined ? undefined : tiers.find(t => score >= t.from) ?? tiers[tiers.length - 1]
 
 /** Each tier with the range it covers, for showing a rubric: [from, to) with the top one ending at `max`. */

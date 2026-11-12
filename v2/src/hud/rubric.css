@@ -1,7 +1,7 @@
-/* A small ink key in the bottom-left corner, above the item count */
+/* A small ink key in the bottom-left corner, above the counts */
 .rubric-button {
   position: fixed;
-  bottom: 66px;
+  bottom: 80px;
   left: 28px;
   z-index: 15;
   padding: 5px 10px;
@@ -23,10 +23,10 @@
 /* A boxed key to the tiers, opening upwards from the button */
 .rubric {
   position: fixed;
-  bottom: 104px;
+  bottom: 118px;
   left: 28px;
   z-index: 20;
-  max-height: calc(100vh - 104px - 120px);
+  max-height: calc(100vh - 118px - 120px);
   display: flex;
   flex-direction: column;
   width: min(820px, calc(100vw - 56px));
@@ -121,7 +121,8 @@
 
 /* What each song adds to its artist: "Every CLASSIC adds 6 points", a line each, hairlines between */
 .rubric-points { margin: -2px 0 12px; padding: 0; list-style: none; }
-.rubric-points li { padding: 4px 0; border-bottom: 1px solid var(--hair); font-family: var(--serif); font-size: 13.5px; color: var(--ink-soft); }
+.rubric-points li { padding: 4px 0; border-bottom: 1px solid var(--hair); font-family: var(--serif); font-size: 13px; color: var(--ink-soft); white-space: nowrap; }
+.rubric-points .rubric-chip { letter-spacing: 0.06em; }
 .rubric-points b { font-weight: 600; color: var(--ink); font-variant-numeric: lining-nums tabular-nums; }
 
 /* A song tier's name on its colour, inline */

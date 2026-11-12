@@ -1,4 +1,5 @@
-import { ALBUM_GRADES, ARTIST_GRADES, type Tier, TRACK_TIERS, tierOf } from '../shared/tiers'
+import { ALBUM_GRADES, ARTIST_GRADES, type Tier, tierOf } from '../shared/tiers'
+import { formatPrecise, formatScore as formatOnScale, roundToShown, toStored, TRACK_TIERS } from '../shared/scale'
 /**
  * What each type's tree shows, worked out from the saved collections (nothing about boards is stored):
  *
@@ -8,8 +9,8 @@ import { ALBUM_GRADES, ARTIST_GRADES, type Tier, TRACK_TIERS, tierOf } from '../
  *
  * Album and artist scores come from their tracks (scores.ts); they're never dragged.
  */
-import type { Album, Artist, Collection, Persisted, Rateable, Simple, Track, TypeId } from '../shared/model'
-import { albumScore, artistScore } from './scores'
+import type { Album, Artist, ArtistInfo, Collection, Persisted, Rateable, Simple, Track, TypeId } from '../shared/model'
+import { albumScore, artistScore, isIncomplete } from './scores'
 
 /** Where an unrated item sits on the trunk (0 bottom … 1 top) until it's dragged. */
 export const UNRATED_POSITION = 0.5
@@ -28,12 +29,13 @@ export const treeNodes = (s: Persisted, type: TypeId): TreeNode[] => {
   const collection = rateableCollection(type)
   const all = Object.values(s[collection]) as (Track | Simple)[]
   return all
-    .filter(e => e.branch && !e.hidden)
+    // Not a song (a skit…): never on the rater.
+    .filter(e => e.branch && !e.hidden && !(e as Track).notASong)
     .sort((a, b) => (a.since ?? 0) - (b.since ?? 0))
     .map(entity => ({ id: entity.id, collection, entity }))
 }
 
-/** Albums in the staging tray, oldest first. */
+/** Staged albums (in the database, not on the tree yet), oldest first. */
 export const stagedAlbums = (s: Persisted): Album[] =>
   Object.values(s.albums).filter(a => a.addedAt === undefined).sort((a, b) => a.stagedAt - b.stagedAt)
 
@@ -52,6 +54,46 @@ export const tracksOf = (s: Pick<Persisted, 'tracks'>, albumId: string): Track[]
 export const tracksByArtist = (s: Pick<Persisted, 'tracks'>, artistId: string): Track[] =>
   Object.values(s.tracks).filter(t => t.artistId === artistId)
 
+/**
+ * The saved collections as far as they're loaded, with a summary (`artistInfo`) of each artist whose albums and tracks
+ * aren't loaded yet (they load when needed; state/remote.ts loadArtists). With no summary, an artist counts as loaded.
+ */
+export type Library = Persisted & { artistInfo?: Readonly<Record<string, ArtistInfo>> }
+
+/** Whether an artist's albums and tracks are here. */
+export const isLoaded = (s: Library, artistId: string) => !s.artistInfo?.[artistId]
+
+/** An artist's score: worked out from their tracks once they're loaded, the database's until then. */
+export const artistScoreOf = (s: Library, artistId: string): number | undefined => {
+  const info = s.artistInfo?.[artistId]
+  return info ? info.score : artistScore(tracksByArtist(s, artistId))
+}
+
+/** An artist's albums, oldest first by when they were added (empty until they're loaded). */
+export const albumsOf = (s: Pick<Persisted, 'albums'>, artistId: string): Album[] =>
+  Object.values(s.albums).filter(a => a.artistId === artistId).sort((a, b) => a.stagedAt - b.stagedAt)
+
+/** Whether an artist has any albums (loaded or not). */
+export const hasAlbums = (s: Library, artistId: string) => {
+  const info = s.artistInfo?.[artistId]
+  return info ? info.albums > 0 : albumsOf(s, artistId).length > 0
+}
+
+/**
+ * When the first of an artist's albums went on the tree, leaving out albums taken off the rater in the catalog;
+ * undefined if none is on it.
+ */
+export const firstOnTree = (s: Library, artistId: string, hidden: ReadonlySet<string> = new Set()): number | undefined => {
+  const info = s.artistInfo?.[artistId]
+  if (info) return info.firstAdded
+  const added = albumsOf(s, artistId).filter(a => a.addedAt !== undefined && !hidden.has(a.id)).map(a => a.addedAt!)
+  return added.length ? Math.min(...added) : undefined
+}
+
+/** How many things are on a type's tree, counting the tracks of artists not loaded yet. */
+export const fruitCount = (s: Library, type: TypeId) => treeNodes(s, type).length
+  + (type === 'music' && s.artistInfo ? Object.values(s.artistInfo).reduce((n, i) => n + i.fruit, 0) : 0)
+
 /** Which collection an id belongs to (our ids are unique across all of them). */
 export const collectionOf = (s: Persisted, id: string): Collection | undefined =>
   (['tracks', 'albums', 'artists', 'movies', 'books'] as Collection[]).find(c => id in s[c])
@@ -68,28 +110,42 @@ export const find = (s: Persisted, id: string | null | undefined): Found | undef
   return collection ? { collection, entity: s[collection][id] } as Found : undefined
 }
 
-/** A score as shown: whole numbers on the 0–100 scale; artist scores (open-ended) to one decimal. */
-export const formatScore = (score: number) => String(Math.round(score))
+/** A score as shown, on the scale in use (shared/scale.ts); artist scores (open-ended) to one decimal. */
+export const formatScore = (score: number) => formatOnScale(score)
 
-/** A song's tier, by its score as shown (rounded), so the number and the tier name beside it always agree. */
-export const songTier = (score: number) => tierOf(TRACK_TIERS, Math.round(score))!
+/** A song's tier, by its score as shown (rounded to the scale's step), so the number and the tier name beside it always agree. */
+export const songTier = (score: number) => tierOf(TRACK_TIERS, roundToShown(score))!
 export const formatArtistScore = (score: number) => score.toFixed(1)
+/** An album's rating label while some of its songs are unrated (shown as Incomplete). */
+export const INCOMPLETE = 'INCOMPLETE'
+
+/** An album's score (the average of its rated songs) on the scale in use, to up to two decimals: 3.57, 3.5, 4. */
+export const formatAlbumScore = (score: number) => formatPrecise(score)
+/** An album's letter grade, by its score as shown (grades' bounds are 0–100), so the two always agree. */
+export const albumGrade = (score: number) => tierOf(ALBUM_GRADES, toStored(Number(formatAlbumScore(score))))!
 
 /** How something's rating reads in the UI: its own score, its tracks' (albums, artists), or UNRATED; with its tier
  * (a track's song tier, an album's or artist's letter grade) on MUSIC. Tiers go by the score as shown, so the
  * number and the tier beside it always agree. */
-export const rating = (s: Persisted, id: string): { label: string, tier?: Tier } => {
+export const rating = (s: Library, id: string): { label: string, tier?: Tier } => {
   const f = find(s, id)
   const unrated = { label: 'UNRATED' }
   if (!f) return unrated
   if (f.collection === 'albums') {
-    const v = albumScore(tracksOf(s, id))
-    return v === undefined ? unrated : { label: formatScore(v), tier: tierOf(ALBUM_GRADES, Math.round(v)) }
+    // Misc has no album score or grade of its own.
+    if (f.entity.misc) return { label: '' }
+    const tracks = tracksOf(s, id)
+    // Songs still to rate: no score or grade until they're all rated.
+    if (isIncomplete(tracks)) return { label: INCOMPLETE }
+    const v = albumScore(tracks)
+    return v === undefined ? unrated : { label: formatAlbumScore(v), tier: albumGrade(v) }
   }
   if (f.collection === 'artists') {
-    const v = artistScore(tracksByArtist(s, id))
+    const v = artistScoreOf(s, id)
     return v === undefined ? unrated : { label: formatArtistScore(v), tier: tierOf(ARTIST_GRADES, Number(formatArtistScore(v))) }
   }
+  // Not a song (a skit…): no score or tier.
+  if (f.collection === 'tracks' && f.entity.notASong) return { label: 'NOT A SONG' }
   if (f.entity.score === undefined) return unrated
   return { label: formatScore(f.entity.score), tier: f.collection === 'tracks' ? songTier(f.entity.score) : undefined }
 }
@@ -118,7 +174,7 @@ export const ratingFocus = (s: Persisted, type: TypeId, batch: readonly string[]
   return focus
 }
 
-/** How far (in points, either way) a rated item's score may be from the one being dragged to and still be offered. */
+/** How far (in stored 0–100 points, either way; one step on the 0–5 scale) a rated item's score may be from the one being dragged to and still be offered. */
 export const SAME_SCORE_RANGE = 2
 
 /**
@@ -127,10 +183,16 @@ export const SAME_SCORE_RANGE = 2
  * Used while a song is held still mid-drag, to compare it with songs already at that height.
  */
 export const sameScore = (s: Persisted, type: TypeId, score: number, excludeId: string, limit = 5): (Track | Simple)[] => {
-  const target = Math.round(score)
+  const target = roundToShown(score)
   const all = Object.values(s[rateableCollection(type)]) as (Track | Simple)[]
   return all
-    .filter(e => e.id !== excludeId && e.score !== undefined && Math.abs(Math.round(e.score) - target) <= SAME_SCORE_RANGE)
-    .sort((a, b) => Math.abs(Math.round(a.score!) - target) - Math.abs(Math.round(b.score!) - target) || (b.since ?? 0) - (a.since ?? 0))
+    .filter(e => e.id !== excludeId && e.score !== undefined && !(e as Track).notASong && Math.abs(roundToShown(e.score) - target) <= SAME_SCORE_RANGE)
+    .sort(nearestFirst(score))
     .slice(0, limit)
+}
+
+/** sameScore's order: closest to `score` (as shown) first, then the most recently put on the tree. */
+export const nearestFirst = (score: number) => {
+  const target = roundToShown(score)
+  return (a: Rateable, b: Rateable) => Math.abs(roundToShown(a.score!) - target) - Math.abs(roundToShown(b.score!) - target) || (b.since ?? 0) - (a.since ?? 0)
 }

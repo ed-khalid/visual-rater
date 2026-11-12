@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test } from 'vitest'
 import type { AlbumDetails } from '../shared/suggestions'
-import { addedColumn, positionOf, rating, ratingLabel, stagedAlbums, tracksByArtist, tracksOf, treeNodes, UNRATED_POSITION } from './board'
+import { addedColumn, INCOMPLETE, positionOf, rating, ratingLabel, stagedAlbums, tracksByArtist, tracksOf, treeNodes, UNRATED_POSITION } from './board'
 import { BRANCH_LENGTH, MAX_BRANCH_LENGTH, MIN_BRANCH_LENGTH } from './layout'
 import { albumStatus, initialState, nameTaken, positionToScore, scoreToPosition, useStore } from './store'
 
@@ -125,23 +125,29 @@ describe('scores', () => {
     s().addAlbumTracks(id)
     const [t1] = tracksOf(s(), id)
     expect(ratingLabel(s(), t1.id)).toBe('UNRATED')
+    // stored 0–100, snapped to the 0–5 scale's 0.1 steps (2 points), shown on it
     s().move(t1.id, { position: 0.873 })
-    expect(s().tracks[t1.id].score).toBeCloseTo(87.3)
-    expect(ratingLabel(s(), t1.id)).toBe('87')
+    expect(s().tracks[t1.id].score).toBe(88)
+    expect(ratingLabel(s(), t1.id)).toBe('4.4')
   })
 
-  test('album score is the average of its rated tracks; artist score the v1 weighted count', () => {
+  test('album score is the average of its tracks once all are rated (Incomplete till then); artist score the v1 weighted count', () => {
     const id = stageKidA()
     s().addAlbumTracks(id)
-    const [t1, t2] = tracksOf(s(), id)
+    const [t1, t2, t3] = tracksOf(s(), id)
     const artistId = s().albums[id].artistId!
-    expect(ratingLabel(s(), id)).toBe('UNRATED')
+    expect(ratingLabel(s(), id)).toBe(INCOMPLETE)
     expect(ratingLabel(s(), artistId)).toBe('UNRATED')
     s().move(t1.id, { position: 0.96 }) // classic: 6
     s().move(t2.id, { position: 0.82 }) // good: 1
-    expect(ratingLabel(s(), id)).toBe('89')
+    // one still unrated: no album score, though the artist's counts what's rated
+    expect(rating(s(), id)).toEqual({ label: INCOMPLETE })
     expect(ratingLabel(s(), artistId)).toBe('7.0')
-    // and their tiers: CLASSIC and GOOD tracks, an A+ album (89), an E artist (7.0)
+    // a hidden unrated song doesn't hold it back
+    s().remove(t3.id)
+    expect(ratingLabel(s(), id)).toBe('4.45')
+    expect(ratingLabel(s(), artistId)).toBe('7.0')
+    // and their tiers: CLASSIC and GOOD tracks, an A+ album (89, 4.45), an E artist (7.0)
     expect([t1.id, t2.id, id, artistId].map(x => rating(s(), x).tier?.name)).toEqual(['CLASSIC', 'GOOD', 'A+', 'E'])
     expect(rating(s(), t1.id).tier?.color).toBe(rating(s(), id).tier?.color)
     expect(tracksByArtist(s(), artistId)).toHaveLength(3)
@@ -150,12 +156,12 @@ describe('scores', () => {
   test('hiding a track keeps its score, and it still counts for its album', () => {
     const id = stageKidA()
     s().addAlbumTracks(id)
-    const [t1] = tracksOf(s(), id)
-    s().move(t1.id, { position: 0.9 })
+    const [t1, t2, t3] = tracksOf(s(), id)
+    for (const t of [t1, t2, t3]) s().move(t.id, { position: 0.9 })
     s().remove(t1.id)
     expect(s().tracks[t1.id]).toMatchObject({ hidden: true, score: 90 })
     expect(treeNodes(s(), 'music').map(n => n.id)).not.toContain(t1.id)
-    expect(ratingLabel(s(), id)).toBe('90')
+    expect(ratingLabel(s(), id)).toBe('4.5')
   })
 })
 
@@ -317,5 +323,252 @@ describe('album directions (MUSIC)', () => {
     expect(b.size).toBe(1)
     expect(new Set([...a, ...b])).toEqual(new Set([90, 270]))
     expect(Object.values(s().tracks).map(t => t.score)).toEqual(scores)
+  })
+})
+
+describe('songs added on their own', () => {
+  const song = (id: string, album = 'elsewhere') => ({ name: `Song ${id}`, vendor: spotify(id), album: spotify(album), artist: { name: 'Radiohead', vendor: spotify('rh') } })
+  const misc = () => Object.values(s().albums).filter(a => a.misc)
+
+  test('a song whose album isn\'t here goes on the artist\'s Misc album, on the tree, unrated, in the order added', () => {
+    s().openType('music')
+    const a = s().addSong(song('x1'))!, b = s().addSong(song('x2'))!
+    expect(misc()).toHaveLength(1)
+    expect(a.albumId).toBe(misc()[0].id)
+    expect(b.albumId).toBe(a.albumId)
+    expect(misc()[0]).toMatchObject({ name: 'Singles', addedAt: expect.any(Number), artistId: Object.keys(s().artists)[0] })
+    const tracks = tracksOf(s(), a.albumId)
+    expect(tracks.map(t => [t.name, t.number, t.score, !!t.branch])).toEqual([['Song x1', 1, undefined, true], ['Song x2', 2, undefined, true]])
+    // and only one artist, however many songs
+    expect(Object.keys(s().artists)).toHaveLength(1)
+  })
+
+  test('a song on an album here goes to that album: staged (to be put on the tree), or back on the tree if hidden', () => {
+    const kida = stageKidA()
+    expect(s().addSong(song('t2', 'kida'))).toEqual({ albumId: kida, staged: true })
+    s().addAlbumTracks(kida)
+    const t2 = Object.values(s().tracks).find(t => t.vendor?.id === 't2')!
+    s().remove(t2.id)
+    expect(s().tracks[t2.id].hidden).toBe(true)
+    expect(s().addSong(song('t2', 'kida'))).toEqual({ albumId: kida })
+    expect(s().tracks[t2.id].hidden).toBeFalsy()
+    expect(misc()).toHaveLength(0)
+  })
+
+  test('when the song\'s album is added later, it moves there with its score, and an empty Misc goes', () => {
+    s().openType('music')
+    const { albumId } = s().addSong(song('t2', 'kida'))!
+    const t = tracksOf(s(), albumId)[0]
+    s().move(t.id, { position: 0.91 })
+    const kida = s().addAlbum({ name: 'Kid A', vendor: spotify('kida'), artist: { name: 'Radiohead', vendor: spotify('rh') } })!
+    s().setAlbumDetails(kida, details())
+    expect(tracksOf(s(), kida).map(x => x.vendor?.id)).toEqual(['t1', 't2', 't3'])
+    expect(s().tracks[t.id]).toMatchObject({ albumId: kida, number: 2, score: 92 })
+    expect(misc()).toHaveLength(0)
+  })
+})
+
+describe('songs typed with an artist (the ADD palette\'s form)', () => {
+  const pic = 'data:image/jpeg;base64,AAAA'
+
+  test('no album: on the artist\'s Misc album, on the tree, unrated, with its cover; a new artist is made once', () => {
+    s().openType('music')
+    const a = s().addTypedSong({ name: ' Demo ', artist: { name: 'Nobody Yet' }, image: pic })!
+    const b = s().addTypedSong({ name: 'Demo 2', artist: { name: 'nobody yet' } })!
+    expect(Object.values(s().artists).map(x => x.name)).toEqual(['Nobody Yet'])
+    expect(b.albumId).toBe(a.albumId)
+    expect(s().albums[a.albumId]).toMatchObject({ name: 'Singles', misc: true, addedAt: expect.any(Number) })
+    expect(tracksOf(s(), a.albumId).map(t => [t.name, t.number, t.score, !!t.branch, t.image])).toEqual([
+      ['Demo', 1, undefined, true, pic], ['Demo 2', 2, undefined, true, undefined]])
+  })
+
+  test('an album of theirs on the tree: after its last song, with its cover when none is given; a name already on it is refused', () => {
+    const kida = stageKidA()
+    s().addAlbumTracks(kida)
+    const artist = s().albums[kida].artistId!
+    const added = s().addTypedSong({ name: 'Untitled Jam', artist: { id: artist }, album: { id: kida } })!
+    expect(added.albumId).toBe(kida)
+    expect(s().tracks[added.trackId]).toMatchObject({ number: 4, disc: 1, image: 'https://i.scdn.co/image/kida', artistId: artist })
+    expect(s().addTypedSong({ name: 'untitled jam', artist: { id: artist }, album: { id: kida } })).toBeNull()
+  })
+
+  test('a staged album is refused (it goes on the tree first); a new album name makes an album with the cover', () => {
+    const kida = stageKidA()
+    const artist = s().albums[kida].artistId!
+    expect(s().addTypedSong({ name: 'X', artist: { id: artist }, album: { id: kida } })).toBeNull()
+    const added = s().addTypedSong({ name: 'X', artist: { id: artist }, album: { name: 'Bootlegs' }, image: pic })!
+    expect(s().albums[added.albumId]).toMatchObject({ name: 'Bootlegs', artistId: artist, image: pic, addedAt: expect.any(Number), tracklistLoaded: true })
+    expect(s().albums[added.albumId].misc).toBeUndefined()
+    // typed again by name: the same album
+    expect(s().addTypedSong({ name: 'Y', artist: { id: artist }, album: { name: 'bootlegs' } })!.albumId).toBe(added.albumId)
+    expect(s().addTypedSong({ name: 'Z', artist: { id: 'nope' } })).toBeNull()
+  })
+})
+
+describe('unrating', () => {
+  test('a rated song loses its score and stays on the tree; an album\'s score shows to two decimals', () => {
+    const kida = stageKidA()
+    s().addAlbumTracks(kida)
+    const [a, b, c] = tracksOf(s(), kida)
+    s().move(a.id, { position: 0.7 })
+    s().move(b.id, { position: 0.76 })
+    s().remove(c.id)
+    // 70 and 76: 73 stored, 3.65 shown
+    expect(rating(s(), kida).label).toBe('3.65')
+    s().unrate(a.id)
+    expect(s().tracks[a.id].score).toBeUndefined()
+    expect(s().tracks[a.id].branch).toBeDefined()
+    expect(rating(s(), a.id).label).toBe('UNRATED')
+    // a song unrated again: the album is Incomplete till it's rated
+    expect(rating(s(), kida).label).toBe(INCOMPLETE)
+  })
+})
+
+describe('not a song', () => {
+  const withSkit = () => {
+    s().openType('music')
+    const id = s().addAlbum({ name: 'Kid A', vendor: spotify('kida'), artist: { name: 'Radiohead', vendor: spotify('rh') } })!
+    const d = details('Radiohead', 3)
+    d.tracks[1] = { ...d.tracks[1], name: 'Paul - Skit' }
+    s().setAlbumDetails(id, d)
+    s().addAlbumTracks(id)
+    return id
+  }
+
+  test('a skit is marked when it\'s added: off the rater, and the album is complete without it', () => {
+    const id = withSkit()
+    const [a, skit, c] = tracksOf(s(), id)
+    expect([a.notASong, skit.notASong, c.notASong]).toEqual([undefined, true, undefined])
+    expect(treeNodes(s(), 'music').map(n => n.id)).toEqual([a.id, c.id])
+    s().move(a.id, { position: 0.8 })
+    s().move(c.id, { position: 0.9 })
+    expect(ratingLabel(s(), id)).toBe('4.25')
+    expect(ratingLabel(s(), skit.id)).toBe('NOT A SONG')
+  })
+
+  test('marked or unmarked in EDIT; a score it had is kept but counts for nothing while it\'s marked', () => {
+    const id = withSkit()
+    const [a, skit, c] = tracksOf(s(), id)
+    const edit = (notASong: boolean) => s().editAlbum(id, { tracks: tracksOf(s(), id).map(t => ({ id: t.id, name: t.name, notASong: t.id === skit.id ? notASong : undefined })) })
+    edit(false)
+    expect(s().tracks[skit.id].notASong).toBeUndefined()
+    for (const t of [a, skit, c]) s().move(t.id, { position: t.id === skit.id ? 0.2 : 0.8 })
+    expect(ratingLabel(s(), id)).toBe('3')
+    edit(true)
+    expect(s().tracks[skit.id]).toMatchObject({ notASong: true, score: 20 })
+    expect(ratingLabel(s(), id)).toBe('4')
+    expect(ratingLabel(s(), s().albums[id].artistId!)).toBe('2.0')
+  })
+})
+
+describe('live', () => {
+  test('a live recording of a song the artist has counts for its album, not the artist; EDIT can change it', () => {
+    const kida = stageKidA(1)
+    s().addAlbumTracks(kida)
+    const [studio] = tracksOf(s(), kida)
+    const live = s().addAlbum({ name: 'I Might Be Wrong', vendor: spotify('imbw'), artist: { name: 'Radiohead', vendor: spotify('rh') } })!
+    s().setAlbumDetails(live, { ...details('Radiohead', 2), id: 'imbw', name: 'I Might Be Wrong',
+      tracks: [{ id: 'l1', name: 'Track 1 - Live', number: 1, disc: 1, durationMs: 1000 }, { id: 'l2', name: 'True Love Waits - Live', number: 2, disc: 1, durationMs: 1000 }] })
+    s().addAlbumTracks(live)
+    const [repeat, original] = tracksOf(s(), live)
+    expect([repeat.live, original.live]).toEqual([true, undefined])
+    for (const t of [studio, repeat, original]) s().move(t.id, { position: 0.96 })
+    expect(ratingLabel(s(), live)).toBe('4.8')
+    // the studio song and the one only out live: 6 each
+    expect(ratingLabel(s(), s().albums[kida].artistId!)).toBe('12.0')
+    s().editAlbum(live, { tracks: tracksOf(s(), live).map(t => ({ id: t.id, name: t.name, live: false })) })
+    expect(ratingLabel(s(), s().albums[kida].artistId!)).toBe('18.0')
+  })
+})
+
+describe('setImage (a picture uploaded in an overview)', () => {
+  beforeEach(() => useStore.setState(initialState()))
+
+  test('puts the new picture on an album or artist and drops their stored colours, to be worked out again', () => {
+    const s = useStore.getState
+    const id = s().addAlbum({ name: 'Kid A', image: 'https://i.scdn.co/image/old', vendor: { name: 'spotify', id: 'kida' }, artist: { name: 'Radiohead' } })!
+    const artistId = s().albums[id].artistId!
+    s().setColors(id, ['#123456'])
+    const pic = 'data:image/jpeg;base64,/9j/4AAQ'
+    s().setImage(id, pic)
+    expect(s().albums[id]).toMatchObject({ image: pic, name: 'Kid A' })
+    expect(s().albums[id].colors).toBeUndefined()
+    // its songs get it too
+    s().setAlbumDetails(id, details('Radiohead', 3))
+    s().setImage(id, pic + 'x')
+    expect(tracksOf(s(), id).map(t => t.image)).toEqual([pic + 'x', pic + 'x', pic + 'x'])
+    s().setImage(artistId, pic)
+    expect(s().artists[artistId].image).toBe(pic)
+    s().setImage('nothing', pic) // no such thing: nothing happens
+  })
+})
+
+describe('artists and albums made by hand', () => {
+  beforeEach(() => { useStore.setState(initialState()); s().openType('music') })
+
+  test('an artist typed in is made once; typing their name again finds them', () => {
+    const id = s().addArtist('  Sherine ')!
+    expect(s().artists[id]).toEqual({ id, name: 'Sherine' })
+    expect(s().addArtist('sherine')).toBe(id)
+    expect(Object.keys(s().artists)).toHaveLength(1)
+    expect(s().addArtist('   ')).toBeNull()
+  })
+
+  test('an album made on an artist\'s overview goes on the tree with its songs unrated, in order', () => {
+    const artist = s().addArtist('Sherine')!
+    const id = s().createAlbum(artist, { name: 'Garh Tany', year: 2003, image: 'https://example.com/c.jpg', tracks: ['Sabri Alil', '', '  Ana Fi  ', 'Intro Skit'] })!
+    expect(s().albums[id]).toMatchObject({ name: 'Garh Tany', artistId: artist, year: 2003, image: 'https://example.com/c.jpg', tracklistLoaded: true })
+    expect(s().albums[id].addedAt).toBeDefined()
+    expect(s().albums[id].vendor).toBeUndefined()
+    const tracks = tracksOf(s(), id)
+    expect(tracks.map(t => [t.number, t.name, t.score, !!t.branch, t.artistId])).toEqual([
+      [1, 'Sabri Alil', undefined, true, artist], [2, 'Ana Fi', undefined, true, artist], [3, 'Intro Skit', undefined, true, artist]])
+    expect(tracks[2].notASong).toBe(true)
+    expect(ratingLabel(s(), id)).toBe(INCOMPLETE)
+    // the same title again, a blank one, or no such artist: nothing
+    expect(s().createAlbum(artist, { name: 'garh tany', tracks: [] })).toBeNull()
+    expect(s().createAlbum(artist, { name: ' ', tracks: [] })).toBeNull()
+    expect(s().createAlbum('nobody', { name: 'X', tracks: [] })).toBeNull()
+    // no songs yet is fine: they're added from album view
+    const empty = s().createAlbum(artist, { name: 'Later', tracks: [] })!
+    expect(s().albums[empty].addedAt).toBeDefined()
+  })
+})
+
+describe('moveAlbum (EDIT: the album\'s artist)', () => {
+  beforeEach(() => { useStore.setState(initialState()); s().openType('music') })
+
+  test('the album and its songs go to the artist picked; the one it leaves goes if nothing of theirs is left', () => {
+    const wrong = s().addArtist('Shereen')!, right = s().addArtist('Sherine')!
+    const id = s().createAlbum(wrong, { name: 'Garh Tany', tracks: ['One', 'Two'] })!
+    s().move(tracksOf(s(), id)[0].id, { position: 0.9 })
+    expect(s().moveAlbum(id, { id: right })).toBe(id)
+    expect(s().albums[id].artistId).toBe(right)
+    expect(tracksOf(s(), id).map(t => [t.artistId, t.score !== undefined])).toEqual([[right, true], [right, false]])
+    expect(s().artists[wrong]).toBeUndefined()
+  })
+
+  test('to a new artist by name, or one here by that name; an artist with other albums stays', () => {
+    const a = s().addArtist('A')!
+    const one = s().createAlbum(a, { name: 'One', tracks: ['x'] })!, two = s().createAlbum(a, { name: 'Two', tracks: ['y'] })!
+    s().moveAlbum(one, { name: 'Brand New' })
+    const b = s().albums[one].artistId!
+    expect(s().artists[b].name).toBe('Brand New')
+    expect(s().artists[a]).toBeDefined() // still has Two
+    s().moveAlbum(two, { name: 'brand new' })
+    expect(s().albums[two].artistId).toBe(b)
+    expect(s().artists[a]).toBeUndefined()
+    expect(s().moveAlbum(two, { id: 'nobody' })).toBeNull()
+  })
+
+  test('Misc moved to an artist who has one already joins theirs', () => {
+    const a = s().addArtist('A')!, b = s().addArtist('B')!
+    s().addTypedSong({ name: 'Loose A', artist: { id: a } })
+    s().addTypedSong({ name: 'Loose B', artist: { id: b } })
+    const miscA = Object.values(s().albums).find(x => x.misc && x.artistId === a)!.id
+    const miscB = Object.values(s().albums).find(x => x.misc && x.artistId === b)!.id
+    expect(s().moveAlbum(miscA, { id: b })).toBe(miscB)
+    expect(s().albums[miscA]).toBeUndefined()
+    expect(tracksOf(s(), miscB).map(t => [t.number, t.name, t.artistId])).toEqual([[1, 'Loose B', b], [2, 'Loose A', b]])
   })
 })

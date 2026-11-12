@@ -14,9 +14,7 @@
   will-change: transform;
 }
 /* Their contents rise in as they open (the card itself is moved every frame, so only its insides animate). */
-.album-card > *, .album-popup:not(.album-popup-docked) > * { animation: card-in 0.4s var(--ease-out) both; }
-.album-popup:not(.album-popup-docked) > :nth-child(2) { animation-delay: 0.04s; }
-.album-popup:not(.album-popup-docked) > :nth-child(n + 3) { animation-delay: 0.08s; }
+.album-card > * { animation: card-in 0.4s var(--ease-out) both; }
 @keyframes card-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
 .album-card {
@@ -44,36 +42,7 @@
   padding: 16px 8px 10px 16px;
 }
 
-.album-popup-title {
-  padding-right: 34px;
-  margin-bottom: 10px;
-  font-family: var(--serif);
-  font-size: 22px;
-  font-weight: 600;
-  line-height: 1.1;
-  letter-spacing: -0.01em;
-}
-
 .album-popup .album-facts { padding-right: 8px; }
-
-/* 44px touch target, small visible glyph */
-.album-popup-close {
-  position: absolute;
-  top: 2px;
-  right: 2px;
-  width: 44px;
-  height: 44px;
-  font: inherit;
-  font-size: 22px;
-  font-weight: 300;
-  line-height: 1;
-  color: var(--ink);
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: color 0.2s, transform 0.3s var(--ease-out);
-}
-.album-popup-close:hover, .album-popup-close:focus-visible { color: var(--accent); transform: rotate(90deg); outline: none; }
 
 .album-popup-divider { height: 2px; margin: 12px 8px 4px 0; background: var(--ink); }
 
@@ -208,49 +177,6 @@
 
 .album-popup-problem { padding: 8px 8px 0 0; font-size: 12px; font-weight: 600; color: var(--accent); }
 
-/* Action icon on a cover's corner: trash (top-left) */
-.sphere-icon {
-  position: fixed;
-  top: 0;
-  left: 0;
-  z-index: 21;
-  visibility: hidden; /* until pinned on the first frame */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 26px;
-  height: 26px;
-  padding: 0;
-  color: var(--ink);
-  background: var(--paper-raised);
-  border: 1.5px solid var(--ink);
-  border-radius: 50%;
-  box-shadow: 2px 2px 0 var(--ink);
-  cursor: pointer;
-  /* Fades only. Never animate transform here: it's set inline every frame to pin the icon to its cover. */
-  transition: opacity 0.4s ease, color 0.15s, background 0.15s;
-  animation: icon-fade-in 0.4s ease backwards;
-}
-
-/* fades in, out quickly */
-.sphere-icon.leaving { opacity: 0; pointer-events: none; transition: opacity 0.2s ease; }
-
-/* bigger invisible hit area for fingers */
-.sphere-icon::after { content: ''; position: absolute; inset: -9px; border-radius: 50%; }
-
-.sphere-icon:hover, .sphere-icon:focus-visible { color: var(--paper); background: var(--ink); outline: none; }
-
-.sphere-icon-trash.armed {
-  color: var(--paper);
-  background: var(--accent);
-  border-color: var(--accent);
-  box-shadow: 2px 2px 0 var(--ink);
-  animation: trash-armed 0.9s ease-in-out infinite;
-}
-
-@keyframes icon-fade-in { from { opacity: 0; } }
-@keyframes trash-armed { 50% { box-shadow: 2px 2px 0 var(--ink), 0 0 0 5px rgba(179, 38, 30, 0.2); } }
-
 /* A score, wherever it's shown: the serif, set large */
 .album-facts dd.album-score { font-family: var(--serif); font-size: 16px; font-weight: 600; }
 
@@ -290,3 +216,76 @@
 
 /* A track's own score in the album popup, before its duration */
 .album-track-score { margin-right: 10px; font-family: var(--serif); font-size: 15px; font-weight: 600; color: var(--ink); }
+
+/* Misc: the row a new song is typed into, at the end of the tracklist */
+.album-track-adding { animation: album-track-adding-in 0.3s var(--ease-out) backwards; }
+.album-track-adding .album-input-track { flex: 1; font-family: var(--serif); border-bottom-color: var(--accent); }
+.album-track-adding .album-input-track::placeholder { color: var(--ink-faint); font-style: italic; }
+@keyframes album-track-adding-in { from { opacity: 0; transform: translateY(-4px); } }
+
+/* Not a song (a skit, an interlude…): dim in the tracklist, tagged in outline instead of a tier's colour */
+.album-track.not-a-song .album-track-name, .album-track.not-a-song .album-track-no { color: var(--ink-soft); font-style: italic; }
+.album-popup-docked .album-track-tier.album-track-nonsong { color: var(--ink-soft); background: none; border: 1px solid var(--hair); }
+/* EDIT: whether each track is a song, a small toggle before its × */
+.album-track-song {
+  min-width: 84px; height: 28px; padding: 0 6px; margin-right: 4px;
+  font: inherit; font-size: 9px; font-weight: 700; letter-spacing: 0.1em;
+  color: var(--ink); background: none; border: 1px solid var(--ink); cursor: pointer;
+}
+.album-track-song.off { color: var(--ink-soft); border-color: var(--hair); border-style: dashed; }
+.album-track-song:hover, .album-track-song:focus-visible { color: var(--paper); background: var(--ink); border-style: solid; outline: none; }
+@media (pointer: coarse) { .album-track-song { height: 40px; } }
+.album-track-edit { display: inline-flex; align-items: center; align-self: center; }
+
+/* Live: a small outlined tag after the track's name */
+.album-track-live {
+  display: inline-block; margin-left: 8px; padding: 1px 5px; vertical-align: 1px;
+  font-family: var(--sans); font-size: 8.5px; font-style: normal; font-weight: 700; letter-spacing: 0.12em;
+  color: var(--accent); border: 1px solid var(--accent);
+}
+/* EDIT: live or not, a toggle before SONG */
+.album-track-live-toggle {
+  min-width: 44px; height: 28px; padding: 0 6px; margin-right: 4px;
+  font: inherit; font-size: 9px; font-weight: 700; letter-spacing: 0.1em;
+  color: var(--ink-soft); background: none; border: 1px dashed var(--hair); cursor: pointer;
+}
+.album-track-live-toggle.on { color: var(--accent); border: 1px solid var(--accent); }
+.album-track-live-toggle:hover, .album-track-live-toggle:focus-visible { color: var(--paper); background: var(--accent); border-style: solid; outline: none; }
+@media (pointer: coarse) { .album-track-live-toggle { height: 40px; } }
+
+/* EDIT: the album's artist, typed or picked from the options under it. */
+.album-artist-field { position: relative; }
+.album-artist-input { display: flex; align-items: center; gap: 8px; }
+.album-artist-input .album-input { flex: 1; width: 100%; }
+.album-artist-new { flex: none; font-size: 9px; font-weight: 700; letter-spacing: 0.16em; color: var(--accent); }
+.album-artist-options {
+  position: absolute;
+  z-index: 5;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  margin: 0;
+  padding: 4px;
+  list-style: none;
+  background: var(--paper-raised);
+  border: 1.5px solid var(--ink);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+.album-artist-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 40px;
+  padding: 4px 6px;
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  color: var(--ink);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+.album-artist-option:hover, .album-artist-option:focus-visible { background: var(--paper-deep); outline: none; }
+.album-artist-option img, .album-artist-blank { flex: none; width: 28px; height: 28px; border-radius: 50%; object-fit: cover; background: var(--paper-deep); }
+@media (pointer: coarse) { .album-artist-option { min-height: 44px; } }

@@ -4,8 +4,8 @@
  * scores alone; nothing here is stored.
  *
  * Rated pieces sit at their score's height and go out only as far as it takes to clear the pieces (and labels) already
- * placed on that side. Unrated pieces have no height that means anything, so they fill rows around the middle: the
- * middle row out to `maxReach` (labels included), then the row just below it, then above, and so on.
+ * placed on that side. Unrated pieces have no height that means anything, so they fill rows around the middle, in
+ * their order, read top to bottom: each row out to `maxReach` (labels included) before the next.
  */
 export type Piece = {
   id: string
@@ -98,22 +98,53 @@ export const placePieces = (pieces: readonly Piece[], o: PlaceOptions): Map<stri
     put(p, best.side, Math.max(o.minLength + p.radius, Math.min(best.x, room(best.side) - p.radius)), y, true)
   }
 
-  // Unrated: rows round the middle, each filled out to maxReach before the next (below, then above, then further).
-  const row = (r: number) => Math.max(2 * r + 10, 30)
-  for (const p of pieces.filter(p => p.unrated)) {
-    const side = sideFor(p), mid = o.height / 2
-    let placed = false
-    for (let k = 0; k < 40 && !placed; k++) {
-      const offset = (k % 2 === 1 ? 1 : -1) * Math.ceil(k / 2) * row(p.radius)
-      const y = mid + offset
-      if (y < 0 || y > o.height) continue
-      // The whole piece, label included, stays inside the room on its side (except the first in a row, if nothing fits).
-      const span = spanOf(p)
-      for (let x = o.minLength + p.radius; x + span <= room(side) || x === o.minLength + p.radius; x += STEP) {
-        if (fits(boxOf(p, side, x, y))) { put(p, side, x, y); placed = true; break }
-      }
+  // Unrated: in their order, in rows read top to bottom, each filled out to the room before the next starts (never going
+  // back to an earlier row), the block of rows centred on the middle. Try one row, then two, … until they all fit.
+  const unrated = pieces.filter(p => p.unrated)
+  if (unrated.length) {
+    const rowH = Math.max(...unrated.map(p => Math.max(2 * p.radius + 10, 30)))
+    const saved = { boxes: boxes.length, count: { ...count } }
+    const restore = () => {
+      boxes.length = saved.boxes; count[1] = saved.count[1]; count[-1] = saved.count[-1]
+      for (const p of unrated) out.delete(p.id)
     }
-    if (!placed) put(p, side, o.minLength + p.radius, mid)
+    const attempt = (rows: number, last: boolean) => {
+      const ys = Array.from({ length: rows }, (_, i) => o.height / 2 + (i - (rows - 1) / 2) * rowH)
+      const at = { 1: 0, [-1]: 0 } as Record<1 | -1, number>
+      const used = { 1: false, [-1]: false } as Record<1 | -1, boolean>
+      const firstFit = (p: Piece, side: 1 | -1, y: number, reach: number) => {
+        for (let x = o.minLength + p.radius; x + reach <= room(side); x += STEP) if (fits(boxOf(p, side, x, y))) return x
+        return undefined
+      }
+      for (let i = 0; i < unrated.length; i++) {
+        const p = unrated[i], side = sideFor(p), span = spanOf(p)
+        let done = false
+        while (!done && at[side] < rows) {
+          const y = ys[at[side]]
+          const x = firstFit(p, side, y, span)
+          if (x !== undefined) { put(p, side, x, y); done = true }
+          // Too wide even for an empty row: it goes in alone, at the start.
+          else if (!used[side]) { put(p, side, o.minLength + p.radius, y); done = true }
+          // A short rater, with more left than rows to take them: the cover alone, still in this row, keeping the order.
+          else if (last && unrated.length - i > rows - at[side] - 1) {
+            const bx = firstFit(bareOf(p), side, y, p.radius)
+            if (bx !== undefined) { put(p, side, bx, y, true); done = true }
+          }
+          if (done) used[side] = true
+          else { at[side]++; used[side] = false }
+        }
+        if (!done) {
+          if (!last) return false
+          put(p, side, o.minLength + p.radius, ys[rows - 1], true)
+        }
+      }
+      return true
+    }
+    const most = Math.max(1, Math.floor(o.height / rowH))
+    for (let rows = 1; rows <= most; rows++) {
+      if (attempt(rows, rows === most)) break
+      restore()
+    }
   }
   return out
 }

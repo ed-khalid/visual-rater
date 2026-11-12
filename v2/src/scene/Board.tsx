@@ -1,19 +1,22 @@
 import { AnimatePresence, motion, MotionConfig, Reorder, useDragControls } from 'motion/react'
+import { trackCover } from './cover'
+import { formatPrecise } from '../shared/scale'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useShallow } from 'zustand/react/shallow'
-import { rating, ratingFocus as focusOf, songTier, treeNodes } from '../state/board'
+import { INCOMPLETE, rating, ratingFocus as focusOf, songTier, treeNodes } from '../state/board'
 import { albumNodes, artistNodes } from '../state/drill'
 import { labelWidth, type Piece, type Placed, placePieces, reachOf } from '../state/place'
 import { raterKey, SINGLES, splitLayout } from '../state/split'
 import { positionToScore, usePersisted, useStore } from '../state/store'
-import type { Track } from '../shared/model'
+import type { Album, Track } from '../shared/model'
 import { registerAnchor, useAnchor, useAnchorLoop } from './anchors'
 import { useGlow } from './useGlow'
 import {
   collapse, COLLAPSE_SECONDS, isSplit, LEVEL_DELAY_MS, liveScores, raterBottomAnchor, raterNow, raterTopAnchor,
-  TRUNK_BOTTOM_ANCHOR, TRUNK_TOP_ANCHOR, useView,
+  sidePanel, TRUNK_BOTTOM_ANCHOR, TRUNK_TOP_ANCHOR, useView,
 } from './view'
 import './board.css'
+import { useBox } from './box'
 
 /** A press that moves further than this (px) is a drag, not a tap. */
 const CLICK_SLOP_PX = 6
@@ -22,34 +25,6 @@ const RETRACT = { duration: 0.26, ease: [0.65, 0, 0.35, 1] } as const
 
 /** Key in screenAnchors (and labels) for a read-only rater node; an album's own id is its catalog row's. */
 export const nodeKey = (id: string) => `node:${id}`
-
-/** The page's measurements: where the rater stands, by the window's size and what's open. */
-const useBox = () => {
-  const [size, setSize] = useState({ w: window.innerWidth, h: window.innerHeight })
-  useEffect(() => {
-    const on = () => setSize({ w: window.innerWidth, h: window.innerHeight })
-    window.addEventListener('resize', on)
-    return () => window.removeEventListener('resize', on)
-  }, [])
-  const albumView = useView(v => v.albumView)
-  const phone = size.w <= 640
-  const top = phone ? 150 : 158, bottom = size.h - (phone ? 228 : 100)
-  const wide = size.w >= 1200, desktop = size.w > 900
-  /**
-   * Kept clear either side: the catalog on the left, the unrated list on the right (their full columns on desktops,
-   * their covers alone on phones). The unrated list is hidden in album view, so the right side frees up then.
-   */
-  const gutterLeft = desktop ? 300 : phone ? 60 : 16
-  const gutter = albumView ? (phone ? 16 : 40) : desktop ? 290 : phone ? 60 : 16
-  // Album view: the title card and details take the left half (beside the catalog on wide screens, in its place on
-  // narrower ones); the rater moves over to the right of them. Phones: the title card is at the bottom instead.
-  const spineX = albumView && wide ? Math.round(size.w * 0.5 + 110)
-    : albumView && desktop ? Math.round(size.w * 0.56)
-    // Phones: just right of the catalog's covers, everything on the right of it, where there's room for labels.
-    : phone ? gutterLeft + 58
-    : Math.round(size.w / 2)
-  return { ...size, phone, top, height: Math.max(160, bottom - top), spineX, gutter, gutterLeft, radius: phone ? 13 : 15 }
-}
 
 /** One thing drawn on a rater: a song, movie or book (draggable), or an artist or album of the read-only rater. */
 type Mark = Piece & {
@@ -77,6 +52,7 @@ export const Board = () => {
   useCollapse()
   const type = useStore(s => s.activeType)
   const split = useView(isSplit)
+  const compare = useBox().compare
   const down = useRef({ x: 0, y: 0 })
   if (!type) return null
   const onClick = (e: React.MouseEvent) => {
@@ -84,12 +60,11 @@ export const Board = () => {
     if ((e.target as Element).closest('.mark-fruit, .split-caption')) return
     const v = useView.getState()
     if (v.editing) return
-    if (v.openId || v.selectedId) v.close()
-    else v.goBack()
+    v.goBack()
   }
   return <MotionConfig reducedMotion="user">
     <div className="board" onPointerDown={e => { down.current = { x: e.clientX, y: e.clientY } }} onClick={onClick}>
-      {split ? <SplitRow /> : <OneRater />}
+      {split ? <SplitRow /> : compare ? <CompareRaters /> : <OneRater />}
     </div>
   </MotionConfig>
 }
@@ -110,10 +85,10 @@ const useCollapse = () => {
   }, [])
 }
 
-const fruitMark = (t: { id: string, name: string, image?: string, score?: number, shortTitle?: string }, radius: number, dim: boolean): Mark => {
+const fruitMark = (t: { id: string, name: string, image?: string, score?: number, shortTitle?: string }, radius: number, dim: boolean, album?: Album): Mark => {
   const label = t.shortTitle ?? t.name
   return {
-    id: t.id, key: t.id, anchor: t.id, glowId: t.id, kind: 'fruit', image: t.image, label, radius,
+    id: t.id, key: t.id, anchor: t.id, glowId: t.id, kind: 'fruit', image: trackCover(t, album), label, radius,
     position: t.score !== undefined ? t.score / 100 : 0.5, unrated: t.score === undefined,
     // Unrated: an italic serif name (wider) over the Unrated tag.
     labelWidth: t.score === undefined ? Math.max(labelWidth(label, 7.4), 52) : labelWidth(label),
@@ -126,7 +101,7 @@ const OneRater = () => {
   const box = useBox()
   const s = usePersisted()
   const type = useStore(st => st.activeType)!
-  const { albumView, hiddenAlbums, rating: batch, drill, zoom, phase } = useView(useShallow(v => ({ albumView: v.albumView, hiddenAlbums: v.hiddenAlbums, rating: v.rating, drill: v.drill, zoom: v.zoom, phase: v.phase })))
+  const { albumView, hiddenAlbums, rating: batch, drill, zoom, phase, panel } = useView(useShallow(v => ({ albumView: v.albumView, hiddenAlbums: v.hiddenAlbums, rating: v.rating, drill: v.drill, zoom: v.zoom, phase: v.phase, panel: sidePanel(v) })))
   const tree = phase === 'tree'
 
   const marks = useMemo(() => {
@@ -145,7 +120,7 @@ const OneRater = () => {
         : n.collection === 'tracks' ? !!batch?.includes(t.id)
           || (songs && !!artistOf && artists!.has(artistOf) && !(t.albumId && hiddenAlbums.has(t.albumId)))
         : true
-      if (show) out.push({ ...fruitMark(t, box.radius, !!focus && !focus.has(t.id)), ...(songs ? { key: `songs:${t.id}`, level: 'songs' } : {}) })
+      if (show) out.push({ ...fruitMark(t, box.radius, !!focus && !focus.has(t.id), t.albumId ? s.albums[t.albumId] : undefined), ...(songs ? { key: `songs:${t.id}`, level: 'songs' } : {}) })
     }
     // Zoomed in to songs, a lot can be out at once: the more there are, the smaller each cover (down to a minimum).
     if (songs) {
@@ -163,7 +138,7 @@ const OneRater = () => {
       const r = zoom === 'albums' ? box.radius + (box.phone ? 3 : 6) : box.radius + (box.phone ? 6 : 10)
       for (const n of nodes) {
         const g = rating(s, n.id)
-        const sub = g.label ? `${g.label}${g.tier ? ` · ${g.tier.name}` : ''}` : 'Unrated'
+        const sub = g.label === INCOMPLETE ? 'Incomplete' : g.label ? `${g.label}${g.tier ? ` · ${g.tier.name}` : ''}` : 'Unrated'
         out.push({
           id: n.id, key: `${zoom}:${drill ?? ''}:${n.id}`, anchor: nodeKey(n.id), glowId: n.id, kind: n.kind, level: zoom,
           image: n.image, label: n.name, sub, radius: r, position: n.position, unrated: false,
@@ -172,12 +147,12 @@ const OneRater = () => {
         })
       }
     }
-    // Phones: the spine stands near the left edge, so everything goes on its right.
-    if (box.phone) for (const m of out) m.side = 1
+    // Phones: the spine stands near the left edge, so everything goes on its right; so does a side panel.
+    if (box.phone || panel) for (const m of out) m.side = 1
     return out
-  }, [s, type, albumView, hiddenAlbums, batch, drill, zoom, tree, box.radius, box.phone])
+  }, [s, type, albumView, hiddenAlbums, batch, drill, zoom, tree, box.radius, box.phone, panel])
 
-  const maxReach = albumView ? Math.max(160, box.w - box.spineX - box.gutter - 10)
+  const maxReach = panel ? Math.max(160, box.w - box.spineX - box.gutter - 10)
     : Math.max(120, Math.min(440, box.w - box.spineX - box.gutter - 10))
   // Leaders start clear of the scale's numbers (left of the spine).
   // Room on the left: up to the catalog (album view puts everything on the right anyway).
@@ -185,11 +160,45 @@ const OneRater = () => {
   const placed = useMemo(() => placePieces(marks, { height: box.height, minLength: 40, maxReach, maxReachLeft }), [marks, box.height, maxReach, maxReachLeft])
 
   return <motion.div className="rater" initial={false} animate={{ x: box.spineX }} transition={SPRING} style={{ top: box.top }}>
-    <Scale height={box.height} left={albumView && box.w > 900 ? 60 : Math.max(48, Math.min(box.spineX - box.gutterLeft, maxReach + 60))} right={Math.min(box.w - box.spineX - box.gutter, maxReach + 60)} />
-    <Spine height={box.height} topKey={TRUNK_TOP_ANCHOR} bottomKey={TRUNK_BOTTOM_ANCHOR} />
+    <Scale height={box.height} left={panel && box.w > 900 ? 60 : Math.max(48, Math.min(box.spineX - box.gutterLeft, maxReach + 60))} right={Math.min(box.w - box.spineX - box.gutter, maxReach + 60)} />
+    {/* Artist scores are an open-ended count, not on the scale in use: at the Artists level the numbers read 0–100. */}
+    <Spine height={box.height} topKey={TRUNK_TOP_ANCHOR} bottomKey={TRUNK_BOTTOM_ANCHOR} raw={type === 'music' && !albumView && zoom === 'artists'} />
     <AnimatePresence>
       {outermostFirst(marks, placed).map(({ m, i }) => <Marker key={m.key} mark={m} at={placed.get(m.id)!} height={box.height}
         delay={m.kind === 'fruit' ? (m.level === 'songs' ? LEVEL_DELAY_MS / 1000 : 0) + Math.min(0.5, i * (m.level === 'songs' ? 0.008 : 0.025)) : LEVEL_DELAY_MS / 1000 + i * 0.05} />)}
+    </AnimatePresence>
+  </motion.div>
+}
+
+/**
+ * Compare (album view, desktop): one rater in the middle of the page, between the two albums' panels. Album view's
+ * album's songs hang to the left of the spine, towards its panel; the album it's compared with, to the right, towards
+ * its own. So one height is one score for both. Until the second album is picked, only the left side is out (the
+ * picker has the right half).
+ */
+const CompareRaters = () => {
+  const box = useBox()
+  const c = box.compare!
+  const s = usePersisted()
+  const { albumView, compareWith, rating: batch } = useView(useShallow(v => ({ albumView: v.albumView, compareWith: v.compareWith, rating: v.rating })))
+  const marks = useMemo(() => {
+    const focus = batch ? focusOf(s, 'music', batch) : null
+    const of = (albumId: string | null, side: 1 | -1): Mark[] => !albumId ? [] : treeNodes(s, 'music')
+      .filter(n => (n.entity as Track).albumId === albumId)
+      .map(n => ({ ...fruitMark(n.entity as Track, box.radius, !!focus && !focus.has(n.id), s.albums[albumId]), side }))
+      .sort((a, b) => trackOrder(s.tracks[a.id]) - trackOrder(s.tracks[b.id]))
+    return [...of(albumView, -1), ...of(compareWith, 1)]
+  }, [s, albumView, compareWith, batch, box.radius])
+  const placed = useMemo(() => placePieces(marks, { height: box.height, minLength: 58, maxReach: c.reach, maxReachLeft: c.reach }),
+    [marks, box.height, c.reach])
+
+  return <motion.div className="rater" initial={false} animate={{ x: c.spine }} transition={SPRING} style={{ top: box.top }}>
+    {/* across both sides, short of the panels */}
+    <Scale height={box.height} left={c.reach + 10} right={compareWith ? c.reach + 10 : 0} />
+    <Spine height={box.height} topKey={TRUNK_TOP_ANCHOR} bottomKey={TRUNK_BOTTOM_ANCHOR} />
+    <AnimatePresence>
+      {outermostFirst(marks, placed).map(({ m, i }) => <Marker key={m.key} mark={m} at={placed.get(m.id)!} height={box.height}
+        delay={Math.min(0.5, i * 0.025)} />)}
     </AnimatePresence>
   </motion.div>
 }
@@ -215,7 +224,7 @@ const Scale = ({ height, left, right }: { height: number, left: number, right: n
   </div>
 
 /** The spine: a black rule from 0 to 100, numbered every 10 on its left, drawn upwards when it first appears. */
-const Spine = ({ height, topKey, bottomKey, numbers = true }: { height: number, topKey: string, bottomKey: string, numbers?: boolean }) => {
+const Spine = ({ height, topKey, bottomKey, numbers = true, raw }: { height: number, topKey: string, bottomKey: string, numbers?: boolean, raw?: boolean }) => {
   // Measured on the wrapper, not the rule itself: the rule is scaled while it draws in.
   const ref = useRef<HTMLDivElement>(null)
   useEffect(() => {
@@ -231,15 +240,15 @@ const Spine = ({ height, topKey, bottomKey, numbers = true }: { height: number, 
   return <div ref={ref} className="spine-wrap" style={{ height }}>
     <motion.div className="spine" style={{ height }} initial={{ scaleY: 0 }} animate={{ scaleY: 1 }}
       transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }} />
-    {numbers && <Numbers height={height} />}
+    {numbers && <Numbers height={height} raw={raw} />}
   </div>
 }
 
-/** 0 to 100 every 10, right-aligned against where they're put (the spine's left, or the start of split view's row). */
-const Numbers = ({ height }: { height: number }) => <>
+/** Every tenth of the way up (0 to 100 stored), as the scale in use reads (0, 0.5 … 5), right-aligned against where they're put (the spine's left, or the start of split view's row). `raw`: 0–100 as stored. */
+const Numbers = ({ height, raw }: { height: number, raw?: boolean }) => <>
   {Array.from({ length: 11 }, (_, i) => i * 10).map((v, i) =>
-    <motion.span key={v} className={`spine-number${v % 50 === 0 ? ' major' : ''}`} style={{ top: (1 - v / 100) * height }}
-      initial={{ opacity: 0, x: 6 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.3 + 0.04 * i }}>{v}</motion.span>)}
+    <motion.span key={`${raw ? 'raw' : 'scale'}:${v}`} className={`spine-number${v % 50 === 0 ? ' major' : ''}`} style={{ top: (1 - v / 100) * height }}
+      initial={{ opacity: 0, x: 6 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.5, delay: 0.3 + 0.04 * i }}>{raw ? v : formatPrecise(v)}</motion.span>)}
 </>
 
 type DragState = { pointerId: number, startY: number, startAt: number, moved: boolean, y: number }
@@ -247,7 +256,7 @@ type DragState = { pointerId: number, startY: number, startAt: number, moved: bo
 /**
  * One thing on a rater: a leader from the spine, a round cover at its end (ringed in its tier's colour; grey and
  * dashed while unrated) and its label beyond. It grows out of the spine when it appears and draws back in when it
- * goes. Songs, movies and books can be dragged up or down to rate them; a tap selects them (the trash icon) and
+ * goes. Songs, movies and books can be dragged up or down to rate them, and
  * hovering shows the hover card. The read-only rater's artists and albums are clicked instead.
  */
 const Marker = ({ mark: m, at, height, delay }: { mark: Mark, at: Placed, height: number, delay: number }) => {
@@ -258,7 +267,6 @@ const Marker = ({ mark: m, at, height, delay }: { mark: Mark, at: Placed, height
   useGlow(useStore(s => s.tracks[m.glowId] ?? s.movies[m.glowId] ?? s.books[m.glowId] ?? s.albums[m.glowId] ?? s.artists[m.glowId]))
   useAnchor(m.anchor, fruit)
   const hovered = useView(v => v.hoveredId === m.id)
-  const selected = useView(v => v.selectedId === m.id || v.openId === m.id)
   const draggable = m.kind === 'fruit'
 
   useEffect(() => () => {
@@ -305,8 +313,8 @@ const Marker = ({ mark: m, at, height, delay }: { mark: Mark, at: Placed, height
     if (dragY !== null) return
     const v = useView.getState()
     if (m.kind === 'artist') v.setDrill(m.id)
-    else if (m.kind === 'album') v.logAction(`${m.label} album clicked`)
-    else v.toggleSelected(m.id)
+    // An album opens in album view (Esc comes back here).
+    else if (m.kind === 'album') v.setAlbumView(m.id)
   }
 
   const reach = Math.max(0, at.x - r)
@@ -314,7 +322,7 @@ const Marker = ({ mark: m, at, height, delay }: { mark: Mark, at: Placed, height
   const dragging = dragY !== null
   const enter = { ...SPRING, delay }
 
-  return <motion.div className={`mark kind-${m.kind}${m.unrated && !dragging ? ' unrated' : ''}${dragging ? ' dragging' : ''}${hovered || selected ? ' lit' : ''}`}
+  return <motion.div className={`mark kind-${m.kind}${m.unrated && !dragging ? ' unrated' : ''}${dragging ? ' dragging' : ''}${hovered ? ' lit' : ''}`}
     initial={{ y: at.y, opacity: 1 }}
     animate={{ y, opacity: m.dim && !dragging ? 0.16 : 1 }}
     exit={{ opacity: 0, transition: { duration: 0.18, delay: 0.12 } }}
@@ -346,7 +354,7 @@ const Marker = ({ mark: m, at, height, delay }: { mark: Mark, at: Placed, height
 /**
  * Split view (MUSIC): every album on the tree on a rater of its own, side by side, so one height is one score across
  * the row (the scale's hairlines run right across). The row scrolls sideways (a wheel scrolls it too); drag a rater
- * by its caption to move it along the row, next to another to compare them. Reset puts the row back in order.
+ * by its caption to move it along the row, next to another to compare them.
  */
 const SplitRow = () => {
   const box = useBox()
@@ -354,12 +362,11 @@ const SplitRow = () => {
   const hidden = useView(v => v.hiddenAlbums)
   const order = useView(v => v.raterOrder)
   const setOrder = useView(v => v.setRaterOrder)
-  const resets = useView(v => v.resetRequests)
   const scroller = useRef<HTMLDivElement>(null)
   const batch = useView(v => v.rating)
   // Shorter than the one rater, so each one's caption fits under it.
   const height = box.height - CAPTION_PX
-  // Clear of the catalog on the left and the unrated list on the right.
+  // Clear of the catalog on the left.
   const right = box.gutter, leftEdge = box.gutterLeft
 
   const marksByKey = useMemo(() => {
@@ -368,7 +375,7 @@ const SplitRow = () => {
     const byKey = new Map(keys.map(k => [k, [] as Mark[]]))
     for (const n of treeNodes(s, 'music')) {
       const t = n.entity as Track, list = byKey.get(raterKey(t))
-      if (list) list.push(fruitMark(t, box.radius, !!focus && !focus.has(t.id)))
+      if (list) list.push(fruitMark(t, box.radius, !!focus && !focus.has(t.id), t.albumId ? s.albums[t.albumId] : undefined))
     }
     for (const list of byKey.values()) list.sort((a, b) => trackOrder(s.tracks[a.id]) - trackOrder(s.tracks[b.id]))
     return byKey
@@ -389,7 +396,6 @@ const SplitRow = () => {
 
   raterNow.keys = ordered
   useEffect(() => () => { raterNow.keys = [] }, [])
-  useEffect(() => { scroller.current?.scrollTo({ left: 0, behavior: 'smooth' }) }, [resets])
   const total = columns.reduce((n, c) => n + c.width, 0)
 
   const onWheel = (e: React.WheelEvent) => {

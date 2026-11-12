@@ -1,0 +1,93 @@
+/* ADD ALBUM on an artist's overview: a card in the Albums section (paper, ink border, hard offset shadow). */
+.new-album {
+  margin: 4px 0 18px;
+  padding: 12px 14px 14px;
+  background: var(--paper-raised);
+  border: 1.5px solid var(--ink);
+  box-shadow: 5px 5px 0 var(--ink);
+  animation: av-up 0.4s var(--ease-out) both;
+}
+
+.new-album-head { display: flex; align-items: center; gap: 12px; padding-bottom: 6px; }
+.new-album-cover { flex: none; width: 52px; height: 52px; object-fit: cover; background: var(--paper-deep); box-shadow: 0 0 0 1px var(--hair-strong); }
+.new-album-title {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 0;
+  font-family: var(--serif);
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  caret-color: var(--accent);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--hair-strong);
+  outline: none;
+  transition: border-color 0.2s;
+}
+.new-album-title:focus { border-bottom-color: var(--accent); }
+.new-album-title::placeholder { color: var(--ink-faint); font-style: italic; font-weight: 400; }
+
+.new-album-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 46px;
+  border-bottom: 1px solid var(--hair);
+}
+.new-album-field:focus-within { border-bottom-color: var(--ink); }
+.new-album-songs { align-items: flex-start; padding-top: 12px; }
+
+.new-album-label {
+  flex: none;
+  width: 52px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+
+.new-album-field input, .new-album-field textarea {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 0;
+  font-family: var(--serif);
+  font-size: 16px; /* 16px or more, or iOS zooms */
+  line-height: 1.5;
+  color: var(--ink);
+  caret-color: var(--accent);
+  background: transparent;
+  border: none;
+  outline: none;
+}
+.new-album-field textarea { padding-top: 0; resize: vertical; }
+.new-album-field input::placeholder, .new-album-field textarea::placeholder { color: var(--ink-faint); font-style: italic; }
+.new-album-field [aria-invalid='true'] { color: var(--accent); }
+
+.new-album-uploaded { flex: 1; font-family: var(--serif); font-size: 16px; font-style: italic; color: var(--ink-soft); }
+
+.new-album-small {
+  flex: none;
+  min-height: 32px;
+  padding: 0 10px;
+  font: inherit;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  color: var(--ink);
+  background: none;
+  border: 1.5px solid var(--ink);
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.new-album-small:hover, .new-album-small:focus-visible { background: var(--ink); color: var(--paper); outline: none; }
+@media (pointer: coarse) { .new-album-small { min-height: 44px; } }
+
+.new-album-error { padding: 10px 0 0; font-size: 13px; color: var(--accent); }
+.new-album-actions { display: flex; justify-content: flex-end; gap: 8px; padding-top: 14px; }
+
+/* The Albums heading with ADD ALBUM at its right. */
+.artist-view-heading.with-action { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.artist-view-heading .album-action { min-height: 30px; margin-bottom: 2px; font-family: var(--sans); }

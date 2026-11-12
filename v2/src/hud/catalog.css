@@ -42,7 +42,6 @@
 /* A row with its on-the-rater box on the left; the line under it runs under both. */
 .catalog-line { display: flex; align-items: stretch; }
 .catalog-line > .catalog-row { flex: 1; min-width: 0; gap: 8px; }
-.catalog-line .catalog-artist .catalog-chevron { margin-left: 6px; }
 .catalog-line .catalog-letter { margin-left: 4px; }
 .line-artist { border-bottom: 1px solid var(--ink); }
 .line-album { border-bottom: 1px solid var(--hair); }
@@ -108,7 +107,27 @@
   transform: rotate(45deg) translate(-2px, -2px);
   transition: transform 0.35s var(--ease-out);
 }
-.catalog-artist[aria-expanded='false'] .catalog-chevron { transform: rotate(-45deg); }
+.catalog-expand[aria-expanded='false'] .catalog-chevron { transform: rotate(-45deg); }
+/* The arrow at the end of an artist's row: its own button, opening and closing their albums. */
+.catalog-expand {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  padding: 0;
+  color: var(--ink);
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+.catalog-expand:hover, .catalog-expand:focus-visible { background: var(--paper-deep); outline: none; }
+.catalog-expand .catalog-chevron { margin: 0; }
+/* The artist whose overview is open: marked in ink, like the album in album view. */
+.catalog-artist.viewing { background: var(--ink); color: var(--paper); padding-left: 6px; }
+.catalog-artist.viewing .catalog-score { color: var(--paper); }
+.catalog-artist.viewing .catalog-letter { box-shadow: 0 0 0 1px var(--paper); }
 
 /* Title, then year / score: which way the albums go. */
 .catalog-head { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: -6px; }
@@ -178,7 +197,6 @@
   color: var(--ink);
 }
 .catalog-artist .catalog-score { font-size: 14px; color: var(--ink-soft); }
-.catalog-artist .catalog-chevron { margin-left: 8px; }
 
 /* An artist's or album's letter grade, on a chip in the grade's colour, after its score. */
 .catalog-letter {
@@ -212,7 +230,7 @@
   .line-album { border-bottom: none; }
   .line-artist { border-bottom: 1.5px solid var(--ink); }
   .catalog-onrater, .catalog-onrater-slot { display: none; }
-  .catalog-chevron { display: none; }
+  .catalog-chevron, .catalog-expand { display: none; }
   .catalog-head { flex-direction: column; align-items: center; margin-bottom: 0; }
   .catalog-title { display: none; }
   .catalog-order { flex-direction: column; align-items: center; gap: 0; }
@@ -223,3 +241,21 @@
 
 /* Album view on narrower desktops: the album's details need the left side, so the catalog steps aside. */
 @media (min-width: 641px) and (max-width: 1199px) { .catalog.in-album-view { display: none; } }
+/* Compare: the two albums need the whole page, so the catalog steps aside at any width. */
+@media (min-width: 901px) { .catalog.in-compare { display: none; } }
+
+/* An album with songs still to rate: no score or grade, a quiet label in their place */
+.catalog-incomplete {
+  flex: none;
+  margin-left: auto;
+  padding-left: 6px;
+  font-size: 8.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.catalog-album.viewing .catalog-incomplete { color: var(--paper-deep); }
+
+/* The bottom of the list while more artists are to come: reaching it loads the next page. */
+.catalog-more { flex: none; height: 1px; }

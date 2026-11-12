@@ -1,6 +1,10 @@
 import { describe, expect, test } from 'vitest'
 import { songTier } from '../state/board'
-import { ALBUM_GRADES, ARTIST_GRADES, tierOf, tierRanges, TRACK_TIERS } from './tiers'
+import { ALBUM_GRADES, ARTIST_GRADES, tierOf, tierRanges } from './tiers'
+import { HUNDRED } from './scale'
+
+/** v1's song tiers (the 0–100 scale's, stored = shown). */
+const TRACK_TIERS = HUNDRED.tiers
 
 describe('tiers (v1 code set)', () => {
   test('track tiers at their edges', () => {
@@ -29,12 +33,14 @@ describe('tiers (v1 code set)', () => {
 
   test('ranges for the rubric run from each tier up to the next', () => {
     const ranges = tierRanges(TRACK_TIERS, 100)
-    expect(ranges[0]).toEqual({ name: 'CLASSIC', from: 95, to: 100, color: 'rgb(79, 85, 144)' })
+    expect(ranges[0]).toMatchObject({ name: 'CLASSIC', from: 95, to: 100, color: 'rgb(79, 85, 144)' })
     expect(ranges.at(-1)).toEqual({ name: 'OFFENSIVE', from: 0, to: 10, color: 'rgb(8, 22, 22)' })
     expect(ranges.every((r, i) => i === 0 || r.to === ranges[i - 1].from)).toBe(true)
   })
 
-  test('a song\'s tier follows its score as shown (rounded), so "65" is never labelled OK', () => {
-    expect([64.6, 64.4, 94.5, 9.4].map(s => songTier(s).name)).toEqual(['INTERESTING', 'OK', 'CLASSIC', 'OFFENSIVE'])
+  test('a song\'s tier follows its score as shown (0–5, to 0.1), so the number and the tier always agree', () => {
+    // 93 shows 4.7 (CLASSIC); 92.9 shows 4.6; 79.88 shows 4.0 (GOOD); 75 shows 3.8 (PLEASANT from 3.75); 74.9 shows 3.7
+    expect([93, 92.9, 79.88, 75, 74.9, 9, 8.9].map(s => songTier(s).name))
+      .toEqual(['CLASSIC', 'GREAT', 'GOOD', 'PLEASANT', 'INTERESTING', 'BAD', 'OFFENSIVE'])
   })
 })

@@ -18,7 +18,7 @@ const s = {
 describe('read-only rater', () => {
   test('artists with an album on the tree, at their raw artist score (capped at 100); unrated mid-spine', () => {
     const nodes = artistNodes(s, new Set())
-    expect(nodes.map(n => [n.id, n.score, n.position])).toEqual([['m', 7.5, 0.075], ['r', undefined, 0.5]])
+    expect(nodes.map(n => [n.id, n.score, n.position])).toEqual([['m', 7.1, 0.071], ['r', undefined, 0.5]])
   })
   test("an artist's albums on the tree, at their album score; hidden ones left out", () => {
     expect(albumNodes(s, new Set(), 'm').map(n => [n.id, n.position])).toEqual([['a2', 0.7], ['a1', 0.88]])
